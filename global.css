@@ -1,3 +1,32 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+:root {
+  --color-brand: hsl(126 80% 18%); /* Blue (default) */
+  --color-brand-dark: hwb(132 0% 80%); /* Light Blue */
+  --color-brand-light: hwb(131 0% 60%);
+  --color-text-primary: hsl(0, 0%, 5%);
+  --color-text-secondary: hsl(0, 0%, 30%);
+  --color-text-muted: hsl(0, 0%, 50%);
+  --color-background-dark: hsl(0, 0%, 85%);
+  --color-background: hsl(0, 0%, 90%);
+  --color-background-light: hsl(0, 0%, 95%);
+  --color-border: hsl(0, 0%, 75%);
+  --color-input-background: hsl(0, 0%, 100%);
+}
+
+.dark {
+  --color-brand: hsl(205, 80%, 30%);
+  --color-brand-dark: hsl(205, 80%, 20%);
+  --color-brand-light: hsl(205, 80%, 40%);
+  --color-text-primary: hsl(0, 0%, 95%);
+  --color-text-secondary: hsl(0, 0%, 70%);
+  --color-text-muted: hsl(0, 0%, 50%);
+  --color-background-dark: hsl(0, 15%, 3%);
+  --color-background: hsl(219, 15%, 8%);
+  --color-background-light: hsl(219, 15%, 15%);
+
+  --color-border: hsl(0, 0%, 20%);
+  --color-input-background: hsl(240, 3%, 20%);
+}
