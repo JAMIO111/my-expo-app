@@ -1,6 +1,5 @@
-import React, { useEffect } from 'react';
 import { View, Text } from 'react-native';
-import PoolRack from '../components/PoolRack';
+import PoolRack from '@components/PoolRack';
 import { useColorScheme } from 'nativewind';
 
 export default function Index() {

@@ -1,8 +1,12 @@
 import { Stack } from 'expo-router';
-import { View, Text } from 'react-native';
 
 const _layout = () => {
-  return <Stack></Stack>;
+  return (
+    <Stack>
+      <Stack.Screen name="league" options={{ headerShown: false }} />
+      <Stack.Screen name="[fixtureId]" options={{ headerShown: false }} />
+    </Stack>
+  );
 };
 
 export default _layout;

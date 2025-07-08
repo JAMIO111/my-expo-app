@@ -1,74 +1,180 @@
-import { Stack } from 'expo-router';
-import {
-  StyleSheet,
-  Text,
-  Image,
-  Touchable,
-  TouchableOpacity,
-  View,
-  ScrollView,
-} from 'react-native';
-import { useUser } from 'contexts/UserProvider';
-import LoadingSplash from 'components/LoadingSplash';
-import HorizontalScrollUpcomingFixtures from 'components/HorizontalScrollUpcomingFixtures';
-import CTAButton from 'components/CTAButton';
-import ResultsHomeCard from 'components/ResultsHomeCard';
-import LeagueHomeCard from 'components/LeagueHomeCard';
-import FixturesHomeCard from 'components/FixturesHomeCard';
-import TeamLogo from 'components/TeamLogo';
+import { Stack, useRouter } from 'expo-router';
+import { StyleSheet, Text, Image, View, ScrollView, Platform, RefreshControl } from 'react-native';
+import { useState, useCallback } from 'react';
+import { useUser } from '@contexts/UserProvider';
+import LoadingSplash from '@components/LoadingSplash';
+import HorizontalScrollUpcomingFixtures from '@components/HorizontalScrollUpcomingFixtures';
+import CTAButton from '@components/CTAButton';
+import ResultsHomeCard from '@components/ResultsHomeCard';
+import LeagueHomeCard from '@components/LeagueHomeCard';
+import FixturesHomeCard from '@components/FixturesHomeCard';
+import supabase from '@lib/supabaseClient';
+import Toast from 'react-native-toast-message';
+import { useColorScheme } from 'nativewind';
+import NavBar from '@components/NavBar';
+import SafeViewWrapper from '@components/SafeViewWrapper';
+import { useUpcomingFixtures } from '@hooks/useUpcomingFixtures';
+import { StatusBar } from 'expo-status-bar';
 
 const Home = () => {
+  const { colorScheme } = useColorScheme();
+  const [fixtures, setFixtures] = useState([]);
+  const [isSigningOut, setIsSigningOut] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
+  const router = useRouter();
   const { player } = useUser();
   console.log('User:', player);
+
+  const {
+    data: upcomingFixtures,
+    isLoading: isUpcomingFixturesLoading,
+    refetch: upcomingFixturesRefetch,
+  } = useUpcomingFixtures(player?.team?.id);
+
+  console.log('Upcoming Fixtures:', upcomingFixtures);
+
+  const onRefresh = useCallback(() => {
+    setRefreshing(true);
+
+    upcomingFixturesRefetch()
+      .then(() => {
+        return new Promise((resolve) => setTimeout(resolve, 1000)); // 1s delay
+      })
+      .finally(() => {
+        setRefreshing(false);
+      });
+  }, [upcomingFixturesRefetch]);
+
   if (!player) {
-    return <LoadingSplash />;
+    return (
+      <>
+        <Stack.Screen
+          options={{
+            header: () => (
+              <View className="h-16 flex-row items-center justify-center bg-brand"></View>
+            ),
+          }}
+        />
+        <LoadingSplash />
+      </>
+    );
   }
+
+  const onChange = (event, selectedDate) => {
+    if (Platform.OS === 'android') {
+      setShowPicker(false); // hide picker immediately on Android
+    }
+
+    if (selectedDate) {
+      setDate(selectedDate);
+    }
+  };
+
   return (
-    <View className="flex-1">
-      <Stack.Screen
-        options={{
-          header: () => (
-            <View className="bg-brand h-16 flex-row items-center justify-center">
-              <Text className="font-michroma text-2xl font-bold text-white">Break</Text>
-              <Image
-                source={require('../../../assets/Break-Room-Logo-1024-Background.png')}
-                className="mx-1 h-12 w-12"
-                resizeMode="contain"
+    <SafeViewWrapper topColor="bg-brand" bottomColor="bg-brand">
+      <StatusBar style="light" backgroundColor="#000" />
+      <View className="flex-1">
+        <Stack.Screen
+          options={{
+            header: () => (
+              <SafeViewWrapper useBottomInset={false}>
+                <View className="h-16 flex-row items-center justify-center bg-brand">
+                  <Text className="font-michroma text-2xl font-bold text-white">Break</Text>
+                  <Image
+                    source={require('@assets/Break-Room-Logo-1024-Background.png')}
+                    className="mx-1 h-12 w-12"
+                    resizeMode="contain"
+                  />
+                  <Text className="font-michroma text-2xl font-bold text-white">Room</Text>
+                </View>
+              </SafeViewWrapper>
+            ),
+          }}
+        />
+
+        <ScrollView
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={onRefresh}
+              colors={['#fff']} // Android spinner color
+              tintColor="#fff" // iOS spinner color
+            />
+          }
+          className="mt-16 flex-1 bg-brand"
+          contentContainerStyle={{ allignItems: 'center', justifyContent: 'center' }}>
+          <View className="">
+            <View className="w-full items-center justify-center gap-3 p-3 pb-4">
+              <View className="w-full items-center justify-between">
+                <Text className="w-full text-left text-xl font-bold text-white">
+                  {player.team.name} Fixtures
+                </Text>
+                <HorizontalScrollUpcomingFixtures
+                  fixtures={upcomingFixtures}
+                  isLoading={isUpcomingFixturesLoading}
+                />
+              </View>
+              <View className="my-2 h-1 w-full items-center justify-between border-b border-brand-light"></View>
+              <FixturesHomeCard fixtures={upcomingFixtures} isLoading={isUpcomingFixturesLoading} />
+              <ResultsHomeCard />
+              <LeagueHomeCard />
+            </View>
+            <View className="w-full gap-3 bg-background-dark p-3 pb-10">
+              <CTAButton
+                type="success"
+                text="Teams"
+                callbackFn={() => router.push(`/teams/${player.team.id}`)}
               />
-              <Text className="font-michroma text-2xl font-bold text-white">Room</Text>
-            </View>
-          ),
-        }}
-      />
+              <CTAButton type="success" text="Players" callbackFn={() => router.push('/results')} />
 
-      <ScrollView
-        className="bg-brand flex-1"
-        contentContainerStyle={{ allignItems: 'center', justifyContent: 'center' }}>
-        <View className="mt-4">
-          <View className="w-full items-center justify-center gap-3 p-3 pb-4">
-            <View className="w-full items-center justify-between">
-              <Text className="w-full text-left text-xl font-bold text-white">
-                {player.team.name} Fixtures
-              </Text>
-              <HorizontalScrollUpcomingFixtures />
-            </View>
-            <View className="border-border-color my-2 h-1 w-full items-center justify-between border-b"></View>
-            <FixturesHomeCard />
-            <ResultsHomeCard />
-            <LeagueHomeCard />
-          </View>
-          <View className="bg-background-dark w-full gap-2 p-3 pb-10">
-            <TeamLogo type="Diagonal Stripe" />
-            <TeamLogo type="Vertical Stripe" />
-            <TeamLogo type="Horizontal Stripe" />
-            <TeamLogo type="Spots" />
-            <TeamLogo type="Solids" />
+              <View>
+                {fixtures.map((fixture, index) => (
+                  <Text key={index} className="text-text-1">
+                    {fixture.home} vs {fixture.away} on{' '}
+                    {new Date(fixture.datetime).toLocaleString('en-GB', {
+                      timeZone: 'Europe/London', // correct local time incl. BST
+                      hour: '2-digit',
+                      minute: '2-digit',
+                      weekday: 'long',
+                      day: '2-digit',
+                      month: 'short',
+                      year: 'numeric',
+                    })}
+                  </Text>
+                ))}
+              </View>
 
-            <CTAButton text="League Rules" />
+              <CTAButton
+                type="error"
+                text={isSigningOut ? 'Signing Out...' : 'Sign Out'}
+                callbackFn={async () => {
+                  setIsSigningOut(true);
+                  const { error } = await supabase.auth.signOut();
+                  setIsSigningOut(false);
+
+                  if (error) {
+                    console.error('Error signing out:', error.message);
+                    // show toast or alert
+                  } else {
+                    Toast.show({
+                      type: 'success',
+                      text1: 'Signed Out',
+                      text2: 'You have successfully signed out.',
+                      props: {
+                        colorScheme: colorScheme,
+                      },
+                    });
+                    router.replace('/login'); // Redirect to login page after sign out
+                  }
+                }}
+                disabled={isSigningOut}
+              />
+            </View>
           </View>
-        </View>
-      </ScrollView>
-    </View>
+        </ScrollView>
+        <NavBar />
+      </View>
+    </SafeViewWrapper>
   );
 };
 

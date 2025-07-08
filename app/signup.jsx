@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import {
   View,
   TextInput,
@@ -10,12 +10,11 @@ import {
   Animated,
   Easing,
 } from 'react-native';
-import { supabase } from '../lib/supabaseClient';
+import supabase from '@lib/supabaseClient';
 import { useRouter, Link } from 'expo-router';
 import * as AuthSession from 'expo-auth-session';
-import { useFonts } from 'expo-font';
-import { Michroma_400Regular } from '@expo-google-fonts/michroma';
 import { useColorScheme } from 'nativewind';
+import SafeViewWrapper from './components/SafeViewWrapper';
 
 export default function SignUpPage() {
   const { colorScheme } = useColorScheme();
@@ -47,7 +46,7 @@ export default function SignUpPage() {
     ]).start();
   }, []);
 
-  const handleLogin = async () => {
+  const handleSignUp = async () => {
     setLoading(true);
     setError(null);
 
@@ -91,104 +90,112 @@ export default function SignUpPage() {
         transform: [{ translateX: slideAnim }],
         opacity: fadeAnim,
       }}>
-      <View className={`${colorScheme} flex-1`}>
-        <View className="bg-brand w-full justify-center">
-          <Text style={styles.title}>Break Room</Text>
-          <View>
-            <View className="h-5 w-full flex-row gap-12">
-              <View className="bg-brand-light flex-1 rounded-tr-xl shadow"></View>
-              <View className="bg-brand-light flex-1 rounded-tl-xl shadow"></View>
+      <SafeViewWrapper bottomColor="bg-background-dark">
+        <View className={`${colorScheme} flex-1`}>
+          <View className="w-full justify-center bg-brand">
+            <View className="flex-row items-center justify-center gap-2">
+              <Text style={styles.title}>Break</Text>
+              <Image
+                source={require('@assets/Break-Room-Logo-1024-Background.png')}
+                className="mt-2 h-14 w-14"
+                resizeMode="contain"
+              />
+              <Text style={styles.title}>Room</Text>
             </View>
-            <View className="relative h-10 w-full flex-row items-center justify-around bg-orange-950">
-              <View className="h-3 w-3 rounded-full bg-slate-400"></View>
-              <View className="h-3 w-3 rounded-full bg-slate-400"></View>
-              <View className="absolute bottom-4 h-12 w-12 rounded-full bg-black"></View>
-              <View className="h-3 w-3 rounded-full bg-slate-400"></View>
-              <View className="h-3 w-3 rounded-full bg-slate-400"></View>
+            <View>
+              <View className="h-5 w-full flex-row gap-12">
+                <View className="flex-1 rounded-tr-xl bg-brand-light shadow"></View>
+                <View className="flex-1 rounded-tl-xl bg-brand-light shadow"></View>
+              </View>
+              <View className="relative h-10 w-full flex-row items-center justify-around bg-orange-950">
+                <View className="h-3 w-3 rounded-full bg-slate-400"></View>
+                <View className="h-3 w-3 rounded-full bg-slate-400"></View>
+                <View className="absolute bottom-4 h-12 w-12 rounded-full bg-black"></View>
+                <View className="h-3 w-3 rounded-full bg-slate-400"></View>
+                <View className="h-3 w-3 rounded-full bg-slate-400"></View>
+              </View>
             </View>
           </View>
-        </View>
-        <View className="bg-background-dark" style={styles.container}>
-          <View className="flex-1 justify-center gap-5">
-            <View class>
-              <Text className="text-text-primary text-3xl font-bold">Get Started!</Text>
-              <Text className="text-text-secondary text-lg">
-                Enter your details to create an account
-              </Text>
-            </View>
-            <TextInput
-              className="border-border-color placeholder:text-text-muted text-text-primary bg-input-background h-16 rounded-xl border px-4 pb-1 text-xl"
-              placeholder="Email"
-              keyboardType="email-address"
-              autoCapitalize="none"
-              value={email}
-              onChangeText={setEmail}
-            />
-            <View className="gap-2">
+          <View className="bg-background-dark" style={styles.container}>
+            <View className="flex-1 justify-center gap-5">
+              <View class>
+                <Text className="text-3xl font-bold text-text-1">Get Started!</Text>
+                <Text className="text-lg text-text-2">Enter your details to create an account</Text>
+              </View>
               <TextInput
-                className="border-border-color placeholder:text-text-muted text-text-primary bg-input-background h-16 rounded-xl border px-4 pb-1 text-xl"
-                placeholder="Password"
-                secureTextEntry
-                value={password}
-                onChangeText={setPassword}
+                className="h-16 rounded-xl border border-border-color bg-input-background px-4 pb-1 text-xl text-text-1 placeholder:text-text-3"
+                placeholder="Email"
+                keyboardType="email-address"
+                autoCapitalize="none"
+                value={email}
+                onChangeText={setEmail}
               />
-              {error && <Text style={styles.errorText}>{error}</Text>}
+              <View className="gap-2">
+                <TextInput
+                  className="h-16 rounded-xl border border-border-color bg-input-background px-4 pb-1 text-xl text-text-1 placeholder:text-text-3"
+                  placeholder="Password"
+                  secureTextEntry
+                  value={password}
+                  onChangeText={setPassword}
+                />
+                {error && <Text style={styles.errorText}>{error}</Text>}
+              </View>
+              <View className="gap-2">
+                <TextInput
+                  className="h-16 rounded-xl border border-border-color bg-input-background px-4 pb-1 text-xl text-text-1 placeholder:text-text-3"
+                  placeholder="Confirm Password"
+                  secureTextEntry
+                  value={confirmPassword}
+                  onChangeText={setConfirmPassword}
+                />
+                {error && <Text style={styles.errorText}>{error}</Text>}
+              </View>
+
+              <Pressable
+                className="h-16 items-center justify-center rounded-xl bg-brand"
+                onPress={handleSignUp}
+                disabled={loading}>
+                <Text className="text-center text-xl font-semibold text-white">
+                  {loading ? 'Signing Up...' : 'Sign Up'}
+                </Text>
+              </Pressable>
             </View>
-            <View className="gap-2">
-              <TextInput
-                className="border-border-color placeholder:text-text-muted text-text-primary bg-input-background h-16 rounded-xl border px-4 pb-1 text-xl"
-                placeholder="Confirm Password"
-                secureTextEntry
-                value={confirmPassword}
-                onChangeText={setConfirmPassword}
-              />
-              {error && <Text style={styles.errorText}>{error}</Text>}
+
+            <View className="h-16 flex-row items-center gap-5">
+              <View className="h-0.5 flex-1 bg-border-color" />
+              <Text className="text-text-2">Or</Text>
+              <View className="h-0.5 flex-1 bg-border-color" />
             </View>
 
             <Pressable
-              className="bg-brand h-16 items-center justify-center rounded-xl"
-              onPress={handleLogin}
-              disabled={loading}>
-              <Text className="text-center text-xl font-semibold text-white">
-                {loading ? 'Logging in...' : 'Log In'}
-              </Text>
+              className="mt-4 h-16 flex-row items-center justify-center gap-5 rounded-xl border border-border-color bg-input-background"
+              onPress={() => signInWithProvider('facebook')}>
+              <Image
+                source={require('@assets/Facebook-logo.png')}
+                className="absolute left-3 h-12 w-12"
+              />
+              <Text className="text-center text-lg text-text-1">Continue with Facebook</Text>
             </Pressable>
+
+            <Pressable
+              className="mt-4 h-16 flex-row items-center justify-center gap-5 rounded-xl border border-border-color bg-input-background"
+              onPress={() => signInWithProvider('google')}>
+              <Image
+                source={require('@assets/google-logo.png')}
+                className="absolute left-3 h-11 w-11"
+              />
+              <Text className="text-center text-lg text-text-1">Continue with Google</Text>
+            </Pressable>
+
+            <Text className="mt-4 text-center text-lg text-text-2">
+              Already have an account?{' '}
+              <Link className="text-theme-blue underline" href="/login">
+                Login
+              </Link>
+            </Text>
           </View>
-
-          <View className="h-16 flex-row items-center gap-5">
-            <View className="bg-border-color h-0.5 flex-1" />
-            <Text className="text-text-secondary">Or</Text>
-            <View className="bg-border-color h-0.5 flex-1" />
-          </View>
-
-          <Pressable
-            className="border-border-color bg-input-background mt-4 h-16 flex-row items-center justify-center gap-5 rounded-xl border"
-            onPress={() => signInWithProvider('facebook')}>
-            <Image
-              source={require('../assets/Facebook-logo.png')}
-              className="absolute left-3 h-12 w-12"
-            />
-            <Text className="text-text-primary text-center text-lg">Continue with Facebook</Text>
-          </Pressable>
-
-          <Pressable
-            className="border-border-color bg-input-background mt-4 h-16 flex-row items-center justify-center gap-5 rounded-xl border"
-            onPress={() => signInWithProvider('google')}>
-            <Image
-              source={require('../assets/google-logo.png')}
-              className="absolute left-3 h-11 w-11"
-            />
-            <Text className="text-text-primary text-center text-lg">Continue with Google</Text>
-          </Pressable>
-
-          <Text className="text-text-secondary mt-4 text-center text-lg">
-            Already have an account?{' '}
-            <Link className="text-blue-600 underline" href="/login">
-              Login
-            </Link>
-          </Text>
         </View>
-      </View>
+      </SafeViewWrapper>
     </Animated.View>
   );
 }
@@ -198,10 +205,10 @@ const styles = StyleSheet.create({
   title: {
     color: 'white',
     fontFamily: 'Michroma',
-    fontSize: 36,
+    fontSize: 32,
     fontWeight: 'bold',
     textAlign: 'center',
-    marginVertical: 30,
+    marginVertical: 20,
   },
 
   errorText: { color: 'red', marginBottom: 10, paddingLeft: 10, textAlign: 'left' },

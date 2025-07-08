@@ -1,0 +1,84 @@
+League Configuration
+League name, logo, and branding
+
+Season dates (start & end)
+
+Match duration / format
+
+Points system (win/draw/loss values)
+
+Tie-breaking rules (goal difference, head-to-head, etc.)
+
+Maximum teams allowed
+
+👥 Team Management
+Approve or reject new teams
+
+Edit team names, colors, logos
+
+Assign captains or team admins
+
+Remove or suspend teams
+
+Manually add teams (bypass registration)
+
+📅 Fixture & Schedule Settings
+Matchdays (e.g. Saturday & Wednesday)
+
+Match timeslots
+
+Auto-generate fixtures (round robin, knockout, etc.)
+
+Manually edit fixtures
+
+Set venue locations
+
+Reschedule/cancel matches
+
+🧾 Player Management
+Approve/reject player registrations
+
+Assign players to teams (if not done by team admins)
+
+Enforce player eligibility rules
+
+Restrict number of players per team
+
+⚖️ Rules & Penalties
+Custom rules display (e.g. foul limits, substitutions)
+
+Disciplinary actions (suspensions, bans)
+
+Custom penalties (e.g. points deduction for no-shows)
+
+📈 Stats & Standings Control
+Enable/disable live score updates
+
+Manual override for scores or standings
+
+Set visibility of stats (public/private)
+
+🔔 Notifications & Communication
+Broadcast announcements to all teams
+
+Push/email match reminders
+
+Send warnings (e.g. missed matches, pending actions)
+
+⚙️ Platform Permissions
+Add/edit other league admins
+
+Audit logs (who changed what)
+
+Manage league privacy (invite-only, open join)
+
+Enable/disable features like live chat, MVP voting, etc.
+
+Optional Extras (if your app supports them)
+Sponsor management (logos, links, promotions)
+
+Season archive or reset league
+
+Upload/download league reports or exports
+
+Custom themes or UI branding
