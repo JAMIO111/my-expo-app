@@ -9,10 +9,10 @@ const LeagueTable = ({ context, season, division }) => {
   const router = useRouter();
 
   const { data: standings, isLoading, error } = useStandings(division, season?.id);
-
-  const handlePress = () => {
+  console.log(division, 'div Data');
+  const handlePress = (team) => {
     if (context === 'home') {
-      router.push(`/home/league/217ac485-01c2-4ffe-a42b-9ec602be017c`);
+      router.push(`/home/league/${team.team}`);
     } else {
       //;
     }
@@ -21,7 +21,7 @@ const LeagueTable = ({ context, season, division }) => {
   console.log('Standings:', standings);
   return (
     <View className="w-full flex-1 items-center bg-bg-grouped-1 p-2">
-      <View className="border-separator-faint mb-16 w-full rounded-2xl border bg-bg-grouped-2 p-3">
+      <View className="mb-16 w-full rounded-2xl border border-separator-faint bg-bg-grouped-2 p-3">
         <View className=" h-12 flex-row items-center justify-around border-b border-separator">
           <Text className="w-10 text-center font-bold text-brand-light">Pos</Text>
           <Text className="flex-1 pl-3 text-left font-bold text-brand-light">Team</Text>
@@ -43,7 +43,9 @@ const LeagueTable = ({ context, season, division }) => {
             )}
             <View className=" flex-row items-center justify-around py-3">
               <Text className="w-10 text-center text-lg text-text-1">{team.position}</Text>
-              <Pressable onPress={handlePress} className="flex-1 flex-row items-center gap-3 pl-3">
+              <Pressable
+                onPress={() => handlePress(team)}
+                className="flex-1 flex-row items-center gap-3 pl-3">
                 <TeamLogo
                   type={team?.Teams?.crest?.type}
                   color1={team?.Teams?.crest?.color1}

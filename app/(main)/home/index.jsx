@@ -8,18 +8,14 @@ import CTAButton from '@components/CTAButton';
 import ResultsHomeCard from '@components/ResultsHomeCard';
 import LeagueHomeCard from '@components/LeagueHomeCard';
 import FixturesHomeCard from '@components/FixturesHomeCard';
-import supabase from '@lib/supabaseClient';
-import Toast from 'react-native-toast-message';
-import { useColorScheme } from 'nativewind';
 import NavBar from '@components/NavBar';
 import SafeViewWrapper from '@components/SafeViewWrapper';
 import { useUpcomingFixtures } from '@hooks/useUpcomingFixtures';
 import { StatusBar } from 'expo-status-bar';
 
 const Home = () => {
-  const { colorScheme } = useColorScheme();
   const [fixtures, setFixtures] = useState([]);
-  const [isSigningOut, setIsSigningOut] = useState(false);
+
   const [refreshing, setRefreshing] = useState(false);
   const router = useRouter();
   const { player } = useUser();
@@ -105,16 +101,20 @@ const Home = () => {
           contentContainerStyle={{ allignItems: 'center', justifyContent: 'center' }}>
           <View className="">
             <View className="w-full items-center justify-center gap-3 p-3 pb-4">
-              <View className="w-full items-center justify-between">
-                <Text className="w-full text-left text-xl font-bold text-white">
-                  {player.team.name} Fixtures
-                </Text>
-                <HorizontalScrollUpcomingFixtures
-                  fixtures={upcomingFixtures}
-                  isLoading={isUpcomingFixturesLoading}
-                />
-              </View>
-              <View className="my-2 h-1 w-full items-center justify-between border-b border-brand-light"></View>
+              {player?.team && (
+                <>
+                  <View className="w-full items-center justify-between">
+                    <Text className="mb-2 w-full text-left text-xl font-bold text-white">
+                      {player.team.name} Fixtures
+                    </Text>
+                    <HorizontalScrollUpcomingFixtures
+                      fixtures={upcomingFixtures}
+                      isLoading={isUpcomingFixturesLoading}
+                    />
+                  </View>
+                  <View className="mb-2 h-1 w-full items-center justify-between border-b border-brand-light"></View>
+                </>
+              )}
               <FixturesHomeCard fixtures={upcomingFixtures} isLoading={isUpcomingFixturesLoading} />
               <ResultsHomeCard />
               <LeagueHomeCard />
@@ -126,49 +126,6 @@ const Home = () => {
                 callbackFn={() => router.push(`/teams/${player.team.id}`)}
               />
               <CTAButton type="success" text="Players" callbackFn={() => router.push('/results')} />
-
-              <View>
-                {fixtures.map((fixture, index) => (
-                  <Text key={index} className="text-text-1">
-                    {fixture.home} vs {fixture.away} on{' '}
-                    {new Date(fixture.datetime).toLocaleString('en-GB', {
-                      timeZone: 'Europe/London', // correct local time incl. BST
-                      hour: '2-digit',
-                      minute: '2-digit',
-                      weekday: 'long',
-                      day: '2-digit',
-                      month: 'short',
-                      year: 'numeric',
-                    })}
-                  </Text>
-                ))}
-              </View>
-
-              <CTAButton
-                type="error"
-                text={isSigningOut ? 'Signing Out...' : 'Sign Out'}
-                callbackFn={async () => {
-                  setIsSigningOut(true);
-                  const { error } = await supabase.auth.signOut();
-                  setIsSigningOut(false);
-
-                  if (error) {
-                    console.error('Error signing out:', error.message);
-                    // show toast or alert
-                  } else {
-                    Toast.show({
-                      type: 'success',
-                      text1: 'Signed Out',
-                      text2: 'You have successfully signed out.',
-                      props: {
-                        colorScheme: colorScheme,
-                      },
-                    });
-                    router.replace('/login'); // Redirect to login page after sign out
-                  }
-                }}
-                disabled={isSigningOut}
-              />
             </View>
           </View>
         </ScrollView>

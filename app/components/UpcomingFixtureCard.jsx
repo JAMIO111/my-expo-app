@@ -46,7 +46,7 @@ const UpcomingFixtureCard = ({ fixture }) => {
         {new Date(fixture?.date_time).toLocaleString('en-GB', {
           timeZone: 'Europe/London',
           weekday: 'short',
-          day: '2-digit',
+          day: 'numeric',
           month: 'short',
           year: '2-digit',
           hour: '2-digit',

@@ -8,6 +8,7 @@ import Animated, {
   Easing,
 } from 'react-native-reanimated';
 import Svg, { Defs, RadialGradient, Stop, Circle } from 'react-native-svg';
+import { useColorScheme } from 'nativewind';
 
 // GradientBall component — same as before
 const GradientBall = ({ color = '#FFDD44', size = 30 }) => {
@@ -29,6 +30,7 @@ const GradientBall = ({ color = '#FFDD44', size = 30 }) => {
 };
 
 export default function LoadingSpinner() {
+  const { colorScheme } = useColorScheme();
   const rotation = useSharedValue(0);
 
   useEffect(() => {
@@ -69,7 +71,7 @@ export default function LoadingSpinner() {
   const balls = Array.from({ length: ballCount });
 
   return (
-    <View className="bg-brand" style={styles.container}>
+    <View className={`${colorScheme} bg-brand`} style={styles.container}>
       <Animated.View
         style={[
           {

@@ -55,7 +55,8 @@ const NavBar = () => {
   });
 
   return (
-    <View className="relative h-28 w-full flex-row items-center justify-around border-t border-brand bg-brand">
+    <View
+      className={`relative h-28 w-full flex-row items-center justify-around border-t border-brand bg-brand`}>
       {NAV_ITEMS.map((item, index) => {
         const isActive = pathname === item.href;
         const isCenter = index === 2;

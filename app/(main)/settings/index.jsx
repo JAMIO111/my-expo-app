@@ -26,7 +26,12 @@ const index = () => {
         contentContainerStyle={{ alignItems: 'center', justifyContent: 'center' }}
         className="mt-16 flex-1 bg-bg-grouped-1 p-5">
         <MenuContainer>
-          <SettingsItem iconBGColor="green" title="Account" icon="person-outline" />
+          <SettingsItem
+            routerPath="/settings/Account"
+            iconBGColor="green"
+            title="Account"
+            icon="person-outline"
+          />
           <SettingsItem
             lastItem={true}
             iconBGColor="red"
@@ -36,14 +41,12 @@ const index = () => {
         </MenuContainer>
 
         <MenuContainer>
-          <SettingsItem title="League Configuration" icon="settings-outline" />
-          <SettingsItem iconBGColor="green" title="Team Management" icon="people-outline" />
           <SettingsItem
-            iconBGColor="red"
-            title="Fixture & Schedule Settings"
-            icon="calendar-outline"
-            routerPath="/settings/FixtureAndScheduling"
+            title="League Configuration"
+            icon="settings-outline"
+            routerPath="/settings/LeagueConfig"
           />
+          <SettingsItem iconBGColor="green" title="Team Management" icon="people-outline" />
           <SettingsItem
             lastItem={true}
             iconBGColor="red"
@@ -62,11 +65,6 @@ const index = () => {
             icon="information-circle-outline"
           />
         </MenuContainer>
-        <CTAButton
-          text="New Season"
-          type="info"
-          callbackFn={() => initiateNewSeason('2025/26', 'e6301d1e-e017-4c7e-9883-8dc1e57a313b')}
-        />
       </ScrollView>
       <NavBar />
     </SafeViewWrapper>

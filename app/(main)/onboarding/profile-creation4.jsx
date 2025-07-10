@@ -187,18 +187,22 @@ const ProfileCreation4 = () => {
             )}
           </Pressable>
           <View className="mt-5 w-full items-center gap-5">
-            <CTAButton
-              type="info"
-              text={imageUri ? 'Change Profile Photo' : 'Upload Profile Photo'}
-              callbackFn={pickImage}
-              disabled={uploading}
-            />
-            <CTAButton
-              type="success"
-              text="Save Profile"
-              callbackFn={handleSaveProfile}
-              disabled={uploading}
-            />
+            <View className="w-full">
+              <CTAButton
+                type="info"
+                text={imageUri ? 'Change Profile Photo' : 'Upload Profile Photo'}
+                callbackFn={pickImage}
+                disabled={uploading}
+              />
+            </View>
+            <View className="w-full">
+              <CTAButton
+                type="success"
+                text="Save Profile"
+                callbackFn={handleSaveProfile}
+                disabled={uploading}
+              />
+            </View>
           </View>
         </View>
       </View>

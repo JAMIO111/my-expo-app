@@ -16,10 +16,8 @@ import { useRouter, Link } from 'expo-router';
 import * as AuthSession from 'expo-auth-session';
 import { useFonts } from 'expo-font';
 import { Michroma_400Regular } from '@expo-google-fonts/michroma';
-import { useColorScheme } from 'nativewind';
 
 export default function LoginPage() {
-  const { colorScheme } = useColorScheme();
   const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -118,7 +116,7 @@ export default function LoginPage() {
         opacity: fadeAnim,
       }}>
       <SafeViewWrapper bottomColor="bg-background-dark" topColor="bg-brand">
-        <View className={`${colorScheme} flex-1`}>
+        <View className="flex-1">
           <View className="w-full justify-center bg-brand">
             <View className="flex-row items-center justify-center gap-2">
               <Text style={styles.title}>Break</Text>

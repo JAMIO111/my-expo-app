@@ -1,43 +1,48 @@
 import { useState } from 'react';
-import { View, ScrollView, Dimensions } from 'react-native';
+import { View, ScrollView, Dimensions, Text } from 'react-native';
 import UpcomingFixtureCard from './UpcomingFixtureCard';
 
 const HorizontalScrollUpcomingFixtures = ({ fixtures, isLoading }) => {
   const screenWidth = Dimensions.get('window').width;
-  const [cardWidth, setCardWidth] = useState(0);
-  const gap = 16; // Adjust this value as needed for spacing between cards
+  const [cardWidth, setCardWidth] = useState(screenWidth * 0.65); // reasonable fallback width
+  const gap = 0; // small gap
 
-  const initialOffset = cardWidth > 0 ? screenWidth / 2 - cardWidth / 2 - gap : 0;
-  if (isLoading || !fixtures || fixtures.length === 0) {
-    return null; // or a loading indicator
-  }
+  if (isLoading) return null;
+  const isEmpty = !fixtures || fixtures.length === 0;
+
+  const initialOffset = screenWidth / 2 - cardWidth / 2;
+
   return (
     <ScrollView
       horizontal
       showsHorizontalScrollIndicator={false}
       contentContainerStyle={{
-        paddingLeft: initialOffset,
+        paddingHorizontal: initialOffset,
         alignItems: 'center',
-        gap,
       }}
-      pagingEnabled
-      snapToAlignment="start"
       snapToInterval={cardWidth + gap}
       decelerationRate="fast"
-      className="w-full p-2 pb-0">
-      <View
-        onLayout={(event) => {
-          const width = event.nativeEvent.layout.width;
-          setCardWidth(width);
-        }}>
-        <UpcomingFixtureCard fixture={fixtures[0]} />
-      </View>
-
-      {fixtures?.slice(1).map((fixture, index) => (
-        <View key={index + 1} style={{ width: cardWidth }}>
-          <UpcomingFixtureCard fixture={fixture} />
+      snapToAlignment="start"
+      className="w-full pb-2">
+      {isEmpty ? (
+        <View
+          className="h-32 items-center justify-center rounded-2xl bg-bg-2"
+          style={{ width: cardWidth }}>
+          <Text className="text-lg text-text-2">No Upcoming Fixtures</Text>
         </View>
-      ))}
+      ) : (
+        fixtures.map((fixture, index) => (
+          <View
+            key={index}
+            onLayout={index === 0 ? (e) => setCardWidth(e.nativeEvent.layout.width) : undefined}
+            style={{
+              width: cardWidth,
+              marginRight: index === fixtures.length - 1 ? 0 : gap,
+            }}>
+            <UpcomingFixtureCard fixture={fixture} />
+          </View>
+        ))
+      )}
     </ScrollView>
   );
 };

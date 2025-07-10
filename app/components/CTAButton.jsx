@@ -35,13 +35,13 @@ const CTAButton = ({ type = 'brand', text, icon, callbackFn, disabled }) => {
         onPressOut={handlePressOut}
         onPress={callbackFn}
         disabled={disabled}
-        className="h-16 w-full items-center justify-center rounded-2xl border border-border-color"
+        className="h-14 w-full items-center justify-center rounded-2xl border border-border-color"
         style={{
           backgroundColor: buttonTheme.primary,
           borderColor: buttonTheme.secondary,
         }}>
         {icon && <View className="absolute left-4">{icon}</View>}
-        <Text className="text-xl font-bold text-white">{text}</Text>
+        <Text className="pt-1 font-saira text-2xl text-white">{text}</Text>
       </Pressable>
     </Animated.View>
   );

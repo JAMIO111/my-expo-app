@@ -5,7 +5,7 @@ export default () => ({
   expo: {
     scheme: 'Break-Room',
     name: 'Break Room',
-    owner: 'JDigital',
+    owner: 'jdigital',
     slug: 'break-room',
     version: '1.0.0',
     web: {
@@ -25,11 +25,14 @@ export default () => ({
     },
     assetBundlePatterns: ['**/*'],
     ios: {
-      package: 'com.breakroom.app',
+      bundleIdentifier: 'com.jdigital.breakroom',
       supportsTablet: true,
+      infoPlist: {
+        ITSAppUsesNonExemptEncryption: false,
+      },
     },
     android: {
-      package: 'com.breakroom.app',
+      package: 'com.jdigital.breakroom',
       adaptiveIcon: {
         foregroundImage: './assets/adaptive-icon.png',
         backgroundColor: '#ffffff',
@@ -38,6 +41,9 @@ export default () => ({
     extra: {
       SUPABASE_URL: process.env.SUPABASE_URL,
       SUPABASE_KEY: process.env.SUPABASE_KEY,
+      eas: {
+        projectId: '3e7c3732-0ff2-449b-a27e-89d2cb14ada2',
+      },
     },
   },
 });

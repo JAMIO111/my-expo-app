@@ -13,11 +13,9 @@ import {
 import supabase from '@lib/supabaseClient';
 import { useRouter, Link } from 'expo-router';
 import * as AuthSession from 'expo-auth-session';
-import { useColorScheme } from 'nativewind';
 import SafeViewWrapper from './components/SafeViewWrapper';
 
 export default function SignUpPage() {
-  const { colorScheme } = useColorScheme();
   const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -91,7 +89,7 @@ export default function SignUpPage() {
         opacity: fadeAnim,
       }}>
       <SafeViewWrapper bottomColor="bg-background-dark">
-        <View className={`${colorScheme} flex-1`}>
+        <View className="flex-1">
           <View className="w-full justify-center bg-brand">
             <View className="flex-row items-center justify-center gap-2">
               <Text style={styles.title}>Break</Text>

@@ -1,5 +1,14 @@
 import supabase from '@/lib/supabaseClient';
 
+export const isBirthdayToday = (dob) => {
+  if (!dob) return false;
+
+  const today = new Date();
+  const birthDate = new Date(dob);
+
+  return birthDate.getDate() === today.getDate() && birthDate.getMonth() === today.getMonth();
+};
+
 export function getSeasonLabel(seasonStartDay, seasonStartMonth, seasonEndDay, seasonEndMonth) {
   const now = new Date();
 
@@ -73,6 +82,7 @@ import {
   differenceInCalendarWeeks,
   setHours,
   setMinutes,
+  isWithinInterval,
 } from 'date-fns';
 
 function shuffle(array) {
@@ -89,6 +99,9 @@ export function generateFixtures({
   matchDays,
   reverseGapWeeks = 4,
   time = '20:00',
+  divisionId,
+  seasonId,
+  excludedRanges = [],
 }) {
   if (teams.length % 2 !== 0) teams.push('BYE');
 
@@ -101,7 +114,6 @@ export function generateFixtures({
   let rotated = [...teams];
   const rounds = [];
 
-  // Generate round-robin
   for (let round = 0; round < totalRounds; round++) {
     const matches = [];
     for (let i = 0; i < half; i++) {
@@ -119,19 +131,41 @@ export function generateFixtures({
   const secondLeg = shuffle(firstLeg.map(({ home, away }) => ({ home: away, away: home })));
   const allMatches = [...firstLeg, ...secondLeg];
 
-  const firstMatchDates = new Map(); // Track original match dates
+  const firstMatchDates = new Map();
   const fixtures = [];
-  let currentDate = parseISO(startDate);
+  let currentDate = typeof startDate === 'string' ? parseISO(startDate) : startDate;
 
-  // Parse time string (e.g., "20:00")
   const [hour, minute] = time.split(':').map(Number);
 
+  // Helper: check if a given date falls in any excluded range
+  const isInExcludedRange = (date) => {
+    return excludedRanges.some(({ start, end }) => {
+      const startDate = typeof start === 'string' ? parseISO(start) : start;
+      const endDate = typeof end === 'string' ? parseISO(end) : end;
+      return isWithinInterval(date, { start: startDate, end: endDate });
+    });
+  };
+
   while (allMatches.length > 0) {
+    // Skip entire week if it includes an excluded match day
+    const shouldSkipWeek = matchDayIndexes.some((dayIndex) => {
+      const possibleMatchDate =
+        getDay(currentDate) === dayIndex ? currentDate : nextDay(currentDate, dayIndex);
+      return isInExcludedRange(possibleMatchDate);
+    });
+
+    if (shouldSkipWeek) {
+      currentDate = addWeeks(currentDate, 1);
+      continue;
+    }
+
     for (let dayIndex of matchDayIndexes) {
       let matchDate = currentDate;
       if (getDay(currentDate) !== dayIndex) {
         matchDate = nextDay(currentDate, dayIndex);
       }
+
+      if (isInExcludedRange(matchDate)) continue;
 
       const teamsPlayingToday = new Set();
       let gamesToday = 0;
@@ -140,15 +174,13 @@ export function generateFixtures({
       for (let i = 0; i < allMatches.length && gamesToday < maxGames; ) {
         const match = allMatches[i];
         const { home, away } = match;
+        const key = `${away}-${home}`;
 
-        const key = `${away}-${home}`; // reversed key
-
-        // Check reverse fixture timing
         if (firstMatchDates.has(key)) {
           const originalDate = parseISO(firstMatchDates.get(key));
           const weekDiff = differenceInCalendarWeeks(matchDate, originalDate);
           if (weekDiff < reverseGapWeeks) {
-            i++; // too soon, skip for now
+            i++;
             continue;
           }
         }
@@ -158,16 +190,14 @@ export function generateFixtures({
           continue;
         }
 
-        // Apply time to date
         const matchDateTime = setMinutes(setHours(matchDate, hour), minute);
 
-        // Schedule match
         fixtures.push({
-          home,
-          away,
-          date: format(matchDateTime, 'yyyy-MM-dd'),
-          time: format(matchDateTime, 'HH:mm'),
-          datetime: matchDateTime.toISOString(), // Full ISO datetime
+          home_team: home,
+          away_team: away,
+          date_time: matchDateTime.toISOString(),
+          season: seasonId,
+          division: divisionId,
         });
 
         if (!firstMatchDates.has(`${home}-${away}`)) {
@@ -375,8 +405,9 @@ export async function initiateNewSeason(seasonName, districtId) {
       }
     }
   }
-
   console.log(`✅ Season "${seasonName}" created and standings initialized.`);
+
+  return seasonId;
 }
 
 export async function getActiveSeason(districtId) {
@@ -403,4 +434,106 @@ export async function getActiveSeason(districtId) {
   }
 
   return data[0];
+}
+export async function handleSubmitResults({
+  fixtureId,
+  frameResults,
+  homeTeamId,
+  awayTeamId,
+  divisionId,
+  seasonId,
+}) {
+  // 1. Insert Frames
+  const frameRows = frameResults.map((frame) => ({
+    fixture: fixtureId,
+    home_player: frame.homePlayer,
+    away_player: frame.awayPlayer,
+    winner: frame.winner,
+  }));
+
+  const { error: frameError } = await supabase.from('Frames').insert(frameRows);
+  if (frameError) throw new Error('Failed to insert frame results: ' + frameError.message);
+
+  // 2. Tally Wins
+  const homeWins = frameResults.filter((f) => f.winner === homeTeamId).length;
+  const awayWins = frameResults.filter((f) => f.winner === awayTeamId).length;
+  const isDraw = homeWins === awayWins;
+
+  // 3. Update Fixture
+  const { error: fixtureError } = await supabase
+    .from('Fixtures')
+    .update({
+      home_score: homeWins,
+      away_score: awayWins,
+      is_complete: true,
+    })
+    .eq('id', fixtureId);
+
+  if (fixtureError) throw new Error('Failed to update fixture: ' + fixtureError.message);
+
+  // 4. Fetch existing standing rows
+  const { data: standings, error: standingsError } = await supabase
+    .from('Standings')
+    .select('*')
+    .in('team', [homeTeamId, awayTeamId])
+    .eq('division', divisionId)
+    .eq('season', seasonId);
+
+  if (standingsError || !standings) throw new Error('Failed to fetch standings');
+
+  const homeStanding = standings.find((s) => s.team === homeTeamId);
+  const awayStanding = standings.find((s) => s.team === awayTeamId);
+
+  // 5. Prepare updates
+  const updateHome = {
+    played: homeStanding.played + 1,
+    won: homeWins > awayWins ? homeStanding.won + 1 : homeStanding.won,
+    lost: homeWins < awayWins ? homeStanding.lost + 1 : homeStanding.lost,
+    points:
+      homeWins > awayWins
+        ? homeStanding.points + 2
+        : isDraw
+          ? homeStanding.points + 1
+          : homeStanding.points,
+  };
+
+  const updateAway = {
+    played: awayStanding.played + 1,
+    won: awayWins > homeWins ? awayStanding.won + 1 : awayStanding.won,
+    lost: awayWins < homeWins ? awayStanding.lost + 1 : awayStanding.lost,
+    points:
+      awayWins > homeWins
+        ? awayStanding.points + 2
+        : isDraw
+          ? awayStanding.points + 1
+          : awayStanding.points,
+  };
+
+  // 6. Apply updates
+  const [homeUpdate, awayUpdate] = await Promise.all([
+    supabase.from('Standings').update(updateHome).eq('id', homeStanding.id),
+    supabase.from('Standings').update(updateAway).eq('id', awayStanding.id),
+  ]);
+
+  if (homeUpdate.error || awayUpdate.error) throw new Error('Failed to update standings');
+
+  // 7. Recalculate Positions
+  const { data: updatedStandings, error: fetchError } = await supabase
+    .from('Standings')
+    .select('id, team, points, won, played, Teams(display_name)')
+    .eq('division', divisionId)
+    .eq('season', seasonId);
+
+  if (fetchError) throw new Error('Failed to fetch updated standings');
+
+  const withTeamNames = updatedStandings.map((entry) => ({
+    ...entry,
+    Team: entry.Teams?.display_name ?? '',
+  }));
+
+  const sorted = recalculatePositions(withTeamNames);
+
+  for (const row of sorted) {
+    await supabase.from('Standings').update({ position: row.position }).eq('id', row.id);
+  }
 }

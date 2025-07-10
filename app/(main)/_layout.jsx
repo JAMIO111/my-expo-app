@@ -1,7 +1,6 @@
 import { StyleSheet, Text, View } from 'react-native';
 import '../../global.css'; // Ensure global styles are imported
 import { Slot, usePathname } from 'expo-router';
-import NavBar from '@components/NavBar';
 import { UserProvider } from '@contexts/UserProvider';
 
 const _layout = () => {
@@ -14,7 +13,9 @@ const _layout = () => {
 
   return (
     <UserProvider>
-      <Slot />
+      <View className={`flex-1`}>
+        <Slot />
+      </View>
     </UserProvider>
   );
 };

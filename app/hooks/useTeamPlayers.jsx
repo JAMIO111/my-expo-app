@@ -14,6 +14,6 @@ export function useTeamPlayers(teamId) {
     },
     enabled: !!teamId,
     staleTime: 5 * 60 * 1000,
-    cacheTime: 30 * 60 * 1000,
+    cacheTime: 60 * 60 * 1000,
   });
 }

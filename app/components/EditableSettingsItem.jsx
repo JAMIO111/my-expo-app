@@ -1,31 +1,33 @@
-import { Pressable, Text, View } from 'react-native';
-import React from 'react';
+import { Pressable, Text, TextInput, View } from 'react-native';
+import React, { useState } from 'react';
 import IonIcons from 'react-native-vector-icons/Ionicons';
 import { useRouter } from 'expo-router';
 import { useColorScheme } from 'nativewind';
 import colors from '@lib/colors';
 
-const SettingsItem = ({
+const EditableSettingsItem = ({
   title,
   icon,
-  text,
-  routerPath,
+  value,
+  onChangeText,
+  placeholder = '',
   iconBGColor = 'gray',
   iconColor = '#fff',
+  routerPath,
   lastItem = false,
+  editable = true,
+  keyboardType = 'default',
 }) => {
   const router = useRouter();
   const { colorScheme } = useColorScheme();
   const themeColors = colors[colorScheme];
 
   const handlePress = () => {
-    if (routerPath) {
-      router.push(routerPath);
-    }
+    if (routerPath) router.push(routerPath);
   };
 
   return (
-    <Pressable onPress={handlePress} className="w-full">
+    <Pressable onPress={handlePress} disabled={!routerPath} className="w-full">
       {({ pressed }) => (
         <View className="w-full">
           <View
@@ -42,27 +44,31 @@ const SettingsItem = ({
 
             <Text
               numberOfLines={1}
-              ellipsizeMode="tail"
               style={{ flexShrink: 0 }}
-              className={`${text ? '' : 'flex-1'} pl-2 text-lg font-medium text-text-1`}>
+              className="w-32 pl-2 text-lg font-medium text-text-1">
               {title}
             </Text>
 
-            {text && (
-              <Text
-                numberOfLines={1}
-                ellipsizeMode="tail"
-                className="ml-2 flex-1 text-right text-lg text-text-2">
-                {text}
-              </Text>
-            )}
+            <TextInput
+              className="flex-1 py-1 text-left text-xl text-text-2"
+              style={{ lineHeight: 22, padding: 0 }}
+              value={value}
+              onChangeText={onChangeText}
+              placeholder={placeholder}
+              editable={editable && !routerPath}
+              keyboardType={keyboardType}
+              numberOfLines={1}
+              ellipsizeMode="tail"
+            />
 
             {routerPath && <IonIcons name="chevron-forward" size={18} color={themeColors.icon} />}
           </View>
 
           {!lastItem && (
             <View
-              className={`${icon ? 'ml-16' : 'ml-5'} h-[0.5px] w-full ${!pressed ? 'bg-separator' : 'bg-transparent'}`}
+              className={`${icon ? 'ml-16' : 'ml-5'} h-[0.5px] w-full ${
+                !pressed ? 'bg-separator' : 'bg-transparent'
+              }`}
             />
           )}
         </View>
@@ -71,4 +77,4 @@ const SettingsItem = ({
   );
 };
 
-export default SettingsItem;
+export default EditableSettingsItem;

@@ -1,5 +1,5 @@
 import { StyleSheet, ScrollView, View, Text } from 'react-native';
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import LeagueTable from '@components/LeagueTable';
 import ModalDropdown from '@components/ModalDropdown';
 import { getActiveSeason } from '@lib/helperFunctions';
@@ -7,6 +7,8 @@ import { useUser } from '@contexts/UserProvider';
 import { useDistricts } from '@hooks/useDistricts';
 import { useDivisions } from '@hooks/useDivisions';
 import { useSeasons } from '@hooks/useSeasons';
+import CTAButton from './CTAButton';
+import BottomSheetWrapper from './BottomSheetWrapper';
 
 const LeagueTableWrapper = ({ context }) => {
   const { player } = useUser();
@@ -17,6 +19,17 @@ const LeagueTableWrapper = ({ context }) => {
   const [district, setDistrict] = useState(defaultDistrict);
   const [division, setDivision] = useState(null);
   const [season, setSeason] = useState(null);
+
+  const bottomSheetRef = useRef(null);
+  const openSheet = () => {
+    if (bottomSheetRef.current) {
+      console.log('Opening Bottom Sheet...'); // ✅ Sanity check
+      bottomSheetRef.current.expand(); // ✅ Calls expand method
+    } else {
+      console.warn('BottomSheet ref is null!');
+    }
+  };
+  const closeSheet = () => bottomSheetRef.current?.close();
 
   const {
     data: districts = [],
@@ -73,45 +86,51 @@ const LeagueTableWrapper = ({ context }) => {
   }
 
   return (
-    <ScrollView
-      contentContainerStyle={{ alignItems: 'center', justifyContent: 'flex-start' }}
-      className="w-full flex-1 bg-white">
-      <View className="h-fit w-full items-center justify-between gap-3 bg-brand p-3">
-        <View className="flex-row gap-3">
-          <ModalDropdown
-            value={district}
-            onChange={setDistrict}
-            placeholder="District"
-            getLabel={(item) => item.name}
-            getValue={(item) => item.id}
-            options={districts}
-          />
+    <View className="flex-1">
+      <ScrollView
+        contentContainerStyle={{ alignItems: 'center', justifyContent: 'flex-start' }}
+        className="w-full flex-1 bg-brand">
+        <View className="h-fit w-full items-center justify-between gap-3 bg-brand p-3">
+          <View className="flex-row gap-3">
+            <ModalDropdown
+              value={district}
+              onChange={setDistrict}
+              placeholder="District"
+              getLabel={(item) => item.name}
+              getValue={(item) => item.id}
+              options={districts}
+            />
+          </View>
+          <View className="flex-row gap-3">
+            <ModalDropdown
+              value={division}
+              onChange={setDivision}
+              placeholder="Division"
+              getLabel={(item) => item.name}
+              getValue={(item) => item.id}
+              options={divisions}
+            />
+            <ModalDropdown
+              value={season?.id}
+              onChange={(selectedSeasonId) => {
+                const selectedSeason = seasons.find((s) => s.id === selectedSeasonId);
+                setSeason(selectedSeason);
+              }}
+              placeholder="Season"
+              getLabel={(item) => item.name}
+              getValue={(item) => item.id}
+              options={seasons}
+            />
+          </View>
         </View>
-        <View className="flex-row gap-3">
-          <ModalDropdown
-            value={division}
-            onChange={setDivision}
-            placeholder="Division"
-            getLabel={(item) => item.name}
-            getValue={(item) => item.id}
-            options={divisions}
-          />
-          <ModalDropdown
-            value={season?.id}
-            onChange={(selectedSeasonId) => {
-              const selectedSeason = seasons.find((s) => s.id === selectedSeasonId);
-              setSeason(selectedSeason);
-            }}
-            placeholder="Season"
-            getLabel={(item) => item.name}
-            getValue={(item) => item.id}
-            options={seasons}
-          />
-        </View>
-      </View>
 
-      <LeagueTable context={context} season={season} division={division} />
-    </ScrollView>
+        <LeagueTable context={context} season={season} division={division} />
+      </ScrollView>
+      <BottomSheetWrapper ref={bottomSheetRef} snapPoints={['25%', '50%']}>
+        <Text>This content can be anything!</Text>
+        <CTAButton title="Close" callbackFn={closeSheet} />
+      </BottomSheetWrapper>
+    </View>
   );
 };
 

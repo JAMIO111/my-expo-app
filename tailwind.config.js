@@ -19,7 +19,6 @@ module.exports = {
         'brand-dark': 'var(--color-brand-dark)',
         'text-primary': 'var(--color-text-primary)',
         'text-secondary': 'var(--color-text-secondary)',
-        'text-error': 'var(--color-text-error)',
         background: 'var(--color-background)',
         'background-light': 'var(--color-background-light)',
         'background-dark': 'var(--color-background-dark)',

@@ -25,18 +25,18 @@ const ConfirmModal = ({
         </TouchableOpacity>
 
         <View className="items-center">
-          <Text className="text-text-1 mb-2 text-2xl font-bold">{title}</Text>
-          <Text className="text-text-2 mb-6 text-center text-xl">{message}</Text>
+          <Text className="mb-4 text-3xl font-bold text-text-1">{title}</Text>
+          <Text className="mb-6 text-center text-xl text-text-2">{message}</Text>
 
           <View className="flex-row gap-5">
             <TouchableOpacity
               onPress={onCancel}
-              className="w-1/2 items-center justify-center rounded-lg bg-gray-300 py-2">
-              <Text className="text-2xl text-black">Cancel</Text>
+              className="bg-theme-gray-5 w-1/2 items-center justify-center rounded-lg py-2">
+              <Text className="text-2xl text-text-1">Cancel</Text>
             </TouchableOpacity>
             <TouchableOpacity
               onPress={onConfirm}
-              className="w-1/2 items-center justify-center rounded-lg bg-red-600 py-3">
+              className="w-1/2 items-center justify-center rounded-lg bg-theme-red py-3">
               <Text className="text-2xl text-white">Confirm</Text>
             </TouchableOpacity>
           </View>

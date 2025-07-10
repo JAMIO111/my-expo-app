@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import supabase from '@lib/supabaseClient';
 
-export default function useTeamPlayers(userId) {
+export default function useUserProfile(userId) {
   return useQuery({
     queryKey: ['PlayerProfile', userId],
     queryFn: async () => {
@@ -11,11 +11,18 @@ export default function useTeamPlayers(userId) {
         .from('Players')
         .select(
           `
-      *,
-      Teams!Players_team_id_fkey (
-        name, display_name
-      )
-    `
+            *,
+            Teams!Players_team_id_fkey (
+              name,
+              display_name,
+              Divisions:division (
+                name,
+                Districts:district (
+                  name
+                )
+              )
+            )
+          `
         )
         .eq('id', userId)
         .single();
@@ -26,6 +33,8 @@ export default function useTeamPlayers(userId) {
         ...data,
         team_name: data.Teams?.name ?? null,
         team_display_name: data.Teams?.display_name ?? null,
+        division_name: data.Teams?.Divisions?.name ?? null,
+        district_name: data.Teams?.Divisions?.Districts?.name ?? null,
       };
     },
     enabled: !!userId,

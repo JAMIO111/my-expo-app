@@ -3,12 +3,11 @@
 @tailwind utilities;
 
 :root {
-  --color-brand: hsl(126 80% 18%); /* Blue (default) */
-  --color-brand-dark: hwb(132 0% 80%); /* Light Blue */
+  --color-brand: hsl(126 80% 16%);
+  --color-brand-dark: hwb(132 0% 80%);
   --color-brand-light: hwb(131 0% 60%);
   --color-text-primary: hsl(0, 0%, 5%);
   --color-text-secondary: hsl(0, 0%, 30%);
-  --color-text-error: hsl(0, 100%, 50%);
   --color-text-muted: hsl(0, 0%, 50%);
   --color-background-dark: hsl(0, 0%, 85%);
   --color-background: hsl(0, 0%, 90%);
@@ -66,7 +65,6 @@
   --color-brand-light: hsl(205, 80%, 30%);
   --color-text-primary: hsl(0, 0%, 95%);
   --color-text-secondary: hsl(0, 0%, 70%);
-  --color-text-error: hsl(0, 100%, 70%);
   --color-text-muted: hsl(0, 0%, 50%);
   --color-background-dark: hsl(0, 15%, 3%);
   --color-background: hsl(219, 15%, 8%);

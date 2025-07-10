@@ -11,8 +11,10 @@ import { useRouter } from 'expo-router';
 import { useFonts } from 'expo-font';
 import { Michroma_400Regular } from '@expo-google-fonts/michroma';
 import supabase from '@lib/supabaseClient';
+import { useColorScheme } from 'nativewind';
 
 const PoolRack = () => {
+  const { colorScheme } = useColorScheme();
   const [fontsLoaded] = useFonts({
     Michroma: Michroma_400Regular,
   });
@@ -64,7 +66,7 @@ const PoolRack = () => {
   return (
     <Pressable
       onPress={handleNavigation}
-      className="relative w-full flex-1 bg-brand"
+      className={`${colorScheme} relative w-full flex-1 bg-brand`}
       style={{
         justifyContent: 'space-between',
         alignItems: 'center',

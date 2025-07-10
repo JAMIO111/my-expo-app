@@ -11,11 +11,14 @@ const StatCard = ({ title, value, icon, color = 'bg-gray-500' }) => {
             <Ionicons name={icon} size={24} color="#fff" />
           </View>
         )}
-        <Text className="text-text-2 text-xl font-medium" numberOfLines={1} ellipsizeMode="tail">
+        <Text
+          className="font-saira text-xl font-medium text-text-2"
+          numberOfLines={1}
+          ellipsizeMode="tail">
           {title}
         </Text>
       </View>
-      <Text className="text-text-1 flex-1 pt-5 font-saira text-7xl font-extrabold">{value}</Text>
+      <Text className="flex-1 pt-5 font-saira text-7xl font-extrabold text-text-1">{value}</Text>
     </View>
   );
 };

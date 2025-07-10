@@ -13,20 +13,19 @@ import { Stack, useRouter, useLocalSearchParams } from 'expo-router';
 import { Picker } from '@react-native-picker/picker';
 import { Ionicons } from '@expo/vector-icons';
 import CTAButton from '@components/CTAButton';
-import { useColorScheme } from 'nativewind';
 import TeamLogo from '@components/TeamLogo';
 import CustomHeader from '@components/CustomHeader';
 import SafeViewWrapper from '@components/SafeViewWrapper';
 import Toast from 'react-native-toast-message';
 import ConfirmModal from '@components/ConfirmModal';
 import { useFixtureDetails } from '@hooks/useFixtureDetails';
+import { handleSubmitResults } from '@lib/helperFunctions';
 
 const SubmitResultsScreen = () => {
   const [confirmDeleteModalVisible, setConfirmDeleteModalVisible] = useState(false);
   const router = useRouter();
   const { fixtureId } = useLocalSearchParams();
   const { data: fixtureDetails, isLoading } = useFixtureDetails(fixtureId);
-  const { colorScheme } = useColorScheme();
   const trophyColor = colorScheme === 'dark' ? '#FFD700' : '#EBB30A';
   const homePlayers = ['John Dryden', 'Peter Johnson', 'Michael Johnson'];
   const awayPlayers = [
@@ -93,6 +92,8 @@ const SubmitResultsScreen = () => {
     return 'th';
   }
 
+  console.log('Fixture Details hew:', fixtureDetails);
+
   return (
     <SafeViewWrapper useBottomInset={false} topColor="bg-brand">
       <Stack.Screen
@@ -104,7 +105,7 @@ const SubmitResultsScreen = () => {
           ),
         }}
       />
-      <ScrollView className="bg-bg-grouped-1 mt-16 flex-1 p-4">
+      <ScrollView className="mt-16 flex-1 bg-bg-grouped-1 p-4">
         {/* Match Score */}
         <View className="relative mb-2 flex-row items-start justify-center p-3">
           <View className="absolute left-0 z-50">
@@ -125,7 +126,7 @@ const SubmitResultsScreen = () => {
               {fixtureDetails?.homeTeam?.abbreviation}
             </Text>
           </View>
-          <Text className="text-text-1 bg-bg-3 border-bg-grouped-1 rounded-b-2xl border-x-2 p-3 text-2xl">
+          <Text className="rounded-b-2xl border-x-2 border-bg-grouped-1 bg-bg-3 p-3 font-saira text-2xl text-text-1">
             {homeScore} - {awayScore}
           </Text>
           <View className="absolute right-0 z-50">
@@ -142,7 +143,7 @@ const SubmitResultsScreen = () => {
           <View
             style={{ backgroundColor: fixtureDetails?.awayTeam?.crest?.color1 }}
             className="mr-10 flex-1 items-center justify-center py-1">
-            <Text className="text-2xl font-bold text-white">
+            <Text className="font-saira text-2xl font-bold text-white">
               {fixtureDetails?.awayTeam?.abbreviation}
             </Text>
           </View>
@@ -161,9 +162,9 @@ const SubmitResultsScreen = () => {
                   activateFrame(frame.id);
                 }
               }}
-              className="bg-bg-grouped-2 mb-3 overflow-hidden rounded-2xl"
+              className="mb-3 overflow-hidden rounded-2xl bg-bg-grouped-2"
               style={styles.cardContainer}>
-              <Text className="text-md text-text-2 mt-2 w-full text-center">
+              <Text className="text-md mt-2 w-full text-center text-text-2">
                 {index}
                 {getOrdinalSuffix(index)} Frame
               </Text>
@@ -220,7 +221,7 @@ const SubmitResultsScreen = () => {
                         <Ionicons name="checkmark" size={28} color="white" />
                       )}
                     </Pressable>
-                    <Text className="text-text-1 text-lg">Select Winner</Text>
+                    <Text className="text-lg text-text-1">Select Winner</Text>
                     <Pressable
                       onPress={() => updateFrame(frame.id, 'winner', frame.awayPlayer)}
                       className={`h-9 w-9 items-center justify-center rounded-md border ${
@@ -239,7 +240,7 @@ const SubmitResultsScreen = () => {
                     <>
                       <Pressable
                         onPress={() => setConfirmDeleteModalVisible(true)}
-                        className="bg-theme-red/85 border-theme-red-hc rounded-2xl border p-2"
+                        className="rounded-2xl border border-theme-red-hc bg-theme-red/85 p-2"
                         hitSlop={10}>
                         <Ionicons name="trash-outline" size={40} color="white" />
                       </Pressable>
@@ -298,14 +299,14 @@ const SubmitResultsScreen = () => {
                 </View>
                 <Text
                   className={`${
-                    frame.homePlayer ? 'text-text-1' : 'text-text-error'
+                    frame.homePlayer ? 'text-text-1' : 'text-theme-red'
                   } flex-1 text-right font-medium`}>
                   {frame.homePlayer || 'Select Player'}
                 </Text>
-                <Text className="text-text-2 mx-2 text-xs">vs</Text>
+                <Text className="mx-2 text-xs text-text-2">vs</Text>
                 <Text
                   className={`${
-                    frame.awayPlayer ? 'text-text-1' : 'text-text-error'
+                    frame.awayPlayer ? 'text-text-1' : 'text-theme-red'
                   } flex-1 text-left font-medium`}>
                   {frame.awayPlayer || 'Select Player'}
                 </Text>
@@ -326,7 +327,16 @@ const SubmitResultsScreen = () => {
             <CTAButton
               text="Submit Results"
               type="success"
-              callbackFn={() => console.log(frames)}
+              callbackFn={() =>
+                handleSubmitResults({
+                  fixtureId,
+                  frames,
+                  homeTeamId: fixtureDetails?.homeTeam?.id,
+                  awayTeamId: fixtureDetails?.awayTeam?.id,
+                  divisionId: fixtureDetails?.division?.id,
+                  seasonId: fixtureDetails?.season?.id,
+                })
+              }
             />
           </View>
         )}

@@ -18,8 +18,19 @@ const fetchAuthUserProfile = async () => {
       `
       *,
       team:Teams!Players_team_id_fkey(
-        id, name, captain, vice_captain, display_name, abbreviation,
-        division:Divisions(id, name, district:Districts(id, name))
+        id,
+        name,
+        captain,
+        vice_captain,
+        display_name,
+        crest,
+        abbreviation,
+        address:Addresses(*),
+        division:Divisions(
+          id,
+          name,
+          district:Districts(id, name)
+        )
       )
     `
     )
