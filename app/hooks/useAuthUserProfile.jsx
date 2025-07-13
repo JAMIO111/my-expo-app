@@ -12,36 +12,57 @@ const fetchAuthUserProfile = async () => {
     throw new Error(authError?.message || 'User not authenticated');
   }
 
-  const { data, error } = await supabase
+  const { data: playerData, error: playerError } = await supabase
     .from('Players')
     .select(
       `
-      *,
-      team:Teams!Players_team_id_fkey(
+    *,
+    team:Teams!Players_team_id_fkey(
+      id,
+      name,
+      captain,
+      vice_captain,
+      display_name,
+      crest,
+      abbreviation,
+      address:Addresses(*),
+      division:Divisions(
         id,
         name,
-        captain,
-        vice_captain,
-        display_name,
-        crest,
-        abbreviation,
-        address:Addresses(*),
-        division:Divisions(
+        district:Districts(
           id,
-          name,
-          district:Districts(id, name)
+          name
         )
       )
+    )
     `
     )
     .eq('auth_id', user.id)
     .single();
 
-  if (error || !data) {
-    throw new Error(error.message || 'Player not found');
+  if (playerError || !playerData) {
+    throw new Error(playerError?.message || 'Player not found');
   }
 
-  return data;
+  // 2. Fetch the active season for this district
+  const districtId = playerData.team.division.district.id;
+
+  const { data: seasonData, error: seasonError } = await supabase
+    .from('Seasons')
+    .select('id, start_date')
+    .eq('district', districtId)
+    .eq('is_active', true)
+    .maybeSingle();
+
+  if (seasonError) {
+    throw new Error(seasonError.message);
+  }
+
+  // 3. Combine results as needed
+  return {
+    ...playerData,
+    activeSeason: seasonData,
+  };
 };
 
 export const useAuthUserProfile = () => {

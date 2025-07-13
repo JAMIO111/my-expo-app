@@ -10,22 +10,38 @@ import supabase from '@lib/supabaseClient'; // Adjust the import path as necessa
 import DateTimePicker from '@react-native-community/datetimepicker';
 import IonIcons from '@expo/vector-icons/Ionicons';
 import { useColorScheme } from 'nativewind';
-import { colors } from '@lib/colors'; // Adjust the import path as necessary
+import { useFixtureConfig } from '@contexts/AdminContext'; // Adjust the import path as necessary
+import colors from '@lib/colors'; // Adjust the import path as necessary
+import { useUser } from '@contexts/UserProvider'; // Adjust the import path as necessary
+import { matchFrequencyOptions } from '@lib/fixtureOptions'; // Adjust the import path as necessary
+import { matchDaysOptions } from '@lib/fixtureOptions'; // Adjust the import path as necessary
+import SafeViewWrapper from '@components/SafeViewWrapper'; // Adjust the import path as necessary
 
 const StartNewSeason = () => {
+  const { player } = useUser();
+  const ctx = useFixtureConfig();
+  console.log('FixtureConfig context:', ctx);
+
+  if (!ctx) {
+    return <div>Loading or no config available</div>;
+  }
+
+  const { fixtureConfig, setFixtureConfig } = ctx;
+
+  // If fixtureConfig is undefined, you can do:
+  if (!fixtureConfig) {
+    return <div>Loading config...</div>;
+  }
   const { colorScheme } = useColorScheme();
-  const themeColors = colorScheme === 'dark' ? colors?.dark : colors?.light; // Adjust based on your theme
+  const themeColors = colors[colorScheme];
+  const districtId = player?.team?.division?.district?.id;
   const [seasonStartModalVisible, setSeasonStartModalVisible] = useState(false);
-  const [startDate, setStartDate] = useState(new Date());
   const [showDatePicker, setShowDatePicker] = useState(false);
   const handleConfirmSeasonStart = async () => {
     setSeasonStartModalVisible(false);
     try {
       // ✅ Get the new season ID
-      const newSeasonId = await initiateNewSeason(
-        '2025/26',
-        'e6301d1e-e017-4c7e-9883-8dc1e57a313b'
-      );
+      const newSeasonId = await initiateNewSeason('2025/26', districtId, fixtureConfig.startDate);
 
       if (!newSeasonId) {
         console.error('Failed to initiate season');
@@ -38,7 +54,7 @@ const StartNewSeason = () => {
       const { data: divisions, error: divisionError } = await supabase
         .from('Divisions')
         .select('id')
-        .eq('district', 'e6301d1e-e017-4c7e-9883-8dc1e57a313b');
+        .eq('district', districtId);
 
       console.log('Divisions:', divisions);
 
@@ -46,8 +62,6 @@ const StartNewSeason = () => {
         console.error('Failed to fetch divisions:', divisionError?.message);
         return;
       }
-
-      const matchDays = ['Monday']; // ✅ define your match days (or fetch them if dynamic)
 
       for (const division of divisions) {
         const { data: teams, error: teamError } = await supabase
@@ -66,15 +80,14 @@ const StartNewSeason = () => {
 
         const fixtures = generateFixtures({
           teams: teamIds,
-          startDate,
-          matchDays,
-          time: '21:30',
+          frequency: fixtureConfig.frequency,
+          reverseGapWeeks: fixtureConfig.reverseGapWeeks,
+          startDate: fixtureConfig.startDate,
+          matchDays: fixtureConfig.matchDays,
+          time: fixtureConfig.time,
           divisionId: division.id,
           seasonId: newSeasonId,
-          excludedRanges: [
-            { start: '2025-12-20', end: '2026-01-06' }, // Christmas
-            { start: '2026-04-10', end: '2026-04-17' }, // Easter
-          ],
+          excludedRanges: fixtureConfig.excludedRanges,
         });
         console.log(`Generated fixtures for division ${division.id}:`, fixtures);
 
@@ -97,22 +110,32 @@ const StartNewSeason = () => {
   const handleCancel = () => {
     setSeasonStartModalVisible(false);
   };
+  console.log('FixtureConfig:', fixtureConfig);
   return (
-    <>
+    <SafeViewWrapper topColor="bg-brand" useBottomInset={false}>
       <Stack.Screen
         options={{
-          title: 'Start New Season',
+          header: () => (
+            <SafeViewWrapper useBottomInset={false}>
+              <View className="h-16 flex-row items-center justify-center bg-brand">
+                <Text className="font-michroma text-2xl font-bold text-white">
+                  Start New Season
+                </Text>
+              </View>
+            </SafeViewWrapper>
+          ),
         }}
       />
 
       <ScrollView
         contentContainerStyle={{ alignItems: 'center', justifyContent: 'center' }}
-        className="flex-1 bg-bg-grouped-1 p-5">
+        className="mt-16 flex-1 bg-bg-grouped-1 p-5">
         <MenuContainer>
           <SettingsItem
             iconBGColor="gray"
             title="Season Name"
             icon="text-outline"
+            disabled={true}
             text={`${new Date().getFullYear()}/${String(new Date().getFullYear() + 1).slice(-2)}`}
           />
           <SettingsItem
@@ -121,29 +144,93 @@ const StartNewSeason = () => {
             title="Selected Divisions"
             icon="podium-outline"
             text={'3 Divisions'}
+            lastItem={true}
           />
         </MenuContainer>
         <MenuContainer>
           <SettingsItem
-            routerPath="settings/LeagueConfig/Divisions"
+            routerPath="settings/MatchFrequency"
             iconBGColor="red"
             title="Match Frequency"
             icon="pulse-outline"
-            text={'1 per Week'}
+            text={
+              matchFrequencyOptions.find((opt) => opt.value === fixtureConfig.frequency)?.label ??
+              'Select Frequency'
+            }
           />
           <SettingsItem
             routerPath="settings/MatchDays"
             iconBGColor="red"
             title="Match Days"
             icon="today-outline"
-            text={'Mondays'}
+            text={
+              fixtureConfig.frequency?.startsWith('monthly')
+                ? fixtureConfig.monthlyMatchDays?.length > 0
+                  ? fixtureConfig.monthlyMatchDays
+                      .map(({ week, day }) => {
+                        const ordinal = ['1st', '2nd', '3rd', '4th'][week - 1];
+                        const dayAbbrev = day.charAt(0).toUpperCase() + day.slice(1, 3); // e.g. Mon, Tue
+                        return `${ordinal} ${dayAbbrev}`;
+                      })
+                      .join(', ')
+                  : 'Select Match Days'
+                : fixtureConfig.matchDays?.length > 0
+                  ? fixtureConfig.matchDays
+                      .map((val) => {
+                        const label = matchDaysOptions.find((opt) => opt.value === val)?.label;
+                        return label ? label.slice(0, 3) : null;
+                      })
+                      .filter(Boolean)
+                      .join(', ')
+                  : 'Select Match Days'
+            }
           />
           <SettingsItem
-            routerPath="settings/LeagueConfig/Divisions"
+            routerPath="settings/MatchTimes"
             iconBGColor="red"
             title="Match Times"
             icon="time-outline"
-            text={'3 Divisions'}
+            text={
+              fixtureConfig?.matchTimes && Object.keys(fixtureConfig.matchTimes).length > 0
+                ? Object.entries(fixtureConfig.matchTimes)
+                    .map(([day, date]) => {
+                      if (!date) return day;
+                      const timeString = new Date(date).toLocaleTimeString([], {
+                        hour: '2-digit',
+                        minute: '2-digit',
+                      });
+                      return `${timeString}`;
+                    })
+                    .join(', ')
+                : 'Select Match Times'
+            }
+          />
+          <SettingsItem
+            routerPath="settings/ExcludedDates"
+            iconBGColor="red"
+            title="Excluded Dates"
+            icon="airplane-outline"
+            text={
+              Array.isArray(fixtureConfig.excludedRanges) && fixtureConfig.excludedRanges.length > 0
+                ? fixtureConfig.excludedRanges.length === 1
+                  ? (() => {
+                      const range = fixtureConfig.excludedRanges[0];
+                      if (!range.startDate || !range.endDate) return 'No Excluded Dates';
+                      const start = new Date(range.startDate).toLocaleDateString('en-GB', {
+                        year: '2-digit',
+                        month: '2-digit',
+                        day: '2-digit',
+                      });
+                      const end = new Date(range.endDate).toLocaleDateString('en-GB', {
+                        year: '2-digit',
+                        month: '2-digit',
+                        day: '2-digit',
+                      });
+                      return `${start} - ${end}`;
+                    })()
+                  : `${fixtureConfig.excludedRanges.length} date ranges`
+                : 'No Excluded Dates'
+            }
           />
           <View className="w-full rounded-2xl bg-bg-grouped-2">
             <Pressable
@@ -157,7 +244,7 @@ const StartNewSeason = () => {
               <Text className="pl-5 text-lg font-medium text-text-1">Start of Season</Text>
               <View className="flex-1 flex-row items-center justify-end gap-3">
                 <Text className="text-lg text-text-2">
-                  {startDate.toLocaleDateString('en-GB', {
+                  {fixtureConfig.startDate.toLocaleDateString('en-GB', {
                     weekday: 'short',
                     year: 'numeric',
                     month: 'short',
@@ -167,7 +254,7 @@ const StartNewSeason = () => {
                 <IonIcons
                   name={showDatePicker ? 'chevron-down' : 'chevron-forward'}
                   size={18}
-                  color={themeColors?.icon}
+                  color={themeColors.icon}
                 />
               </View>
             </Pressable>
@@ -175,7 +262,7 @@ const StartNewSeason = () => {
             {showDatePicker && (
               <View className="px-4 pb-2">
                 <DateTimePicker
-                  value={startDate}
+                  value={fixtureConfig.startDate}
                   mode="date"
                   display={Platform.OS === 'ios' ? 'inline' : 'default'}
                   onChange={(event, selectedDate) => {
@@ -184,7 +271,10 @@ const StartNewSeason = () => {
                     }
 
                     if (selectedDate) {
-                      setStartDate(selectedDate);
+                      setFixtureConfig((prev) => ({
+                        ...prev,
+                        startDate: selectedDate,
+                      }));
                       if (Platform.OS === 'ios') {
                         // On iOS inline, close manually on selection
                         setTimeout(() => setShowDatePicker(false), 150);
@@ -215,11 +305,11 @@ const StartNewSeason = () => {
             onConfirm={handleConfirmSeasonStart}
             onCancel={handleCancel}
             title="Here we go!"
-            message={`Are you sure you want to start the ${new Date().getFullYear()}/${String(new Date().getFullYear() + 1).slice(-2)} season? This action cannot be undone.`}
+            message={`Are you sure you want to start the ${new Date().getFullYear()}/${String(new Date().getFullYear() + 1).slice(-2)} season?`}
           />
         </View>
       </ScrollView>
-    </>
+    </SafeViewWrapper>
   );
 };
 

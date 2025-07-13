@@ -7,6 +7,12 @@ const colors = {
     primaryText: '#000000',
     secondaryText: '#4B5563',
     icon: 'hsl(0, 0%, 60%)',
+    themeGray1: 'rgba(142, 142, 147)',
+    themeGray2: 'rgba(174, 174, 178)',
+    themeGray3: 'rgba(199, 199, 204)',
+    themeGray4: 'rgba(209, 209, 214)',
+    themeGray5: 'rgba(229, 229, 234)',
+    themeGray6: 'rgba(242, 242, 247)',
 
     brand: {
       primary: 'hsl(126 80% 18%)',
@@ -38,6 +44,12 @@ const colors = {
     primaryText: '#ffffff',
     secondaryText: '#9CA3AF',
     icon: 'hsl(0, 0%, 70%)',
+    themeGray1: 'rgba(142, 142, 147)',
+    themeGray2: 'rgba(99, 99, 102)',
+    themeGray3: 'rgba(72, 72, 74)',
+    themeGray4: 'rgba(58, 58, 60)',
+    themeGray5: 'rgba(44, 44, 46)',
+    themeGray6: 'rgba(28, 28, 30)',
 
     brand: {
       primary: 'hsl(205, 80%, 30%)',

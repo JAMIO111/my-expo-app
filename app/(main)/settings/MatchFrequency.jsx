@@ -1,11 +1,20 @@
-import { StyleSheet, Text, View, ScrollView } from 'react-native';
-import { useState } from 'react';
+import { ScrollView } from 'react-native';
 import { Stack } from 'expo-router';
 import MenuContainer from '@components/MenuContainer';
 import SelectionSettingsItem from '@components/SelectionSettingsItem';
+import { useFixtureConfig } from '@contexts/AdminContext';
+import { matchFrequencyOptions } from '@lib/fixtureOptions'; // Adjust the import path as necessary
 
 const MatchFrequency = () => {
-  const [matchFrequency, setMatchFrequency] = useState('weekly'); // Example state for match frequency
+  const { fixtureConfig, setFixtureConfig } = useFixtureConfig();
+  const handleChange = (newValue) => {
+    setFixtureConfig((prev) => ({
+      ...prev,
+      frequency: newValue,
+      matchDays: [],
+      matchTimes: {},
+    }));
+  };
   return (
     <>
       <Stack.Screen
@@ -16,33 +25,18 @@ const MatchFrequency = () => {
 
       <ScrollView
         contentContainerStyle={{ alignItems: 'center', justifyContent: 'center' }}
-        className="flex-1 bg-background p-5">
+        className="flex-1 bg-bg-grouped-1 p-5">
         <MenuContainer>
-          <SelectionSettingsItem
-            title="2 per week"
-            internalValue="twiceWeekly"
-            value={matchFrequency}
-            setValue={setMatchFrequency}
-          />
-          <SelectionSettingsItem
-            title="1 per week"
-            internalValue="weekly"
-            value={matchFrequency}
-            setValue={setMatchFrequency}
-          />
-          <SelectionSettingsItem
-            title="2 per month"
-            internalValue="twiceMonthly"
-            value={matchFrequency}
-            setValue={setMatchFrequency}
-          />
-          <SelectionSettingsItem
-            title="1 per month"
-            internalValue="monthly"
-            value={matchFrequency}
-            setValue={setMatchFrequency}
-            lastItem={true}
-          />
+          {matchFrequencyOptions.map((option, index) => (
+            <SelectionSettingsItem
+              key={option.value}
+              title={option.label}
+              internalValue={option.value}
+              value={fixtureConfig.frequency}
+              setValue={handleChange}
+              lastItem={index === matchFrequencyOptions.length - 1}
+            />
+          ))}
         </MenuContainer>
       </ScrollView>
     </>
@@ -50,5 +44,3 @@ const MatchFrequency = () => {
 };
 
 export default MatchFrequency;
-
-const styles = StyleSheet.create({});

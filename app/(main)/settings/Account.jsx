@@ -8,6 +8,7 @@ import CTAButton from '@components/CTAButton';
 import supabase from '@lib/supabaseClient';
 import Toast from 'react-native-toast-message';
 import { useColorScheme } from 'nativewind';
+import SafeViewWrapper from '@components/SafeViewWrapper';
 
 const Account = () => {
   const { colorScheme } = useColorScheme();
@@ -15,14 +16,22 @@ const Account = () => {
   const { player, isLoading } = useUser();
   const router = useRouter();
   return (
-    <>
+    <SafeViewWrapper topColor="bg-brand" useBottomInset={false}>
       <Stack.Screen
         options={{
-          title: 'Account',
+          header: () => (
+            <SafeViewWrapper useBottomInset={false}>
+              <View className="h-16 flex-row items-center justify-center bg-brand">
+                <Text className="font-michroma text-2xl font-bold text-white">Settings</Text>
+              </View>
+            </SafeViewWrapper>
+          ),
         }}
       />
 
-      <ScrollView contentContainerStyle={{ flexGrow: 1 }} className="flex-1 bg-bg-grouped-1 p-5">
+      <ScrollView
+        contentContainerStyle={{ flexGrow: 1 }}
+        className="mt-16 flex-1 bg-bg-grouped-1 p-5">
         <View className="flex-1 justify-between">
           {/* Top Content */}
           <View>
@@ -93,7 +102,7 @@ const Account = () => {
           </View>
         </View>
       </ScrollView>
-    </>
+    </SafeViewWrapper>
   );
 };
 

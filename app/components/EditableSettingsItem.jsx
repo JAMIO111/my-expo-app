@@ -66,9 +66,7 @@ const EditableSettingsItem = ({
 
           {!lastItem && (
             <View
-              className={`${icon ? 'ml-16' : 'ml-5'} h-[0.5px] w-full ${
-                !pressed ? 'bg-separator' : 'bg-transparent'
-              }`}
+              className={`${icon ? 'ml-16' : 'ml-5'} h-[0.5px] w-full ${!pressed ? 'bg-separator' : 'bg-transparent'}`}
             />
           )}
         </View>

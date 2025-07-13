@@ -76,6 +76,7 @@ export function getAgeInYearsAndDays(dob) {
 import {
   parseISO,
   addWeeks,
+  addMonths,
   format,
   nextDay,
   getDay,
@@ -83,7 +84,23 @@ import {
   setHours,
   setMinutes,
   isWithinInterval,
+  addDays,
+  isSameMonth,
+  startOfMonth,
 } from 'date-fns';
+
+function getNthWeekdayOfMonth(year, month, dayIndex, nth) {
+  let date = startOfMonth(new Date(year, month));
+  let count = 0;
+  while (isSameMonth(date, new Date(year, month))) {
+    if (getDay(date) === dayIndex) {
+      count++;
+      if (count === nth) return date;
+    }
+    date = addDays(date, 1);
+  }
+  return null;
+}
 
 function shuffle(array) {
   for (let i = array.length - 1; i > 0; i--) {
@@ -94,20 +111,31 @@ function shuffle(array) {
 }
 
 export function generateFixtures({
-  teams,
-  startDate,
-  matchDays,
+  frequency,
+  matchIntervalWeeks = 1,
+  matchDays = [],
+  monthlyMatchDays = [],
   reverseGapWeeks = 4,
   time = '20:00',
-  divisionId,
+  teams,
+  startDate,
   seasonId,
+  divisionId,
   excludedRanges = [],
 }) {
   if (teams.length % 2 !== 0) teams.push('BYE');
 
-  const matchDayIndexes = matchDays.map((day) =>
-    ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'].indexOf(day)
-  );
+  const dayToIndex = {
+    Sunday: 0,
+    Monday: 1,
+    Tuesday: 2,
+    Wednesday: 3,
+    Thursday: 4,
+    Friday: 5,
+    Saturday: 6,
+  };
+
+  const [hour, minute] = time.split(':').map(Number);
 
   const totalRounds = teams.length - 1;
   const half = teams.length / 2;
@@ -127,94 +155,126 @@ export function generateFixtures({
     rounds.push(matches);
   }
 
-  const firstLeg = rounds.flat();
-  const secondLeg = shuffle(firstLeg.map(({ home, away }) => ({ home: away, away: home })));
-  const allMatches = [...firstLeg, ...secondLeg];
+  const firstLeg = rounds;
+  const secondLeg = shuffle(
+    firstLeg.map((r) => r.map(({ home, away }) => ({ home: away, away: home })))
+  );
 
-  const firstMatchDates = new Map();
   const fixtures = [];
+  const firstMatchDates = new Map();
+
   let currentDate = typeof startDate === 'string' ? parseISO(startDate) : startDate;
 
-  const [hour, minute] = time.split(':').map(Number);
-
-  // Helper: check if a given date falls in any excluded range
-  const isInExcludedRange = (date) => {
-    return excludedRanges.some(({ start, end }) => {
-      const startDate = typeof start === 'string' ? parseISO(start) : start;
-      const endDate = typeof end === 'string' ? parseISO(end) : end;
-      return isWithinInterval(date, { start: startDate, end: endDate });
+  const isInExcludedRange = (date) =>
+    excludedRanges.some(({ startDate, endDate }) => {
+      const s = typeof startDate === 'string' ? parseISO(startDate) : startDate;
+      const e = typeof endDate === 'string' ? parseISO(endDate) : endDate;
+      return isWithinInterval(date, { start: s, end: e });
     });
+
+  const getNextValidDates = (date) => {
+    const dates = [];
+
+    if (frequency.startsWith('weekly')) {
+      for (const day of matchDays) {
+        const idx = dayToIndex[day.charAt(0).toUpperCase() + day.slice(1)];
+        const next = getDay(date) === idx ? date : nextDay(date, idx);
+        dates.push(next);
+      }
+    } else if (frequency.startsWith('monthly')) {
+      const year = date.getFullYear();
+      const month = date.getMonth();
+      for (const { week, day } of monthlyMatchDays) {
+        const idx = dayToIndex[day.charAt(0).toUpperCase() + day.slice(1)];
+        const nthDate = getNthWeekdayOfMonth(year, month, idx, week);
+        if (nthDate) dates.push(nthDate);
+      }
+    }
+
+    return dates.sort((a, b) => a - b);
   };
 
-  while (allMatches.length > 0) {
-    // Skip entire week if it includes an excluded match day
-    const shouldSkipWeek = matchDayIndexes.some((dayIndex) => {
-      const possibleMatchDate =
-        getDay(currentDate) === dayIndex ? currentDate : nextDay(currentDate, dayIndex);
-      return isInExcludedRange(possibleMatchDate);
-    });
+  const scheduleRounds = (roundSet, isReverse = false) => {
+    for (const round of roundSet) {
+      let scheduled = false;
+      while (!scheduled) {
+        const matchDates = getNextValidDates(currentDate);
+        for (const matchDate of matchDates) {
+          if (isInExcludedRange(matchDate)) continue;
 
-    if (shouldSkipWeek) {
-      currentDate = addWeeks(currentDate, 1);
-      continue;
-    }
+          const matchDateTime = setMinutes(setHours(matchDate, hour), minute);
+          const teamsScheduled = new Set();
+          let valid = true;
 
-    for (let dayIndex of matchDayIndexes) {
-      let matchDate = currentDate;
-      if (getDay(currentDate) !== dayIndex) {
-        matchDate = nextDay(currentDate, dayIndex);
-      }
+          for (const { home, away } of round) {
+            if (teamsScheduled.has(home) || teamsScheduled.has(away)) {
+              valid = false;
+              break;
+            }
 
-      if (isInExcludedRange(matchDate)) continue;
+            if (isReverse) {
+              const reverseKey = `${away}-${home}`;
+              const firstDateStr = firstMatchDates.get(reverseKey);
+              if (!firstDateStr) {
+                valid = false;
+                break;
+              }
 
-      const teamsPlayingToday = new Set();
-      let gamesToday = 0;
-      const maxGames = teams.length / 2;
+              const firstDate = parseISO(firstDateStr);
+              const weekDiff = differenceInCalendarWeeks(matchDate, firstDate);
+              if (weekDiff < reverseGapWeeks) {
+                valid = false;
+                break;
+              }
+            }
 
-      for (let i = 0; i < allMatches.length && gamesToday < maxGames; ) {
-        const match = allMatches[i];
-        const { home, away } = match;
-        const key = `${away}-${home}`;
-
-        if (firstMatchDates.has(key)) {
-          const originalDate = parseISO(firstMatchDates.get(key));
-          const weekDiff = differenceInCalendarWeeks(matchDate, originalDate);
-          if (weekDiff < reverseGapWeeks) {
-            i++;
-            continue;
+            teamsScheduled.add(home);
+            teamsScheduled.add(away);
           }
+
+          if (!valid) continue;
+
+          let matchCount = 0;
+
+          for (const { home, away } of round) {
+            fixtures.push({
+              home_team: home,
+              away_team: away,
+              date_time: matchDateTime.toISOString(),
+              season: seasonId,
+              division: divisionId,
+            });
+
+            matchCount++;
+
+            if (!isReverse) {
+              firstMatchDates.set(`${home}-${away}`, format(matchDateTime, 'yyyy-MM-dd'));
+            }
+          }
+
+          console.log(
+            `${matchDateTime.toLocaleDateString('en-GB', {
+              weekday: 'long',
+              year: 'numeric',
+              month: 'long',
+              day: 'numeric',
+            })}: ${matchCount} matches scheduled`
+          );
+
+          scheduled = true;
+          break;
         }
 
-        if (teamsPlayingToday.has(home) || teamsPlayingToday.has(away)) {
-          i++;
-          continue;
-        }
-
-        const matchDateTime = setMinutes(setHours(matchDate, hour), minute);
-
-        fixtures.push({
-          home_team: home,
-          away_team: away,
-          date_time: matchDateTime.toISOString(),
-          season: seasonId,
-          division: divisionId,
-        });
-
-        if (!firstMatchDates.has(`${home}-${away}`)) {
-          firstMatchDates.set(`${home}-${away}`, format(matchDateTime, 'yyyy-MM-dd'));
-        }
-
-        teamsPlayingToday.add(home);
-        teamsPlayingToday.add(away);
-        allMatches.splice(i, 1);
-        gamesToday++;
+        currentDate = frequency.startsWith('weekly')
+          ? addWeeks(currentDate, matchIntervalWeeks)
+          : addMonths(currentDate, 1);
       }
     }
+  };
 
-    currentDate = addWeeks(currentDate, 1);
-  }
+  scheduleRounds(firstLeg, false);
+  scheduleRounds(secondLeg, true);
 
-  console.log('Generated Fixtures:', fixtures);
   return fixtures;
 }
 

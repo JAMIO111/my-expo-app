@@ -4,11 +4,13 @@ import { useMonthlyFixtures } from '@/hooks/useGroupedFixtures';
 import { format, addMonths, parseISO, startOfMonth, isBefore } from 'date-fns';
 import IonIcons from 'react-native-vector-icons/Ionicons';
 import TeamLogo from './TeamLogo';
+import { useUser } from '@/contexts/UserProvider';
 
 const FixtureList = () => {
-  const seasonId = '7337dd65-224e-46f7-9d09-496f2db8f047';
-  const divisionId = '86d18908-7413-4d27-9fe8-4fc38e28f20f';
-  const seasonStartDate = new Date('2025-09-01');
+  const { player } = useUser();
+  const seasonId = player?.activeSeason?.id;
+  const divisionId = player?.team?.division?.id;
+  const seasonStartDate = player?.activeSeason?.start_date;
 
   const initialMonth = isBefore(new Date(), seasonStartDate)
     ? startOfMonth(seasonStartDate)

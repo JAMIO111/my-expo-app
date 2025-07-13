@@ -1,24 +1,29 @@
 import { StyleSheet, Text, View, ScrollView, Settings } from 'react-native';
-import { useState } from 'react';
 import { Stack } from 'expo-router';
 import SettingsItem from '@components/SettingsItem';
 import MenuContainer from '@components/MenuContainer';
-import CTAButton from '@components/CTAButton';
-import { generateFixtures } from '@lib/helperFunctions';
+import SafeViewWrapper from '@components/SafeViewWrapper';
 
 const LeagueConfig = () => {
-  const [fixtures, setFixtures] = useState([]);
   return (
-    <>
+    <SafeViewWrapper topColor="bg-brand" useBottomInset={false}>
       <Stack.Screen
         options={{
-          title: 'League Configuration',
+          header: () => (
+            <SafeViewWrapper useBottomInset={false}>
+              <View className="h-16 flex-row items-center justify-center bg-brand">
+                <Text className="font-michroma text-xl font-bold text-white">
+                  League Configuration
+                </Text>
+              </View>
+            </SafeViewWrapper>
+          ),
         }}
       />
 
       <ScrollView
         contentContainerStyle={{ alignItems: 'center', justifyContent: 'center' }}
-        className="flex-1 bg-bg-grouped-1 p-5">
+        className="mt-16 flex-1 bg-bg-grouped-1 p-5">
         <MenuContainer>
           <SettingsItem
             routerPath="settings/LeagueConfig/LeagueName"
@@ -50,7 +55,7 @@ const LeagueConfig = () => {
           <SettingsItem iconBGColor="red" title="End Current Season" icon="square" />
         </MenuContainer>
       </ScrollView>
-    </>
+    </SafeViewWrapper>
   );
 };
 

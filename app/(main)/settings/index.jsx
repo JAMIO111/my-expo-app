@@ -4,8 +4,6 @@ import SettingsItem from '@components/SettingsItem';
 import MenuContainer from '@components/MenuContainer';
 import NavBar from '@components/NavBar';
 import SafeViewWrapper from '@components/SafeViewWrapper';
-import CTAButton from '@components/CTAButton';
-import { initiateNewSeason } from '@/lib/helperFunctions'; // Adjust the import path as necessary
 
 const index = () => {
   return (

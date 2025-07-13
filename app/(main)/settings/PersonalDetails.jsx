@@ -11,6 +11,7 @@ import IonIcons from '@expo/vector-icons/Ionicons';
 import colors from '@lib/colors'; // Adjust the import path as necessary
 import { useColorScheme } from 'nativewind';
 import { useQueryClient } from '@tanstack/react-query';
+import SafeViewWrapper from '@components/SafeViewWrapper';
 
 const PersonalDetails = () => {
   const queryClient = useQueryClient();
@@ -94,12 +95,24 @@ const PersonalDetails = () => {
   }, [handleSave, hasChanges, isSaving]);
 
   return (
-    <>
-      <Stack.Screen options={{ title: 'Personal Details' }} />
+    <SafeViewWrapper topColor="bg-brand" useBottomInset={false}>
+      <Stack.Screen
+        options={{
+          header: () => (
+            <SafeViewWrapper useBottomInset={false}>
+              <View className="h-16 flex-row items-center justify-center bg-brand">
+                <Text className="font-michroma text-2xl font-bold text-white">
+                  Personal Details
+                </Text>
+              </View>
+            </SafeViewWrapper>
+          ),
+        }}
+      />
 
       <ScrollView
         contentContainerStyle={{ alignItems: 'center', justifyContent: 'center' }}
-        className="flex-1 bg-bg-grouped-1 p-5">
+        className="mt-16 flex-1 bg-bg-grouped-1 p-5">
         <MenuContainer>
           <EditableSettingsItem
             title="First Name"
@@ -161,7 +174,7 @@ const PersonalDetails = () => {
           )}
         </View>
       </ScrollView>
-    </>
+    </SafeViewWrapper>
   );
 };
 

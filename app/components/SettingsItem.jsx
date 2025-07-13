@@ -13,19 +13,23 @@ const SettingsItem = ({
   iconBGColor = 'gray',
   iconColor = '#fff',
   lastItem = false,
+  disabled = false,
+  value,
+  setValue,
 }) => {
   const router = useRouter();
   const { colorScheme } = useColorScheme();
   const themeColors = colors[colorScheme];
 
   const handlePress = () => {
+    console.log('navigating to:', routerPath);
     if (routerPath) {
       router.push(routerPath);
     }
   };
 
   return (
-    <Pressable onPress={handlePress} className="w-full">
+    <Pressable disabled={disabled} onPress={handlePress} className="w-full">
       {({ pressed }) => (
         <View className="w-full">
           <View
