@@ -1,4 +1,4 @@
-import { StyleSheet, Text, View } from 'react-native';
+import { View } from 'react-native';
 import { Stack } from 'expo-router';
 import SafeViewWrapper from '@components/SafeViewWrapper';
 import CustomHeader from '@components/CustomHeader';
@@ -46,5 +46,3 @@ const index = () => {
 };
 
 export default index;
-
-const styles = StyleSheet.create({});

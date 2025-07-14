@@ -4,27 +4,38 @@ import { useRouter } from 'expo-router';
 import TeamLogo from './TeamLogo';
 import { useColorScheme } from 'nativewind';
 import colors from '@lib/colors';
+import { useUser } from '@contexts/UserProvider';
 
-const LeagueHomeCard = () => {
+const LeagueHomeCard = ({ standings }) => {
   const { colorScheme } = useColorScheme();
   const themeColors = colors[colorScheme];
   const router = useRouter();
+  const { player } = useUser();
+  console.log(standings, 'Standings Data:');
+
+  const myTeam = standings?.standings?.find((team) => team.team === player?.team?.id);
   return (
     <Pressable
       onPress={() => router.push('/home/league')}
-      className="bg-bg-2 h-28 w-full rounded-xl">
-      <View className="border-separator mx-3 flex-row items-center justify-between border-b px-1 py-2">
-        <Text className="text-text-1 text-2xl font-semibold">League Table</Text>
+      className="h-28 w-full rounded-xl bg-bg-2">
+      <View className="mx-3 flex-row items-center justify-between border-b border-separator px-1 py-2">
+        <Text className="text-2xl font-semibold text-text-1">League Table</Text>
         <Ioconicons name="chevron-forward" size={24} color={themeColors.icon} />
       </View>
-      <View className="flex-1 flex-row items-center justify-between px-4 py-3">
-        <View className="flex-1 flex-row items-center justify-start gap-3">
-          <Text className="text-text-1 text-2xl font-semibold">12</Text>
-          <TeamLogo size={20} />
-          <Text className="text-text-2 text-xl">Shankhouse B</Text>
+      {standings === undefined || standings.standings.length === 0 ? (
+        <View className="items-left flex-1 justify-center px-4">
+          <Text className="text-left text-lg text-text-2">No standings available yet.</Text>
         </View>
-        <Text className="text-text-1 text-2xl font-semibold">15 Pts</Text>
-      </View>
+      ) : (
+        <View className="flex-1 flex-row items-center justify-between px-4 py-3">
+          <View className="flex-1 flex-row items-center justify-start gap-3">
+            <Text className="text-2xl font-semibold text-text-1">{myTeam?.position}</Text>
+            <TeamLogo size={20} />
+            <Text className="text-xl text-text-2">{player?.team?.display_name}</Text>
+          </View>
+          <Text className="text-2xl font-semibold text-text-1">{`${myTeam?.points} Pts`}</Text>
+        </View>
+      )}
     </Pressable>
   );
 };

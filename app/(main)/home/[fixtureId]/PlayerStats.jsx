@@ -1,4 +1,4 @@
-import { StyleSheet, Text, View, ScrollView } from 'react-native';
+import { View, ScrollView } from 'react-native';
 import { Stack } from 'expo-router';
 import SafeViewWrapper from '@components/SafeViewWrapper';
 import CustomHeader from '@components/CustomHeader';
@@ -51,5 +51,3 @@ const PlayerStats = () => {
 };
 
 export default PlayerStats;
-
-const styles = StyleSheet.create({});

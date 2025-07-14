@@ -75,39 +75,29 @@ export function getAgeInYearsAndDays(dob) {
 
 import {
   parseISO,
+  isWithinInterval,
+  getDay,
+  nextDay,
   addWeeks,
   addMonths,
-  format,
-  nextDay,
-  getDay,
-  differenceInCalendarWeeks,
   setHours,
   setMinutes,
-  isWithinInterval,
-  addDays,
-  isSameMonth,
-  startOfMonth,
+  differenceInCalendarWeeks,
+  format,
 } from 'date-fns';
+import { shuffle } from 'lodash';
 
-function getNthWeekdayOfMonth(year, month, dayIndex, nth) {
-  let date = startOfMonth(new Date(year, month));
+function getNthWeekdayOfMonth(year, month, weekdayIndex, nth) {
   let count = 0;
-  while (isSameMonth(date, new Date(year, month))) {
-    if (getDay(date) === dayIndex) {
+  for (let day = 1; day <= 31; day++) {
+    const date = new Date(year, month, day);
+    if (date.getMonth() !== month) break;
+    if (date.getDay() === weekdayIndex) {
       count++;
       if (count === nth) return date;
     }
-    date = addDays(date, 1);
   }
   return null;
-}
-
-function shuffle(array) {
-  for (let i = array.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [array[i], array[j]] = [array[j], array[i]];
-  }
-  return array;
 }
 
 export function generateFixtures({
@@ -116,7 +106,7 @@ export function generateFixtures({
   matchDays = [],
   monthlyMatchDays = [],
   reverseGapWeeks = 4,
-  time = '20:00',
+  matchTimes = [],
   teams,
   startDate,
   seasonId,
@@ -126,16 +116,14 @@ export function generateFixtures({
   if (teams.length % 2 !== 0) teams.push('BYE');
 
   const dayToIndex = {
-    Sunday: 0,
-    Monday: 1,
-    Tuesday: 2,
-    Wednesday: 3,
-    Thursday: 4,
-    Friday: 5,
-    Saturday: 6,
+    sunday: 0,
+    monday: 1,
+    tuesday: 2,
+    wednesday: 3,
+    thursday: 4,
+    friday: 5,
+    saturday: 6,
   };
-
-  const [hour, minute] = time.split(':').map(Number);
 
   const totalRounds = teams.length - 1;
   const half = teams.length / 2;
@@ -162,8 +150,8 @@ export function generateFixtures({
 
   const fixtures = [];
   const firstMatchDates = new Map();
-
-  let currentDate = typeof startDate === 'string' ? parseISO(startDate) : startDate;
+  const originalStartDate = typeof startDate === 'string' ? parseISO(startDate) : startDate;
+  let currentDate = new Date(originalStartDate);
 
   const isInExcludedRange = (date) =>
     excludedRanges.some(({ startDate, endDate }) => {
@@ -172,103 +160,98 @@ export function generateFixtures({
       return isWithinInterval(date, { start: s, end: e });
     });
 
-  const getNextValidDates = (date) => {
+  const getMonthlyMatchDatesForMonth = (year, month) => {
     const dates = [];
-
-    if (frequency.startsWith('weekly')) {
-      for (const day of matchDays) {
-        const idx = dayToIndex[day.charAt(0).toUpperCase() + day.slice(1)];
-        const next = getDay(date) === idx ? date : nextDay(date, idx);
-        dates.push(next);
-      }
-    } else if (frequency.startsWith('monthly')) {
-      const year = date.getFullYear();
-      const month = date.getMonth();
-      for (const { week, day } of monthlyMatchDays) {
-        const idx = dayToIndex[day.charAt(0).toUpperCase() + day.slice(1)];
-        const nthDate = getNthWeekdayOfMonth(year, month, idx, week);
-        if (nthDate) dates.push(nthDate);
+    for (let i = 0; i < monthlyMatchDays.length; i++) {
+      const { week, day } = monthlyMatchDays[i];
+      const idx = dayToIndex[day.toLowerCase()];
+      const nthDate = getNthWeekdayOfMonth(year, month, idx, week);
+      if (nthDate && !isInExcludedRange(nthDate) && nthDate >= originalStartDate) {
+        dates.push({ date: nthDate, time: matchTimes[i], key: `${week}_${day}` });
       }
     }
+    return dates.sort((a, b) => a.date - b.date);
+  };
 
-    return dates.sort((a, b) => a - b);
+  const getWeeklyMatchDatesForWeek = (startOfWeek) => {
+    const dates = [];
+    for (let i = 0; i < matchDays.length; i++) {
+      const day = matchDays[i];
+      const idx = dayToIndex[day.toLowerCase()];
+      const matchDate = nextDay(startOfWeek, idx);
+      if (!isInExcludedRange(matchDate) && matchDate >= originalStartDate) {
+        dates.push({ date: matchDate, time: matchTimes[i], key: day });
+      }
+    }
+    return dates.sort((a, b) => a.date - b.date);
   };
 
   const scheduleRounds = (roundSet, isReverse = false) => {
-    for (const round of roundSet) {
-      let scheduled = false;
-      while (!scheduled) {
-        const matchDates = getNextValidDates(currentDate);
-        for (const matchDate of matchDates) {
-          if (isInExcludedRange(matchDate)) continue;
+    let roundIndex = 0;
 
-          const matchDateTime = setMinutes(setHours(matchDate, hour), minute);
-          const teamsScheduled = new Set();
-          let valid = true;
+    while (roundIndex < roundSet.length) {
+      const month = currentDate.getMonth();
+      const year = currentDate.getFullYear();
 
-          for (const { home, away } of round) {
-            if (teamsScheduled.has(home) || teamsScheduled.has(away)) {
+      const validDates = frequency.startsWith('monthly')
+        ? getMonthlyMatchDatesForMonth(year, month)
+        : getWeeklyMatchDatesForWeek(currentDate);
+
+      for (const { date: matchDate, time } of validDates) {
+        const round = roundSet[roundIndex];
+        const matchDateTime = setMinutes(setHours(matchDate, time.getHours()), time.getMinutes());
+
+        const teamsScheduled = new Set();
+        let valid = true;
+
+        for (const { home, away } of round) {
+          if (teamsScheduled.has(home) || teamsScheduled.has(away)) {
+            valid = false;
+            break;
+          }
+
+          if (isReverse) {
+            const reverseKey = `${away}-${home}`;
+            const firstDateStr = firstMatchDates.get(reverseKey);
+            if (!firstDateStr) {
               valid = false;
               break;
             }
-
-            if (isReverse) {
-              const reverseKey = `${away}-${home}`;
-              const firstDateStr = firstMatchDates.get(reverseKey);
-              if (!firstDateStr) {
-                valid = false;
-                break;
-              }
-
-              const firstDate = parseISO(firstDateStr);
-              const weekDiff = differenceInCalendarWeeks(matchDate, firstDate);
-              if (weekDiff < reverseGapWeeks) {
-                valid = false;
-                break;
-              }
-            }
-
-            teamsScheduled.add(home);
-            teamsScheduled.add(away);
-          }
-
-          if (!valid) continue;
-
-          let matchCount = 0;
-
-          for (const { home, away } of round) {
-            fixtures.push({
-              home_team: home,
-              away_team: away,
-              date_time: matchDateTime.toISOString(),
-              season: seasonId,
-              division: divisionId,
-            });
-
-            matchCount++;
-
-            if (!isReverse) {
-              firstMatchDates.set(`${home}-${away}`, format(matchDateTime, 'yyyy-MM-dd'));
+            const firstDate = parseISO(firstDateStr);
+            const weekDiff = differenceInCalendarWeeks(matchDate, firstDate);
+            if (weekDiff < reverseGapWeeks) {
+              valid = false;
+              break;
             }
           }
 
-          console.log(
-            `${matchDateTime.toLocaleDateString('en-GB', {
-              weekday: 'long',
-              year: 'numeric',
-              month: 'long',
-              day: 'numeric',
-            })}: ${matchCount} matches scheduled`
-          );
-
-          scheduled = true;
-          break;
+          teamsScheduled.add(home);
+          teamsScheduled.add(away);
         }
 
-        currentDate = frequency.startsWith('weekly')
-          ? addWeeks(currentDate, matchIntervalWeeks)
-          : addMonths(currentDate, 1);
+        if (!valid) continue;
+
+        for (const { home, away } of round) {
+          fixtures.push({
+            home_team: home,
+            away_team: away,
+            date_time: matchDateTime.toISOString(),
+            season: seasonId,
+            division: divisionId,
+          });
+
+          if (!isReverse) {
+            firstMatchDates.set(`${home}-${away}`, format(matchDateTime, 'yyyy-MM-dd'));
+          }
+        }
+
+        roundIndex++;
+        if (roundIndex >= roundSet.length) break;
       }
+
+      currentDate = frequency.startsWith('monthly')
+        ? addMonths(currentDate, 1)
+        : addWeeks(currentDate, matchIntervalWeeks);
     }
   };
 
@@ -386,20 +369,54 @@ export async function initiateNewSeason(seasonName, districtId) {
   }
 
   const seasonId = season.id;
+  console.log(`✅ Created season with ID: ${seasonId}`);
 
-  // 2. Get all active divisions
+  // 2. Get all divisions in this district (you may want to sort them by tier/level if available)
   const { data: divisions, error: divisionError } = await supabase
     .from('Divisions')
-    .select('id')
-    .eq('district', districtId);
+    .select('id, name, tier, default_promotion_spots, default_relegation_spots')
+    .eq('district', districtId)
+    .order('tier', { ascending: true });
 
-  if (divisionError) {
+  console.log('Divisions fetched before return:', divisions);
+
+  if (divisionError || !divisions?.length) {
     console.error('❌ Error fetching divisions:', divisionError);
     return;
   }
 
+  console.log('Divisions fetched after return:', divisions);
+
+  // 3. Insert SeasonDivisions records
+  for (let i = 0; i < divisions.length; i++) {
+    console.log('Inserting SeasonDivisions inside loop');
+    const division = divisions[i];
+    const isTop = division.tier === 1;
+    const isBottom = division.tier === divisions.length;
+    const promotionSpots = isTop ? 0 : division.default_promotion_spots;
+    const relegationSpots = isBottom ? 0 : division.default_relegation_spots;
+
+    const { data, error: seasonDivInsertError } = await supabase
+      .from('SeasonDivisions')
+      .insert({
+        season: seasonId,
+        division: division.id,
+        promotion_spots: promotionSpots,
+        relegation_spots: relegationSpots,
+        is_top_division: isTop,
+        is_bottom_division: isBottom,
+      })
+      .select();
+
+    if (seasonDivInsertError) {
+      console.error(`❌ Failed to create SeasonDivision for ${division.id}:`, seasonDivInsertError);
+    } else {
+      console.log(`✅ Created SeasonDivision for division ${division.id}:`, data);
+    }
+  }
+
+  // 4. For each division, fetch teams and initialize Standings
   for (const division of divisions) {
-    // 3. Get teams in each division
     const { data: teams, error: teamError } = await supabase
       .from('Teams')
       .select('id')
@@ -410,7 +427,6 @@ export async function initiateNewSeason(seasonName, districtId) {
       continue;
     }
 
-    // 4. Create standings row for each team
     const rowsToInsert = teams.map((team) => ({
       team: team.id,
       division: division.id,
@@ -419,7 +435,7 @@ export async function initiateNewSeason(seasonName, districtId) {
       points: 0,
       won: 0,
       lost: 0,
-      position: null, // to be calculated later
+      position: null,
     }));
 
     const { error: standingsError } = await supabase.from('Standings').insert(rowsToInsert);
@@ -446,10 +462,9 @@ export async function initiateNewSeason(seasonName, districtId) {
       continue;
     }
 
-    // Add team display names (required for sorting)
     const standingsWithNames = standings.map((entry) => ({
       ...entry,
-      Team: entry.Teams?.display_name ?? '', // for alphabetical fallback
+      Team: entry.Teams?.display_name ?? '',
     }));
 
     const sortedStandings = recalculatePositions(standingsWithNames);
@@ -465,8 +480,8 @@ export async function initiateNewSeason(seasonName, districtId) {
       }
     }
   }
-  console.log(`✅ Season "${seasonName}" created and standings initialized.`);
 
+  console.log(`✅ Season "${seasonName}" created with standings and SeasonDivisions initialized.`);
   return seasonId;
 }
 

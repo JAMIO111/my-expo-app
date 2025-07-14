@@ -12,19 +12,19 @@ const ResultsHomeCard = () => {
   return (
     <Pressable
       onPress={() => router.push('/home/results')}
-      className="bg-bg-2 h-28 w-full rounded-xl">
-      <View className="border-separator mx-3 flex-row items-center justify-between border-b px-1 py-2">
-        <Text className="text-text-1 text-2xl font-semibold">Results</Text>
+      className="h-28 w-full rounded-xl bg-bg-2">
+      <View className="mx-3 flex-row items-center justify-between border-b border-separator px-1 py-2">
+        <Text className="text-2xl font-semibold text-text-1">Results</Text>
         <Ioconicons name="chevron-forward" size={24} color={themeColors.icon} />
       </View>
       {!results ? (
         <View className="items-left flex-1 justify-center px-4">
-          <Text className="text-text-2 text-left text-xl">{`No results available yet.`}</Text>
+          <Text className="text-left text-lg text-text-2">No results available yet.</Text>
         </View>
       ) : (
         <View className="flex-1 items-center justify-center">
           {/* Placeholder for results list, replace with actual results rendering logic */}
-          <Text className="text-text-1 text-xl">Results will be displayed here</Text>
+          <Text className="text-left text-lg text-text-2">Results will be displayed here</Text>
         </View>
       )}
     </Pressable>

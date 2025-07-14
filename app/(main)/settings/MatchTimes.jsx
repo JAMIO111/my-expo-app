@@ -23,14 +23,15 @@ const MatchTimes = () => {
   const isMonthly = fixtureConfig.frequency?.startsWith('monthly');
 
   const matchDayItems = isMonthly
-    ? fixtureConfig.monthlyMatchDays.map(({ week, day }) => {
+    ? (fixtureConfig.monthlyMatchDays ?? []).map(({ week, day }, idx) => {
         const key = `${week}_${day}`;
         const label = `${['1st', '2nd', '3rd', '4th'][week - 1]} ${day.charAt(0).toUpperCase() + day.slice(1)}`;
-        return { key, label };
+        return { key, label, idx };
       })
-    : fixtureConfig.matchDays.map((day) => ({
+    : (fixtureConfig.matchDays ?? []).map((day, idx) => ({
         key: day,
         label: `${day.charAt(0).toUpperCase() + day.slice(1)} Matches`,
+        idx,
       }));
 
   return (
@@ -50,8 +51,9 @@ const MatchTimes = () => {
           contentContainerStyle={{ alignItems: 'center', justifyContent: 'center' }}
           className="flex-1 bg-bg-grouped-1 p-5">
           <MenuContainer>
-            {matchDayItems.map(({ key, label }) => {
-              const timeValue = fixtureConfig.matchTimes[key];
+            {matchDayItems.map(({ key, label, idx }) => {
+              const timeValue = fixtureConfig.matchTimes[idx];
+
               let parsedTime;
 
               if (timeValue instanceof Date) {
@@ -94,13 +96,15 @@ const MatchTimes = () => {
                         onChange={(event, date) => {
                           if (!date) return;
 
-                          setFixtureConfig((prev) => ({
-                            ...prev,
-                            matchTimes: {
-                              ...prev.matchTimes,
-                              [key]: date,
-                            },
-                          }));
+                          setFixtureConfig((prev) => {
+                            const newMatchTimes = [...(prev.matchTimes || [])];
+                            newMatchTimes[idx] = date;
+
+                            return {
+                              ...prev,
+                              matchTimes: newMatchTimes,
+                            };
+                          });
                         }}
                       />
                     </View>

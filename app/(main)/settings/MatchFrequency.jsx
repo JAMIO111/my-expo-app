@@ -12,7 +12,7 @@ const MatchFrequency = () => {
       ...prev,
       frequency: newValue,
       matchDays: [],
-      matchTimes: {},
+      matchTimes: [],
     }));
   };
   return (

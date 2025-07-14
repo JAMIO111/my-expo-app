@@ -1,8 +1,8 @@
-import { StyleSheet, Text, View } from 'react-native';
+import { View } from 'react-native';
 import TeamProfile from '@components/TeamProfile';
 import SafeViewWrapper from '@components/SafeViewWrapper';
 import CustomHeader from '@components/CustomHeader';
-import { Stack, useRouter, useLocalSearchParams } from 'expo-router';
+import { Stack, useLocalSearchParams } from 'expo-router';
 import { useTeamProfile } from '@hooks/useTeamProfile';
 
 const index = () => {
@@ -28,5 +28,3 @@ const index = () => {
 };
 
 export default index;
-
-const styles = StyleSheet.create({});

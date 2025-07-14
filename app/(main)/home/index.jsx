@@ -12,14 +12,22 @@ import NavBar from '@components/NavBar';
 import SafeViewWrapper from '@components/SafeViewWrapper';
 import { useUpcomingFixtures } from '@hooks/useUpcomingFixtures';
 import { StatusBar } from 'expo-status-bar';
+import { useStandings } from '@hooks/useStandings';
 
 const Home = () => {
-  const [fixtures, setFixtures] = useState([]);
-
   const [refreshing, setRefreshing] = useState(false);
   const router = useRouter();
   const { player } = useUser();
-  console.log('User:', player);
+  console.log('Player:', player);
+
+  console.log('DivisionID', player?.team?.division?.id);
+  console.log('SeasonId', player?.activeSeason?.id);
+
+  const {
+    data: standings,
+    isLoading,
+    refetch: standingsRefetch,
+  } = useStandings(player?.team?.division?.id, player?.activeSeason?.id);
 
   const {
     data: upcomingFixtures,
@@ -32,7 +40,10 @@ const Home = () => {
   const onRefresh = useCallback(() => {
     setRefreshing(true);
 
-    upcomingFixturesRefetch()
+    standingsRefetch()
+      .then(() => {
+        upcomingFixturesRefetch();
+      })
       .then(() => {
         return new Promise((resolve) => setTimeout(resolve, 1000)); // 1s delay
       })
@@ -117,7 +128,7 @@ const Home = () => {
               )}
               <FixturesHomeCard fixtures={upcomingFixtures} isLoading={isUpcomingFixturesLoading} />
               <ResultsHomeCard />
-              <LeagueHomeCard />
+              <LeagueHomeCard standings={standings} />
             </View>
             <View className="w-full gap-3 bg-background-dark p-3 pb-10">
               <CTAButton

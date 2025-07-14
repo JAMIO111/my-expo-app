@@ -16,6 +16,7 @@ import { useUser } from '@contexts/UserProvider'; // Adjust the import path as n
 import { matchFrequencyOptions } from '@lib/fixtureOptions'; // Adjust the import path as necessary
 import { matchDaysOptions } from '@lib/fixtureOptions'; // Adjust the import path as necessary
 import SafeViewWrapper from '@components/SafeViewWrapper'; // Adjust the import path as necessary
+import Toast from 'react-native-toast-message';
 
 const StartNewSeason = () => {
   const { player } = useUser();
@@ -84,7 +85,8 @@ const StartNewSeason = () => {
           reverseGapWeeks: fixtureConfig.reverseGapWeeks,
           startDate: fixtureConfig.startDate,
           matchDays: fixtureConfig.matchDays,
-          time: fixtureConfig.time,
+          monthlyMatchDays: fixtureConfig.monthlyMatchDays,
+          matchTimes: fixtureConfig.matchTimes,
           divisionId: division.id,
           seasonId: newSeasonId,
           excludedRanges: fixtureConfig.excludedRanges,
@@ -191,15 +193,15 @@ const StartNewSeason = () => {
             title="Match Times"
             icon="time-outline"
             text={
-              fixtureConfig?.matchTimes && Object.keys(fixtureConfig.matchTimes).length > 0
-                ? Object.entries(fixtureConfig.matchTimes)
-                    .map(([day, date]) => {
-                      if (!date) return day;
+              fixtureConfig?.matchTimes && fixtureConfig.matchTimes.length > 0
+                ? fixtureConfig.matchTimes
+                    .map((date) => {
+                      if (!date) return 'N/A';
                       const timeString = new Date(date).toLocaleTimeString([], {
                         hour: '2-digit',
                         minute: '2-digit',
                       });
-                      return `${timeString}`;
+                      return timeString;
                     })
                     .join(', ')
                 : 'Select Match Times'
@@ -291,7 +293,34 @@ const StartNewSeason = () => {
         <View className="mb-16 w-full">
           <CTAButton
             text={`Initiate ${new Date().getFullYear()}/${String(new Date().getFullYear() + 1).slice(-2)} Season`}
-            callbackFn={() => setSeasonStartModalVisible(true)}
+            callbackFn={() => {
+              const isWeekly = fixtureConfig.frequency?.startsWith('weekly');
+              const isMonthly = fixtureConfig.frequency?.startsWith('monthly');
+              //contains string twice or once
+              const numberOfMatchDays = fixtureConfig?.frequency?.includes('twice') ? 2 : 1;
+
+              const isValid =
+                fixtureConfig?.frequency &&
+                (isWeekly
+                  ? fixtureConfig.matchDays.length === numberOfMatchDays
+                  : fixtureConfig.monthlyMatchDays.length === numberOfMatchDays) &&
+                (isWeekly
+                  ? fixtureConfig.matchTimes.length === fixtureConfig.matchDays.length
+                  : fixtureConfig.matchTimes.length === fixtureConfig.monthlyMatchDays.length);
+
+              if (!isValid) {
+                Toast.show({
+                  type: 'info',
+                  text1: 'Warning!',
+                  text2: 'Ensure all settings are configured first.',
+                  props: {
+                    colorScheme,
+                  },
+                });
+              } else {
+                setSeasonStartModalVisible(true);
+              }
+            }}
             type="info"
           />
           <Text className="mt-4 text-center text-text-2">

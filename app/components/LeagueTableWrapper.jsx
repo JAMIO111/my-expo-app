@@ -1,7 +1,6 @@
 import { StyleSheet, ScrollView, View, Text } from 'react-native';
 import { useEffect, useState, useRef } from 'react';
 import LeagueTable from '@components/LeagueTable';
-import ModalDropdown from '@components/ModalDropdown';
 import { getActiveSeason } from '@lib/helperFunctions';
 import { useUser } from '@contexts/UserProvider';
 import { useDistricts } from '@hooks/useDistricts';
@@ -9,16 +8,18 @@ import { useDivisions } from '@hooks/useDivisions';
 import { useSeasons } from '@hooks/useSeasons';
 import CTAButton from './CTAButton';
 import BottomSheetWrapper from './BottomSheetWrapper';
+import DropdownFilterButton from './DropdownFilterButton';
 
 const LeagueTableWrapper = ({ context }) => {
   const { player } = useUser();
 
   const defaultDistrict = player?.team?.division?.district?.id ?? null;
   const defaultDivision = player?.team?.division?.id ?? null;
+  const defaultSeason = player?.activeSeason?.id ?? null;
 
   const [district, setDistrict] = useState(defaultDistrict);
-  const [division, setDivision] = useState(null);
-  const [season, setSeason] = useState(null);
+  const [division, setDivision] = useState(defaultDivision);
+  const [season, setSeason] = useState(defaultSeason);
 
   const bottomSheetRef = useRef(null);
   const openSheet = () => {
@@ -86,41 +87,17 @@ const LeagueTableWrapper = ({ context }) => {
   }
 
   return (
-    <View className="flex-1">
+    <View className="flex-1 ">
       <ScrollView
         contentContainerStyle={{ alignItems: 'center', justifyContent: 'flex-start' }}
-        className="w-full flex-1 bg-brand">
-        <View className="h-fit w-full items-center justify-between gap-3 bg-brand p-3">
+        className="w-full flex-1 bg-brand-dark">
+        <View className="h-fit w-full items-center justify-between gap-3 border-b border-brand bg-brand-dark p-3">
           <View className="flex-row gap-3">
-            <ModalDropdown
-              value={district}
-              onChange={setDistrict}
-              placeholder="District"
-              getLabel={(item) => item.name}
-              getValue={(item) => item.id}
-              options={districts}
-            />
+            <DropdownFilterButton text="District" callbackFn={openSheet} />
           </View>
           <View className="flex-row gap-3">
-            <ModalDropdown
-              value={division}
-              onChange={setDivision}
-              placeholder="Division"
-              getLabel={(item) => item.name}
-              getValue={(item) => item.id}
-              options={divisions}
-            />
-            <ModalDropdown
-              value={season?.id}
-              onChange={(selectedSeasonId) => {
-                const selectedSeason = seasons.find((s) => s.id === selectedSeasonId);
-                setSeason(selectedSeason);
-              }}
-              placeholder="Season"
-              getLabel={(item) => item.name}
-              getValue={(item) => item.id}
-              options={seasons}
-            />
+            <DropdownFilterButton text="Division" callbackFn={openSheet} />
+            <DropdownFilterButton text="Season" callbackFn={openSheet} />
           </View>
         </View>
 

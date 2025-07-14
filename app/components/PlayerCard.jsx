@@ -2,14 +2,16 @@ import { StyleSheet, Text, View, Image, Pressable, Animated } from 'react-native
 import { Ionicons } from '@expo/vector-icons';
 import { useRef } from 'react';
 import { useRouter } from 'expo-router';
-import { useColorScheme } from 'nativewind';
 import { useLocalSearchParams, usePathname } from 'expo-router';
 import { isBirthdayToday } from '@lib/helperFunctions';
+import { useColorScheme } from 'react-native';
+import colors from '@lib/colors';
 
 const PlayerCard = ({ player, team, context }) => {
   const router = useRouter();
-  const { colorScheme } = useColorScheme();
   const { teamId, fixtureId } = useLocalSearchParams();
+  const colorScheme = useColorScheme();
+  const iconColor = colors[colorScheme]?.icon || '#000';
 
   const scale = useRef(new Animated.Value(1)).current;
 
@@ -37,7 +39,6 @@ const PlayerCard = ({ player, team, context }) => {
     const lastInitial = player?.surname?.[0] || '';
     return (firstInitial + lastInitial).toUpperCase();
   };
-  const IconColor = colorScheme === 'dark' ? '#fff' : '#000';
   console.log('PlayerCard:', context);
   console.log('TeamID:', teamId);
   const pathname = usePathname();
@@ -61,7 +62,7 @@ const PlayerCard = ({ player, team, context }) => {
         onPressOut={handlePressOut}
         onPress={handlePress}
         className="w-full">
-        <View className="w-full flex-row items-center justify-between gap-4 rounded-xl bg-bg-grouped-2 py-3 pl-3 pr-2 shadow-[0_2px_4px_rgba(0,0,0,0.1)]">
+        <View className="w-full flex-row items-center justify-between gap-4 rounded-xl border-theme-gray-6 bg-bg-grouped-2 py-3 pl-3 pr-2 shadow-[0_2px_4px_rgba(0,0,0,0.1)]">
           {player?.avatar_url ? (
             <Image
               source={{ uri: player?.avatar_url }}
@@ -102,20 +103,20 @@ const PlayerCard = ({ player, team, context }) => {
             />
           )}
           {team?.captain === player?.id && (
-            <View className="h-12 justify-center rounded border bg-yellow-500">
+            <View className="h-12 justify-center rounded border bg-yellow-500 shadow-[0_2px_4px_rgba(0,0,0,0.2)]">
               <View className="w-full items-center justify-center bg-white px-1">
                 <Text>Captain</Text>
               </View>
             </View>
           )}
           {team?.vice_captain === player?.id && (
-            <View className="h-12 justify-center rounded border bg-brand-light">
+            <View className="h-12 justify-center rounded border bg-brand-light shadow-[0_2px_4px_rgba(0,0,0,0.2)]">
               <View className="w-full items-center justify-center bg-white px-4">
                 <Text>VC</Text>
               </View>
             </View>
           )}
-          <Ionicons name="chevron-forward-outline" size={24} color={IconColor} />
+          <Ionicons name="chevron-forward-outline" size={24} color={iconColor} />
         </View>
       </Pressable>
     </Animated.View>

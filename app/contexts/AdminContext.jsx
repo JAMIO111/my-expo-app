@@ -5,7 +5,7 @@ const defaultConfig = {
   matchDays: [],
   monthlyMatchDays: [],
   reverseGapWeeks: 4,
-  matchTimes: {},
+  matchTimes: [],
   teams: [],
   startDate: new Date(),
   excludedRanges: [],

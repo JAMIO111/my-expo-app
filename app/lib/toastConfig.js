@@ -37,7 +37,12 @@ const toastConfig = {
           </View>
           <View style={{ flex: 1 }}>
             {text1 && (
-              <Text style={{ color: theme.primaryText, fontSize: 18, fontWeight: '600' }}>
+              <Text
+                style={{
+                  color: theme.primaryText,
+                  fontSize: 18,
+                  fontWeight: '600',
+                }}>
                 {text1}
               </Text>
             )}

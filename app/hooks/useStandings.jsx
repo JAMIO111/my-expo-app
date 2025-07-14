@@ -7,15 +7,34 @@ export function useStandings(divisionId, seasonId) {
     queryFn: async () => {
       if (!divisionId || !seasonId) throw new Error('divisionId and seasonId is required');
 
-      const { data, error } = await supabase
-        .from('Standings')
-        .select('*, Teams!Standings_team_fkey(id, display_name, crest)')
-        .eq('division', divisionId)
-        .eq('season', seasonId)
-        .order('position', { ascending: true });
+      const [
+        { data: seasonDivisionData, error: seasonDivisionError },
+        { data: standings, error: standingsError },
+      ] = await Promise.all([
+        supabase
+          .from('SeasonDivisions')
+          .select('*, Divisions(id, name)')
+          .eq('division', divisionId)
+          .single(),
+        supabase
+          .from('Standings')
+          .select('*, Teams(id, display_name, crest)')
+          .eq('division', divisionId)
+          .order('position', { ascending: true }),
+      ]);
 
-      if (error) throw error;
-      return data;
+      if (seasonDivisionError) throw seasonDivisionError;
+      if (standingsError) throw standingsError;
+
+      return {
+        division: {
+          id: seasonDivisionData?.Divisions?.id,
+          name: seasonDivisionData?.Divisions?.name,
+          promotion_spots: seasonDivisionData?.promotion_spots,
+          relegation_spots: seasonDivisionData?.relegation_spots,
+        },
+        standings,
+      };
     },
     enabled: !!divisionId && !!seasonId,
     staleTime: 5 * 60 * 1000,

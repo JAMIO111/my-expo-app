@@ -20,7 +20,7 @@ const FixturesHomeCard = ({ fixtures, isLoading }) => {
       </View>
       {!fixture ? (
         <View className="items-left flex-1 justify-center px-4">
-          <Text className="text-left text-lg text-text-2">{`No fixtures available yet.`}</Text>
+          <Text className="text-left text-lg text-text-2">No fixtures available yet.</Text>
         </View>
       ) : (
         <View className="flex-1 flex-row items-center justify-center px-5">

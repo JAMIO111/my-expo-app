@@ -2,7 +2,7 @@ import { useLocalSearchParams, Stack } from 'expo-router';
 import PlayerProfile from '@/components/PlayerProfile';
 import CustomHeader from '@/components/CustomHeader';
 import SafeViewWrapper from '@/components/SafeViewWrapper';
-import { View, Text } from 'react-native';
+import { View } from 'react-native';
 import useUserProfile from '@/hooks/useUserProfile';
 import LoadingSplash from '@/components/LoadingSplash';
 

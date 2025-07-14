@@ -5,6 +5,7 @@ import { format, addMonths, parseISO, startOfMonth, isBefore } from 'date-fns';
 import IonIcons from 'react-native-vector-icons/Ionicons';
 import TeamLogo from './TeamLogo';
 import { useUser } from '@/contexts/UserProvider';
+import DropdownFilterButton from './DropdownFilterButton';
 
 const FixtureList = () => {
   const { player } = useUser();
@@ -34,6 +35,13 @@ const FixtureList = () => {
 
   return (
     <View className="bg-brand-dark p-4">
+      {/* Filter Selectors */}
+      <View className="mb-4 flex-row items-center justify-between gap-3">
+        <DropdownFilterButton text="Season" callbackFn={() => {}} />
+        <DropdownFilterButton text="District" callbackFn={() => {}} />
+        <DropdownFilterButton text="Division" callbackFn={() => {}} />
+      </View>
+
       {/* Month Selector */}
       <View className="mb-4 flex-row items-center justify-center gap-8">
         <Pressable
