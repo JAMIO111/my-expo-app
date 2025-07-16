@@ -8,15 +8,20 @@ import StatCardCompare from '@components/StatCardCompare';
 import { useRouter } from 'expo-router';
 import PlayersList from '@components/PlayersList';
 import LoadingSplash from '@components/LoadingSplash';
+import { LinearGradient } from 'expo-linear-gradient';
+import colors from '@lib/colors';
+import { useColorScheme } from 'nativewind';
+import FormWidget from '@components/FormWidget';
 
 const FixturePage = ({ fixtureDetails, isLoading, context }) => {
   const router = useRouter();
+  const { colorScheme } = useColorScheme();
+  console.log('color scheme:', colorScheme);
+  const themeColors = colors[colorScheme];
   const { fixtureId } = useLocalSearchParams();
   const { days, hours, minutes, seconds, isPast } = useKickoffCountdown(fixtureDetails?.date_time);
   const [view, setView] = useState('left');
   const [team, setTeam] = useState('left');
-
-  console.log('Fixture Details:', fixtureId, context, fixtureDetails?.homeTeam?.id);
 
   const handleTeamPress = (teamId) => {
     if (context === 'home/upcoming-fixture') {
@@ -30,7 +35,7 @@ const FixturePage = ({ fixtureDetails, isLoading, context }) => {
 
   return (
     <ScrollView className="mt-16 flex-1 bg-brand">
-      <View className="bg-brand p-3">
+      <View className="bg-brand p-3 pb-6">
         <View className="rounded-2xl bg-bg-2 p-5">
           {!isPast ? (
             <View className="mb-3 flex-row items-center justify-around">
@@ -80,7 +85,7 @@ const FixturePage = ({ fixtureDetails, isLoading, context }) => {
               onPress={() => handleTeamPress(fixtureDetails?.homeTeam?.id)}
               style={{ backgroundColor: fixtureDetails?.homeTeam?.crest?.color1 }}
               className="ml-10 flex-1 items-center justify-center py-0.5">
-              <Text className="mt-1 font-saira text-2xl text-white">
+              <Text className="mt-1 font-saira-semibold text-2xl text-white">
                 {fixtureDetails?.homeTeam?.abbreviation}
               </Text>
             </Pressable>
@@ -110,14 +115,29 @@ const FixturePage = ({ fixtureDetails, isLoading, context }) => {
               onPress={() => handleTeamPress(fixtureDetails?.awayTeam?.id)}
               style={{ backgroundColor: fixtureDetails?.awayTeam?.crest?.color1 }}
               className="mr-10 flex-1 items-center justify-center py-0.5">
-              <Text className="mt-1 font-saira text-2xl text-white">
+              <Text className="mt-1 font-saira-semibold text-2xl text-white">
                 {fixtureDetails?.awayTeam?.abbreviation}
               </Text>
             </Pressable>
           </View>
-          <View className="border-t border-separator-opaque py-2"></View>
+          <View className="flex-row items-center justify-center gap-2 pb-2">
+            <Text
+              numberOfLines={1}
+              ellipsizeMode="tail"
+              className="flex-1 text-right font-saira-semibold text-xl text-text-1">
+              {fixtureDetails?.homeTeam?.display_name}
+            </Text>
+            <Text className="w-6 text-text-2"> vs </Text>
+            <Text
+              numberOfLines={1}
+              ellipsizeMode="tail"
+              className="flex-1 text-left font-saira-semibold text-xl text-text-1">
+              {fixtureDetails?.awayTeam?.display_name}
+            </Text>
+          </View>
+          <View className="border-t border-theme-gray-4 py-2"></View>
           <View>
-            <Text className="mb-2 text-center font-saira text-2xl text-text-2">
+            <Text className="mb-2 text-center font-saira-medium text-xl text-text-2">
               {new Date(fixtureDetails?.date_time).toLocaleString('en-GB', {
                 timeZone: 'Europe/London',
 
@@ -127,12 +147,12 @@ const FixturePage = ({ fixtureDetails, isLoading, context }) => {
                 year: 'numeric',
               })}
             </Text>
-            <Text className="text-center font-saira text-lg text-text-3">
+            <Text className="text-center font-saira text-lg text-text-2">
               {' '}
               {fixtureDetails?.homeTeam?.address?.line_1},{' '}
               {fixtureDetails?.homeTeam?.address?.line_2},{' '}
             </Text>
-            <Text className="text-center font-saira text-lg text-text-3">
+            <Text className="text-center font-saira text-lg text-text-2">
               {' '}
               {fixtureDetails?.homeTeam?.address?.city},{' '}
               {fixtureDetails?.homeTeam?.address?.postcode}
@@ -140,8 +160,10 @@ const FixturePage = ({ fixtureDetails, isLoading, context }) => {
           </View>
         </View>
       </View>
-      <View className="bg-bg-grouped-1 p-3 pb-16">
-        <SlidingTabButton option1="Stats" option2="Squads" onChange={setView} />
+      <View className="bg-bg-grouped-1 pb-16">
+        <View className="p-3">
+          <SlidingTabButton option1="Stats" option2="Squads" onChange={setView} />
+        </View>
         {view === 'right' ? (
           <View>
             <SlidingTabButton
@@ -150,25 +172,28 @@ const FixturePage = ({ fixtureDetails, isLoading, context }) => {
               onChange={setTeam}
             />
             {team === 'left' ? (
-              <View className="mt-5 gap-3">
+              <View className="mt-5 h-full p-3">
                 <PlayersList
                   team={fixtureDetails?.homeTeam}
-                  context="fixture"
+                  context={context}
                   fixtureId={fixtureId}
                 />
               </View>
             ) : (
-              <View className="mt-5 gap-3">
+              <View className="mt-5 h-full">
                 <PlayersList
                   team={fixtureDetails?.awayTeam}
-                  context="fixture"
+                  context={context}
                   fixtureId={fixtureId}
                 />
               </View>
             )}
           </View>
         ) : (
-          <View className="mt-5 gap-3">
+          <View className="mt-5 h-full">
+            <View className="border-b-[0.5px] border-theme-gray-5">
+              <FormWidget />
+            </View>
             <StatCardCompare
               fixture={fixtureDetails}
               stat={{

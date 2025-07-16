@@ -8,7 +8,7 @@ const UpcomingFixtureCard = ({ fixture }) => {
   return (
     <Pressable
       onPress={() => router.push(`/home/${fixture.id}`)}
-      className="h-32 w-72 items-center justify-center gap-2 rounded-xl bg-bg-2">
+      className="h-36 w-72 items-center justify-center gap-2 rounded-xl bg-bg-grouped-2">
       <View className="w-full items-center justify-between px-4">
         <View className="w-full flex-row items-center justify-center gap-2">
           <TeamLogo
@@ -21,11 +21,11 @@ const UpcomingFixtureCard = ({ fixture }) => {
           <Text
             numberOfLines={1}
             ellipsizeMode="tail"
-            className="text-xl font-semibold text-text-1">
+            className="pt-1 font-saira-semibold text-xl text-text-1">
             {fixture?.homeTeam?.display_name || 'Home Team'}
           </Text>
         </View>
-        <Text className="text-text-2">vs</Text>
+        <Text className="font-saira text-text-2">vs</Text>
         <View className="w-full flex-row items-center justify-center gap-2">
           <TeamLogo
             type={fixture?.awayTeam?.crest?.type}
@@ -37,12 +37,12 @@ const UpcomingFixtureCard = ({ fixture }) => {
           <Text
             numberOfLines={1}
             ellipsizeMode="tail"
-            className="text-xl font-semibold text-text-1">
+            className="pt-1 font-saira-semibold text-xl text-text-1">
             {fixture?.awayTeam?.display_name || 'Away Team'}
           </Text>
         </View>
       </View>
-      <Text className="text-text-2">
+      <Text className="font-saira text-text-2">
         {new Date(fixture?.date_time).toLocaleString('en-GB', {
           timeZone: 'Europe/London',
           weekday: 'short',

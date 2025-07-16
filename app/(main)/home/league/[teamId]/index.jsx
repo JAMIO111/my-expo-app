@@ -20,7 +20,7 @@ const index = () => {
         }}
       />
       <View className="mt-16 flex-1">
-        <TeamProfile profile={profile} isLoading={isLoading} context="home/league" />
+        <TeamProfile profile={profile} isLoading={isLoading} context="home/league/team" />
       </View>
     </SafeViewWrapper>
   );

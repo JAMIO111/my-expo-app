@@ -50,8 +50,10 @@ const PlayerCard = ({ player, team, context }) => {
       router.push(`/teams/${player.id}`);
     } else if (context === 'home/upcoming-fixture' && fixtureId) {
       router.push(`/home/${fixtureId}/${teamId}/${player.id}`);
-    } else if (context === 'home/league' && teamId) {
+    } else if (context === 'home/league/team' && teamId) {
       router.push(`/home/league/${teamId}/${player.id}`);
+    } else if (context === 'home/league') {
+      router.push(`/home/league/${player.id}`);
     }
   };
 

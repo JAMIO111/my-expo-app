@@ -17,7 +17,7 @@ const index = () => {
         }}
       />
       <View className="mt-16 flex-1">
-        <LeagueTableWrapper context="home" />
+        <LeagueTableWrapper context="home/league" />
       </View>
     </SafeViewWrapper>
   );

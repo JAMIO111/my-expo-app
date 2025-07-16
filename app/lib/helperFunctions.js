@@ -76,7 +76,8 @@ export function getAgeInYearsAndDays(dob) {
 import {
   parseISO,
   isWithinInterval,
-  getDay,
+  isSameDay,
+  isBefore,
   nextDay,
   addWeeks,
   addMonths,
@@ -152,6 +153,7 @@ export function generateFixtures({
   const firstMatchDates = new Map();
   const originalStartDate = typeof startDate === 'string' ? parseISO(startDate) : startDate;
   let currentDate = new Date(originalStartDate);
+  let earliestDate = null;
 
   const isInExcludedRange = (date) =>
     excludedRanges.some(({ startDate, endDate }) => {
@@ -166,7 +168,11 @@ export function generateFixtures({
       const { week, day } = monthlyMatchDays[i];
       const idx = dayToIndex[day.toLowerCase()];
       const nthDate = getNthWeekdayOfMonth(year, month, idx, week);
-      if (nthDate && !isInExcludedRange(nthDate) && nthDate >= originalStartDate) {
+      if (
+        nthDate &&
+        !isInExcludedRange(nthDate) &&
+        (isSameDay(nthDate, originalStartDate) || !isBefore(nthDate, originalStartDate))
+      ) {
         dates.push({ date: nthDate, time: matchTimes[i], key: `${week}_${day}` });
       }
     }
@@ -179,7 +185,10 @@ export function generateFixtures({
       const day = matchDays[i];
       const idx = dayToIndex[day.toLowerCase()];
       const matchDate = nextDay(startOfWeek, idx);
-      if (!isInExcludedRange(matchDate) && matchDate >= originalStartDate) {
+      if (
+        !isInExcludedRange(matchDate) &&
+        (isSameDay(matchDate, originalStartDate) || !isBefore(matchDate, originalStartDate))
+      ) {
         dates.push({ date: matchDate, time: matchTimes[i], key: day });
       }
     }
@@ -243,6 +252,11 @@ export function generateFixtures({
           if (!isReverse) {
             firstMatchDates.set(`${home}-${away}`, format(matchDateTime, 'yyyy-MM-dd'));
           }
+
+          // Track the earliest match date
+          if (!earliestDate || matchDateTime < earliestDate) {
+            earliestDate = matchDateTime;
+          }
         }
 
         roundIndex++;
@@ -258,7 +272,10 @@ export function generateFixtures({
   scheduleRounds(firstLeg, false);
   scheduleRounds(secondLeg, true);
 
-  return fixtures;
+  return {
+    fixtures,
+    earliestMatchDate: earliestDate?.toISOString() ?? null,
+  };
 }
 
 export const endSeason = async (districtId) => {

@@ -4,9 +4,9 @@ const StatCardCompare = ({ stat, fixture }) => {
   const total = stat.homeValue + stat.awayValue;
   const homeRatio = total === 0 ? 0.5 : stat.homeValue / total;
   const awayRatio = total === 0 ? 0.5 : stat.awayValue / total;
-  console.log('StatCardCompare', { stat, fixture, homeRatio, awayRatio });
+
   return (
-    <View className="gap-3 rounded-2xl bg-bg-grouped-2 px-4 py-3 shadow-[0_2px_4px_rgba(0,0,0,0.1)]">
+    <View className=" bg-bg-grouped-2 px-4 pb-3 pt-2">
       <View className="flex-row items-start justify-between">
         <Text className="font-saira text-2xl font-bold text-text-1">{stat.homeValue}</Text>
         <Text className="font-saira text-lg font-medium text-text-2">{stat.statName}</Text>

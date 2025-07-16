@@ -3,9 +3,9 @@
 @tailwind utilities;
 
 :root {
-  --color-brand: hsl(126 80% 16%);
-  --color-brand-dark: hwb(132 0% 80%);
-  --color-brand-light: hwb(131 0% 60%);
+  --color-brand: hsl(126 80% 15%);
+  --color-brand-dark: hsl(126 80% 10%);
+  --color-brand-light: hsl(126 80% 20%);
   --color-text-primary: hsl(0, 0%, 5%);
   --color-text-secondary: hsl(0, 0%, 30%);
   --color-text-muted: hsl(0, 0%, 50%);

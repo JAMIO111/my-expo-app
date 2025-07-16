@@ -13,6 +13,10 @@ import SafeViewWrapper from '@components/SafeViewWrapper';
 import { useUpcomingFixtures } from '@hooks/useUpcomingFixtures';
 import { StatusBar } from 'expo-status-bar';
 import { useStandings } from '@hooks/useStandings';
+import PendingResultCard from '@components/PendingResultCard';
+import AwaitingResultCard from '@components/AwaitingResultCard';
+import { useResultsPendingApproval } from '@hooks/useResultsPendingApproval';
+import { useFixturesAwaitingResults } from '@hooks/useFixturesAwaitingResults';
 
 const Home = () => {
   const [refreshing, setRefreshing] = useState(false);
@@ -35,7 +39,26 @@ const Home = () => {
     refetch: upcomingFixturesRefetch,
   } = useUpcomingFixtures(player?.team?.id);
 
+  console.log('TeamId', player?.team?.id);
+
+  const {
+    data: resultsPendingApproval,
+    isLoading: isResultsPendingApprovalLoading,
+    refetch: resultsPendingApprovalRefetch,
+  } = useResultsPendingApproval({ awayTeamId: player?.team?.id, enabled: !!player?.team?.id });
+
+  const {
+    data: fixturesAwaitingResults,
+    isLoading: isFixturesAwaitingResultsLoading,
+    refetch: fixturesAwaitingResultsRefetch,
+  } = useFixturesAwaitingResults({
+    homeTeamId: player?.team?.id,
+    enabled: !!player?.team?.id,
+  });
+
+  console.log('Fixtures Awaiting Results:', fixturesAwaitingResults);
   console.log('Upcoming Fixtures:', upcomingFixtures);
+  console.log('Results Pending Approval:', resultsPendingApproval);
 
   const onRefresh = useCallback(() => {
     setRefreshing(true);
@@ -111,11 +134,11 @@ const Home = () => {
           className="mt-16 flex-1 bg-brand"
           contentContainerStyle={{ allignItems: 'center', justifyContent: 'center' }}>
           <View className="">
-            <View className="w-full items-center justify-center gap-3 p-3 pb-4">
+            <View className="w-full items-center justify-center gap-4 p-3 pb-5">
               {player?.team && (
                 <>
                   <View className="w-full items-center justify-between">
-                    <Text className="mb-2 w-full text-left text-xl font-bold text-white">
+                    <Text className="mb-2 w-full text-left font-saira-semibold text-xl text-white">
                       {player.team.name} Fixtures
                     </Text>
                     <HorizontalScrollUpcomingFixtures
@@ -130,13 +153,27 @@ const Home = () => {
               <ResultsHomeCard />
               <LeagueHomeCard standings={standings} />
             </View>
-            <View className="w-full gap-3 bg-background-dark p-3 pb-10">
-              <CTAButton
-                type="success"
-                text="Teams"
-                callbackFn={() => router.push(`/teams/${player.team.id}`)}
-              />
-              <CTAButton type="success" text="Players" callbackFn={() => router.push('/results')} />
+            <View className="mb-24 w-full gap-4 bg-bg-grouped-1">
+              {(player?.team?.captain === player?.id ||
+                player?.team?.vice_captain === player?.id) && (
+                <View className="w-full bg-bg-grouped-1">
+                  {resultsPendingApproval &&
+                    resultsPendingApproval.length > 0 &&
+                    resultsPendingApproval.map((fixture) => (
+                      <PendingResultCard
+                        key={fixture.id}
+                        fixture={fixture}
+                        refetch={resultsPendingApprovalRefetch}
+                      />
+                    ))}
+                  <AwaitingResultCard />
+                </View>
+              )}
+              <View className="mb-20 w-full gap-4 p-3">
+                <CTAButton text="View Players" onPress={() => router.push('/home/fixtures')} />
+                <CTAButton text="View Teams" onPress={() => router.push('/home/fixtures')} />
+                <CTAButton text="View Fixtures" onPress={() => router.push('/home/fixtures')} />
+              </View>
             </View>
           </View>
         </ScrollView>

@@ -1,28 +1,38 @@
-import { StyleSheet, Text, View } from 'react-native';
-import PlayerProfile from '@components/PlayerProfile';
-import { Stack } from 'expo-router';
-import SafeViewWrapper from '@components/SafeViewWrapper';
-import CustomHeader from '@components/CustomHeader';
+import { useLocalSearchParams, Stack } from 'expo-router';
+import PlayerProfile from '@/components/PlayerProfile';
+import CustomHeader from '@/components/CustomHeader';
+import SafeViewWrapper from '@/components/SafeViewWrapper';
+import { View, Text } from 'react-native';
+import useUserProfile from '@/hooks/useUserProfile';
+import LoadingSplash from '@/components/LoadingSplash';
 
-const index = () => {
+export default function PlayerPage() {
+  const { userId } = useLocalSearchParams();
+  const { data: playerProfile, isLoading, error } = useUserProfile?.(userId);
+
   return (
-    <SafeViewWrapper useBottomInset={false} topColor="bg-brand">
+    <>
       <Stack.Screen
         options={{
           header: () => (
             <SafeViewWrapper useBottomInset={false}>
-              <CustomHeader title="User" rightIcon="clipboard-outline" />
+              <CustomHeader
+                title={`${playerProfile?.first_name} ${playerProfile?.surname}` || 'Profile'}
+              />
             </SafeViewWrapper>
           ),
         }}
       />
-      <View className="mt-16 flex-1">
-        <PlayerProfile context="home/league" />
-      </View>
-    </SafeViewWrapper>
+
+      <SafeViewWrapper useBottomInset={false} topColor="bg-brand">
+        <View className="mt-16">
+          {!isLoading ? (
+            <PlayerProfile playerProfile={playerProfile} error={error} isLoading={isLoading} />
+          ) : (
+            <LoadingSplash />
+          )}
+        </View>
+      </SafeViewWrapper>
+    </>
   );
-};
-
-export default index;
-
-const styles = StyleSheet.create({});
+}

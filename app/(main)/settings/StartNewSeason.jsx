@@ -17,8 +17,11 @@ import { matchFrequencyOptions } from '@lib/fixtureOptions'; // Adjust the impor
 import { matchDaysOptions } from '@lib/fixtureOptions'; // Adjust the import path as necessary
 import SafeViewWrapper from '@components/SafeViewWrapper'; // Adjust the import path as necessary
 import Toast from 'react-native-toast-message';
+import { useRouter } from 'expo-router'; // Adjust the import path as necessary
 
 const StartNewSeason = () => {
+  const router = useRouter();
+  const [isLoading, setIsLoading] = useState(false);
   const { player } = useUser();
   const ctx = useFixtureConfig();
   console.log('FixtureConfig context:', ctx);
@@ -39,30 +42,29 @@ const StartNewSeason = () => {
   const [seasonStartModalVisible, setSeasonStartModalVisible] = useState(false);
   const [showDatePicker, setShowDatePicker] = useState(false);
   const handleConfirmSeasonStart = async () => {
+    setIsLoading(true); // start loading
     setSeasonStartModalVisible(false);
     try {
-      // ✅ Get the new season ID
       const newSeasonId = await initiateNewSeason('2025/26', districtId, fixtureConfig.startDate);
 
       if (!newSeasonId) {
         console.error('Failed to initiate season');
+        setIsLoading(false);
         return;
       }
 
-      console.log('New season ID:', newSeasonId);
-
-      // ✅ Fetch all divisions for that district
       const { data: divisions, error: divisionError } = await supabase
         .from('Divisions')
         .select('id')
         .eq('district', districtId);
 
-      console.log('Divisions:', divisions);
-
       if (divisionError || !divisions) {
         console.error('Failed to fetch divisions:', divisionError?.message);
+        setIsLoading(false);
         return;
       }
+
+      let earliestSeasonStart = null;
 
       for (const division of divisions) {
         const { data: teams, error: teamError } = await supabase
@@ -75,11 +77,9 @@ const StartNewSeason = () => {
           continue;
         }
 
-        console.log(`Teams for division ${division.id}:`, teams);
-
         const teamIds = teams.map((t) => t.id);
 
-        const fixtures = generateFixtures({
+        const { fixtures, earliestMatchDate } = generateFixtures({
           teams: teamIds,
           frequency: fixtureConfig.frequency,
           reverseGapWeeks: fixtureConfig.reverseGapWeeks,
@@ -91,7 +91,13 @@ const StartNewSeason = () => {
           seasonId: newSeasonId,
           excludedRanges: fixtureConfig.excludedRanges,
         });
-        console.log(`Generated fixtures for division ${division.id}:`, fixtures);
+
+        if (
+          earliestMatchDate &&
+          (!earliestSeasonStart || new Date(earliestMatchDate) < new Date(earliestSeasonStart))
+        ) {
+          earliestSeasonStart = earliestMatchDate;
+        }
 
         const { error: fixtureError } = await supabase.from('Fixtures').insert(fixtures);
 
@@ -103,9 +109,25 @@ const StartNewSeason = () => {
         }
       }
 
+      if (earliestSeasonStart) {
+        const { error: updateError } = await supabase
+          .from('Seasons')
+          .update({ start_date: earliestSeasonStart })
+          .eq('id', newSeasonId);
+
+        if (updateError) {
+          console.error('Failed to update season start date:', updateError.message);
+        }
+      }
+
       console.log('Season started and fixtures generated.');
+      setIsLoading(false);
+
+      // ✅ Navigate to new screen
+      router.replace('/(main)/home');
     } catch (err) {
       console.error('Unexpected error during season start:', err);
+      setIsLoading(false);
     }
   };
 
@@ -292,7 +314,11 @@ const StartNewSeason = () => {
 
         <View className="mb-16 w-full">
           <CTAButton
-            text={`Initiate ${new Date().getFullYear()}/${String(new Date().getFullYear() + 1).slice(-2)} Season`}
+            text={
+              isLoading
+                ? `Initiating Season...`
+                : `Initiate ${new Date().getFullYear()}/${String(new Date().getFullYear() + 1).slice(-2)} Season`
+            }
             callbackFn={() => {
               const isWeekly = fixtureConfig.frequency?.startsWith('weekly');
               const isMonthly = fixtureConfig.frequency?.startsWith('monthly');

@@ -10,7 +10,7 @@ const LeagueTable = ({ context, season, division }) => {
 
   const { data: standings, isLoading, error } = useStandings(division, season);
   const handlePress = (team) => {
-    if (context === 'home') {
+    if (context === 'home/league') {
       router.push(`/home/league/${team.team}`);
     } else {
       //;
@@ -35,18 +35,18 @@ const LeagueTable = ({ context, season, division }) => {
   }
   return (
     <View className="w-full flex-1 items-center bg-bg-grouped-1 p-2">
-      <Text className="mb-1 mt-2 w-full pl-2 text-left text-xl font-semibold text-text-2">
+      <Text className="mb-1 mt-2 w-full pl-2 text-left font-saira-medium text-xl text-text-2">
         {standings?.division?.name} Standings
       </Text>
       <View className="mb-16 w-full rounded-2xl border border-separator-faint bg-bg-grouped-2 p-3">
-        <View className=" h-12 flex-row items-center justify-around border-b-[0.5px] border-separator">
-          <Text className="w-10 text-center font-bold text-text-2">Pos</Text>
-          <Text className="flex-1 pl-3 text-left font-bold text-text-2">Team</Text>
-          <Text className="w-8 text-center font-bold text-text-2">PL</Text>
-          <Text className="w-8 text-center font-bold text-text-2">W</Text>
-          <Text className="w-8 text-center font-bold text-text-2">L</Text>
-          <Text className="w-9 text-center font-bold text-text-2">Pts</Text>
-          <Text className="w-8 text-center font-bold text-text-2">CC</Text>
+        <View className="h-8 flex-row items-center justify-around border-b-[0.5px] border-separator">
+          <Text className="w-10 text-center font-saira font-bold text-text-2">Pos</Text>
+          <Text className="flex-1 pl-3 text-left font-saira font-bold text-text-2">Team</Text>
+          <Text className="w-8 text-center font-saira font-bold text-text-2">PL</Text>
+          <Text className="w-8 text-center font-saira font-bold text-text-2">W</Text>
+          <Text className="w-8 text-center font-saira font-bold text-text-2">L</Text>
+          <Text className="w-9 text-center font-saira font-bold text-text-2">Pts</Text>
+          <Text className="w-8 text-center font-saira font-bold text-text-2">CC</Text>
         </View>
         {standings.standings?.map((team, index) => (
           <Fragment key={index}>
@@ -59,11 +59,13 @@ const LeagueTable = ({ context, season, division }) => {
                   style={{ height: 1.5, width: '100%' }}
                 />
               )}
-            <View className=" flex-row items-center justify-around py-3">
-              <Text className="w-10 text-center text-lg text-text-1">{team.position}</Text>
+            <View className="flex-row items-center justify-around">
+              <Text className="w-10 text-center font-saira text-lg text-text-1">
+                {team.position}.
+              </Text>
               <Pressable
                 onPress={() => handlePress(team)}
-                className="flex-1 flex-row items-center gap-3 pl-3">
+                className="flex-1 flex-row items-center gap-3 py-3 pl-3">
                 <TeamLogo
                   type={team?.Teams?.crest?.type}
                   color1={team?.Teams?.crest?.color1}
@@ -74,17 +76,17 @@ const LeagueTable = ({ context, season, division }) => {
                 <Text
                   numberOfLines={1}
                   ellipsizeMode="tail"
-                  className="flex-1 text-left font-semibold text-text-1">
+                  className="flex-1 text-left font-saira-medium text-text-1">
                   {team.Teams.display_name}
                 </Text>
               </Pressable>
-              <Text className="w-8 text-center text-lg text-text-1">{team.played}</Text>
-              <Text className="w-8 text-center text-lg text-text-1">{team.won}</Text>
-              <Text className="w-8 text-center text-lg text-text-1">{team.lost}</Text>
-              <Text className="w-9 text-center text-lg font-semibold text-text-1">
+              <Text className="w-8 text-center font-saira text-lg text-text-1">{team.played}</Text>
+              <Text className="w-8 text-center font-saira text-lg text-text-1">{team.won}</Text>
+              <Text className="w-8 text-center font-saira text-lg text-text-1">{team.lost}</Text>
+              <Text className="w-9 text-center font-saira-semibold text-lg text-text-1">
                 {team.points}
               </Text>
-              <Text className="w-8 text-center text-lg font-semibold text-theme-orange">
+              <Text className="w-8 text-center font-saira text-lg font-semibold text-theme-orange">
                 {team.CaptainCup || '-'}
               </Text>
             </View>

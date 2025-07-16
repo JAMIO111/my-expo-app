@@ -6,7 +6,7 @@ import { View } from 'react-native';
 
 const Fixtures = () => {
   return (
-    <SafeViewWrapper useBottomInset={false} topColor="bg-brand">
+    <SafeViewWrapper useBottomInset={true} topColor="bg-brand">
       <Stack.Screen
         options={{
           header: () => (
@@ -16,7 +16,7 @@ const Fixtures = () => {
           ),
         }}
       />
-      <View className="mt-16 flex-1 bg-brand-dark">
+      <View className="mt-16 flex-1 bg-brand-dark pb-16">
         <FixtureList />
       </View>
     </SafeViewWrapper>

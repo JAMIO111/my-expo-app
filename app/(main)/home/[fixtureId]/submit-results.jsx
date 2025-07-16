@@ -19,21 +19,20 @@ import SafeViewWrapper from '@components/SafeViewWrapper';
 import Toast from 'react-native-toast-message';
 import ConfirmModal from '@components/ConfirmModal';
 import { useFixtureDetails } from '@hooks/useFixtureDetails';
-import { handleSubmitResults } from '@lib/helperFunctions';
+import { useColorScheme } from 'react-native';
+import { useTeamPlayers } from '@hooks/useTeamPlayers';
+import supabase from '@lib/supabaseClient';
 
 const SubmitResultsScreen = () => {
+  const [submitting, setSubmitting] = useState(false);
   const [confirmDeleteModalVisible, setConfirmDeleteModalVisible] = useState(false);
   const router = useRouter();
+  const colorScheme = useColorScheme();
   const { fixtureId } = useLocalSearchParams();
   const { data: fixtureDetails, isLoading } = useFixtureDetails(fixtureId);
   const trophyColor = colorScheme === 'dark' ? '#FFD700' : '#EBB30A';
-  const homePlayers = ['John Dryden', 'Peter Johnson', 'Michael Johnson'];
-  const awayPlayers = [
-    'Jamie Dryden',
-    'Fredrich Steenberg',
-    'Joshua Robinson',
-    'Samantha MacAllister',
-  ];
+  const homePlayers = useTeamPlayers(fixtureDetails?.homeTeam?.id);
+  const awayPlayers = useTeamPlayers(fixtureDetails?.awayTeam?.id);
 
   if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
     UIManager.setLayoutAnimationEnabledExperimental(true);
@@ -76,7 +75,6 @@ const SubmitResultsScreen = () => {
   };
 
   const handleCancel = () => {
-    console.log('Cancelled');
     setConfirmDeleteModalVisible(false);
   };
 
@@ -92,7 +90,36 @@ const SubmitResultsScreen = () => {
     return 'th';
   }
 
-  console.log('Fixture Details hew:', fixtureDetails);
+  const handleSubmit = async () => {
+    setSubmitting(true);
+    const { error } = await supabase.rpc('submit_match_results', {
+      _frames: frames.map((f, i) => ({
+        homePlayer: f.homePlayer,
+        awayPlayer: f.awayPlayer,
+        winner: f.winner,
+        frameNumber: i + 1,
+      })),
+      _fixture_id: fixtureId,
+    });
+    setSubmitting(false);
+
+    if (error) {
+      console.error('Submit results error:', error);
+      Toast.show({
+        type: 'error',
+        text1: 'Submission Failed',
+        text2: error.message,
+      });
+    } else {
+      Toast.show({
+        type: 'success',
+        text1: 'Results Submitted',
+      });
+      // Optional: do something here like reset frames or navigate away
+    }
+  };
+
+  console.log('Frames: ', frames);
 
   return (
     <SafeViewWrapper useBottomInset={false} topColor="bg-brand">
@@ -122,7 +149,7 @@ const SubmitResultsScreen = () => {
           <View
             style={{ backgroundColor: fixtureDetails?.homeTeam?.crest?.color1 }}
             className="ml-10 flex-1 items-center justify-center py-1">
-            <Text className="text-2xl font-bold text-white">
+            <Text className="mt-1 font-saira text-2xl text-white">
               {fixtureDetails?.homeTeam?.abbreviation}
             </Text>
           </View>
@@ -143,7 +170,7 @@ const SubmitResultsScreen = () => {
           <View
             style={{ backgroundColor: fixtureDetails?.awayTeam?.crest?.color1 }}
             className="mr-10 flex-1 items-center justify-center py-1">
-            <Text className="font-saira text-2xl font-bold text-white">
+            <Text className="mt-1 font-saira text-2xl text-white">
               {fixtureDetails?.awayTeam?.abbreviation}
             </Text>
           </View>
@@ -153,7 +180,8 @@ const SubmitResultsScreen = () => {
         {frames.map((frame, i) => {
           const isActive = frame.id === activeFrameId;
           const index = frames.length - i;
-
+          const homePlayer = homePlayers?.data?.find((p) => p.id === frame.homePlayer);
+          const awayPlayer = awayPlayers?.data?.find((p) => p.id === frame.awayPlayer);
           return (
             <Pressable
               key={frame.id}
@@ -188,8 +216,12 @@ const SubmitResultsScreen = () => {
                       itemStyle={{ fontSize: 14 }}
                       className="h-8 bg-white">
                       <Picker.Item label="Select" value="" />
-                      {homePlayers.map((p) => (
-                        <Picker.Item key={p} label={p} value={p} />
+                      {homePlayers?.data.map((p) => (
+                        <Picker.Item
+                          key={p.id}
+                          label={`${p.first_name} ${p.surname}`}
+                          value={p.id}
+                        />
                       ))}
                     </Picker>
                   </View>
@@ -201,8 +233,12 @@ const SubmitResultsScreen = () => {
                       itemStyle={{ fontSize: 14 }}
                       className="h-8 bg-white">
                       <Picker.Item label="Select" value="" />
-                      {awayPlayers.map((p) => (
-                        <Picker.Item key={p} label={p} value={p} />
+                      {awayPlayers?.data.map((p) => (
+                        <Picker.Item
+                          key={p.id}
+                          label={`${p.first_name} ${p.surname}`}
+                          value={p.id}
+                        />
                       ))}
                     </Picker>
                   </View>
@@ -242,7 +278,7 @@ const SubmitResultsScreen = () => {
                         onPress={() => setConfirmDeleteModalVisible(true)}
                         className="rounded-2xl border border-theme-red-hc bg-theme-red/85 p-2"
                         hitSlop={10}>
-                        <Ionicons name="trash-outline" size={40} color="white" />
+                        <Ionicons name="trash-outline" size={34} color="white" />
                       </Pressable>
                       <ConfirmModal
                         visible={confirmDeleteModalVisible}
@@ -301,14 +337,14 @@ const SubmitResultsScreen = () => {
                   className={`${
                     frame.homePlayer ? 'text-text-1' : 'text-theme-red'
                   } flex-1 text-right font-medium`}>
-                  {frame.homePlayer || 'Select Player'}
+                  {homePlayer ? `${homePlayer.first_name} ${homePlayer.surname}` : 'Select Player'}
                 </Text>
                 <Text className="mx-2 text-xs text-text-2">vs</Text>
                 <Text
                   className={`${
                     frame.awayPlayer ? 'text-text-1' : 'text-theme-red'
                   } flex-1 text-left font-medium`}>
-                  {frame.awayPlayer || 'Select Player'}
+                  {awayPlayer ? `${awayPlayer.first_name} ${awayPlayer.surname}` : 'Select Player'}
                 </Text>
                 <View className="w-6 items-center justify-center">
                   {frame.winner === frame.awayPlayer && (
@@ -327,16 +363,8 @@ const SubmitResultsScreen = () => {
             <CTAButton
               text="Submit Results"
               type="success"
-              callbackFn={() =>
-                handleSubmitResults({
-                  fixtureId,
-                  frames,
-                  homeTeamId: fixtureDetails?.homeTeam?.id,
-                  awayTeamId: fixtureDetails?.awayTeam?.id,
-                  divisionId: fixtureDetails?.division?.id,
-                  seasonId: fixtureDetails?.season?.id,
-                })
-              }
+              callbackFn={handleSubmit}
+              disabled={submitting}
             />
           </View>
         )}

@@ -2,7 +2,12 @@ import { Slot } from 'expo-router';
 import { View } from 'react-native';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useFonts } from 'expo-font';
-import { Saira_400Regular, Saira_700Bold } from '@expo-google-fonts/saira';
+import {
+  Saira_400Regular,
+  Saira_500Medium,
+  Saira_600SemiBold,
+  Saira_700Bold,
+} from '@expo-google-fonts/saira';
 import { Michroma_400Regular } from '@expo-google-fonts/michroma';
 import Toast from 'react-native-toast-message';
 import toastConfig from '@lib/toastConfig';
@@ -14,6 +19,8 @@ export default function RootLayout() {
   const colorScheme = useColorScheme(); // 'light' | 'dark' | null
   const [fontsLoaded] = useFonts({
     Saira_400Regular,
+    Saira_500Medium,
+    Saira_600SemiBold,
     Saira_700Bold,
     Michroma_400Regular,
     DelaGothicOne: require('@assets/fonts/DelaGothicOne-Regular.ttf'),
