@@ -21,7 +21,9 @@ const index = () => {
       />
       <View className="flex-1">
         <ScrollView className="mt-16 flex-1 bg-brand-dark p-5">
-          <Text className="mb-5 text-3xl font-semibold text-white">All-time Player Stats</Text>
+          <Text className="mb-5 font-saira-semibold text-3xl text-white">
+            All-time Player Stats
+          </Text>
           <ScrollView
             horizontal
             showsHorizontalScrollIndicator={false}
@@ -30,10 +32,12 @@ const index = () => {
               alignItems: 'flex-start',
             }}
             className="mb-5 flex-row space-x-5">
-            <Leaderboard title="Matches Won" />
-            <Leaderboard title="Frames Won" />
+            <Leaderboard type="player" title="Frames Played" />
+            <Leaderboard type="player" title="Frames Won" />
+            <Leaderboard type="player" title="Frame Win %" />
+            <Leaderboard type="player" title="Best Win Streak" />
           </ScrollView>
-          <Text className="mb-5 text-3xl font-semibold text-white">All-time Team Stats</Text>
+          <Text className="mb-5 font-saira-semibold text-3xl text-white">All-time Team Stats</Text>
           <ScrollView
             horizontal
             showsHorizontalScrollIndicator={false}
@@ -42,8 +46,10 @@ const index = () => {
               alignItems: 'flex-start',
             }}
             className="mb-5 flex-row space-x-5">
-            <Leaderboard title="Matches Won" />
-            <Leaderboard title="Frames Won" />
+            <Leaderboard type="team" title="Matches Played" />
+            <Leaderboard type="team" title="Matches Won" />
+            <Leaderboard type="team" title="Match Win %" />
+            <Leaderboard type="team" title="Best Win Streak" />
           </ScrollView>
         </ScrollView>
       </View>

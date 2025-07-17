@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -21,18 +21,22 @@ import ConfirmModal from '@components/ConfirmModal';
 import { useFixtureDetails } from '@hooks/useFixtureDetails';
 import { useColorScheme } from 'react-native';
 import { useTeamPlayers } from '@hooks/useTeamPlayers';
-import supabase from '@lib/supabaseClient';
+import { useResultsByFixture } from '@hooks/useResultsByFixture';
+import { useSubmitMatchResults } from '@hooks/useSubmitMatchResults';
 
 const SubmitResultsScreen = () => {
-  const [submitting, setSubmitting] = useState(false);
   const [confirmDeleteModalVisible, setConfirmDeleteModalVisible] = useState(false);
   const router = useRouter();
   const colorScheme = useColorScheme();
   const { fixtureId } = useLocalSearchParams();
+  const { data: existingResults } = useResultsByFixture(fixtureId);
   const { data: fixtureDetails, isLoading } = useFixtureDetails(fixtureId);
+  console.log('Fixture Details:', fixtureDetails);
+  console.log('ExistingResults:', existingResults);
   const trophyColor = colorScheme === 'dark' ? '#FFD700' : '#EBB30A';
   const homePlayers = useTeamPlayers(fixtureDetails?.homeTeam?.id);
   const awayPlayers = useTeamPlayers(fixtureDetails?.awayTeam?.id);
+  const { submitting, submit } = useSubmitMatchResults(fixtureId, existingResults);
 
   if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
     UIManager.setLayoutAnimationEnabledExperimental(true);
@@ -43,33 +47,33 @@ const SubmitResultsScreen = () => {
 
   const addFrame = () => {
     const newFrame = {
-      id: Date.now().toString(),
+      tempId: Date.now().toString(),
       homePlayer: '',
       awayPlayer: '',
       winner: null,
     };
     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
     setFrames((prev) => [newFrame, ...prev]);
-    setActiveFrameId(newFrame.id);
+    setActiveFrameId(newFrame.tempId);
   };
 
-  const updateFrame = (id, key, value) => {
-    setFrames((prev) => prev.map((f) => (f.id === id ? { ...f, [key]: value } : f)));
+  const updateFrame = (tempId, key, value) => {
+    setFrames((prev) => prev.map((f) => (f.tempId === tempId ? { ...f, [key]: value } : f)));
   };
 
-  const markComplete = (id) => {
+  const markComplete = (tempId) => {
     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
     setActiveFrameId(null);
   };
 
-  const activateFrame = (id) => {
+  const activateFrame = (tempId) => {
     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
-    setActiveFrameId(id);
+    setActiveFrameId(tempId);
   };
 
-  const deleteFrame = (id) => {
+  const deleteFrame = (tempId) => {
     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
-    setFrames((prev) => prev.filter((f) => f.id !== id));
+    setFrames((prev) => prev.filter((f) => f.tempId !== tempId));
     setActiveFrameId(null);
     setConfirmDeleteModalVisible(false);
   };
@@ -77,6 +81,20 @@ const SubmitResultsScreen = () => {
   const handleCancel = () => {
     setConfirmDeleteModalVisible(false);
   };
+
+  useEffect(() => {
+    if (existingResults && existingResults.length > 0 && frames.length === 0) {
+      const mappedFrames = existingResults.map((result, i) => ({
+        id: result.id, // actual DB ID (for updates, if needed)
+        tempId: `${result.id}`, // still use tempId for UI interaction
+        homePlayer: result.home_player,
+        awayPlayer: result.away_player,
+        winner: result.winner_id,
+      }));
+
+      setFrames(mappedFrames);
+    }
+  }, [existingResults]);
 
   const homeScore = frames.filter((f) => f.winner === f.homePlayer).length;
   const awayScore = frames.filter((f) => f.winner === f.awayPlayer).length;
@@ -91,31 +109,9 @@ const SubmitResultsScreen = () => {
   }
 
   const handleSubmit = async () => {
-    setSubmitting(true);
-    const { error } = await supabase.rpc('submit_match_results', {
-      _frames: frames.map((f, i) => ({
-        homePlayer: f.homePlayer,
-        awayPlayer: f.awayPlayer,
-        winner: f.winner,
-        frameNumber: i + 1,
-      })),
-      _fixture_id: fixtureId,
-    });
-    setSubmitting(false);
-
-    if (error) {
-      console.error('Submit results error:', error);
-      Toast.show({
-        type: 'error',
-        text1: 'Submission Failed',
-        text2: error.message,
-      });
-    } else {
-      Toast.show({
-        type: 'success',
-        text1: 'Results Submitted',
-      });
-      // Optional: do something here like reset frames or navigate away
+    const success = await submit(frames);
+    if (success) {
+      router.replace(`/home`);
     }
   };
 
@@ -149,7 +145,7 @@ const SubmitResultsScreen = () => {
           <View
             style={{ backgroundColor: fixtureDetails?.homeTeam?.crest?.color1 }}
             className="ml-10 flex-1 items-center justify-center py-1">
-            <Text className="mt-1 font-saira text-2xl text-white">
+            <Text className="mt-1 font-saira-semibold text-2xl text-white">
               {fixtureDetails?.homeTeam?.abbreviation}
             </Text>
           </View>
@@ -170,7 +166,7 @@ const SubmitResultsScreen = () => {
           <View
             style={{ backgroundColor: fixtureDetails?.awayTeam?.crest?.color1 }}
             className="mr-10 flex-1 items-center justify-center py-1">
-            <Text className="mt-1 font-saira text-2xl text-white">
+            <Text className="mt-1 font-saira-semibold text-2xl text-white">
               {fixtureDetails?.awayTeam?.abbreviation}
             </Text>
           </View>
@@ -178,16 +174,16 @@ const SubmitResultsScreen = () => {
 
         {/* Frames */}
         {frames.map((frame, i) => {
-          const isActive = frame.id === activeFrameId;
+          const isActive = frame.tempId === activeFrameId;
           const index = frames.length - i;
           const homePlayer = homePlayers?.data?.find((p) => p.id === frame.homePlayer);
           const awayPlayer = awayPlayers?.data?.find((p) => p.id === frame.awayPlayer);
           return (
             <Pressable
-              key={frame.id}
+              key={frame.tempId}
               onPress={() => {
-                if (!activeFrameId || activeFrameId === frame.id) {
-                  activateFrame(frame.id);
+                if (!activeFrameId || activeFrameId === frame.tempId) {
+                  activateFrame(frame.tempId);
                 }
               }}
               className="mb-3 overflow-hidden rounded-2xl bg-bg-grouped-2"
@@ -211,35 +207,37 @@ const SubmitResultsScreen = () => {
                   <View className="flex-1">
                     <Picker
                       selectedValue={frame.homePlayer}
-                      onValueChange={(val) => updateFrame(frame.id, 'homePlayer', val)}
+                      onValueChange={(val) => updateFrame(frame.tempId, 'homePlayer', val)}
                       style={{ fontSize: Platform.OS === 'android' ? 14 : undefined }}
                       itemStyle={{ fontSize: 14 }}
                       className="h-8 bg-white">
                       <Picker.Item label="Select" value="" />
-                      {homePlayers?.data.map((p) => (
-                        <Picker.Item
-                          key={p.id}
-                          label={`${p.first_name} ${p.surname}`}
-                          value={p.id}
-                        />
-                      ))}
+                      {Array.isArray(homePlayers?.data) &&
+                        homePlayers.data.map((p) => (
+                          <Picker.Item
+                            key={p.id}
+                            label={`${p.first_name} ${p.surname}`}
+                            value={p.id}
+                          />
+                        ))}
                     </Picker>
                   </View>
                   <View className="flex-1">
                     <Picker
                       selectedValue={frame.awayPlayer}
-                      onValueChange={(val) => updateFrame(frame.id, 'awayPlayer', val)}
+                      onValueChange={(val) => updateFrame(frame.tempId, 'awayPlayer', val)}
                       style={{ fontSize: Platform.OS === 'android' ? 14 : undefined }}
                       itemStyle={{ fontSize: 14 }}
                       className="h-8 bg-white">
                       <Picker.Item label="Select" value="" />
-                      {awayPlayers?.data.map((p) => (
-                        <Picker.Item
-                          key={p.id}
-                          label={`${p.first_name} ${p.surname}`}
-                          value={p.id}
-                        />
-                      ))}
+                      {Array.isArray(awayPlayers?.data) &&
+                        awayPlayers.data.map((p) => (
+                          <Picker.Item
+                            key={p.id}
+                            label={`${p.first_name} ${p.surname}`}
+                            value={p.id}
+                          />
+                        ))}
                     </Picker>
                   </View>
                 </View>
@@ -247,7 +245,7 @@ const SubmitResultsScreen = () => {
                 {frame.homePlayer && frame.awayPlayer && (
                   <View className="mb-5 mt-3 flex-row items-center justify-evenly px-5">
                     <Pressable
-                      onPress={() => updateFrame(frame.id, 'winner', frame.homePlayer)}
+                      onPress={() => updateFrame(frame.tempId, 'winner', frame.homePlayer)}
                       className={`h-9 w-9 items-center justify-center rounded-md border ${
                         frame.winner === frame.homePlayer
                           ? 'border-brand bg-brand-light'
@@ -259,7 +257,7 @@ const SubmitResultsScreen = () => {
                     </Pressable>
                     <Text className="text-lg text-text-1">Select Winner</Text>
                     <Pressable
-                      onPress={() => updateFrame(frame.id, 'winner', frame.awayPlayer)}
+                      onPress={() => updateFrame(frame.tempId, 'winner', frame.awayPlayer)}
                       className={`h-9 w-9 items-center justify-center rounded-md border ${
                         frame.winner === frame.awayPlayer
                           ? 'border-brand bg-brand-light'
@@ -282,7 +280,7 @@ const SubmitResultsScreen = () => {
                       </Pressable>
                       <ConfirmModal
                         visible={confirmDeleteModalVisible}
-                        onConfirm={() => deleteFrame(frame.id)}
+                        onConfirm={() => deleteFrame(frame.tempId)}
                         onCancel={handleCancel}
                         title="Delete Frame?"
                         message={`Are you sure you want to delete frame ${frame.indexOf}.`}
@@ -299,7 +297,7 @@ const SubmitResultsScreen = () => {
                           frame.awayPlayer &&
                           (frame.winner === frame.homePlayer || frame.winner === frame.awayPlayer)
                         ) {
-                          markComplete(frame.id);
+                          markComplete(frame.tempId);
                         } else {
                           Toast.show({
                             type: 'error',
@@ -357,11 +355,13 @@ const SubmitResultsScreen = () => {
         })}
 
         {/* Add Frame */}
-        {!activeFrameId && <CTAButton text="Add Frame" type="info" callbackFn={addFrame} />}
+        {!activeFrameId && (
+          <CTAButton text="Add Frame" type="info" disabled={submitting} callbackFn={addFrame} />
+        )}
         {frames.length > 0 && !activeFrameId && (
           <View className="mt-4">
             <CTAButton
-              text="Submit Results"
+              text={submitting ? 'Submitting...' : 'Submit Results'}
               type="success"
               callbackFn={handleSubmit}
               disabled={submitting}

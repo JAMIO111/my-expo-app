@@ -4,12 +4,12 @@ import { useResultsByFixture } from '@hooks/useResultsByFixture';
 
 const PendingResultCard = ({ fixture }) => {
   const { data: results, isLoading } = useResultsByFixture(fixture?.id);
-  console.log('Pending Result Card Results:', results);
   const homeScore =
     results?.filter((result) => result.home_player === result.winner_id).length || 0;
   const awayScore =
     results?.filter((result) => result.away_player === result.winner_id).length || 0;
   const homeWinner = homeScore > awayScore;
+  const awayWinner = awayScore > homeScore;
   return (
     <Pressable>
       <View className="items-center justify-between gap-8 border-b border-separator bg-bg-grouped-2 px-4 py-3 shadow-[0_2px_4px_rgba(0,0,0,0.1)]">
@@ -35,7 +35,7 @@ const PendingResultCard = ({ fixture }) => {
               {fixture?.home_team?.display_name || 'Home Team'}
             </Text>
             <Text
-              className={`${homeWinner ? 'font-saira-semibold' : 'fontsaira'} w-12 text-center text-xl text-text-1`}>
+              className={`${homeWinner ? 'font-semibold' : ''} w-12 text-center font-saira text-xl text-text-1`}>
               {homeScore}
             </Text>
           </View>
@@ -54,7 +54,7 @@ const PendingResultCard = ({ fixture }) => {
               {fixture?.away_team?.display_name || 'Away Team'}
             </Text>
             <Text
-              className={`${!homeWinner ? 'font-saira-semibold' : 'fontsaira'} w-12 text-center text-xl text-text-1`}>
+              className={`${awayWinner ? 'font-semibold' : ''} w-12 text-center font-saira text-xl text-text-1`}>
               {awayScore}
             </Text>
           </View>

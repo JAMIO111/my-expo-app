@@ -4,11 +4,12 @@ import { LinearGradient } from 'expo-linear-gradient';
 import TeamLogo from './TeamLogo';
 import { useRouter } from 'expo-router';
 import { useStandings } from '@hooks/useStandings';
+import { TableSkeleton } from '@components/Skeletons';
 
 const LeagueTable = ({ context, season, division }) => {
   const router = useRouter();
 
-  const { data: standings, isLoading, error } = useStandings(division, season);
+  const { data: standings, isLoading, error, isFetching } = useStandings(division, season);
   const handlePress = (team) => {
     if (context === 'home/league') {
       router.push(`/home/league/${team.team}`);
@@ -17,9 +18,14 @@ const LeagueTable = ({ context, season, division }) => {
     }
   };
 
-  console.log('Standings:', standings);
+  const hasNoStandings = !(standings && standings.standings && standings.standings.length > 0);
 
-  if (!standings) {
+  // Show skeleton only on first load
+  if (isLoading && !standings) {
+    return <TableSkeleton />;
+  }
+  // Show no data message if loaded and no standings available
+  if (!isLoading && !isFetching && hasNoStandings) {
     return (
       <View className="mt-4 w-full flex-1 items-center justify-center px-3">
         <View className="w-full gap-5 rounded-xl bg-bg-grouped-2 px-6 py-16">

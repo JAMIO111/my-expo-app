@@ -14,7 +14,7 @@ const StatCardCompare = ({ stat, fixture }) => {
       </View>
 
       {/* Combined Bar */}
-      <View className="mt-1 h-2 w-full flex-row gap-1 overflow-hidden rounded-full bg-bg-grouped-3">
+      <View className="mt-1 h-2 w-full flex-row gap-1 overflow-hidden rounded-full">
         <View
           className="h-full rounded-full"
           style={{

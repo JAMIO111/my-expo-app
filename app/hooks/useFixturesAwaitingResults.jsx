@@ -11,9 +11,8 @@ export function useFixturesAwaitingResults({ homeTeamId, enabled = true }) {
           '*, home_team:Teams!Fixtures_home_team_fkey(display_name, crest, abbreviation), away_team:Teams!Fixtures_away_team_fkey(display_name,crest, abbreviation)'
         )
         .eq('home_team', homeTeamId)
-        .eq('approved', false)
-        .eq('winner', null)
-        .lte('date_time', new Date().toISOString());
+        .lte('date_time', new Date().toISOString())
+        .eq('approved', false);
 
       if (error) throw error;
       return data;

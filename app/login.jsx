@@ -176,7 +176,7 @@ export default function LoginPage() {
               </Pressable>
               <Text className="text-center text-lg text-text-2">
                 Forgotten Password?{' '}
-                <Link className="text-theme-blue underline" href="/signup">
+                <Link className="text-theme-blue underline" href="/reset-password">
                   Reset
                 </Link>
               </Text>

@@ -1,6 +1,7 @@
 import { StyleSheet, Text, View } from 'react-native';
+import TeamLogo from '@components/TeamLogo';
 
-const Leaderboard = ({ title }) => {
+const Leaderboard = ({ title, type }) => {
   const stats = [
     { id: 1, name: 'Gareth Barry', value: 653 },
     { id: 2, name: 'Ryan Giggs', value: 632 },
@@ -25,18 +26,26 @@ const Leaderboard = ({ title }) => {
 
   return (
     <View className="min-w-[300px] rounded-3xl bg-brand p-3 shadow-[0_2px_4px_rgba(0,0,0,0.1)]">
-      <Text className="mb-2 pl-2 text-2xl font-bold text-white">{title}</Text>
+      <Text className="mb-2 pl-2 font-saira-semibold text-2xl text-white">{title}</Text>
 
       {stats.map((stat, index) => (
         <View key={stat.id} className="flex-row items-center justify-between p-2">
           {/* Left Side: Index, Avatar, Name */}
           <View className="min-w-0 flex-1 flex-row items-center">
-            <Text className="w-6 text-white">{index + 1}</Text>
-
-            {/* Avatar or initials */}
-            {stat.avatar_url ? (
+            <Text className="w-6 font-saira text-white">{index + 1}.</Text>
+            {type === 'team' ? (
+              <View className="px-2">
+                <TeamLogo
+                  size={30}
+                  type={stat?.crest?.type}
+                  color1={stat?.crest?.color1}
+                  color2={stat?.crest?.color2}
+                  thickness={stat?.crest?.thickness}
+                />
+              </View>
+            ) : stat?.avatar_url ? (
               <Image
-                source={{ uri: stat?.avatar_url }}
+                source={{ uri: stat.avatar_url }}
                 className="mr-2 h-11 w-11 rounded-md border border-separator"
                 resizeMode="cover"
               />
@@ -44,13 +53,10 @@ const Leaderboard = ({ title }) => {
               <View
                 className="mr-2 h-11 w-11 rounded-md bg-brand-light"
                 style={{
-                  width: 44,
-                  height: 44,
-                  borderRadius: 5,
                   justifyContent: 'center',
                   alignItems: 'center',
                 }}>
-                <Text className="text-xl font-bold text-white">{getInitials(stat.name)}</Text>
+                <Text className="font-saira-bold text-xl text-white">{getInitials(stat.name)}</Text>
               </View>
             )}
 
@@ -59,14 +65,14 @@ const Leaderboard = ({ title }) => {
               <Text
                 numberOfLines={1}
                 ellipsizeMode="tail"
-                className="text-lg font-semibold text-white">
+                className="font-saira-semibold text-lg text-white">
                 {stat.name}
               </Text>
             </View>
           </View>
 
           {/* Right Side: Stat Value */}
-          <Text className="ml-3 text-xl font-bold text-white">{stat.value}</Text>
+          <Text className="ml-3 font-saira-bold text-2xl text-white">{stat.value}</Text>
         </View>
       ))}
     </View>

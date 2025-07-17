@@ -32,7 +32,13 @@ const LeagueHomeCard = ({ standings }) => {
             <Text className="font-saira text-2xl font-semibold text-text-1">
               {myTeam?.position}.
             </Text>
-            <TeamLogo size={20} />
+            <TeamLogo
+              size={20}
+              type={myTeam?.Teams?.crest?.type}
+              color1={myTeam?.Teams?.crest?.color1}
+              color2={myTeam?.Teams?.crest?.color2}
+              thickness={myTeam?.Teams?.crest?.thickness}
+            />
             <Text className="font-saira text-xl text-text-2">{player?.team?.display_name}</Text>
           </View>
           <Text className="font-saira text-2xl font-semibold text-text-1">{`${myTeam?.points} Pts`}</Text>

@@ -1,5 +1,26 @@
 import supabase from '@/lib/supabaseClient';
 
+export const getContrastColor = (hex, minContrastWhite = 2.5) => {
+  const normalizeHex = hex.replace('#', '');
+
+  const r = parseInt(normalizeHex.substring(0, 2), 16) / 255;
+  const g = parseInt(normalizeHex.substring(2, 4), 16) / 255;
+  const b = parseInt(normalizeHex.substring(4, 6), 16) / 255;
+
+  const linear = (c) => (c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4));
+
+  const luminance = 0.2126 * linear(r) + 0.7152 * linear(g) + 0.0722 * linear(b);
+
+  const contrastWithWhite = 1.05 / (luminance + 0.05);
+  const contrastWithBlack = (luminance + 0.05) / 0.05;
+
+  // Prefer white if contrast is good enough
+  if (contrastWithWhite >= minContrastWhite) return 'white';
+
+  // Otherwise fallback to black
+  return 'black';
+};
+
 export const isBirthdayToday = (dob) => {
   if (!dob) return false;
 

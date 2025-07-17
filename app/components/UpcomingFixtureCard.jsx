@@ -4,7 +4,6 @@ import { useRouter } from 'expo-router';
 
 const UpcomingFixtureCard = ({ fixture }) => {
   const router = useRouter();
-  console.log('UpcomingFixtureCard fixture:', fixture);
   return (
     <Pressable
       onPress={() => router.push(`/home/${fixture.id}`)}

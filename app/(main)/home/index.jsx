@@ -39,8 +39,6 @@ const Home = () => {
     refetch: upcomingFixturesRefetch,
   } = useUpcomingFixtures(player?.team?.id);
 
-  console.log('TeamId', player?.team?.id);
-
   const {
     data: resultsPendingApproval,
     isLoading: isResultsPendingApprovalLoading,
@@ -153,7 +151,7 @@ const Home = () => {
               <ResultsHomeCard />
               <LeagueHomeCard standings={standings} />
             </View>
-            <View className="mb-24 w-full gap-4 bg-bg-grouped-1">
+            <View className="w-full gap-4 bg-bg-grouped-1 pb-24">
               {(player?.team?.captain === player?.id ||
                 player?.team?.vice_captain === player?.id) && (
                 <View className="w-full bg-bg-grouped-1">
@@ -166,10 +164,20 @@ const Home = () => {
                         refetch={resultsPendingApprovalRefetch}
                       />
                     ))}
-                  <AwaitingResultCard />
+                  <View className="w-full bg-bg-grouped-1">
+                    {fixturesAwaitingResults &&
+                      fixturesAwaitingResults.length > 0 &&
+                      fixturesAwaitingResults.map((fixture) => (
+                        <AwaitingResultCard
+                          key={fixture.id}
+                          fixture={fixture}
+                          refetch={fixturesAwaitingResultsRefetch}
+                        />
+                      ))}
+                  </View>
                 </View>
               )}
-              <View className="mb-20 w-full gap-4 p-3">
+              <View className="w-full gap-4 p-3 pb-20">
                 <CTAButton text="View Players" onPress={() => router.push('/home/fixtures')} />
                 <CTAButton text="View Teams" onPress={() => router.push('/home/fixtures')} />
                 <CTAButton text="View Fixtures" onPress={() => router.push('/home/fixtures')} />

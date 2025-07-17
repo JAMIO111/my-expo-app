@@ -8,8 +8,8 @@ import StatCardCompare from '@components/StatCardCompare';
 import { useRouter } from 'expo-router';
 import PlayersList from '@components/PlayersList';
 import LoadingSplash from '@components/LoadingSplash';
-import { LinearGradient } from 'expo-linear-gradient';
 import colors from '@lib/colors';
+import { getContrastColor } from '@lib/helperFunctions';
 import { useColorScheme } from 'nativewind';
 import FormWidget from '@components/FormWidget';
 
@@ -32,6 +32,13 @@ const FixturePage = ({ fixtureDetails, isLoading, context }) => {
   if (isLoading) {
     return <LoadingSplash />;
   }
+
+  const homeTextColor = getContrastColor(
+    fixtureDetails?.homeTeam?.crest?.color1 || themeColors.primary
+  );
+  const awayTextColor = getContrastColor(
+    fixtureDetails?.awayTeam?.crest?.color1 || themeColors.primary
+  );
 
   return (
     <ScrollView className="mt-16 flex-1 bg-brand">
@@ -85,7 +92,7 @@ const FixturePage = ({ fixtureDetails, isLoading, context }) => {
               onPress={() => handleTeamPress(fixtureDetails?.homeTeam?.id)}
               style={{ backgroundColor: fixtureDetails?.homeTeam?.crest?.color1 }}
               className="ml-10 flex-1 items-center justify-center py-0.5">
-              <Text className="mt-1 font-saira-semibold text-2xl text-white">
+              <Text style={{ color: homeTextColor }} className="mt-1 font-saira-semibold text-2xl">
                 {fixtureDetails?.homeTeam?.abbreviation}
               </Text>
             </Pressable>
@@ -115,7 +122,7 @@ const FixturePage = ({ fixtureDetails, isLoading, context }) => {
               onPress={() => handleTeamPress(fixtureDetails?.awayTeam?.id)}
               style={{ backgroundColor: fixtureDetails?.awayTeam?.crest?.color1 }}
               className="mr-10 flex-1 items-center justify-center py-0.5">
-              <Text className="mt-1 font-saira-semibold text-2xl text-white">
+              <Text style={{ color: awayTextColor }} className="mt-1 font-saira-semibold text-2xl">
                 {fixtureDetails?.awayTeam?.abbreviation}
               </Text>
             </Pressable>
