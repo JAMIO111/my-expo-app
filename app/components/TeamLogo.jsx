@@ -59,7 +59,7 @@ const TeamLogo = ({
   return (
     <View
       style={{ height: size, width: size, backgroundColor: color1 }}
-      className="items-center justify-center overflow-hidden rounded-full">
+      className="items-center justify-center overflow-hidden rounded-full border">
       {innerView(type, color2, thickness)}
     </View>
   );

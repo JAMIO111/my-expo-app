@@ -1,8 +1,9 @@
-import { StyleSheet, Text, View, ScrollView, Settings } from 'react-native';
+import { StyleSheet, ScrollView } from 'react-native';
 import { Stack } from 'expo-router';
 import SettingsItem from '@components/SettingsItem';
 import MenuContainer from '@components/MenuContainer';
 import SafeViewWrapper from '@components/SafeViewWrapper';
+import CustomHeader from '@components/CustomHeader'; // Adjust the import path as necessary
 
 const LeagueConfig = () => {
   return (
@@ -11,11 +12,7 @@ const LeagueConfig = () => {
         options={{
           header: () => (
             <SafeViewWrapper useBottomInset={false}>
-              <View className="h-16 flex-row items-center justify-center bg-brand">
-                <Text className="font-michroma text-xl font-bold text-white">
-                  League Configuration
-                </Text>
-              </View>
+              <CustomHeader title="League Configuration" />
             </SafeViewWrapper>
           ),
         }}

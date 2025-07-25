@@ -1,10 +1,9 @@
-import { Pressable, Text, Animated } from 'react-native';
+import { Pressable, Text, Animated, useColorScheme } from 'react-native';
 import { useRef } from 'react';
 import colors from '@lib/colors';
-import { useColorScheme } from 'nativewind';
 
 const CTAButton = ({ type = 'brand', text, icon, callbackFn, disabled }) => {
-  const { colorScheme } = useColorScheme();
+  const colorScheme = useColorScheme();
   const themeColors = colorScheme === 'dark' ? colors.dark : colors.light;
   const buttonTheme = themeColors[type] || themeColors.brand;
 

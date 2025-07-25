@@ -1,4 +1,4 @@
-import { Text, View, ScrollView, Pressable, Platform } from 'react-native';
+import { Text, View, ScrollView, Pressable, Platform, useColorScheme } from 'react-native';
 import { Stack } from 'expo-router';
 import SettingsItem from '@components/SettingsItem';
 import MenuContainer from '@components/MenuContainer';
@@ -9,7 +9,7 @@ import { useState } from 'react';
 import supabase from '@lib/supabaseClient'; // Adjust the import path as necessary
 import DateTimePicker from '@react-native-community/datetimepicker';
 import IonIcons from '@expo/vector-icons/Ionicons';
-import { useColorScheme } from 'nativewind';
+import { useQueryClient } from '@tanstack/react-query';
 import { useFixtureConfig } from '@contexts/AdminContext'; // Adjust the import path as necessary
 import colors from '@lib/colors'; // Adjust the import path as necessary
 import { useUser } from '@contexts/UserProvider'; // Adjust the import path as necessary
@@ -20,6 +20,7 @@ import Toast from 'react-native-toast-message';
 import { useRouter } from 'expo-router'; // Adjust the import path as necessary
 
 const StartNewSeason = () => {
+  const queryClient = useQueryClient();
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const { player } = useUser();
@@ -42,9 +43,11 @@ const StartNewSeason = () => {
   const [seasonStartModalVisible, setSeasonStartModalVisible] = useState(false);
   const [showDatePicker, setShowDatePicker] = useState(false);
   const handleConfirmSeasonStart = async () => {
-    setIsLoading(true); // start loading
+    setIsLoading(true);
     setSeasonStartModalVisible(false);
+
     try {
+      // 1. Create new season
       const newSeasonId = await initiateNewSeason('2025/26', districtId, fixtureConfig.startDate);
 
       if (!newSeasonId) {
@@ -53,6 +56,7 @@ const StartNewSeason = () => {
         return;
       }
 
+      // 2. Fetch divisions
       const { data: divisions, error: divisionError } = await supabase
         .from('Divisions')
         .select('id')
@@ -65,8 +69,12 @@ const StartNewSeason = () => {
       }
 
       let earliestSeasonStart = null;
+      const divisionIds = []; // to collect all division IDs for invalidation
 
+      // 3. Loop through each division
       for (const division of divisions) {
+        divisionIds.push(division.id);
+
         const { data: teams, error: teamError } = await supabase
           .from('Teams')
           .select('id, display_name')
@@ -109,6 +117,7 @@ const StartNewSeason = () => {
         }
       }
 
+      // 4. Update season with calculated start date
       if (earliestSeasonStart) {
         const { error: updateError } = await supabase
           .from('Seasons')
@@ -120,10 +129,25 @@ const StartNewSeason = () => {
         }
       }
 
+      // 5. Invalidate all related fixture caches
+      queryClient.invalidateQueries({
+        predicate: (query) => {
+          if (!Array.isArray(query.queryKey)) return false;
+
+          const [key, _month, querySeasonId, queryDivisionId] = query.queryKey;
+
+          return (
+            key === 'fixtures-grouped' &&
+            querySeasonId === newSeasonId &&
+            divisionIds.includes(queryDivisionId)
+          );
+        },
+      });
+
       console.log('Season started and fixtures generated.');
       setIsLoading(false);
 
-      // ✅ Navigate to new screen
+      // 6. Navigate away
       router.replace('/(main)/home');
     } catch (err) {
       console.error('Unexpected error during season start:', err);

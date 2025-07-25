@@ -8,9 +8,9 @@ import { useColorScheme } from 'react-native';
 import colors from '@lib/colors';
 
 const PlayerCard = ({ player, team, context }) => {
+  const colorScheme = useColorScheme();
   const router = useRouter();
   const { teamId, fixtureId } = useLocalSearchParams();
-  const colorScheme = useColorScheme();
   const iconColor = colors[colorScheme]?.icon || '#000';
 
   const scale = useRef(new Animated.Value(1)).current;

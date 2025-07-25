@@ -115,7 +115,7 @@ export default function LoginPage() {
         transform: [{ translateX: slideAnim }],
         opacity: fadeAnim,
       }}>
-      <SafeViewWrapper bottomColor="bg-background-dark" topColor="bg-brand">
+      <SafeViewWrapper bottomColor="bg-bg-grouped-1" topColor="bg-brand">
         <View className="flex-1">
           <View className="w-full justify-center bg-brand">
             <View className="flex-row items-center justify-center gap-2">
@@ -141,7 +141,7 @@ export default function LoginPage() {
               </View>
             </View>
           </View>
-          <View className="bg-background-dark" style={styles.container}>
+          <View className="bg-bg-grouped-1" style={styles.container}>
             <View className="flex-1 justify-center gap-5">
               <View class>
                 <Text className="text-3xl font-bold text-text-1">Welcome back!</Text>

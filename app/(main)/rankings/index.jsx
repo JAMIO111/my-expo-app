@@ -1,6 +1,6 @@
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import Leaderboard from '@components/Leaderboard';
-import NavBar from '@components/NavBar';
+import NavBar from '@components/NavBar2';
 import SafeViewWrapper from '@components/SafeViewWrapper';
 import { StatusBar } from 'expo-status-bar';
 import CustomHeader from '@components/CustomHeader';

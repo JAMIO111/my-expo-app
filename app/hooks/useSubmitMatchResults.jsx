@@ -13,10 +13,10 @@ export function useSubmitMatchResults(fixtureId, existingResults) {
     try {
       // Map frames to include frameNumber based on order
       const framesWithNumbers = frames.map((f, i) => ({
-        id: f.id ?? '', // send empty string if no id
-        homePlayer: f.homePlayer || '',
-        awayPlayer: f.awayPlayer || '',
-        winner: f.winner || '',
+        id: f.id ?? null, // send null if no id
+        homePlayer: f.homePlayer || null,
+        awayPlayer: f.awayPlayer || null,
+        winner: f.winner || null,
         frameNumber: i + 1,
       }));
 
@@ -31,7 +31,7 @@ export function useSubmitMatchResults(fixtureId, existingResults) {
       // - _deleted_ids: array of frame IDs to delete
       // - _fixture_id: current fixture ID
 
-      const { error } = await supabase.rpc('submit_match_results', {
+      const { error } = await supabase.rpc('submit_match_results_2', {
         _frames: framesWithNumbers,
         _deleted_ids: deletedIds,
         _fixture_id: fixtureId,

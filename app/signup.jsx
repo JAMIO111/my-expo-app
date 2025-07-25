@@ -88,7 +88,7 @@ export default function SignUpPage() {
         transform: [{ translateX: slideAnim }],
         opacity: fadeAnim,
       }}>
-      <SafeViewWrapper bottomColor="bg-background-dark">
+      <SafeViewWrapper bottomColor="bg-bg-grouped-1">
         <View className="flex-1">
           <View className="w-full justify-center bg-brand">
             <View className="flex-row items-center justify-center gap-2">
@@ -114,9 +114,9 @@ export default function SignUpPage() {
               </View>
             </View>
           </View>
-          <View className="bg-background-dark" style={styles.container}>
+          <View className="bg-bg-grouped-1" style={styles.container}>
             <View className="flex-1 justify-center gap-5">
-              <View class>
+              <View className="">
                 <Text className="text-3xl font-bold text-text-1">Get Started!</Text>
                 <Text className="text-lg text-text-2">Enter your details to create an account</Text>
               </View>

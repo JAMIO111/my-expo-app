@@ -41,18 +41,26 @@ const UpcomingFixtureCard = ({ fixture }) => {
           </Text>
         </View>
       </View>
-      <Text className="font-saira text-text-2">
-        {new Date(fixture?.date_time).toLocaleString('en-GB', {
-          timeZone: 'Europe/London',
-          weekday: 'short',
-          day: 'numeric',
-          month: 'short',
-          year: '2-digit',
-          hour: '2-digit',
-          minute: '2-digit',
-          hour12: false, // optional: set to false for 24h, true for 12h
-        })}
-      </Text>
+      <View className="flex-row items-center justify-center gap-2">
+        <Text className="font-saira text-text-2">
+          {new Date(fixture?.date_time).toLocaleString('en-GB', {
+            timeZone: 'Europe/London',
+            weekday: 'short',
+            day: 'numeric',
+            month: 'short',
+            year: '2-digit',
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: false, // optional: set to false for 24h, true for 12h
+          })}
+        </Text>
+        {new Date(fixture.date_time) < new Date() && !fixture?.is_complete && (
+          <View className="flex-row items-center gap-1">
+            <View className="h-3 w-3 rounded-full bg-theme-red"></View>
+            <Text className="font-saira text-theme-red">Live</Text>
+          </View>
+        )}
+      </View>
     </Pressable>
   );
 };

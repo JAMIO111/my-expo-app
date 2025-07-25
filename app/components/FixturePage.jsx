@@ -1,4 +1,12 @@
-import { StyleSheet, ScrollView, Text, View, Button, Pressable } from 'react-native';
+import {
+  StyleSheet,
+  ScrollView,
+  Text,
+  View,
+  Button,
+  Pressable,
+  useColorScheme,
+} from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
 import TeamLogo from '@components/TeamLogo';
@@ -10,13 +18,11 @@ import PlayersList from '@components/PlayersList';
 import LoadingSplash from '@components/LoadingSplash';
 import colors from '@lib/colors';
 import { getContrastColor } from '@lib/helperFunctions';
-import { useColorScheme } from 'nativewind';
 import FormWidget from '@components/FormWidget';
 
 const FixturePage = ({ fixtureDetails, isLoading, context }) => {
   const router = useRouter();
-  const { colorScheme } = useColorScheme();
-  console.log('color scheme:', colorScheme);
+  const colorScheme = useColorScheme();
   const themeColors = colors[colorScheme];
   const { fixtureId } = useLocalSearchParams();
   const { days, hours, minutes, seconds, isPast } = useKickoffCountdown(fixtureDetails?.date_time);
@@ -34,10 +40,10 @@ const FixturePage = ({ fixtureDetails, isLoading, context }) => {
   }
 
   const homeTextColor = getContrastColor(
-    fixtureDetails?.homeTeam?.crest?.color1 || themeColors.primary
+    fixtureDetails?.homeTeam?.crest?.color1 || themeColors.bg1
   );
   const awayTextColor = getContrastColor(
-    fixtureDetails?.awayTeam?.crest?.color1 || themeColors.primary
+    fixtureDetails?.awayTeam?.crest?.color1 || themeColors.bg1
   );
 
   return (
@@ -78,7 +84,7 @@ const FixturePage = ({ fixtureDetails, isLoading, context }) => {
             <Pressable
               onPress={() => handleTeamPress(fixtureDetails?.homeTeam?.id)}
               className="absolute left-0 z-50">
-              <View className="rounded-full border border-border-color">
+              <View className="rounded-full">
                 <TeamLogo
                   size={60}
                   color1={fixtureDetails?.homeTeam?.crest?.color1}
@@ -108,7 +114,7 @@ const FixturePage = ({ fixtureDetails, isLoading, context }) => {
             <Pressable
               onPress={() => handleTeamPress(fixtureDetails?.awayTeam?.id)}
               className="absolute right-0 z-50">
-              <View className="rounded-full border border-border-color">
+              <View className="rounded-full">
                 <TeamLogo
                   size={60}
                   color1={fixtureDetails?.awayTeam?.crest?.color1}
@@ -179,7 +185,7 @@ const FixturePage = ({ fixtureDetails, isLoading, context }) => {
               onChange={setTeam}
             />
             {team === 'left' ? (
-              <View className="mt-5 h-full p-3">
+              <View className="mt-5 h-full">
                 <PlayersList
                   team={fixtureDetails?.homeTeam}
                   context={context}

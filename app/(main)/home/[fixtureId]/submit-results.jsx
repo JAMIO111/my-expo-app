@@ -53,7 +53,7 @@ const SubmitResultsScreen = () => {
       winner: null,
     };
     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
-    setFrames((prev) => [newFrame, ...prev]);
+    setFrames((prev) => [...prev, newFrame]);
     setActiveFrameId(newFrame.tempId);
   };
 
@@ -87,12 +87,12 @@ const SubmitResultsScreen = () => {
       const mappedFrames = existingResults.map((result, i) => ({
         id: result.id, // actual DB ID (for updates, if needed)
         tempId: `${result.id}`, // still use tempId for UI interaction
-        homePlayer: result.home_player,
-        awayPlayer: result.away_player,
+        homePlayer: result.home_player.id,
+        awayPlayer: result.away_player.id,
         winner: result.winner_id,
       }));
 
-      setFrames(mappedFrames);
+      setFrames(mappedFrames); // Reverse to show latest first
     }
   }, [existingResults]);
 
@@ -173,186 +173,193 @@ const SubmitResultsScreen = () => {
         </View>
 
         {/* Frames */}
-        {frames.map((frame, i) => {
-          const isActive = frame.tempId === activeFrameId;
-          const index = frames.length - i;
-          const homePlayer = homePlayers?.data?.find((p) => p.id === frame.homePlayer);
-          const awayPlayer = awayPlayers?.data?.find((p) => p.id === frame.awayPlayer);
-          return (
-            <Pressable
-              key={frame.tempId}
-              onPress={() => {
-                if (!activeFrameId || activeFrameId === frame.tempId) {
-                  activateFrame(frame.tempId);
-                }
-              }}
-              className="mb-3 overflow-hidden rounded-2xl bg-bg-grouped-2"
-              style={styles.cardContainer}>
-              <Text className="text-md mt-2 w-full text-center text-text-2">
-                {index}
-                {getOrdinalSuffix(index)} Frame
-              </Text>
+        {frames
+          .slice()
+          .reverse()
+          .map((frame, i) => {
+            const isActive = frame.tempId === activeFrameId;
+            const index = frames.length - i;
+            const homePlayer = homePlayers?.data?.find((p) => p.id === frame.homePlayer);
+            const awayPlayer = awayPlayers?.data?.find((p) => p.id === frame.awayPlayer);
+            return (
+              <Pressable
+                key={frame.tempId}
+                onPress={() => {
+                  if (!activeFrameId || activeFrameId === frame.tempId) {
+                    activateFrame(frame.tempId);
+                  }
+                }}
+                className="mb-3 overflow-hidden rounded-2xl bg-bg-grouped-2"
+                style={styles.cardContainer}>
+                <Text className="text-md mt-2 w-full text-center text-text-2">
+                  {index}
+                  {getOrdinalSuffix(index)} Frame
+                </Text>
 
-              {/* Editable view */}
-              <View
-                style={[
-                  styles.editableContainer,
-                  {
-                    height: isActive ? 'auto' : 0,
-                    opacity: isActive ? 1 : 0,
-                    paddingVertical: isActive ? 12 : 0,
-                  },
-                ]}>
-                <View className="flex-row space-x-2 px-3">
-                  <View className="flex-1">
-                    <Picker
-                      selectedValue={frame.homePlayer}
-                      onValueChange={(val) => updateFrame(frame.tempId, 'homePlayer', val)}
-                      style={{ fontSize: Platform.OS === 'android' ? 14 : undefined }}
-                      itemStyle={{ fontSize: 14 }}
-                      className="h-8 bg-white">
-                      <Picker.Item label="Select" value="" />
-                      {Array.isArray(homePlayers?.data) &&
-                        homePlayers.data.map((p) => (
-                          <Picker.Item
-                            key={p.id}
-                            label={`${p.first_name} ${p.surname}`}
-                            value={p.id}
-                          />
-                        ))}
-                    </Picker>
+                {/* Editable view */}
+                <View
+                  style={[
+                    styles.editableContainer,
+                    {
+                      height: isActive ? 'auto' : 0,
+                      opacity: isActive ? 1 : 0,
+                      paddingVertical: isActive ? 12 : 0,
+                    },
+                  ]}>
+                  <View className="flex-row space-x-2 px-3">
+                    <View className="flex-1">
+                      <Picker
+                        selectedValue={frame.homePlayer}
+                        onValueChange={(val) => updateFrame(frame.tempId, 'homePlayer', val)}
+                        style={{ fontSize: Platform.OS === 'android' ? 14 : undefined }}
+                        itemStyle={{ fontSize: 14 }}
+                        className="h-8 bg-white">
+                        <Picker.Item label="Select" value="" />
+                        {Array.isArray(homePlayers?.data) &&
+                          homePlayers.data.map((p) => (
+                            <Picker.Item
+                              key={p.id}
+                              label={`${p.first_name} ${p.surname}`}
+                              value={p.id}
+                            />
+                          ))}
+                      </Picker>
+                    </View>
+                    <View className="flex-1">
+                      <Picker
+                        selectedValue={frame.awayPlayer}
+                        onValueChange={(val) => updateFrame(frame.tempId, 'awayPlayer', val)}
+                        style={{ fontSize: Platform.OS === 'android' ? 14 : undefined }}
+                        itemStyle={{ fontSize: 14 }}
+                        className="h-8 bg-white">
+                        <Picker.Item label="Select" value="" />
+                        {Array.isArray(awayPlayers?.data) &&
+                          awayPlayers.data.map((p) => (
+                            <Picker.Item
+                              key={p.id}
+                              label={`${p.first_name} ${p.surname}`}
+                              value={p.id}
+                            />
+                          ))}
+                      </Picker>
+                    </View>
                   </View>
-                  <View className="flex-1">
-                    <Picker
-                      selectedValue={frame.awayPlayer}
-                      onValueChange={(val) => updateFrame(frame.tempId, 'awayPlayer', val)}
-                      style={{ fontSize: Platform.OS === 'android' ? 14 : undefined }}
-                      itemStyle={{ fontSize: 14 }}
-                      className="h-8 bg-white">
-                      <Picker.Item label="Select" value="" />
-                      {Array.isArray(awayPlayers?.data) &&
-                        awayPlayers.data.map((p) => (
-                          <Picker.Item
-                            key={p.id}
-                            label={`${p.first_name} ${p.surname}`}
-                            value={p.id}
-                          />
-                        ))}
-                    </Picker>
-                  </View>
-                </View>
 
-                {frame.homePlayer && frame.awayPlayer && (
-                  <View className="mb-5 mt-3 flex-row items-center justify-evenly px-5">
-                    <Pressable
-                      onPress={() => updateFrame(frame.tempId, 'winner', frame.homePlayer)}
-                      className={`h-9 w-9 items-center justify-center rounded-md border ${
-                        frame.winner === frame.homePlayer
-                          ? 'border-brand bg-brand-light'
-                          : 'border-border-color bg-background'
-                      }`}>
-                      {frame.winner === frame.homePlayer && (
-                        <Ionicons name="checkmark" size={28} color="white" />
-                      )}
-                    </Pressable>
-                    <Text className="text-lg text-text-1">Select Winner</Text>
-                    <Pressable
-                      onPress={() => updateFrame(frame.tempId, 'winner', frame.awayPlayer)}
-                      className={`h-9 w-9 items-center justify-center rounded-md border ${
-                        frame.winner === frame.awayPlayer
-                          ? 'border-brand bg-brand-light'
-                          : 'border-border-color bg-background'
-                      }`}>
-                      {frame.winner === frame.awayPlayer && (
-                        <Ionicons name="checkmark" size={28} color="white" />
-                      )}
-                    </Pressable>
-                  </View>
-                )}
-                <View className="flex-row items-center justify-between px-6">
-                  {isActive && (
-                    <>
+                  {frame.homePlayer && frame.awayPlayer && (
+                    <View className="mb-5 mt-3 flex-row items-center justify-evenly px-5">
                       <Pressable
-                        onPress={() => setConfirmDeleteModalVisible(true)}
-                        className="rounded-2xl border border-theme-red-hc bg-theme-red/85 p-2"
-                        hitSlop={10}>
-                        <Ionicons name="trash-outline" size={34} color="white" />
+                        onPress={() => updateFrame(frame.tempId, 'winner', frame.homePlayer)}
+                        className={`h-9 w-9 items-center justify-center rounded-md border ${
+                          frame.winner === frame.homePlayer
+                            ? 'border-brand bg-brand-light'
+                            : 'border-border-color bg-bg-grouped-2'
+                        }`}>
+                        {frame.winner === frame.homePlayer && (
+                          <Ionicons name="checkmark" size={28} color="white" />
+                        )}
                       </Pressable>
-                      <ConfirmModal
-                        visible={confirmDeleteModalVisible}
-                        onConfirm={() => deleteFrame(frame.tempId)}
-                        onCancel={handleCancel}
-                        title="Delete Frame?"
-                        message={`Are you sure you want to delete frame ${frame.indexOf}.`}
-                      />
-                    </>
+                      <Text className="text-lg text-text-1">Select Winner</Text>
+                      <Pressable
+                        onPress={() => updateFrame(frame.tempId, 'winner', frame.awayPlayer)}
+                        className={`h-9 w-9 items-center justify-center rounded-md border ${
+                          frame.winner === frame.awayPlayer
+                            ? 'border-brand bg-brand-light'
+                            : 'border-border-color bg-bg-grouped-2'
+                        }`}>
+                        {frame.winner === frame.awayPlayer && (
+                          <Ionicons name="checkmark" size={28} color="white" />
+                        )}
+                      </Pressable>
+                    </View>
                   )}
-                  <View className="flex-1 p-4">
-                    <CTAButton
-                      text="Confirm Frame"
-                      type="success"
-                      callbackFn={() => {
-                        if (
-                          frame.homePlayer &&
-                          frame.awayPlayer &&
-                          (frame.winner === frame.homePlayer || frame.winner === frame.awayPlayer)
-                        ) {
-                          markComplete(frame.tempId);
-                        } else {
-                          Toast.show({
-                            type: 'error',
-                            text1: 'Error!',
-                            text2: 'Ensure both players are selected and a winner is chosen.',
-                            props: {
-                              colorScheme: colorScheme,
-                            },
-                          });
-                        }
-                      }}
-                    />
+                  <View className="flex-row items-center justify-between px-6">
+                    {isActive && (
+                      <>
+                        <Pressable
+                          onPress={() => setConfirmDeleteModalVisible(true)}
+                          className="rounded-2xl border border-theme-red-hc bg-theme-red/85 p-2"
+                          hitSlop={10}>
+                          <Ionicons name="trash-outline" size={34} color="white" />
+                        </Pressable>
+                        <ConfirmModal
+                          visible={confirmDeleteModalVisible}
+                          onConfirm={() => deleteFrame(frame.tempId)}
+                          onCancel={handleCancel}
+                          title="Delete Frame?"
+                          message={`Are you sure you want to delete frame ${frame.indexOf}.`}
+                        />
+                      </>
+                    )}
+                    <View className="flex-1 p-4">
+                      <CTAButton
+                        text="Confirm Frame"
+                        type="success"
+                        callbackFn={() => {
+                          if (
+                            frame.homePlayer &&
+                            frame.awayPlayer &&
+                            (frame.winner === frame.homePlayer || frame.winner === frame.awayPlayer)
+                          ) {
+                            markComplete(frame.tempId);
+                          } else {
+                            Toast.show({
+                              type: 'error',
+                              text1: 'Error!',
+                              text2: 'Ensure both players are selected and a winner is chosen.',
+                              props: {
+                                colorScheme: colorScheme,
+                              },
+                            });
+                          }
+                        }}
+                      />
+                    </View>
                   </View>
                 </View>
-              </View>
 
-              {/* Collapsed summary */}
-              <View
-                style={[
-                  styles.summaryContainer,
-                  {
-                    height: isActive ? 0 : 'auto',
-                    opacity: isActive ? 0 : 1,
-                    paddingVertical: isActive ? 0 : 12,
-                  },
-                ]}
-                pointerEvents={isActive ? 'none' : 'auto'}
-                className="flex-row items-center justify-between px-3 py-2">
-                <View className="w-6 items-center justify-center">
-                  {frame.winner === frame.homePlayer && (
-                    <Ionicons name="trophy" size={20} color={trophyColor} />
-                  )}
+                {/* Collapsed summary */}
+                <View
+                  style={[
+                    styles.summaryContainer,
+                    {
+                      height: isActive ? 0 : 'auto',
+                      opacity: isActive ? 0 : 1,
+                      paddingVertical: isActive ? 0 : 12,
+                    },
+                  ]}
+                  pointerEvents={isActive ? 'none' : 'auto'}
+                  className="flex-row items-center justify-between px-3 py-2">
+                  <View className="w-6 items-center justify-center">
+                    {frame.winner === frame.homePlayer && (
+                      <Ionicons name="trophy" size={20} color={trophyColor} />
+                    )}
+                  </View>
+                  <Text
+                    className={`${
+                      frame.homePlayer ? 'text-text-1' : 'text-theme-red'
+                    } flex-1 text-right font-medium`}>
+                    {homePlayer
+                      ? `${homePlayer.first_name} ${homePlayer.surname}`
+                      : 'Select Player'}
+                  </Text>
+                  <Text className="mx-2 text-xs text-text-2">vs</Text>
+                  <Text
+                    className={`${
+                      frame.awayPlayer ? 'text-text-1' : 'text-theme-red'
+                    } flex-1 text-left font-medium`}>
+                    {awayPlayer
+                      ? `${awayPlayer.first_name} ${awayPlayer.surname}`
+                      : 'Select Player'}
+                  </Text>
+                  <View className="w-6 items-center justify-center">
+                    {frame.winner === frame.awayPlayer && (
+                      <Ionicons name="trophy" size={20} color={trophyColor} />
+                    )}
+                  </View>
                 </View>
-                <Text
-                  className={`${
-                    frame.homePlayer ? 'text-text-1' : 'text-theme-red'
-                  } flex-1 text-right font-medium`}>
-                  {homePlayer ? `${homePlayer.first_name} ${homePlayer.surname}` : 'Select Player'}
-                </Text>
-                <Text className="mx-2 text-xs text-text-2">vs</Text>
-                <Text
-                  className={`${
-                    frame.awayPlayer ? 'text-text-1' : 'text-theme-red'
-                  } flex-1 text-left font-medium`}>
-                  {awayPlayer ? `${awayPlayer.first_name} ${awayPlayer.surname}` : 'Select Player'}
-                </Text>
-                <View className="w-6 items-center justify-center">
-                  {frame.winner === frame.awayPlayer && (
-                    <Ionicons name="trophy" size={20} color={trophyColor} />
-                  )}
-                </View>
-              </View>
-            </Pressable>
-          );
-        })}
+              </Pressable>
+            );
+          })}
 
         {/* Add Frame */}
         {!activeFrameId && (

@@ -28,7 +28,7 @@ const HorizontalScrollUpcomingFixtures = ({ fixtures, isLoading }) => {
         <View
           className="h-32 items-center justify-center rounded-2xl bg-bg-2"
           style={{ width: cardWidth }}>
-          <Text className="text-lg text-text-2">No Upcoming Fixtures</Text>
+          <Text className="font-saira text-xl text-text-2">No Upcoming Fixtures</Text>
         </View>
       ) : (
         fixtures.map((fixture, index) => (

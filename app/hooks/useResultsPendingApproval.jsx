@@ -12,7 +12,7 @@ export function useResultsPendingApproval({ awayTeamId, enabled = true }) {
         )
         .eq('away_team', awayTeamId)
         .eq('approved', false)
-        .not('winner', 'is', null);
+        .eq('is_complete', true);
 
       if (error) throw error;
       return data;

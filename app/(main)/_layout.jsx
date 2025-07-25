@@ -1,18 +1,15 @@
 import { View } from 'react-native';
 import '../../global.css'; // Ensure global styles are imported
 import { Slot } from 'expo-router';
-import { UserProvider } from '@contexts/UserProvider';
-import { AdminProvider } from '@contexts/AdminContext';
+import { useColorScheme } from 'nativewind';
 
 const _layout = () => {
+  const { colorScheme } = useColorScheme();
+  console.log('Current Color Scheme:', colorScheme);
   return (
-    <UserProvider>
-      <AdminProvider>
-        <View className={`flex-1`}>
-          <Slot />
-        </View>
-      </AdminProvider>
-    </UserProvider>
+    <View className={`${colorScheme} flex-1`}>
+      <Slot />
+    </View>
   );
 };
 

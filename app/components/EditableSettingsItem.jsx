@@ -1,8 +1,6 @@
-import { Pressable, Text, TextInput, View } from 'react-native';
-import React, { useState } from 'react';
+import { Pressable, Text, TextInput, View, useColorScheme } from 'react-native';
 import IonIcons from 'react-native-vector-icons/Ionicons';
 import { useRouter } from 'expo-router';
-import { useColorScheme } from 'nativewind';
 import colors from '@lib/colors';
 
 const EditableSettingsItem = ({
@@ -19,7 +17,7 @@ const EditableSettingsItem = ({
   keyboardType = 'default',
 }) => {
   const router = useRouter();
-  const { colorScheme } = useColorScheme();
+  const colorScheme = useColorScheme();
   const themeColors = colors[colorScheme];
 
   const handlePress = () => {

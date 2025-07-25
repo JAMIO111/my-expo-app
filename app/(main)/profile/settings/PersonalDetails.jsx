@@ -1,4 +1,4 @@
-import { StyleSheet, Text, View, ScrollView, Pressable, ActivityIndicator } from 'react-native';
+import { Text, View, ScrollView, Pressable, ActivityIndicator, useColorScheme } from 'react-native';
 import { Stack, useNavigation } from 'expo-router';
 import { useEffect, useState } from 'react';
 import DateTimePicker from '@react-native-community/datetimepicker';
@@ -9,9 +9,9 @@ import EditableSettingsItem from '@components/EditableSettingsItem';
 import supabase from '@lib/supabaseClient';
 import IonIcons from '@expo/vector-icons/Ionicons';
 import colors from '@lib/colors'; // Adjust the import path as necessary
-import { useColorScheme } from 'nativewind';
 import { useQueryClient } from '@tanstack/react-query';
 import SafeViewWrapper from '@components/SafeViewWrapper';
+import CustomHeader from '@components/CustomHeader'; // Adjust the import path as necessary
 
 const PersonalDetails = () => {
   const queryClient = useQueryClient();
@@ -76,23 +76,18 @@ const PersonalDetails = () => {
     setIsSaving(false);
   };
 
-  // ✅ Set header with Save button
-  useEffect(() => {
-    navigation.setOptions({
-      headerRight: () => (
-        <Pressable onPress={handleSave} disabled={!hasChanges || isSaving} hitSlop={10}>
-          {isSaving ? (
-            <ActivityIndicator size="small" color="#007AFF" />
-          ) : (
-            <Text
-              className={`text-lg font-medium ${hasChanges ? 'text-theme-blue' : 'text-text-3'}`}>
-              Save
-            </Text>
-          )}
-        </Pressable>
-      ),
-    });
-  }, [handleSave, hasChanges, isSaving]);
+  <View className="h-16 flex-row items-center justify-between bg-brand px-4">
+    <Text className="font-michroma text-2xl font-bold text-white">Personal Details</Text>
+    <Pressable onPress={handleSave} disabled={!hasChanges || isSaving} hitSlop={10}>
+      {isSaving ? (
+        <ActivityIndicator size="small" color="white" />
+      ) : (
+        <Text className={`text-lg font-medium ${hasChanges ? 'text-white' : 'text-text-3'}`}>
+          Save
+        </Text>
+      )}
+    </Pressable>
+  </View>;
 
   return (
     <SafeViewWrapper topColor="bg-brand" useBottomInset={false}>
@@ -100,11 +95,11 @@ const PersonalDetails = () => {
         options={{
           header: () => (
             <SafeViewWrapper useBottomInset={false}>
-              <View className="h-16 flex-row items-center justify-center bg-brand">
-                <Text className="font-michroma text-2xl font-bold text-white">
-                  Personal Details
-                </Text>
-              </View>
+              <CustomHeader
+                onRightPress={hasChanges ? handleSave : undefined}
+                rightIcon="checkmark-outline"
+                title="Personal Details"
+              />
             </SafeViewWrapper>
           ),
         }}
@@ -131,6 +126,7 @@ const PersonalDetails = () => {
             value={nickname}
             onChangeText={setNickname}
             placeholder="Enter your nickname"
+            lastItem={true}
           />
         </MenuContainer>
 
@@ -164,7 +160,6 @@ const PersonalDetails = () => {
                     setDob(selectedDate);
                     if (Platform.OS === 'ios') {
                       // On iOS inline, close manually on selection
-                      setTimeout(() => setShowDatePicker(false), 150);
                     }
                   }
                 }}

@@ -8,7 +8,7 @@ import CTAButton from '@components/CTAButton';
 import ResultsHomeCard from '@components/ResultsHomeCard';
 import LeagueHomeCard from '@components/LeagueHomeCard';
 import FixturesHomeCard from '@components/FixturesHomeCard';
-import NavBar from '@components/NavBar';
+import NavBar from '@components/NavBar2';
 import SafeViewWrapper from '@components/SafeViewWrapper';
 import { useUpcomingFixtures } from '@hooks/useUpcomingFixtures';
 import { StatusBar } from 'expo-status-bar';
@@ -17,12 +17,27 @@ import PendingResultCard from '@components/PendingResultCard';
 import AwaitingResultCard from '@components/AwaitingResultCard';
 import { useResultsPendingApproval } from '@hooks/useResultsPendingApproval';
 import { useFixturesAwaitingResults } from '@hooks/useFixturesAwaitingResults';
+import { useAuthUserProfile } from '@hooks/useAuthUserProfile2';
 
 const Home = () => {
   const [refreshing, setRefreshing] = useState(false);
   const router = useRouter();
-  const { player } = useUser();
+  const {
+    user,
+    player,
+    roles,
+    currentRole,
+    setCurrentRole,
+    loading: isUserLoading,
+    isError,
+    refetch,
+  } = useUser();
+  console.log('User:', user);
   console.log('Player:', player);
+  console.log('Current Role:', currentRole);
+  console.log('Roles:', roles);
+  console.log('Is User Loading:', isUserLoading);
+  console.log('Is Error:', isError);
 
   console.log('DivisionID', player?.team?.division?.id);
   console.log('SeasonId', player?.activeSeason?.id);
@@ -53,6 +68,26 @@ const Home = () => {
     homeTeamId: player?.team?.id,
     enabled: !!player?.team?.id,
   });
+
+  const handleGetUser = () => {
+    console.log('Button pressed ✅');
+
+    if (data) {
+      console.log('User Profile:', data);
+    } else {
+      refetch()
+        .then(({ data, error }) => {
+          if (error) {
+            console.error('Error during refetch:', error);
+          } else {
+            console.log('User Profile (refetched):', data);
+          }
+        })
+        .catch((err) => {
+          console.error('Unexpected error:', err);
+        });
+    }
+  };
 
   console.log('Fixtures Awaiting Results:', fixturesAwaitingResults);
   console.log('Upcoming Fixtures:', upcomingFixtures);
@@ -178,9 +213,16 @@ const Home = () => {
                 </View>
               )}
               <View className="w-full gap-4 p-3 pb-20">
-                <CTAButton text="View Players" onPress={() => router.push('/home/fixtures')} />
-                <CTAButton text="View Teams" onPress={() => router.push('/home/fixtures')} />
-                <CTAButton text="View Fixtures" onPress={() => router.push('/home/fixtures')} />
+                <CTAButton text="View Players" callbackFn={() => router.push('/home/fixtures')} />
+                <CTAButton text="View Teams" callbackFn={() => router.push('/home/fixtures')} />
+                <CTAButton text="View Fixtures" callbackFn={() => router.push('/home/fixtures')} />
+                <CTAButton text="Get User" callbackFn={handleGetUser} />
+                <CTAButton
+                  text="Switch Context"
+                  callbackFn={() => {
+                    setCurrentRole(roles[1]);
+                  }}
+                />
               </View>
             </View>
           </View>

@@ -2,7 +2,7 @@ import { Pressable, Text, View } from 'react-native';
 import React from 'react';
 import IonIcons from 'react-native-vector-icons/Ionicons';
 import { useRouter } from 'expo-router';
-import { useColorScheme } from 'nativewind';
+import { useColorScheme } from 'react-native';
 import colors from '@lib/colors';
 
 const SettingsItem = ({
@@ -17,9 +17,9 @@ const SettingsItem = ({
   value,
   setValue,
 }) => {
-  const router = useRouter();
-  const { colorScheme } = useColorScheme();
+  const colorScheme = useColorScheme();
   const themeColors = colors[colorScheme];
+  const router = useRouter();
 
   const handlePress = () => {
     console.log('navigating to:', routerPath);

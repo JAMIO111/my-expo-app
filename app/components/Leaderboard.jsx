@@ -2,17 +2,17 @@ import { StyleSheet, Text, View } from 'react-native';
 import TeamLogo from '@components/TeamLogo';
 
 const Leaderboard = ({ title, type }) => {
-  const stats = [
-    { id: 1, name: 'Gareth Barry', value: 653 },
-    { id: 2, name: 'Ryan Giggs', value: 632 },
-    { id: 3, name: 'Frank Lampard', value: 609 },
-    { id: 4, name: 'Steven Gerrard', value: 504 },
-    { id: 5, name: 'Cesc Fabregas', value: 500 },
-    { id: 6, name: 'Paul Scholes', value: 499 },
-    { id: 7, name: 'David Silva', value: 490 },
-    { id: 8, name: 'Yaya Toure', value: 480 },
-    { id: 9, name: 'Thierry Henry', value: 475 },
-    { id: 10, name: 'Michael Owen', value: 450 },
+  const playerStats = [
+    { id: 1, name: 'Jamie Dryden', value: 653 },
+    { id: 2, name: 'Jack Smith', value: 632 },
+    { id: 3, name: 'David Walton', value: 609 },
+    { id: 4, name: 'John Doe', value: 504 },
+    { id: 5, name: 'Jane Smith', value: 500 },
+    { id: 6, name: 'Emily Johnson', value: 499 },
+    { id: 7, name: 'Michael Brown', value: 490 },
+    { id: 8, name: 'Sarah Davis', value: 480 },
+    { id: 9, name: 'Chris Wilson', value: 475 },
+    { id: 10, name: 'Jessica Taylor', value: 450 },
   ];
 
   const getInitials = (name) => {
@@ -28,7 +28,7 @@ const Leaderboard = ({ title, type }) => {
     <View className="min-w-[300px] rounded-3xl bg-brand p-3 shadow-[0_2px_4px_rgba(0,0,0,0.1)]">
       <Text className="mb-2 pl-2 font-saira-semibold text-2xl text-white">{title}</Text>
 
-      {stats.map((stat, index) => (
+      {playerStats.map((stat, index) => (
         <View key={stat.id} className="flex-row items-center justify-between p-2">
           {/* Left Side: Index, Avatar, Name */}
           <View className="min-w-0 flex-1 flex-row items-center">

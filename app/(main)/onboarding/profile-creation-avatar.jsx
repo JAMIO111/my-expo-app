@@ -1,14 +1,13 @@
-import { StyleSheet, Text, View, Image, Pressable, Alert } from 'react-native';
+import { StyleSheet, Text, View, Image, Pressable, Alert, useColorScheme } from 'react-native';
 import { useState, useEffect } from 'react';
 import * as ImagePicker from 'expo-image-picker';
 import * as FileSystem from 'expo-file-system';
 import supabase from '@/lib/supabaseClient.js';
 import uuid from 'react-native-uuid';
 import CTAButton from '@components/CTAButton';
-import { useRouter, useLocalSearchParams, Stack } from 'expo-router';
+import { useLocalSearchParams, Stack } from 'expo-router';
 import { useNavigation } from '@react-navigation/native';
 import Toast from 'react-native-toast-message';
-import { useColorScheme } from 'nativewind';
 import StepPillGroup from '@components/StepPillGroup';
 import IonIcon from 'react-native-vector-icons/Ionicons';
 
@@ -18,7 +17,6 @@ const ProfileCreation4 = () => {
   const { colorScheme } = useColorScheme();
   const [imageUri, setImageUri] = useState(null);
   const [uploading, setUploading] = useState(false);
-  const router = useRouter();
   const navigation = useNavigation();
   const params = useLocalSearchParams();
 
@@ -34,6 +32,7 @@ const ProfileCreation4 = () => {
   const pickImage = async () => {
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsMultipleSelection: false,
       allowsEditing: true,
       quality: 0.8,
     });
@@ -159,9 +158,9 @@ const ProfileCreation4 = () => {
           title: 'Step 4 of 4',
         }}
       />
-      <View className="flex-1 gap-3 bg-background-dark">
+      <View className="flex-1 gap-3 bg-bg-grouped-1">
         <StepPillGroup steps={4} currentStep={4} />
-        <View className="bg-background-dark p-4">
+        <View className="bg-bg-grouped-1 p-4">
           <Text
             style={{ lineHeight: 65 }}
             className="mb-4 font-delagothic text-6xl font-bold text-text-1">

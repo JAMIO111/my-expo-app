@@ -11,16 +11,16 @@ import { useRouter } from 'expo-router';
 import { useFonts } from 'expo-font';
 import { Michroma_400Regular } from '@expo-google-fonts/michroma';
 import supabase from '@lib/supabaseClient';
-import { useColorScheme } from 'nativewind';
+import { useUser } from '@contexts/UserProvider';
+import { fetchAuthUserProfile } from '@hooks/useAuthUserProfile2';
 
 const PoolRack = () => {
-  const { colorScheme } = useColorScheme();
   const [fontsLoaded] = useFonts({
     Michroma: Michroma_400Regular,
   });
   const router = useRouter();
-  const [moved, setMoved] = useState(false);
   const [loading, setLoading] = useState(true);
+  const { roles, currentRole, setCurrentRole } = useUser();
 
   // Shared animation values
   const cueY = useSharedValue(0);
@@ -37,26 +37,52 @@ const PoolRack = () => {
   }));
 
   const onAnimationEnd = async () => {
+    console.log('🔵 onAnimationEnd starting...');
+
     const {
       data: { user },
       error,
     } = await supabase.auth.getUser();
 
     if (error || !user) {
+      console.warn('🔴 No user or error getting user:', error);
       router.replace('/login');
+      return;
+    }
+
+    console.log('🟢 Authenticated user:', user);
+
+    let profile;
+    try {
+      profile = await fetchAuthUserProfile();
+      console.log('🟣 Profile fetched:', profile);
+    } catch (e) {
+      console.error('🔴 Failed to fetch profile:', e);
+      router.replace('/login');
+      return;
+    }
+
+    const roles = profile.roles || [];
+
+    if (roles.length === 1) {
+      console.log('Auto-selecting role:', roles[0]);
+      setCurrentRole(roles[0]);
+      router.replace('/(main)/home');
+    } else if (roles.length > 1) {
+      console.log('Multiple roles found:', roles);
+      router.replace('/role-select');
     } else {
-      router.replace('/(main)/home'); // or your main layout route
+      console.warn('User has no assigned roles');
+      router.replace('/login');
     }
   };
 
   const handleNavigation = () => {
+    console.log('🟢 handleNavigation triggered');
     setLoading(true);
-
-    // Fade out logo
     logoOpacity.value = withTiming(0, { duration: 500 });
-
-    // Move cue ball and then run navigation
     cueY.value = withTiming(500, { duration: 1500, easing: Easing.out(Easing.exp) }, () => {
+      console.log('🟡 Animation completed, running onAnimationEnd');
       runOnJS(onAnimationEnd)();
     });
   };
@@ -66,7 +92,7 @@ const PoolRack = () => {
   return (
     <Pressable
       onPress={handleNavigation}
-      className={`${colorScheme} relative w-full flex-1 bg-brand`}
+      className={`relative w-full flex-1 bg-brand`}
       style={{
         justifyContent: 'space-between',
         alignItems: 'center',

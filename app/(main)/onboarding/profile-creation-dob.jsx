@@ -17,15 +17,15 @@ const ProfileCreation3 = () => {
           title: 'Step 3 of 4',
         }}
       />
-      <View className="flex-1 gap-3 bg-background-dark">
+      <View className="flex-1 gap-3 bg-bg-grouped-1">
         <StepPillGroup steps={4} currentStep={3} />
-        <View className="bg-background-dark p-4">
-          <Text className="text-text-1 mb-4 font-delagothic text-6xl font-bold">{`When were you born ${params.firstName}?`}</Text>
-          <Text className=" text-text-2 text-2xl">So that we'll never forget your birthday.</Text>
+        <View className="bg-bg-grouped-1 p-4">
+          <Text className="mb-4 font-delagothic text-6xl font-bold text-text-1">{`When were you born ${params.firstName}?`}</Text>
+          <Text className=" text-2xl text-text-2">So that we'll never forget your birthday.</Text>
         </View>
-        <View className="w-full flex-1 rounded-t-3xl bg-background p-6">
+        <View className="w-full flex-1 rounded-t-3xl bg-bg-grouped-2 p-6">
           <View className="h-28 w-full gap-2">
-            <Text className="text-text-1 px-2 text-2xl font-bold">Date of Birth</Text>
+            <Text className="px-2 text-2xl font-bold text-text-1">Date of Birth</Text>
             <ModalWrappedDatePicker maxDate={new Date()} value={dob} onChangeDate={setDob} />
           </View>
           <View className="mt-5">
@@ -34,7 +34,7 @@ const ProfileCreation3 = () => {
               text="Continue"
               callbackFn={() =>
                 router.push({
-                  pathname: '/(main)/onboarding/profile-creation4',
+                  pathname: '/(main)/onboarding/profile-creation-avatar',
                   params: { ...params, dob },
                 })
               }

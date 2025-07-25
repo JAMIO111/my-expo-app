@@ -16,23 +16,23 @@ const ProfileCreation2 = () => {
           title: 'Step 2 of 4',
         }}
       />
-      <View className="flex-1 gap-3 bg-background-dark">
+      <View className="flex-1 gap-3 bg-bg-grouped-1">
         <StepPillGroup steps={4} currentStep={2} />
-        <View className="bg-background-dark p-4">
-          <Text className="text-text-1 font-delagothic text-6xl font-bold">
+        <View className="bg-bg-grouped-1 p-4">
+          <Text className="font-delagothic text-6xl font-bold text-text-1">
             What do you want to be known as?
           </Text>
-          <Text className=" text-text-2 text-2xl">
+          <Text className=" text-2xl text-text-2">
             This will be used to identify you in the app. It can be your first name, surname, or a
             nickname.
           </Text>
         </View>
 
-        <View className="flex-1 rounded-t-3xl bg-background p-6">
+        <View className="flex-1 rounded-t-3xl bg-bg-grouped-2 p-6">
           <View className="gap-1">
-            <Text className="text-text-1 px-2 text-2xl font-bold">Display Name</Text>
+            <Text className="px-2 text-2xl font-bold text-text-1">Display Name</Text>
             <TextInput
-              className="text-text-1 h-16 rounded-xl border border-border-color bg-input-background px-4 pb-1 text-xl placeholder:text-text-muted"
+              className="h-16 rounded-xl border border-border-color bg-input-background px-4 pb-1 text-xl text-text-1 placeholder:text-text-muted"
               placeholder="Enter Nickname..."
               autoCapitalize="words"
               value={nickname}
@@ -45,7 +45,7 @@ const ProfileCreation2 = () => {
               text="Continue"
               callbackFn={() =>
                 router.push({
-                  pathname: '/(main)/onboarding/profile-creation3',
+                  pathname: '/(main)/onboarding/profile-creation-dob',
                   params: { ...params, nickname },
                 })
               }

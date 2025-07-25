@@ -44,7 +44,7 @@ export default function CustomHeader({
           numberOfLines={1}
           ellipsizeMode="tail"
           adjustsFontSizeToFit={true}
-          style={{ fontSize: 24 }}
+          style={{ fontSize: 22 }}
           className="font-michroma font-bold text-white">
           {title}
         </Text>
@@ -59,7 +59,7 @@ export default function CustomHeader({
               onRightPress();
             }}>
             <View className="flex h-6 w-6 items-center justify-center rounded-full bg-white">
-              <Ionicons name={rightIcon} size={20} color="black" />
+              <Ionicons name={rightIcon} size={22} color="black" />
             </View>
           </TouchableOpacity>
         ) : (

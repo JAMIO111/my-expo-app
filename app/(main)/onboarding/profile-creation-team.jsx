@@ -13,27 +13,37 @@ const ProfileCreation5 = () => {
           title: '',
         }}
       />
-      <View className="flex-1 bg-background-dark">
-        <View className="bg-background-dark p-5">
-          <Text className="text-text-1 mb-4 font-delagothic text-6xl font-bold">
+      <View className="flex-1 bg-bg-grouped-1">
+        <View className="p-5">
+          <Text className="mb-4 font-delagothic text-6xl font-bold text-text-1">
             Let's get you affiliated.
           </Text>
-          <Text className="text-text-2 text-2xl">
+          <Text className="font-saira text-2xl text-text-2">
             Would you like to create a new team or join an existing one?
           </Text>
         </View>
-
-        <View className="flex-1 gap-5 rounded-t-3xl bg-background p-6">
+        <View className="flex-1 p-5"></View>
+        <View className="justify-end gap-5 rounded-t-3xl bg-bg-grouped-2 p-6 pb-16 pt-10">
           <CTAButton
             type="info"
             text="Create a new team"
-            callbackFn={() => router.push('/(main)/onboarding/create-team')}
+            callbackFn={() =>
+              router.push({
+                pathname: '/(main)/onboarding/profile-creation-team-code',
+                params: { isNewTeam: true },
+              })
+            }
           />
           <View className="mt-5">
             <CTAButton
-              type="info"
+              type="success"
               text="Join existing team"
-              callbackFn={() => router.push('/(main)/onboarding/profile-creation6')}
+              callbackFn={() =>
+                router.push({
+                  pathname: '/(main)/onboarding/profile-creation-team-code',
+                  params: { isNewTeam: false },
+                })
+              }
             />
           </View>
         </View>

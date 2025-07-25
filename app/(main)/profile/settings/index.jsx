@@ -2,19 +2,18 @@ import { StyleSheet, Text, View, ScrollView, Settings } from 'react-native';
 import { Stack } from 'expo-router';
 import SettingsItem from '@components/SettingsItem';
 import MenuContainer from '@components/MenuContainer';
-import NavBar from '@components/NavBar';
+import NavBar from '@components/NavBar2';
 import SafeViewWrapper from '@components/SafeViewWrapper';
+import CustomHeader from '@components/CustomHeader';
 
 const index = () => {
   return (
-    <SafeViewWrapper topColor="bg-brand" bottomColor="bg-brand">
+    <SafeViewWrapper topColor="bg-brand" useBottomInset={false}>
       <Stack.Screen
         options={{
           header: () => (
             <SafeViewWrapper useBottomInset={false}>
-              <View className="h-16 flex-row items-center justify-center bg-brand">
-                <Text className="font-michroma text-2xl font-bold text-white">Settings</Text>
-              </View>
+              <CustomHeader title="Settings" />
             </SafeViewWrapper>
           ),
         }}
@@ -25,10 +24,16 @@ const index = () => {
         className="mt-16 flex-1 bg-bg-grouped-1 p-5">
         <MenuContainer>
           <SettingsItem
-            routerPath="/settings/Account"
+            routerPath="/profile/settings/Account"
             iconBGColor="green"
             title="Account"
             icon="person-outline"
+          />
+          <SettingsItem
+            routerPath="/profile/settings/TeamManagement"
+            iconBGColor="green"
+            title="Team Management"
+            icon="people-outline"
           />
           <SettingsItem
             lastItem={true}
@@ -42,9 +47,8 @@ const index = () => {
           <SettingsItem
             title="League Configuration"
             icon="settings-outline"
-            routerPath="/settings/LeagueConfig"
+            routerPath="/profile/settings/LeagueConfig"
           />
-          <SettingsItem iconBGColor="green" title="Team Management" icon="people-outline" />
           <SettingsItem
             lastItem={true}
             iconBGColor="red"
@@ -64,7 +68,6 @@ const index = () => {
           />
         </MenuContainer>
       </ScrollView>
-      <NavBar />
     </SafeViewWrapper>
   );
 };

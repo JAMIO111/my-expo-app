@@ -24,6 +24,8 @@
   --color-text-2: 60, 60, 67, 0.8;
   --color-text-3: 60, 60, 67, 0.6;
   --color-text-4: 60, 60, 67, 0.3;
+  --color-text-on-brand: 255, 255, 255;
+  --color-text-on-brand-2: 235, 235, 245, 0.6;
   --color-separator-faint: 60, 60, 67, 0.05;
   --color-separator: 60, 60, 67, 0.3;
   --color-separator-opaque: 198, 198, 200;
@@ -81,6 +83,8 @@
   --color-text-2: 235, 235, 245, 0.6;
   --color-text-3: 235, 235, 245, 0.3;
   --color-text-4: 235, 235, 245, 0.18;
+  --color-text-on-brand: 255, 255, 255;
+  --color-text-on-brand-2: 235, 235, 245, 0.6;
   --color-separator-faint: 84, 84, 88, 0.2;
   --color-separator: 84, 84, 88, 0.6;
   --color-separator-opaque: 56, 56, 58;

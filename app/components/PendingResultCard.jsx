@@ -1,17 +1,19 @@
 import { StyleSheet, Text, View, Pressable } from 'react-native';
 import TeamLogo from './TeamLogo';
 import { useResultsByFixture } from '@hooks/useResultsByFixture';
+import { useRouter } from 'expo-router';
 
 const PendingResultCard = ({ fixture }) => {
+  const router = useRouter();
   const { data: results, isLoading } = useResultsByFixture(fixture?.id);
   const homeScore =
-    results?.filter((result) => result.home_player === result.winner_id).length || 0;
+    results?.filter((result) => result.home_player.id === result.winner_id).length || 0;
   const awayScore =
-    results?.filter((result) => result.away_player === result.winner_id).length || 0;
+    results?.filter((result) => result.away_player.id === result.winner_id).length || 0;
   const homeWinner = homeScore > awayScore;
   const awayWinner = awayScore > homeScore;
   return (
-    <Pressable>
+    <Pressable onPress={() => router.push(`home/${fixture?.id}/approve-results`)}>
       <View className="items-center justify-between gap-8 border-b border-separator bg-bg-grouped-2 px-4 py-3 shadow-[0_2px_4px_rgba(0,0,0,0.1)]">
         <View className="w-full flex-1 flex-row items-center justify-between">
           <Text className="font-saira-semibold text-2xl text-text-1">Pending Result</Text>
@@ -31,7 +33,7 @@ const PendingResultCard = ({ fixture }) => {
             <Text
               numberOfLines={1}
               ellipsizeMode="tail"
-              className="flex-1 text-left font-saira text-xl text-text-1">
+              className={` ${homeWinner ? 'font-semibold' : ''} flex-1 text-left font-saira text-xl text-text-1`}>
               {fixture?.home_team?.display_name || 'Home Team'}
             </Text>
             <Text
@@ -50,7 +52,7 @@ const PendingResultCard = ({ fixture }) => {
             <Text
               numberOfLines={1}
               ellipsizeMode="tail"
-              className="flex-1 text-left font-saira text-xl text-text-1">
+              className={` ${awayWinner ? 'font-semibold' : ''} flex-1 text-left font-saira text-xl text-text-1`}>
               {fixture?.away_team?.display_name || 'Away Team'}
             </Text>
             <Text

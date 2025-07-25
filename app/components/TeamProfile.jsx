@@ -19,7 +19,6 @@ const TeamProfile = ({ context, profile, isLoading }) => {
             ),
           }}
         />
-        <LoadingSplash />
       </>
     );
 

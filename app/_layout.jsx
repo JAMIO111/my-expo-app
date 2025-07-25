@@ -13,10 +13,10 @@ import Toast from 'react-native-toast-message';
 import toastConfig from '@lib/toastConfig';
 import { useEffect, useState, useRef } from 'react';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import { useColorScheme } from 'react-native';
+import { UserProvider } from '@contexts/UserProvider';
+import { AdminProvider } from '@contexts/AdminContext';
 
 export default function RootLayout() {
-  const colorScheme = useColorScheme(); // 'light' | 'dark' | null
   const [fontsLoaded] = useFonts({
     Saira_400Regular,
     Saira_500Medium,
@@ -32,9 +32,9 @@ export default function RootLayout() {
     // Slight delay to ensure navigation context is initialized
     const timeout = setTimeout(() => {
       setIsReady(true);
-    }, 0);
+    }, 100);
     return () => clearTimeout(timeout);
-  }, [colorScheme]);
+  }, []);
 
   const queryClientRef = useRef();
   if (!queryClientRef.current) {
@@ -54,16 +54,20 @@ export default function RootLayout() {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <QueryClientProvider client={queryClientRef.current}>
-        <View className={`flex-1 bg-brand ${colorScheme === 'dark' ? 'dark' : ''}`}>
-          <Slot />
-        </View>
-        <Toast
-          config={toastConfig}
-          position="top"
-          visibilityTime={5000}
-          autoHide={true}
-          topOffset={80}
-        />
+        <UserProvider>
+          <AdminProvider>
+            <View className={`flex-1 bg-brand`}>
+              <Slot />
+            </View>
+            <Toast
+              config={toastConfig}
+              position="top"
+              visibilityTime={5000}
+              autoHide={true}
+              topOffset={80}
+            />
+          </AdminProvider>
+        </UserProvider>
       </QueryClientProvider>
     </GestureHandlerRootView>
   );

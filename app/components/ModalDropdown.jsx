@@ -1,8 +1,15 @@
 import { useState } from 'react';
-import { View, Text, Modal, Pressable, TouchableOpacity, FlatList } from 'react-native';
+import {
+  View,
+  Text,
+  Modal,
+  Pressable,
+  TouchableOpacity,
+  FlatList,
+  useColorScheme,
+} from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { BlurView } from 'expo-blur';
-import { useColorScheme } from 'nativewind';
 
 /**
  * Props:
@@ -21,7 +28,7 @@ const ModalDropdown = ({
   getLabel = (item) => (typeof item === 'object' ? item.label : item),
   getValue = (item) => (typeof item === 'object' ? item.value : item),
 }) => {
-  const { colorScheme } = useColorScheme();
+  const colorScheme = useColorScheme();
   const [modalVisible, setModalVisible] = useState(false);
 
   const handleSelect = (item) => {

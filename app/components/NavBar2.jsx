@@ -1,25 +1,14 @@
 import { View, Text, Animated, Pressable } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
 import { useRef } from 'react';
 import { useRouter, usePathname } from 'expo-router';
-import GradientBall from './GradientBall'; // adjust if needed
+import { TeamIcon, ChartIcon, TrophyIcon, UserIcon } from '@components/svgs';
 
 const NAV_ITEMS = [
-  { name: 'My Team', href: '/teams', icon: 'people-outline', activeIcon: 'people' },
-  {
-    name: 'Fixtures',
-    href: '/onboarding/profile-creation-team',
-    icon: 'calendar-outline',
-    activeIcon: 'calendar',
-  },
-  { name: 'Home', href: '/home', icon: 'home' },
-  {
-    name: 'Rankings',
-    href: '/rankings',
-    icon: 'bar-chart-outline',
-    activeIcon: 'bar-chart',
-  },
-  { name: 'Settings', href: '/settings', icon: 'settings-outline', activeIcon: 'settings' },
+  { name: 'My Team', href: '/teams', icon: TeamIcon },
+  { name: 'Comps', href: '/onboarding/profile-creation-team', icon: TrophyIcon },
+  { name: 'Home', href: '/home' }, // Center item — spinner
+  { name: 'Rankings', href: '/rankings', icon: ChartIcon },
+  { name: 'Profile', href: '/profile', icon: UserIcon },
 ];
 
 const NavBar = () => {
@@ -60,16 +49,24 @@ const NavBar = () => {
   });
 
   return (
-    <View
-      className={`relative h-28 w-full flex-row items-center justify-around border-t border-brand-light bg-brand`}>
-      {NAV_ITEMS.map((item, index) => {
-        const isActive = pathname === item.href;
+    <View className="relative h-28 w-full flex-row items-center justify-around bg-brand pt-11">
+      {/* Decorative top bar */}
+      <View className="absolute top-0 h-6 w-full flex-row items-center justify-around bg-red-950">
+        {[...Array(4)].map((_, i) => (
+          <View key={i} className="h-1.5 w-1.5 rounded-full bg-gray-500" />
+        ))}
+      </View>
+
+      <View className="absolute top-6 h-4 w-full bg-brand-light" />
+
+      {NAV_ITEMS.map(({ name, href, icon: Icon }, index) => {
+        const isActive = pathname === href;
         const isCenter = index === 2;
 
         const handleNavigate = () => {
           if (isCenter) spin();
-          if (!isActive) {
-            router.replace(item.href, { reset: true });
+          if (!isActive && href) {
+            router.replace(href);
           }
         };
 
@@ -84,43 +81,38 @@ const NavBar = () => {
 
         if (isCenter) {
           return (
-            <View key={item.href} className="absolute -top-6 h-28 items-center justify-between">
+            <View key={href || index} className="absolute h-20 items-center justify-between">
               <Pressable
                 {...pressableProps}
-                className="h-20 w-20 items-center justify-center rounded-full bg-black pb-3 shadow-lg"
+                className="-top-2 h-16 w-16 items-center justify-center rounded-full bg-black pb-2 shadow-lg"
                 style={{ alignSelf: 'center' }}>
                 <Animated.View
                   style={{
                     transform: [{ rotate: spinInterpolate }, { scale: scaleValues[index] }],
                   }}
-                  className="h-10 w-10 items-center justify-center rounded-full bg-white">
-                  <Text className="text-4xl text-black">8</Text>
+                  className="h-9 w-9 items-center justify-center rounded-full bg-white">
+                  <Text className="text-[26px] text-black">8</Text>
                 </Animated.View>
               </Pressable>
-              <Text className="font-semibold text-white">{item.name}</Text>
+              <Text className="font-medium text-white">{name}</Text>
             </View>
           );
         }
 
         return (
-          <View key={item.href} className="h-24 items-center justify-center">
+          <View key={href} className="items-center justify-center">
             <Pressable
               {...pressableProps}
-              className={`${index === 1 && 'mr-10'} ${index === 3 && 'ml-10'} h-full flex-1 items-center justify-center`}>
+              className={`${
+                index === 1 ? 'mr-10' : index === 3 ? 'ml-10' : ''
+              } h-full flex-1 items-center justify-center`}>
               <Animated.View style={{ transform: [{ scale: scaleValues[index] }] }}>
-                <GradientBall color={isActive ? '#ffbf00' : '#FF2919'} size={56}>
-                  <Ionicons
-                    name={isActive ? item.activeIcon : item.icon}
-                    size={22}
-                    color={isActive ? 'black' : 'white'}
-                  />
-                </GradientBall>
+                {Icon && (
+                  <Icon width={28} height={28} color="white" strokeWidth={isActive ? 2 : 1} />
+                )}
               </Animated.View>
+              <Text className="mt-1 font-medium text-white">{name}</Text>
             </Pressable>
-            <Text
-              className={`${index === 1 && 'mr-10'} ${index === 3 && 'ml-10'} text-sm font-semibold text-white`}>
-              {item.name}
-            </Text>
           </View>
         );
       })}

@@ -1,6 +1,6 @@
 const colors = {
   light: {
-    brandNormal: 'rgba(6, 61, 18, 1)',
+    brandNormal: 'rgb(6, 61, 18)',
     brandDark: 'rgba(4, 41, 12, 1)',
     brandLight: 'rgba(10, 81, 25, 1)',
     bg1: 'rgba(255, 255, 255, 1)',

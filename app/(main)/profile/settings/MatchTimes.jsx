@@ -1,4 +1,4 @@
-import { ScrollView, Platform, View, Text, Pressable } from 'react-native';
+import { ScrollView, Platform, View, Text, Pressable, useColorScheme } from 'react-native';
 import { Stack } from 'expo-router';
 import { useState } from 'react';
 import MenuContainer from '@components/MenuContainer';
@@ -6,7 +6,6 @@ import { useFixtureConfig } from '@contexts/AdminContext';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import IonIcons from 'react-native-vector-icons/Ionicons';
 import colors from '@lib/colors';
-import { useColorScheme } from 'nativewind';
 
 const MatchTimes = () => {
   const { colorScheme } = useColorScheme();
@@ -59,7 +58,8 @@ const MatchTimes = () => {
               if (timeValue instanceof Date) {
                 parsedTime = timeValue;
               } else if (typeof timeValue === 'string') {
-                parsedTime = new Date(`1970-01-01T${timeValue}`);
+                const [hours, minutes] = timeValue.split(':').map(Number);
+                parsedTime = new Date(1970, 0, 1, hours, minutes);
               } else {
                 parsedTime = new Date(1970, 0, 1, 19, 0); // Default 19:00
               }

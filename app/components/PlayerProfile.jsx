@@ -1,5 +1,5 @@
 import ConfirmModal from '@components/ConfirmModal';
-import { ScrollView, View, Image, Text, StyleSheet } from 'react-native';
+import { ScrollView, View, Image, Text, StyleSheet, useColorScheme } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
 import { useUser } from '@contexts/UserProvider';
@@ -8,7 +8,6 @@ import CTAButton from '@components/CTAButton';
 import Heading from '@components/Heading';
 import supabase from '@lib/supabaseClient';
 import Toast from 'react-native-toast-message';
-import { useColorScheme } from 'nativewind';
 import LoadingSplash from '@components/LoadingSplash';
 import StatCard from '@components/StatCard';
 import { isBirthdayToday } from '@lib/helperFunctions';
@@ -16,7 +15,7 @@ import { isBirthdayToday } from '@lib/helperFunctions';
 export default function PlayerProfile({ context, isLoading, playerProfile, error }) {
   const router = useRouter();
   const { teamId, userId } = useLocalSearchParams();
-  const { colorScheme } = useColorScheme();
+  const colorScheme = useColorScheme();
   const [captainModalVisible, setCaptainModalVisible] = useState(false);
   const [viceCaptainModalVisible, setViceCaptainModalVisible] = useState(false);
   const [removePlayerModalVisible, setRemovePlayerModalVisible] = useState(false);

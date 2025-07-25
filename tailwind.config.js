@@ -35,6 +35,8 @@ module.exports = {
         'text-2': 'rgba(var(--color-text-2))',
         'text-3': 'rgba(var(--color-text-3))',
         'text-4': 'rgba(var(--color-text-4))',
+        'text-on-brand': 'rgba(var(--color-text-on-brand))',
+        'text-on-brand-2': 'rgba(var(--color-text-on-brand-2))',
         'separator-faint': 'rgba(var(--color-separator-faint))',
         separator: 'rgba(var(--color-separator))',
         'separator-opaque': 'rgba(var(--color-separator-opaque))',

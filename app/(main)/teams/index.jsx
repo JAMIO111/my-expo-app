@@ -3,7 +3,7 @@ import { Stack } from 'expo-router';
 import { useUser } from '@contexts/UserProvider';
 import LoadingSplash from '@components/LoadingSplash';
 import CustomHeader from '@components/CustomHeader';
-import NavBar from '@components/NavBar';
+import NavBar from '@components/NavBar2';
 import SafeViewWrapper from '@components/SafeViewWrapper';
 import TeamProfile from '@components/TeamProfile';
 import { useTeamProfile } from '@hooks/useTeamProfile';
