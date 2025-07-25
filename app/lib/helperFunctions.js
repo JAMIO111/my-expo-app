@@ -439,6 +439,8 @@ export async function initiateNewSeason(seasonName, districtId) {
       .insert({
         season: seasonId,
         division: division.id,
+        division_name: division.name,
+        division_tier: division.tier,
         promotion_spots: promotionSpots,
         relegation_spots: relegationSpots,
         is_top_division: isTop,

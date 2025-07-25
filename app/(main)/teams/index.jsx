@@ -9,12 +9,11 @@ import TeamProfile from '@components/TeamProfile';
 import { useTeamProfile } from '@hooks/useTeamProfile';
 
 const index = () => {
-  const { player, loading } = useUser();
-  const { data: teamProfile, isLoading } = useTeamProfile(player?.team?.id);
+  const { loading, currentRole } = useUser();
+  const { data: teamProfile, isLoading } = useTeamProfile(currentRole?.team?.id);
 
-  if (loading || !player) return <LoadingSplash />;
+  if (loading || !currentRole) return <LoadingSplash />;
 
-  console.log('Debug Player:', player);
   console.log('Debug Team Profile:', teamProfile);
 
   return (
@@ -23,13 +22,13 @@ const index = () => {
         options={{
           header: () => (
             <SafeViewWrapper useBottomInset={false}>
-              <CustomHeader showBack={false} title={player?.team?.name || 'Team'} />
+              <CustomHeader showBack={false} title={currentRole?.team?.name || 'Team'} />
             </SafeViewWrapper>
           ),
         }}
       />
       <SafeViewWrapper bottomColor="bg-brand" topColor="bg-brand">
-        <View className={loading || !player ? '' : 'mt-16'}></View>
+        <View className={loading || !currentRole ? '' : 'mt-16'}></View>
         <TeamProfile profile={teamProfile} isLoading={isLoading} context="teams" />
         <NavBar />
       </SafeViewWrapper>

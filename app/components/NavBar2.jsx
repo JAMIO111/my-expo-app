@@ -84,17 +84,17 @@ const NavBar = () => {
             <View key={href || index} className="absolute h-20 items-center justify-between">
               <Pressable
                 {...pressableProps}
-                className="-top-2 h-16 w-16 items-center justify-center rounded-full bg-black pb-2 shadow-lg"
+                className="-top-2 h-16 w-16 items-center justify-center rounded-full bg-black pb-1 shadow-lg"
                 style={{ alignSelf: 'center' }}>
                 <Animated.View
                   style={{
                     transform: [{ rotate: spinInterpolate }, { scale: scaleValues[index] }],
                   }}
-                  className="h-9 w-9 items-center justify-center rounded-full bg-white">
-                  <Text className="text-[26px] text-black">8</Text>
+                  className="h-8 w-8 items-center justify-center rounded-full bg-white">
+                  <Text className="text-2xl text-black">8</Text>
                 </Animated.View>
               </Pressable>
-              <Text className="font-medium text-white">{name}</Text>
+              <Text className="font-saira text-white">{name}</Text>
             </View>
           );
         }
@@ -111,7 +111,7 @@ const NavBar = () => {
                   <Icon width={28} height={28} color="white" strokeWidth={isActive ? 2 : 1} />
                 )}
               </Animated.View>
-              <Text className="mt-1 font-medium text-white">{name}</Text>
+              <Text className="font-saira text-white">{name}</Text>
             </Pressable>
           </View>
         );

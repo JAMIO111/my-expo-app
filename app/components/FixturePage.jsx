@@ -205,7 +205,10 @@ const FixturePage = ({ fixtureDetails, isLoading, context }) => {
         ) : (
           <View className="mt-5 h-full">
             <View className="border-b-[0.5px] border-theme-gray-5">
-              <FormWidget />
+              <FormWidget
+                teamId={fixtureDetails?.homeTeam?.id}
+                awayTeamId={fixtureDetails?.awayTeam?.id}
+              />
             </View>
             <StatCardCompare
               fixture={fixtureDetails}

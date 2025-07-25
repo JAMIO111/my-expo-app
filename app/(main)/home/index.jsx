@@ -18,8 +18,10 @@ import AwaitingResultCard from '@components/AwaitingResultCard';
 import { useResultsPendingApproval } from '@hooks/useResultsPendingApproval';
 import { useFixturesAwaitingResults } from '@hooks/useFixturesAwaitingResults';
 import { useAuthUserProfile } from '@hooks/useAuthUserProfile2';
+import { useColorScheme } from 'react-native';
 
 const Home = () => {
+  const colorScheme = useColorScheme();
   const [refreshing, setRefreshing] = useState(false);
   const router = useRouter();
   const {
@@ -40,25 +42,28 @@ const Home = () => {
   console.log('Is Error:', isError);
 
   console.log('DivisionID', player?.team?.division?.id);
-  console.log('SeasonId', player?.activeSeason?.id);
+  console.log('SeasonId', currentRole?.activeSeason?.id);
 
   const {
     data: standings,
     isLoading,
     refetch: standingsRefetch,
-  } = useStandings(player?.team?.division?.id, player?.activeSeason?.id);
+  } = useStandings(currentRole?.team?.division?.id, currentRole?.activeSeason?.id);
 
   const {
     data: upcomingFixtures,
     isLoading: isUpcomingFixturesLoading,
     refetch: upcomingFixturesRefetch,
-  } = useUpcomingFixtures(player?.team?.id);
+  } = useUpcomingFixtures(currentRole?.team?.id);
 
   const {
     data: resultsPendingApproval,
     isLoading: isResultsPendingApprovalLoading,
     refetch: resultsPendingApprovalRefetch,
-  } = useResultsPendingApproval({ awayTeamId: player?.team?.id, enabled: !!player?.team?.id });
+  } = useResultsPendingApproval({
+    awayTeamId: currentRole?.team?.id,
+    enabled: !!currentRole?.team?.id,
+  });
 
   const {
     data: fixturesAwaitingResults,
@@ -69,23 +74,19 @@ const Home = () => {
     enabled: !!player?.team?.id,
   });
 
-  const handleGetUser = () => {
-    console.log('Button pressed ✅');
+  const handleRecalcStandings = async () => {
+    console.log('🟡 Recalc button pressed');
+    console.log('Current Role:', currentRole?.activeSeason?.id, currentRole?.team?.division?.id);
+    const { error, data } = await supabase.rpc('recalculate_standings', {
+      _season_id: currentRole?.activeSeason?.id,
+      _division_id: currentRole?.team?.division?.id,
+    });
 
-    if (data) {
-      console.log('User Profile:', data);
+    if (error) {
+      console.error('Failed to recalculate standings:', error.message);
     } else {
-      refetch()
-        .then(({ data, error }) => {
-          if (error) {
-            console.error('Error during refetch:', error);
-          } else {
-            console.log('User Profile (refetched):', data);
-          }
-        })
-        .catch((err) => {
-          console.error('Unexpected error:', err);
-        });
+      console.log('Standings recalculation data:', data);
+      console.log('Standings recalculated successfully');
     }
   };
 
@@ -142,13 +143,17 @@ const Home = () => {
             header: () => (
               <SafeViewWrapper useBottomInset={false}>
                 <View className="h-16 flex-row items-center justify-center bg-brand">
-                  <Text className="font-michroma text-2xl font-bold text-white">Break</Text>
+                  <Text className="pb-2 font-michroma text-2xl font-bold text-white">Break</Text>
                   <Image
-                    source={require('@assets/Break-Room-Logo-1024-Background.png')}
-                    className="mx-1 h-12 w-12"
+                    source={
+                      colorScheme === 'dark'
+                        ? require('@assets/Break-Room-Logo-1024-Background-Dark.png')
+                        : require('@assets/Break-Room-Logo-1024-Background.png')
+                    }
+                    className="mx-1 h-14 w-14"
                     resizeMode="contain"
                   />
-                  <Text className="font-michroma text-2xl font-bold text-white">Room</Text>
+                  <Text className="pb-2 font-michroma text-2xl font-bold text-white">Room</Text>
                 </View>
               </SafeViewWrapper>
             ),
@@ -213,10 +218,7 @@ const Home = () => {
                 </View>
               )}
               <View className="w-full gap-4 p-3 pb-20">
-                <CTAButton text="View Players" callbackFn={() => router.push('/home/fixtures')} />
-                <CTAButton text="View Teams" callbackFn={() => router.push('/home/fixtures')} />
-                <CTAButton text="View Fixtures" callbackFn={() => router.push('/home/fixtures')} />
-                <CTAButton text="Get User" callbackFn={handleGetUser} />
+                <CTAButton text="Recalc Standings" callbackFn={handleRecalcStandings} />
                 <CTAButton
                   text="Switch Context"
                   callbackFn={() => {

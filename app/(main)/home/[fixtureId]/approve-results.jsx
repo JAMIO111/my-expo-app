@@ -99,7 +99,12 @@ const ApproveResults = () => {
           )}
           {disputedFrames.length === 0 && (
             <>
-              <CTAButton type="success" text="Approve Results" callbackFn={handleApproveResults} />
+              <CTAButton
+                loading={true}
+                type="success"
+                text="Approve Results"
+                callbackFn={handleApproveResults}
+              />
               <Text className="text-center font-saira text-lg text-text-2">
                 Or tap on 1 or more frames to dispute.
               </Text>

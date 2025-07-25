@@ -1,9 +1,5 @@
 import { Text, View } from 'react-native';
-
-const form = {
-  homeTeam: ['W', 'W', 'L', 'L', 'W'],
-  awayTeam: ['L', 'L', 'L', 'L', 'W'],
-};
+import { useLast5Results } from '@hooks/useLast5Results'; // adjust import as needed
 
 const getColor = (result) => {
   switch (result) {
@@ -18,9 +14,13 @@ const getColor = (result) => {
   }
 };
 
-const FormWidget = () => {
-  function getFormStreak(form) {
-    if (!form || form.length === 0) return 'No recent games';
+const FormWidget = ({ homeTeamId, awayTeamId }) => {
+  // Fetch form for both teams
+  const { data: homeForm, isLoading: loadingHome } = useLast5Results(homeTeamId);
+  const { data: awayForm, isLoading: loadingAway } = useLast5Results(awayTeamId);
+
+  const getFormStreak = (form) => {
+    if (!form || form.length === 0) return 'No recent form';
 
     const first = form[0];
     let streakCount = 1;
@@ -42,33 +42,56 @@ const FormWidget = () => {
     }
 
     return 'No recent streak';
+  };
+
+  if (loadingHome || loadingAway) {
+    return (
+      <View className="p-4">
+        <Text className="text-center text-text-2">Loading form data...</Text>
+      </View>
+    );
   }
 
   return (
     <View className="gap-3 bg-bg-grouped-2 px-2 py-3">
       <View className="flex-row items-center justify-between px-2">
         <Text className="flex-1 text-left font-saira text-lg font-semibold text-text-1">
-          {getFormStreak(form?.homeTeam)}
+          {getFormStreak(homeForm)}
         </Text>
         <Text className="w-26 text-center font-saira text-lg font-medium text-text-2">
           Recent Form
         </Text>
         <Text className="flex-1 text-right font-saira text-lg font-semibold text-text-1">
-          {getFormStreak(form?.awayTeam)}
+          {getFormStreak(awayForm)}
         </Text>
       </View>
       <View className="flex-row items-center justify-between px-2">
         <View className="flex-row items-center gap-2">
-          {form.homeTeam.map((result, index) => (
+          {homeForm?.map((result, index) => (
             <View
               key={`home-${index}`}
-              className={`h-6 w-6 items-center justify-center rounded-full ${getColor(result)}`}
-            />
+              className={`h-6 w-6 items-center justify-center rounded-full ${getColor(result)}`}>
+              <Text
+                className={`${
+                  result === 'L' ? 'text-white' : 'text-black'
+                } text-center font-saira-medium`}>
+                {result}
+              </Text>
+            </View>
           ))}
         </View>
         <View className="flex-row items-center gap-2">
-          {form.awayTeam.map((result, index) => (
-            <View key={`away-${index}`} className={`h-6 w-6 rounded-full ${getColor(result)}`} />
+          {awayForm?.map((result, index) => (
+            <View
+              key={`away-${index}`}
+              className={`h-6 w-6 items-center justify-center rounded-full ${getColor(result)}`}>
+              <Text
+                className={`${
+                  result === 'L' ? 'text-white' : 'text-black'
+                } text-center font-saira-medium`}>
+                {result}
+              </Text>
+            </View>
           ))}
         </View>
       </View>

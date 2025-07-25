@@ -41,6 +41,19 @@ const TeamLogo = ({
             }}
           />
         );
+      case 'Diagonal Stripe Reverse':
+        return (
+          <View
+            style={{
+              position: 'absolute',
+
+              width: size * 1.5, // Make it long enough to span diagonally
+              height: size / thickness, // Thin stripe
+              backgroundColor: color2 || '#000',
+              transform: [{ rotate: '320deg' }],
+            }}
+          />
+        );
       case 'Spots':
         return (
           <View
@@ -59,7 +72,7 @@ const TeamLogo = ({
   return (
     <View
       style={{ height: size, width: size, backgroundColor: color1 }}
-      className="items-center justify-center overflow-hidden rounded-full border">
+      className="items-center justify-center overflow-hidden rounded-full border border-theme-gray-3">
       {innerView(type, color2, thickness)}
     </View>
   );

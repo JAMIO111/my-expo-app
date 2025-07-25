@@ -108,7 +108,7 @@ const SubmitResultsScreen = () => {
     return 'th';
   }
 
-  const handleSubmit = async () => {
+  const handleSave = async () => {
     const success = await submit(frames);
     if (success) {
       router.replace(`/home`);
@@ -118,7 +118,7 @@ const SubmitResultsScreen = () => {
   console.log('Frames: ', frames);
 
   return (
-    <SafeViewWrapper useBottomInset={false} topColor="bg-brand">
+    <SafeViewWrapper topColor="bg-brand">
       <Stack.Screen
         options={{
           header: () => (
@@ -362,20 +362,32 @@ const SubmitResultsScreen = () => {
           })}
 
         {/* Add Frame */}
+      </ScrollView>
+      <View className="p-5">
         {!activeFrameId && (
           <CTAButton text="Add Frame" type="info" disabled={submitting} callbackFn={addFrame} />
         )}
         {frames.length > 0 && !activeFrameId && (
           <View className="mt-4">
             <CTAButton
-              text={submitting ? 'Submitting...' : 'Submit Results'}
+              text={submitting ? 'Saving Results...' : 'Save Results'}
               type="success"
-              callbackFn={handleSubmit}
+              callbackFn={handleSave}
               disabled={submitting}
+              loading={submitting}
             />
           </View>
         )}
-      </ScrollView>
+        <View className="mt-4">
+          <CTAButton
+            text={submitting ? 'Submit Final Results...' : 'Save Results'}
+            type="success"
+            callbackFn={handleSave}
+            disabled={submitting}
+            loading={submitting}
+          />
+        </View>
+      </View>
     </SafeViewWrapper>
   );
 };

@@ -9,7 +9,7 @@ import { useUser } from '@contexts/UserProvider';
 
 const index = () => {
   const router = useRouter();
-  const { player, loading } = useUser();
+  const { currentRole, player, loading } = useUser();
   const { fixtureId } = useLocalSearchParams();
   const { data: fixtureDetails, isLoading } = useFixtureDetails(fixtureId);
   return (
@@ -21,11 +21,11 @@ const index = () => {
               <CustomHeader
                 title={`${fixtureDetails?.homeTeam?.abbreviation} vs ${fixtureDetails?.awayTeam?.abbreviation}`}
                 onRightPress={
-                  true ||
-                  (fixtureDetails?.home_team === player?.team.id &&
-                    !fixtureDetails?.is_complete &&
-                    (player?.team?.captain === player?.id ||
-                      player?.team?.vice_captain === player?.id))
+                  currentRole === 'captain' &&
+                  fixtureDetails?.home_team === player?.team.id &&
+                  !fixtureDetails?.is_complete &&
+                  (player?.team?.captain === player?.id ||
+                    player?.team?.vice_captain === player?.id)
                     ? () => router.push(`home/${fixtureId}/submit-results`)
                     : null
                 }

@@ -11,10 +11,10 @@ import { FixtureSkeleton } from '@components/Skeletons';
 
 const FixtureList = () => {
   const router = useRouter();
-  const { player } = useUser();
-  const seasonId = player?.activeSeason?.id;
-  const divisionId = player?.team?.division?.id;
-  const seasonStartDate = player?.activeSeason?.start_date;
+  const { currentRole } = useUser();
+  const seasonId = currentRole?.activeSeason?.id;
+  const divisionId = currentRole?.team?.division?.id;
+  const seasonStartDate = currentRole?.activeSeason?.start_date;
 
   const initialMonth = isBefore(new Date(), seasonStartDate)
     ? startOfMonth(seasonStartDate)

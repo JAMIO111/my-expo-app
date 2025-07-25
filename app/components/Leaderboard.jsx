@@ -1,7 +1,9 @@
-import { StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 import TeamLogo from '@components/TeamLogo';
+import { useRouter } from 'expo-router';
 
 const Leaderboard = ({ title, type }) => {
+  const router = useRouter();
   const playerStats = [
     { id: 1, name: 'Jamie Dryden', value: 653 },
     { id: 2, name: 'Jack Smith', value: 632 },
@@ -25,7 +27,9 @@ const Leaderboard = ({ title, type }) => {
   };
 
   return (
-    <View className="min-w-[300px] rounded-3xl bg-brand p-3 shadow-[0_2px_4px_rgba(0,0,0,0.1)]">
+    <Pressable
+      onPress={() => router.push('/rankings/podium')}
+      className="min-w-[300px] rounded-3xl bg-brand p-3 shadow-[0_2px_4px_rgba(0,0,0,0.1)]">
       <Text className="mb-2 pl-2 font-saira-semibold text-2xl text-white">{title}</Text>
 
       {playerStats.map((stat, index) => (
@@ -75,7 +79,7 @@ const Leaderboard = ({ title, type }) => {
           <Text className="ml-3 font-saira-bold text-2xl text-white">{stat.value}</Text>
         </View>
       ))}
-    </View>
+    </Pressable>
   );
 };
 

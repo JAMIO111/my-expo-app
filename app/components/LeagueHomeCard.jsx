@@ -10,11 +10,11 @@ const LeagueHomeCard = ({ standings }) => {
   const colorScheme = useColorScheme();
   const themeColors = colors[colorScheme];
   const router = useRouter();
-  const { player } = useUser();
+  const { currentRole } = useUser();
   console.log(standings, 'Standings Data:');
   console.log(colorScheme, 'Color Scheme:');
 
-  const myTeam = standings?.standings?.find((team) => team.team === player?.team?.id);
+  const myTeam = standings?.standings?.find((team) => team.team === currentRole?.teamId);
   return (
     <Pressable
       onPress={() => {
@@ -44,7 +44,9 @@ const LeagueHomeCard = ({ standings }) => {
               color2={myTeam?.Teams?.crest?.color2}
               thickness={myTeam?.Teams?.crest?.thickness}
             />
-            <Text className="font-saira text-xl text-text-2">{player?.team?.display_name}</Text>
+            <Text className="font-saira text-xl text-text-2">
+              {currentRole?.team?.display_name}
+            </Text>
           </View>
           <Text className="font-saira text-2xl font-semibold text-text-1">{`${myTeam?.points} Pts`}</Text>
         </View>
