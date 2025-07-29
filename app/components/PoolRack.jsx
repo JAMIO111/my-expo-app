@@ -1,9 +1,10 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { View, Text, Pressable, Image } from 'react-native';
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
   withTiming,
+  withRepeat,
   Easing,
   runOnJS,
 } from 'react-native-reanimated';
@@ -13,28 +14,48 @@ import { Michroma_400Regular } from '@expo-google-fonts/michroma';
 import supabase from '@lib/supabaseClient';
 import { useUser } from '@contexts/UserProvider';
 import { fetchAuthUserProfile } from '@hooks/useAuthUserProfile2';
+import { useColorScheme } from 'react-native';
 
 const PoolRack = () => {
+  const colorScheme = useColorScheme();
   const [fontsLoaded] = useFonts({
     Michroma: Michroma_400Regular,
   });
   const router = useRouter();
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const { roles, currentRole, setCurrentRole } = useUser();
 
   // Shared animation values
   const cueY = useSharedValue(0);
   const logoOpacity = useSharedValue(1);
+  const textOpacity = useSharedValue(1);
 
   // Cue ball animation
   const cueBallStyle = useAnimatedStyle(() => ({
-    transform: [{ translateY: cueY.value }],
+    transform: [{ translateY: -cueY.value }],
   }));
 
   // Logo fade animation
   const logoStyle = useAnimatedStyle(() => ({
     opacity: logoOpacity.value,
   }));
+
+  const flashingTextStyle = useAnimatedStyle(() => ({
+    opacity: textOpacity.value,
+  }));
+
+  useEffect(() => {
+    if (fontsLoaded && !loading) {
+      textOpacity.value = withRepeat(
+        withTiming(0.1, {
+          duration: 1000,
+          easing: Easing.inOut(Easing.ease),
+        }),
+        -1,
+        true
+      );
+    }
+  }, [fontsLoaded, loading]);
 
   const onAnimationEnd = async () => {
     console.log('🔵 onAnimationEnd starting...');
@@ -81,7 +102,7 @@ const PoolRack = () => {
     console.log('🟢 handleNavigation triggered');
     setLoading(true);
     logoOpacity.value = withTiming(0, { duration: 500 });
-    cueY.value = withTiming(500, { duration: 1500, easing: Easing.out(Easing.exp) }, () => {
+    cueY.value = withTiming(500, { duration: 2500, easing: Easing.out(Easing.exp) }, () => {
       console.log('🟡 Animation completed, running onAnimationEnd');
       runOnJS(onAnimationEnd)();
     });
@@ -92,7 +113,7 @@ const PoolRack = () => {
   return (
     <Pressable
       onPress={handleNavigation}
-      className={`relative w-full flex-1 bg-brand`}
+      className={`${colorScheme} relative w-full flex-1 bg-brand`}
       style={{
         justifyContent: 'space-between',
         alignItems: 'center',
@@ -100,35 +121,43 @@ const PoolRack = () => {
       }}>
       {/* Top Section */}
       <View className=" w-full items-center justify-between"></View>
-      <View className="absolute top-[25%] -z-10 h-0.5 w-full items-center justify-between bg-theme-gray-1"></View>
+      <View className="absolute top-[75%] -z-10 h-0.5 w-full items-center justify-between bg-theme-gray-1"></View>
 
       {/* Cue Ball + Prompt */}
-      <View className="absolute top-[15%] mb-10 items-center justify-center">
+      <View className="absolute bottom-[15%] mb-10 items-center justify-center">
         <Animated.View
           className="h-8 w-8 rounded-full border border-white bg-white"
           style={cueBallStyle}
         />
       </View>
       {/* Logo (fades out on tap) */}
-      <Text className="absolute top-[50%] mb-8 font-michroma text-[40px] font-bold text-white">
-        Break Room
-      </Text>
-      <Animated.View style={[{ alignItems: 'center', marginBottom: 20 }, logoStyle]}>
+
+      <Animated.View
+        className="absolute top-[10%] flex-1 items-center justify-center"
+        style={[{ alignItems: 'center' }, logoStyle]}>
         <Image
-          source={require('@assets/Break-Room-Logo-1024-Background.png')}
+          source={
+            colorScheme === 'dark'
+              ? require('@assets/Break-Room-Logo-1024-Background-Dark.png')
+              : require('@assets/Break-Room-Logo-1024-Background.png')
+          }
           style={[
             {
-              width: 180,
-              height: 180,
+              width: 200,
+              height: 200,
               borderRadius: 10,
-              absolute: true,
-              top: -30,
             },
           ]}
           resizeMode="cover"
         />
-        <Text className="pb-10 text-lg text-white">Tap to continue!</Text>
+        <View className="rounded-2xl border-2 border-brand-light bg-brand-dark px-6 pb-2 pt-6 shadow-xl shadow-brand-light">
+          <Text className="mb-2 font-michroma text-6xl text-white">Break</Text>
+          <Text className="font-michroma text-6xl text-white">Room</Text>
+        </View>
       </Animated.View>
+      <Animated.Text style={flashingTextStyle} className="pb-20 text-xl text-white">
+        {loading ? 'Loading content...' : 'Tap to continue!'}
+      </Animated.Text>
       <View className="absolute inset-x-0 items-center justify-center">
         <View className="h-8 w-full flex-row items-center justify-around bg-red-950 px-10">
           <View className="h-2 w-2 rounded-full bg-gray-400"></View>

@@ -11,7 +11,7 @@ const index = () => {
         options={{
           header: () => (
             <SafeViewWrapper useBottomInset={false}>
-              <CustomHeader title="Tables" rightIcon="clipboard-outline" />
+              <CustomHeader title="League Tables" rightIcon="clipboard-outline" />
             </SafeViewWrapper>
           ),
         }}

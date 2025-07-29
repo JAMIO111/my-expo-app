@@ -29,14 +29,14 @@ const Leaderboard = ({ title, type }) => {
   return (
     <Pressable
       onPress={() => router.push('/rankings/podium')}
-      className="min-w-[300px] rounded-3xl bg-brand p-3 shadow-[0_2px_4px_rgba(0,0,0,0.1)]">
-      <Text className="mb-2 pl-2 font-saira-semibold text-2xl text-white">{title}</Text>
+      className="min-w-[300px] rounded-3xl border border-theme-gray-5 bg-bg-grouped-2 p-3 shadow-[0_2px_4px_rgba(0,0,0,0.1)]">
+      <Text className="mb-2 pl-2 font-saira-semibold text-2xl text-text-1">{title}</Text>
 
       {playerStats.map((stat, index) => (
         <View key={stat.id} className="flex-row items-center justify-between p-2">
           {/* Left Side: Index, Avatar, Name */}
           <View className="min-w-0 flex-1 flex-row items-center">
-            <Text className="w-6 font-saira text-white">{index + 1}.</Text>
+            <Text className="w-6 font-saira text-text-1">{index + 1}.</Text>
             {type === 'team' ? (
               <View className="px-2">
                 <TeamLogo
@@ -71,14 +71,14 @@ const Leaderboard = ({ title, type }) => {
               <Text
                 numberOfLines={1}
                 ellipsizeMode="tail"
-                className="font-saira-semibold text-lg text-white">
+                className="font-saira-semibold text-lg text-text-1">
                 {stat.name}
               </Text>
             </View>
           </View>
 
           {/* Right Side: Stat Value */}
-          <Text className="ml-3 font-saira-bold text-2xl text-white">{stat.value}</Text>
+          <Text className="ml-3 font-saira-bold text-2xl text-text-1">{stat.value}</Text>
         </View>
       ))}
     </Pressable>

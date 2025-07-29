@@ -1,4 +1,27 @@
 import supabase from '@/lib/supabaseClient';
+import { xpLevels } from '@/lib/xpLevels';
+
+export function calculateLevel(xp) {
+  let currentLevel = xpLevels[0];
+
+  for (let i = 1; i < xpLevels.length; i++) {
+    if (xp < xpLevels[i].xp) break;
+    currentLevel = xpLevels[i];
+  }
+
+  const nextLevel = xpLevels.find((l) => l.level === currentLevel.level + 1);
+
+  return {
+    level: currentLevel.level,
+    currentXp: xp,
+    currentLevelXp: currentLevel.xp,
+    nextLevelXp: nextLevel?.xp ?? null,
+    progressToNextLevel: nextLevel
+      ? ((xp - currentLevel.xp) / (nextLevel.xp - currentLevel.xp)) * 100
+      : 100,
+    isMaxLevel: !nextLevel,
+  };
+}
 
 export const getContrastColor = (hex, minContrastWhite = 2.5) => {
   const normalizeHex = hex.replace('#', '');
@@ -268,6 +291,8 @@ export function generateFixtures({
             date_time: matchDateTime.toISOString(),
             season: seasonId,
             division: divisionId,
+            home_score: 0,
+            away_score: 0,
           });
 
           if (!isReverse) {
@@ -480,6 +505,7 @@ export async function initiateNewSeason(seasonName, districtId) {
       won: 0,
       drawn: 0,
       lost: 0,
+      special_match: division.special_match ? 0 : null,
 
       position: null,
     }));

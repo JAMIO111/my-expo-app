@@ -1,38 +1,50 @@
 import { StyleSheet, Text, View, ScrollView } from 'react-native';
-import StatCard from '@components/StatCard';
+import CircularProgress from '@components/CircularProgress';
+import HorizontalStatBar from '@components/HorizontalStatBar';
+import ColoredStatCard from '@components/ColoredStatCard';
+import { usePlayerStats } from '../hooks/usePlayerStats';
 
-const PlayerStats = () => {
+const PlayerStats = ({ playerId }) => {
+  console.log('PlayerStats Component Rendered with playerId:', playerId);
+  const { data, error } = usePlayerStats(playerId);
+  console.log('Player Stats Data:', data);
   return (
-    <ScrollView
+    <View
       contentContainerStyle={{ alignItems: 'center', justifyContent: 'center' }}
-      className="mt-16 w-full bg-bg-grouped-1 py-5">
-      <View className="w-full gap-5 px-4">
-        <View className="flex-row gap-5">
-          <StatCard title="Matches Played" value="86" icon="dice-outline" color="bg-theme-blue" />
-          <StatCard title="Match Win %" value="72%" icon="star-outline" color="bg-theme-purple" />
-        </View>
-        <View className="flex-row gap-5">
-          <StatCard title="Matches Won" value="52" icon="trophy-outline" color="bg-theme-green" />
-          <StatCard title="Matches Lost" value="23" icon="bandage-outline" color="bg-theme-red" />
-        </View>
+      className="w-full px-4 pt-4">
+      <Text className="mb-2 font-saira-semibold text-3xl text-text-1">Frames</Text>
+      <View className="mb-8 w-full flex-row items-center justify-between gap-4">
+        <ColoredStatCard label="Wins" value={1500} color="theme-green" />
+        <ColoredStatCard label="Draws" value={5} color="white" />
+        <ColoredStatCard label="Losses" value={26} color="theme-red" />
       </View>
-      <View
-        contentContainerStyle={{ justifyContent: 'center', alignItems: 'center' }}
-        className="my-5 w-full flex-row gap-5 bg-brand px-4 py-5">
-        <StatCard title="Win Streak" value="52" icon="flame-outline" color="bg-theme-orange" />
-        <StatCard title="Dishes" value="52" icon="flash-outline" color="bg-theme-yellow" />
+      <View className="gap-2">
+        <HorizontalStatBar title="Frame Win %" value={54.5} />
       </View>
-      <View className="w-full gap-5 px-4">
-        <View className="flex-row gap-5">
-          <StatCard title="Frames Played" value="154" icon="dice-outline" color="bg-theme-blue" />
-          <StatCard title="Frame Win %" value="81%" icon="star-outline" color="bg-theme-purple" />
-        </View>
-        <View className="flex-row gap-5">
-          <StatCard title="Frames Won" value="52" icon="trophy-outline" color="bg-theme-green" />
-          <StatCard title="Frames Lost" value="34" icon="bandage-outline" color="bg-theme-red" />
-        </View>
+      <View className="my-8 h-[1px] w-full bg-theme-gray-5"></View>
+      <Text className="mb-2 font-saira-semibold text-3xl text-text-1">Matches</Text>
+      <View className="mb-8 w-full flex-row items-center justify-between gap-4">
+        <ColoredStatCard label="Wins" value={254} color="theme-green" />
+        <ColoredStatCard label="Draws" value={4} color="white" />
+        <ColoredStatCard label="Losses" value={26} color="theme-red" />
       </View>
-    </ScrollView>
+      <View className="gap-2">
+        <HorizontalStatBar title="Match Win %" value={63.4} />
+      </View>
+      <View className="my-8 h-[1px] w-full bg-theme-gray-5"></View>
+      <View>
+        <HorizontalStatBar
+          title="Win Streak"
+          type="number"
+          target={10}
+          value={0}
+          color="orange"
+          valueLabel="Current Streak"
+          targetLabel="Best Streak"
+        />
+      </View>
+      <View className="h-12"></View>
+    </View>
   );
 };
 

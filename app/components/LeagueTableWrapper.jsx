@@ -102,11 +102,11 @@ const LeagueTableWrapper = ({ context }) => {
         className="w-full flex-1 bg-brand-dark">
         <View className="h-fit w-full items-center justify-between gap-3 border-b border-brand bg-brand-dark p-3">
           <View className="flex-row gap-3">
-            <DropdownFilterButton text="District" callbackFn={openSheet} />
+            <DropdownFilterButton text="Blyth & District" callbackFn={openSheet} />
           </View>
           <View className="flex-row gap-3">
-            <DropdownFilterButton text="Division" callbackFn={openSheet} />
-            <DropdownFilterButton text="Season" callbackFn={openSheet} />
+            <DropdownFilterButton text="Super League" callbackFn={openSheet} />
+            <DropdownFilterButton text="2025/26" callbackFn={openSheet} />
           </View>
         </View>
 

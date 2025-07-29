@@ -1,4 +1,4 @@
-import React from 'react';
+import { useState } from 'react';
 import { Text, View, ScrollView, Image } from 'react-native';
 import { Stack } from 'expo-router';
 import SafeViewWrapper from '@components/SafeViewWrapper';
@@ -10,12 +10,18 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import { useUser } from '@contexts/UserProvider';
 import { getAgeInYearsAndDays } from '@lib/helperFunctions';
 import BadgeList from '@components/BadgeList';
+import { usePlayerStats } from '@hooks/usePlayerStats';
+import { calculateLevel } from '@lib/helperFunctions';
+import PlayerStats from '@components/PlayerStats';
 
 const ProfilePage = () => {
   const router = useRouter();
   const { user, player, currentRole } = useUser();
+  const { data: playerStats, isLoading: isStatsLoading } = usePlayerStats(player?.id);
+  const [view, setView] = useState('left');
   console.log('Debug User:', user);
   console.log('Debug Player:', player);
+  console.log('Player stats:', playerStats);
 
   return (
     <SafeViewWrapper topColor="bg-brand" bottomColor="bg-brand">
@@ -67,12 +73,16 @@ const ProfilePage = () => {
               <View className="flex-1 items-center">
                 <Ionicons name="trophy-outline" size={24} color="white" />
                 <Text className="text-center font-saira text-xl text-gray-300">Level</Text>
-                <Text className="text-center font-saira-semibold text-2xl text-white">4</Text>
+                <Text className="text-center font-saira-semibold text-2xl text-white">
+                  {calculateLevel(player?.xp).level}
+                </Text>
               </View>
               <View className="flex-1 items-center">
                 <Ionicons name="star-outline" size={24} color="white" />
                 <Text className="text-center font-saira text-xl text-gray-300">Points</Text>
-                <Text className="text-center font-saira-semibold text-2xl text-white">1200</Text>
+                <Text className="text-center font-saira-semibold text-2xl text-white">
+                  {player?.xp}
+                </Text>
               </View>
               <View className="flex-1 items-center">
                 <Ionicons name="globe-outline" size={24} color="white" />
@@ -82,9 +92,14 @@ const ProfilePage = () => {
             </View>
           </View>
           <View className="rounded-t-3xl bg-bg-grouped-2 pt-4">
-            <SlidingTabButton option1="Badges" option2="Stats" />
-            <View className="p-5">
-              <BadgeList />
+            <SlidingTabButton option1="Badges" option2="Stats" onChange={setView} />
+            <View className="p-3">
+              <View style={{ display: view === 'left' ? 'flex' : 'none' }}>
+                <BadgeList />
+              </View>
+              <View style={{ display: view === 'right' ? 'flex' : 'none' }}>
+                <PlayerStats playerId={player?.id} />
+              </View>
             </View>
           </View>
         </View>

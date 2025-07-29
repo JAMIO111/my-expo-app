@@ -7,10 +7,34 @@ export function useTeamPlayers(teamId) {
     queryFn: async () => {
       if (!teamId) throw new Error('teamId is required');
 
-      const { data, error } = await supabase.from('Players').select('*').eq('team_id', teamId);
+      const { data, error } = await supabase
+        .from('TeamPlayers')
+        .select(
+          `
+          *,
+          players:player_id (
+            id,
+            first_name,
+            surname,
+            nickname,
+            avatar_url,
+            xp,
+            current_win_streak,
+            best_win_streak
+          )
+        `
+        )
+        .eq('team_id', teamId);
 
       if (error) throw error;
-      return data;
+
+      // Flatten the result
+      const flattened = data.map(({ players, ...teamPlayer }) => ({
+        ...teamPlayer,
+        ...players,
+      }));
+
+      return flattened;
     },
     enabled: !!teamId,
     staleTime: 5 * 60 * 1000,

@@ -3,7 +3,6 @@ import { Stack } from 'expo-router';
 import { useUser } from '@contexts/UserProvider';
 import PlayersList from '@components/PlayersList';
 import Heading from '@components/Heading';
-import LoadingSplash from '@components/LoadingSplash';
 import TeamLogo from '@components/TeamLogo';
 import CTAButton from '@components/CTAButton';
 import StatCard from '@components/StatCard';
@@ -72,7 +71,7 @@ const TeamProfile = ({ context, profile, isLoading }) => {
             <StatCard title="Losses" value="34" />
           </View>
         </View>
-        <CTAButton type="success" text="View Team Stats" icon={null} callbackFn={() => {}} />
+        <CTAButton type="success" text="View Team Stats" callbackFn={() => {}} />
         <View className="">
           <Heading text="Roster" />
           <PlayersList team={profile} context={context} />

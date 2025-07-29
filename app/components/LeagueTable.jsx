@@ -53,7 +53,7 @@ const LeagueTable = ({ context, season, division }) => {
       </Text>
       <View className="mb-16 w-full rounded-2xl border border-separator-faint bg-bg-grouped-2 p-3">
         <View className="h-8 flex-row items-center justify-around border-b-[0.5px] border-separator">
-          <Text className="w-10 text-center font-saira font-bold text-text-2">Pos</Text>
+          <Text className="w-18 text-center font-saira font-bold text-text-2">Pos</Text>
           <Text className="flex-1 pl-3 text-left font-saira font-bold text-text-2">Team</Text>
           <Text className="w-8 text-center font-saira font-bold text-text-2">PL</Text>
           <Text className="w-8 text-center font-saira font-bold text-text-2">W</Text>
@@ -78,7 +78,7 @@ const LeagueTable = ({ context, season, division }) => {
                 />
               )}
             <View className="flex-row items-center justify-around">
-              <Text className="w-10 text-center font-saira text-lg text-text-1">
+              <Text className="w-8 text-center font-saira text-lg text-text-1">
                 {team.position}.
               </Text>
               <Pressable
@@ -94,7 +94,7 @@ const LeagueTable = ({ context, season, division }) => {
                 <Text
                   numberOfLines={1}
                   ellipsizeMode="tail"
-                  className="flex-1 text-left font-saira-medium text-text-1">
+                  className="flex-1 text-left font-saira-medium text-lg text-text-1">
                   {team.Teams.display_name}
                 </Text>
               </Pressable>
@@ -109,12 +109,12 @@ const LeagueTable = ({ context, season, division }) => {
               </Text>
               {standings?.division?.special_match && (
                 <Text className="w-8 text-center font-saira text-lg font-semibold text-theme-orange">
-                  {team.CaptainCup || '-'}
+                  {team.special_match ?? '-'}
                 </Text>
               )}
             </View>
             {standings?.division?.promotion_spots !== 0 &&
-              index === standings?.division?.promotion_spots && (
+              index === standings?.division?.promotion_spots - 1 && (
                 <LinearGradient
                   colors={['#00ffee', '#7c3aed', '#7c3aed']} // from-purple-500 to-purple-600
                   start={{ x: 0, y: 0 }}

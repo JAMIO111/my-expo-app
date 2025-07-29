@@ -2,9 +2,11 @@ import { StyleSheet, Text, View, ScrollView } from 'react-native';
 import { Stack } from 'expo-router';
 import SafeViewWrapper from '@components/SafeViewWrapper';
 import CustomHeader from '@components/CustomHeader';
-import StatCard from '@components/StatCard';
+import PlayerStats from '@components/PlayerStats';
+import { useLocalSearchParams } from 'expo-router';
 
-const PlayerStats = () => {
+const PlayerStatsScreen = () => {
+  const { userId } = useLocalSearchParams();
   return (
     <SafeViewWrapper topColor="bg-brand" useBottomInset={false}>
       <Stack.Screen
@@ -16,40 +18,20 @@ const PlayerStats = () => {
           ),
         }}
       />
-      <ScrollView
-        contentContainerStyle={{ alignItems: 'center', justifyContent: 'center' }}
-        className="mt-16 w-full bg-bg-grouped-1 py-5">
-        <View className="w-full gap-5 px-4">
-          <View className="flex-row gap-5">
-            <StatCard title="Matches Played" value="86" icon="dice-outline" color="bg-theme-blue" />
-            <StatCard title="Match Win %" value="72%" icon="star-outline" color="bg-theme-purple" />
-          </View>
-          <View className="flex-row gap-5">
-            <StatCard title="Matches Won" value="52" icon="trophy-outline" color="bg-theme-green" />
-            <StatCard title="Matches Lost" value="23" icon="bandage-outline" color="bg-theme-red" />
-          </View>
+      <View className="mt-16 w-full flex-1 bg-bg-grouped-1">
+        <View className="mb-4 w-full">
+          <Text className="font-saira-semibold text-2xl text-text-1">Player ID: {userId}</Text>
+          <Text className="font-saira-medium text-lg text-text-2">View detailed stats below:</Text>
+          <View className="my-8 h-[1px] w-full bg-theme-gray-5"></View>
         </View>
-        <View
-          contentContainerStyle={{ justifyContent: 'center', alignItems: 'center' }}
-          className="my-5 w-full flex-row gap-5 bg-brand px-4 py-5">
-          <StatCard title="Win Streak" value="52" icon="flame-outline" color="bg-theme-orange" />
-          <StatCard title="Dishes" value="52" icon="flash-outline" color="bg-theme-yellow" />
-        </View>
-        <View className="w-full gap-5 px-4">
-          <View className="flex-row gap-5">
-            <StatCard title="Frames Played" value="154" icon="dice-outline" color="bg-theme-blue" />
-            <StatCard title="Frame Win %" value="81%" icon="star-outline" color="bg-theme-purple" />
-          </View>
-          <View className="flex-row gap-5">
-            <StatCard title="Frames Won" value="52" icon="trophy-outline" color="bg-theme-green" />
-            <StatCard title="Frames Lost" value="34" icon="bandage-outline" color="bg-theme-red" />
-          </View>
-        </View>
-      </ScrollView>
+        <ScrollView className="w-full flex-1 gap-5 overflow-hidden rounded-t-3xl bg-bg-grouped-2 p-1">
+          <PlayerStats playerId={userId} />
+        </ScrollView>
+      </View>
     </SafeViewWrapper>
   );
 };
 
-export default PlayerStats;
+export default PlayerStatsScreen;
 
 const styles = StyleSheet.create({});

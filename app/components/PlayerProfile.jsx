@@ -19,7 +19,9 @@ export default function PlayerProfile({ context, isLoading, playerProfile, error
   const [captainModalVisible, setCaptainModalVisible] = useState(false);
   const [viceCaptainModalVisible, setViceCaptainModalVisible] = useState(false);
   const [removePlayerModalVisible, setRemovePlayerModalVisible] = useState(false);
-  const { refetch, loading, player } = useUser();
+  const { refetch, loading, currentRole, player } = useUser();
+
+  console.log('Player Profile Data:', playerProfile);
 
   if (error) {
     console.error('Error loading user profile:', error);
@@ -43,7 +45,7 @@ export default function PlayerProfile({ context, isLoading, playerProfile, error
     const { data, error } = await supabase
       .from('Teams')
       .update({ captain: playerProfile.id })
-      .eq('id', player.team.id);
+      .eq('id', currentRole.team.id);
     setCaptainModalVisible(false);
 
     if (error) {
@@ -76,7 +78,7 @@ export default function PlayerProfile({ context, isLoading, playerProfile, error
     const { data, error } = await supabase
       .from('Teams')
       .update({ vice_captain: playerProfile.id })
-      .eq('id', player.team.id);
+      .eq('id', currentRole.team.id);
     setViceCaptainModalVisible(false);
 
     if (error) {
@@ -245,7 +247,7 @@ export default function PlayerProfile({ context, isLoading, playerProfile, error
             });
           }}
           text="Compare Stats"></CTAButton>
-        {player?.team.captain === player?.id && playerProfile?.id !== player?.id && (
+        {currentRole?.team.captain === player?.id && playerProfile?.id !== player?.id && (
           <>
             <CTAButton
               type="brand"
@@ -260,7 +262,7 @@ export default function PlayerProfile({ context, isLoading, playerProfile, error
             />
           </>
         )}
-        {player?.team.vice_captain === player?.id && playerProfile?.id !== player?.id && (
+        {currentRole?.team.vice_captain === player?.id && playerProfile?.id !== player?.id && (
           <>
             <CTAButton
               type="brand"
@@ -275,17 +277,18 @@ export default function PlayerProfile({ context, isLoading, playerProfile, error
             />
           </>
         )}
-        {(player?.team.captain === player.id || playerProfile?.id === player.id) && (
+        {(currentRole?.team.captain === player.id || playerProfile?.id === player.id) && (
           <>
             <CTAButton
               type="error"
               callbackFn={
-                player?.team.captain === player.id || player?.team.vice_captain === player.id
+                currentRole?.team.captain === player.id ||
+                currentRole?.team.vice_captain === player.id
                   ? () => {
                       Toast.show({
                         type: 'info',
                         text1: 'Attention',
-                        text2: `You are the ${player?.team.captain === player.id ? 'team captain' : 'vice captain'}. Please transfer the ${player?.team.captain === player.id ? 'captaincy' : 'vice captaincy'} before leaving the team.`,
+                        text2: `You are the ${currentRole?.team.captain === player.id ? 'team captain' : 'vice captain'}. Please transfer the ${currentRole?.team.captain === player.id ? 'captaincy' : 'vice captaincy'} before leaving the team.`,
                         props: {
                           colorScheme: colorScheme,
                         },
@@ -294,7 +297,7 @@ export default function PlayerProfile({ context, isLoading, playerProfile, error
                   : () => setRemovePlayerModalVisible(true)
               }
               text={
-                player?.team.captain === player.id && playerProfile?.id !== player.id
+                currentRole?.team.captain === player.id && playerProfile?.id !== player.id
                   ? 'Remove Player'
                   : 'Leave Team'
               }
@@ -304,12 +307,12 @@ export default function PlayerProfile({ context, isLoading, playerProfile, error
               onConfirm={handlePlayerRemove}
               onCancel={() => setRemovePlayerModalVisible(false)}
               title={
-                player?.team.captain === player.id && playerProfile?.id !== player.id
+                currentRole?.team.captain === player.id && playerProfile?.id !== player.id
                   ? 'Remove Player?'
                   : 'Leave Team?'
               }
               message={
-                player?.team.captain === player.id && playerProfile?.id !== player.id
+                currentRole?.team.captain === player.id && playerProfile?.id !== player.id
                   ? `Are you sure you want to remove ${playerProfile?.nickname} from the team? This cannot be undone.`
                   : 'Are you sure you want to leave the team? You will need the captain to invite you again if you wish to rejoin.'
               }

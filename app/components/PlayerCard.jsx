@@ -13,6 +13,8 @@ const PlayerCard = ({ player, team, context }) => {
   const { teamId, fixtureId } = useLocalSearchParams();
   const iconColor = colors[colorScheme]?.icon || '#000';
 
+  console.log('PlayerCard Data:', player);
+
   const scale = useRef(new Animated.Value(1)).current;
 
   const handlePressIn = () => {

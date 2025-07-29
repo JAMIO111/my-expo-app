@@ -11,30 +11,36 @@ export default function useUserProfile(userId) {
         .from('Players')
         .select(
           `
-            *,
-            Teams!Players_team_id_fkey (
+          *,
+          TeamPlayers (
+            team_id,
+            Teams (
               name,
               display_name,
-              Divisions:division (
+              Divisions (
                 name,
-                Districts:district (
+                Districts (
                   name
                 )
               )
             )
-          `
+          )
+        `
         )
         .eq('id', userId)
         .single();
 
       if (error) throw error;
 
+      const teamEntry = data?.TeamPlayers?.[0];
+      const team = teamEntry?.Teams;
+
       return {
         ...data,
-        team_name: data.Teams?.name ?? null,
-        team_display_name: data.Teams?.display_name ?? null,
-        division_name: data.Teams?.Divisions?.name ?? null,
-        district_name: data.Teams?.Divisions?.Districts?.name ?? null,
+        team_name: team?.name ?? null,
+        team_display_name: team?.display_name ?? null,
+        division_name: team?.Divisions?.name ?? null,
+        district_name: team?.Divisions?.Districts?.name ?? null,
       };
     },
     enabled: !!userId,
