@@ -1,14 +1,6 @@
-import {
-  StyleSheet,
-  ScrollView,
-  Text,
-  View,
-  Button,
-  Pressable,
-  useColorScheme,
-} from 'react-native';
+import { StyleSheet, ScrollView, Text, View, Pressable, useColorScheme } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import TeamLogo from '@components/TeamLogo';
 import useKickoffCountdown from '@hooks/Countdown';
 import SlidingTabButton from '@components/SlidingTabButton';
@@ -28,8 +20,14 @@ const FixturePage = ({ fixtureDetails, isLoading, context }) => {
   const { days, hours, minutes, seconds, isPast } = useKickoffCountdown(fixtureDetails?.date_time);
   const [view, setView] = useState('left');
   const [team, setTeam] = useState('left');
+  const hasNavigated = useRef(false);
 
   const handleTeamPress = (teamId) => {
+    if (hasNavigated.current) return;
+    hasNavigated.current = true;
+    setTimeout(() => {
+      hasNavigated.current = false;
+    }, 750); // Reset navigation state after 750ms
     if (context === 'home/upcoming-fixture') {
       router.push(`/home/${fixtureId}/${teamId}`);
     }

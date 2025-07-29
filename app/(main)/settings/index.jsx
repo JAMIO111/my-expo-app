@@ -1,12 +1,14 @@
-import { StyleSheet, Text, View, ScrollView, Settings } from 'react-native';
+import { StyleSheet, ScrollView } from 'react-native';
 import { Stack } from 'expo-router';
 import SettingsItem from '@components/SettingsItem';
 import MenuContainer from '@components/MenuContainer';
-import NavBar from '@components/NavBar2';
 import SafeViewWrapper from '@components/SafeViewWrapper';
 import CustomHeader from '@components/CustomHeader';
+import { useUser } from '@contexts/UserProvider';
 
 const index = () => {
+  const { currentRole } = useUser();
+
   return (
     <SafeViewWrapper topColor="bg-brand" useBottomInset={false}>
       <Stack.Screen
@@ -24,13 +26,13 @@ const index = () => {
         className="mt-16 flex-1 bg-bg-grouped-1 p-5">
         <MenuContainer>
           <SettingsItem
-            routerPath="/profile/settings/Account"
+            routerPath="/settings/Account"
             iconBGColor="green"
             title="Account"
             icon="person-outline"
           />
           <SettingsItem
-            routerPath="/profile/settings/TeamManagement"
+            routerPath="/settings/TeamManagement"
             iconBGColor="green"
             title="Team Management"
             icon="people-outline"
@@ -42,20 +44,22 @@ const index = () => {
             icon="notifications-outline"
           />
         </MenuContainer>
+        {currentRole?.type === 'admin' && (
+          <MenuContainer>
+            <SettingsItem
+              title="League Configuration"
+              icon="settings-outline"
+              routerPath="/settings/LeagueConfig"
+            />
+            <SettingsItem
+              lastItem={true}
+              iconBGColor="red"
+              title="Rules & Penalties"
+              icon="newspaper-outline"
+            />
+          </MenuContainer>
+        )}
 
-        <MenuContainer>
-          <SettingsItem
-            title="League Configuration"
-            icon="settings-outline"
-            routerPath="/profile/settings/LeagueConfig"
-          />
-          <SettingsItem
-            lastItem={true}
-            iconBGColor="red"
-            title="Rules & Penalties"
-            icon="newspaper-outline"
-          />
-        </MenuContainer>
         <MenuContainer>
           <SettingsItem title="Privacy" icon="lock-closed-outline" />
           <SettingsItem title="Language" icon="language-outline" />

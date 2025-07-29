@@ -1,5 +1,5 @@
 import { Pressable, Text, View } from 'react-native';
-import React from 'react';
+import { useRef } from 'react';
 import IonIcons from 'react-native-vector-icons/Ionicons';
 import { useRouter } from 'expo-router';
 import { useColorScheme } from 'react-native';
@@ -20,9 +20,14 @@ const SettingsItem = ({
   const colorScheme = useColorScheme();
   const themeColors = colors[colorScheme];
   const router = useRouter();
+  const hasNavigated = useRef(false);
 
   const handlePress = () => {
-    console.log('navigating to:', routerPath);
+    if (hasNavigated.current) return;
+    hasNavigated.current = true;
+    setTimeout(() => {
+      hasNavigated.current = false;
+    }, 750); // Reset navigation state after 750ms
     if (routerPath) {
       router.push(routerPath);
     }

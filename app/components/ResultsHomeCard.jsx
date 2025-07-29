@@ -11,7 +11,7 @@ const ResultsHomeCard = () => {
   return (
     <Pressable
       onPress={() => router.push('/home/results')}
-      className="h-28 w-full rounded-xl bg-bg-grouped-2">
+      className="h-28 w-full rounded-xl bg-bg-grouped-2 shadow">
       <View className="mx-3 flex-row items-center justify-between border-b border-separator px-1 pb-1 pt-2">
         <Text className="font-saira-medium text-2xl text-text-1">Results</Text>
         <Ioconicons name="chevron-forward" size={20} color={themeColors?.icon} />

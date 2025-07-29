@@ -1,13 +1,23 @@
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import TeamLogo from './TeamLogo';
 import { useRouter } from 'expo-router';
+import { useRef } from 'react';
 
 const UpcomingFixtureCard = ({ fixture }) => {
   const router = useRouter();
+  const hasNavigated = useRef(false);
+
   return (
     <Pressable
-      onPress={() => router.push(`/home/${fixture.id}`)}
-      className="h-36 w-72 items-center justify-center gap-2 rounded-xl bg-bg-grouped-2">
+      onPress={() => {
+        if (hasNavigated.current) return;
+        hasNavigated.current = true;
+        setTimeout(() => {
+          hasNavigated.current = false;
+        }, 750); // Reset navigation state after 750ms
+        router.push(`/home/${fixture.id}`);
+      }}
+      className="h-36 w-72 items-center justify-center gap-2 rounded-xl bg-bg-grouped-2 shadow">
       <View className="w-full items-center justify-between px-4">
         <View className="w-full flex-row items-center justify-center gap-2">
           <TeamLogo

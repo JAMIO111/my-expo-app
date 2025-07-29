@@ -26,8 +26,6 @@ const PersonalDetails = () => {
   const { colorScheme } = useColorScheme();
   const themeColors = colorScheme === 'dark' ? colors.dark : colors.light; // Adjust based on your theme
 
-  const navigation = useNavigation();
-
   console.log('PersonalDetails:', player);
 
   // ✅ Detect changes
@@ -68,7 +66,7 @@ const PersonalDetails = () => {
     if (error) {
       console.error('Failed to save changes:', error.message);
     } else {
-      await queryClient.invalidateQueries({ queryKey: ['TeamPlayers', player?.team_id] });
+      await queryClient.invalidateQueries({ queryKey: ['TeamPlayers', currentRole?.team?.id] });
       await queryClient.invalidateQueries({ queryKey: ['PlayerProfile', player?.id] });
       await refetch(); // Refresh user data
     }

@@ -1,30 +1,55 @@
 import { View, Text, Animated, Pressable } from 'react-native';
-import { useRef } from 'react';
+import { useRef, useEffect } from 'react';
 import { useRouter, usePathname } from 'expo-router';
 import { TeamIcon, ChartIcon, TrophyIcon, UserIcon } from '@components/svgs';
-
-const NAV_ITEMS = [
-  { name: 'My Team', href: '/teams', icon: TeamIcon },
-  { name: 'Comps', href: '/onboarding/profile-creation-team', icon: TrophyIcon },
-  { name: 'Home', href: '/home' }, // Center item — spinner
-  { name: 'Rankings', href: '/rankings', icon: ChartIcon },
-  { name: 'Profile', href: '/profile', icon: UserIcon },
-];
+import { useUser } from '@contexts/UserProvider';
 
 const NavBar = () => {
+  const { currentRole } = useUser();
   const router = useRouter();
   const pathname = usePathname();
+  console.log(pathname, 'Current Pathname');
+
+  const NAV_ITEMS = [
+    {
+      name: `My ${currentRole?.type === 'admin' ? 'League' : 'Team'}`,
+      href: '/teams',
+      icon: TeamIcon,
+    },
+    { name: 'Comps', href: '/onboarding/profile-creation-team', icon: TrophyIcon },
+    { name: 'Home', href: '/home' }, // Center item — spinner
+    { name: 'Rankings', href: '/rankings', icon: ChartIcon },
+    { name: 'Profile', href: '/profile', icon: UserIcon },
+  ];
+
   const spinValue = useRef(new Animated.Value(0)).current;
+  const opacityValue = useRef(new Animated.Value(0)).current;
   const scaleValues = useRef(NAV_ITEMS.map(() => new Animated.Value(1))).current;
 
-  const spin = () => {
-    spinValue.setValue(0);
-    Animated.timing(spinValue, {
-      toValue: 1,
-      duration: 600,
-      useNativeDriver: true,
-    }).start();
-  };
+  useEffect(() => {
+    if (pathname === '/home') {
+      // On /home: fade in and spin
+      Animated.parallel([
+        Animated.timing(opacityValue, {
+          toValue: 1,
+          duration: 300,
+          useNativeDriver: true,
+        }),
+        Animated.timing(spinValue, {
+          toValue: 1,
+          duration: 600,
+          useNativeDriver: true,
+        }),
+      ]).start();
+    } else {
+      // On other routes: only fade in (no spin)
+      Animated.timing(opacityValue, {
+        toValue: 1,
+        duration: 0,
+        useNativeDriver: true,
+      }).start();
+    }
+  }, [opacityValue, spinValue, pathname]);
 
   const scaleDown = (index) => {
     Animated.timing(scaleValues[index], {
@@ -64,7 +89,6 @@ const NavBar = () => {
         const isCenter = index === 2;
 
         const handleNavigate = () => {
-          if (isCenter) spin();
           if (!isActive && href) {
             router.replace(href);
           }
@@ -81,13 +105,16 @@ const NavBar = () => {
 
         if (isCenter) {
           return (
-            <View key={href || index} className="absolute h-20 items-center justify-between">
+            <View
+              key={href || index}
+              className="absolute h-20 items-center justify-between"
+              style={{ width: 64, top: -8, alignSelf: 'center' }}>
               <Pressable
                 {...pressableProps}
-                className="-top-2 h-16 w-16 items-center justify-center rounded-full bg-black pb-1 shadow-lg"
-                style={{ alignSelf: 'center' }}>
+                className="h-16 w-16 items-center justify-center rounded-full bg-black pb-1 shadow-lg">
                 <Animated.View
                   style={{
+                    opacity: opacityValue,
                     transform: [{ rotate: spinInterpolate }, { scale: scaleValues[index] }],
                   }}
                   className="h-8 w-8 items-center justify-center rounded-full bg-white">

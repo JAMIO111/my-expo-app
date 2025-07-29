@@ -8,13 +8,13 @@ import { Stack } from 'expo-router';
 
 const index = () => {
   return (
-    <SafeViewWrapper topColor="bg-brand" bottomColor="bg-brand">
+    <SafeViewWrapper topColor="bg-brand-dark" bottomColor="bg-brand">
       <StatusBar style="light" backgroundColor="#000" />
       <Stack.Screen
         options={{
           header: () => (
             <SafeViewWrapper useBottomInset={false}>
-              <CustomHeader showBack={false} title="Stat Room" />
+              <CustomHeader backgroundColor="bg-brand-dark" showBack={false} title="Stat Room" />
             </SafeViewWrapper>
           ),
         }}

@@ -23,7 +23,7 @@ const StartNewSeason = () => {
   const queryClient = useQueryClient();
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
-  const { player } = useUser();
+  const { player, currentRole } = useUser();
   const ctx = useFixtureConfig();
   console.log('FixtureConfig context:', ctx);
 
@@ -39,7 +39,7 @@ const StartNewSeason = () => {
   }
   const { colorScheme } = useColorScheme();
   const themeColors = colors[colorScheme];
-  const districtId = player?.team?.division?.district?.id;
+  const districtId = currentRole?.team?.division?.district?.id;
   const [seasonStartModalVisible, setSeasonStartModalVisible] = useState(false);
   const [showDatePicker, setShowDatePicker] = useState(false);
   const handleConfirmSeasonStart = async () => {

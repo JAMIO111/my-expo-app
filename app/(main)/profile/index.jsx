@@ -13,7 +13,7 @@ import BadgeList from '@components/BadgeList';
 
 const ProfilePage = () => {
   const router = useRouter();
-  const { user, player } = useUser();
+  const { user, player, currentRole } = useUser();
   console.log('Debug User:', user);
   console.log('Debug Player:', player);
 
@@ -31,7 +31,7 @@ const ProfilePage = () => {
                         title="My Profile"
                         showBack={false}
                         rightIcon="settings-outline"
-                        onRightPress={() => router.push('/profile/settings')}
+                        onRightPress={() => router.push('/settings')}
                       />
                     </SafeViewWrapper>
                   ),
@@ -59,11 +59,11 @@ const ProfilePage = () => {
             </Text>
             <Text className="text-center font-saira text-xl text-text-2">
               {player?.nickname} | {getAgeInYearsAndDays(player?.dob).years} |{' '}
-              {player?.team?.display_name || 'No Team'}
+              {currentRole?.team?.display_name || 'No Team'}
             </Text>
           </View>
           <View className="px-5">
-            <View className="mb-6 flex-row items-center justify-around gap-2 rounded-2xl bg-brand p-4">
+            <View className="mb-6 flex-row items-center justify-around gap-2 rounded-2xl bg-brand p-4 shadow">
               <View className="flex-1 items-center">
                 <Ionicons name="trophy-outline" size={24} color="white" />
                 <Text className="text-center font-saira text-xl text-gray-300">Level</Text>

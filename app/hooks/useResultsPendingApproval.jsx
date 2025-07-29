@@ -18,7 +18,7 @@ export function useResultsPendingApproval({ awayTeamId, enabled = true }) {
       return data;
     },
     enabled: enabled && !!awayTeamId,
-    staleTime: 5 * 60 * 1000, // 5 minutes
+    staleTime: 15 * 60 * 1000, // 15 minutes
     cacheTime: 60 * 60 * 1000, // 1 hour
   });
 }

@@ -1,5 +1,5 @@
 import { StyleSheet, View } from 'react-native';
-import { Stack } from 'expo-router';
+import { Stack, useRouter } from 'expo-router';
 import { useUser } from '@contexts/UserProvider';
 import LoadingSplash from '@components/LoadingSplash';
 import CustomHeader from '@components/CustomHeader';
@@ -9,10 +9,9 @@ import TeamProfile from '@components/TeamProfile';
 import { useTeamProfile } from '@hooks/useTeamProfile';
 
 const index = () => {
+  const router = useRouter();
   const { loading, currentRole } = useUser();
   const { data: teamProfile, isLoading } = useTeamProfile(currentRole?.team?.id);
-
-  if (loading || !currentRole) return <LoadingSplash />;
 
   console.log('Debug Team Profile:', teamProfile);
 
@@ -22,14 +21,20 @@ const index = () => {
         options={{
           header: () => (
             <SafeViewWrapper useBottomInset={false}>
-              <CustomHeader showBack={false} title={currentRole?.team?.name || 'Team'} />
+              <CustomHeader
+                rightIcon="settings-outline"
+                onRightPress={() => router.push(`/settings`)}
+                showBack={false}
+                title={currentRole?.team?.name || 'Team'}
+              />
             </SafeViewWrapper>
           ),
         }}
       />
       <SafeViewWrapper bottomColor="bg-brand" topColor="bg-brand">
-        <View className={loading || !currentRole ? '' : 'mt-16'}></View>
-        <TeamProfile profile={teamProfile} isLoading={isLoading} context="teams" />
+        <View className="mt-16 flex-1">
+          <TeamProfile profile={teamProfile} isLoading={isLoading} context="teams" />
+        </View>
         <NavBar />
       </SafeViewWrapper>
     </>

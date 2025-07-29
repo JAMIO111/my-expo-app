@@ -1,4 +1,4 @@
-import { Stack, useRouter } from 'expo-router';
+import { Stack } from 'expo-router';
 import { StyleSheet, Text, Image, View, ScrollView, Platform, RefreshControl } from 'react-native';
 import { useState, useCallback } from 'react';
 import { useUser } from '@contexts/UserProvider';
@@ -17,13 +17,12 @@ import PendingResultCard from '@components/PendingResultCard';
 import AwaitingResultCard from '@components/AwaitingResultCard';
 import { useResultsPendingApproval } from '@hooks/useResultsPendingApproval';
 import { useFixturesAwaitingResults } from '@hooks/useFixturesAwaitingResults';
-import { useAuthUserProfile } from '@hooks/useAuthUserProfile2';
 import { useColorScheme } from 'react-native';
+import supabase from '@lib/supabaseClient';
 
 const Home = () => {
   const colorScheme = useColorScheme();
   const [refreshing, setRefreshing] = useState(false);
-  const router = useRouter();
   const {
     user,
     player,
@@ -40,9 +39,8 @@ const Home = () => {
   console.log('Roles:', roles);
   console.log('Is User Loading:', isUserLoading);
   console.log('Is Error:', isError);
-
-  console.log('DivisionID', player?.team?.division?.id);
-  console.log('SeasonId', currentRole?.activeSeason?.id);
+  console.log('index DivisionId', currentRole?.team?.division?.id);
+  console.log('index SeasonId', currentRole?.activeSeason?.id);
 
   const {
     data: standings,
@@ -70,8 +68,8 @@ const Home = () => {
     isLoading: isFixturesAwaitingResultsLoading,
     refetch: fixturesAwaitingResultsRefetch,
   } = useFixturesAwaitingResults({
-    homeTeamId: player?.team?.id,
-    enabled: !!player?.team?.id,
+    homeTeamId: currentRole?.team?.id,
+    enabled: !!currentRole?.team?.id,
   });
 
   const handleRecalcStandings = async () => {
@@ -81,6 +79,9 @@ const Home = () => {
       _season_id: currentRole?.activeSeason?.id,
       _division_id: currentRole?.team?.division?.id,
     });
+
+    console.log('RPC data:', data);
+    console.log('RPC error:', error);
 
     if (error) {
       console.error('Failed to recalculate standings:', error.message);
@@ -173,11 +174,11 @@ const Home = () => {
           contentContainerStyle={{ allignItems: 'center', justifyContent: 'center' }}>
           <View className="">
             <View className="w-full items-center justify-center gap-4 p-3 pb-5">
-              {player?.team && (
+              {currentRole?.team && (
                 <>
                   <View className="w-full items-center justify-between">
                     <Text className="mb-2 w-full text-left font-saira-semibold text-xl text-white">
-                      {player.team.name} Fixtures
+                      {currentRole?.team?.display_name} Fixtures
                     </Text>
                     <HorizontalScrollUpcomingFixtures
                       fixtures={upcomingFixtures}
@@ -192,8 +193,8 @@ const Home = () => {
               <LeagueHomeCard standings={standings} />
             </View>
             <View className="w-full gap-4 bg-bg-grouped-1 pb-24">
-              {(player?.team?.captain === player?.id ||
-                player?.team?.vice_captain === player?.id) && (
+              {(currentRole?.team?.captain === player?.id ||
+                currentRole?.team?.vice_captain === player?.id) && (
                 <View className="w-full bg-bg-grouped-1">
                   {resultsPendingApproval &&
                     resultsPendingApproval.length > 0 &&

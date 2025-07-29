@@ -60,7 +60,9 @@ const Leaderboard = ({ title, type }) => {
                   justifyContent: 'center',
                   alignItems: 'center',
                 }}>
-                <Text className="font-saira-bold text-xl text-white">{getInitials(stat.name)}</Text>
+                <Text className="pt-1 font-saira-medium text-xl text-white">
+                  {getInitials(stat.name)}
+                </Text>
               </View>
             )}
 

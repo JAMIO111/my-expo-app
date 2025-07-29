@@ -5,22 +5,27 @@ import TeamLogo from './TeamLogo';
 import colors from '@lib/colors';
 import { useUser } from '@contexts/UserProvider';
 import { useColorScheme } from 'react-native';
+import { useRef } from 'react';
 
 const LeagueHomeCard = ({ standings }) => {
   const colorScheme = useColorScheme();
   const themeColors = colors[colorScheme];
   const router = useRouter();
   const { currentRole } = useUser();
-  console.log(standings, 'Standings Data:');
-  console.log(colorScheme, 'Color Scheme:');
+  const hasNavigated = useRef(false);
 
   const myTeam = standings?.standings?.find((team) => team.team === currentRole?.teamId);
   return (
     <Pressable
       onPress={() => {
+        if (hasNavigated.current) return;
+        hasNavigated.current = true;
+        setTimeout(() => {
+          hasNavigated.current = false;
+        }, 750); // Reset navigation state after 750ms
         router.push('/home/league');
       }}
-      className={`h-28 w-full rounded-xl bg-bg-grouped-2`}>
+      className={`h-28 w-full rounded-xl bg-bg-grouped-2 shadow`}>
       <View className="mx-3 flex-row items-center justify-between border-b border-separator px-1 pb-1 pt-2">
         <Text className="font-saira-medium text-2xl text-text-1">League Table</Text>
         <Ioconicons name="chevron-forward" size={20} color={themeColors?.icon} />

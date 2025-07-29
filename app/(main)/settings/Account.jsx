@@ -12,7 +12,6 @@ import CustomHeader from '@components/CustomHeader';
 import IonIcons from '@expo/vector-icons/Ionicons';
 
 const Account = () => {
-  const { colorScheme } = useColorScheme();
   const [isSigningOut, setIsSigningOut] = useState(false);
   const { player, isLoading } = useUser();
   const router = useRouter();
@@ -88,7 +87,7 @@ const Account = () => {
 
             <MenuContainer>
               <SettingsItem
-                routerPath="/settings/PersonalDetails"
+                routerPath="PersonalDetails"
                 iconBGColor="gray"
                 title="Personal Information"
                 icon="id-card-outline"

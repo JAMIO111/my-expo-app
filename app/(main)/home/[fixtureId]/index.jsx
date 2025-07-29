@@ -21,11 +21,10 @@ const index = () => {
               <CustomHeader
                 title={`${fixtureDetails?.homeTeam?.abbreviation} vs ${fixtureDetails?.awayTeam?.abbreviation}`}
                 onRightPress={
-                  currentRole === 'captain' &&
-                  fixtureDetails?.home_team === player?.team.id &&
-                  !fixtureDetails?.is_complete &&
-                  (player?.team?.captain === player?.id ||
-                    player?.team?.vice_captain === player?.id)
+                  (player?.id !== currentRole?.team?.captain ||
+                    player?.id === currentRole?.team?.vice_captain) &&
+                  currentRole?.team?.id === fixtureDetails?.homeTeam?.id &&
+                  fixtureDetails?.is_complete === false
                     ? () => router.push(`home/${fixtureId}/submit-results`)
                     : null
                 }

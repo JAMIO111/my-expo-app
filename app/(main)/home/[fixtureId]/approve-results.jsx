@@ -1,7 +1,7 @@
 import { StyleSheet, Text, View, ScrollView } from 'react-native';
 import { useState } from 'react';
 import FramesList from '@components/FramesList';
-import { useLocalSearchParams } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 import CTAButton from '@components/CTAButton';
 import SafeViewWrapper from '@components/SafeViewWrapper';
 import CustomHeader from '@components/CustomHeader';
@@ -10,26 +10,62 @@ import { useResultsByFixture } from '@hooks/useResultsByFixture';
 import { useFixtureDetails } from '@hooks/useFixtureDetails';
 import TeamLogo from '@components/TeamLogo';
 import supabase from '@lib/supabaseClient';
+import { useUser } from '@contexts/UserProvider';
+import Toast from 'react-native-toast-message';
 
 const ApproveResults = () => {
   const [disputedFrames, setDisputedFrames] = useState([]);
+  const [approvingResults, setApprovingResults] = useState(false);
   const { fixtureId } = useLocalSearchParams();
   const { data: results, isLoading } = useResultsByFixture(fixtureId);
   const { data: fixtureDetails } = useFixtureDetails(fixtureId);
+  const { currentRole, player } = useUser();
 
   const handleApproveResults = async () => {
-    try {
-      const { data, error } = await supabase.rpc('update_player_stats_after_fixture', {
-        _fixture_id: fixtureId,
+    if (
+      player?.id !== currentRole?.team?.captain &&
+      player?.id !== currentRole?.team?.vice_captain
+    ) {
+      Toast.show({
+        type: 'error',
+        text1: 'Action Not Allowed',
+        text2: 'Only the captain and vice captain can approve results.',
       });
+    } else {
+      setApprovingResults(true);
+      console.log('Approving results for fixture:', fixtureId);
+      console.log('Player ID:', player?.id);
+      console.log('Current Role:', currentRole?.activeSeason?.id, currentRole?.team?.division?.id);
+      const { data, error } = await supabase.rpc('approve_results_and_update_standings_and_stats', {
+        _fixture_id: fixtureId,
+        _approver: player?.id,
+        _season_id: currentRole?.activeSeason?.id,
+        _division_id: currentRole?.team?.division?.id,
+        _scoring_mode: 2,
+        _points_for_win: 3,
+        _points_for_draw: 1,
+      });
+
       if (error) {
-        console.error('RPC error:', error);
+        console.error('RPC failed:', error.message);
+      } else if (data.success) {
+        console.log(data.message); // Show success toast or redirect
+        Toast.show({
+          type: 'success',
+          text1: 'Results Approved',
+          text2: 'The results have been successfully approved.',
+        });
+        console.log('navigating to home');
+        router.back();
       } else {
-        console.log('RPC success:', data);
+        console.error('Approval failed:', data.message); // Show error toast
       }
-    } catch (e) {
-      console.error('Unexpected error:', e);
+      setApprovingResults(false);
     }
+  };
+
+  const handleDisputeResults = async () => {
+    setDisputedFrames([]);
   };
 
   return (
@@ -80,7 +116,7 @@ const ApproveResults = () => {
             </Text>
           </View>
         </View>
-        <ScrollView className="flex-1 py-2">
+        <ScrollView className="flex-1">
           <View className=""></View>
           <FramesList
             results={results}
@@ -93,14 +129,14 @@ const ApproveResults = () => {
           {disputedFrames.length > 0 && (
             <CTAButton
               type="error"
-              text={`Dispute ${disputedFrames.length > 1 ? disputedFrames.length : ''} Result${disputedFrames.length > 1 ? 's' : ''}`}
+              text={`Dispute ${disputedFrames.length > 1 ? `${disputedFrames.length}${' '}` : ''}Result${disputedFrames.length > 1 ? 's' : ''}`}
               callbackFn={handleDisputeResults}
             />
           )}
           {disputedFrames.length === 0 && (
             <>
               <CTAButton
-                loading={true}
+                loading={approvingResults}
                 type="success"
                 text="Approve Results"
                 callbackFn={handleApproveResults}

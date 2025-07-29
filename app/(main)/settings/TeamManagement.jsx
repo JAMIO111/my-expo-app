@@ -14,7 +14,7 @@ import TeamLogo from '@components/TeamLogo';
 const Team = () => {
   const colorScheme = useColorScheme();
   const [isLeavingTeam, setIsLeavingTeam] = useState(false);
-  const { player, isLoading } = useUser();
+  const { player, currentRole, isLoading } = useUser();
   const router = useRouter();
   return (
     <SafeViewWrapper topColor="bg-brand" useBottomInset={false}>
@@ -37,17 +37,19 @@ const Team = () => {
             <View className="mb-8 mt-5 items-center">
               <TeamLogo
                 size={120}
-                type={player?.team?.crest?.type}
-                color1={player?.team?.crest?.color1}
-                color2={player?.team?.crest?.color2}
-                thickness={player?.team?.crest?.thickness}
+                type={currentRole?.team?.crest?.type}
+                color1={currentRole?.team?.crest?.color1}
+                color2={currentRole?.team?.crest?.color2}
+                thickness={currentRole?.team?.crest?.thickness}
               />
               <View className="items-center gap-2">
-                <Text className="mt-6 font-saira-semibold text-4xl text-text-1">
-                  {player?.team?.name || 'No Team'}
+                <Text
+                  style={{ lineHeight: 38 }}
+                  className="mt-6 text-center font-saira-semibold text-4xl text-text-1">
+                  {currentRole?.team?.name || 'No Team'}
                 </Text>
                 <Text className="rounded-lg border border-separator bg-bg-grouped-2 px-3 pb-1 pt-2 font-saira text-2xl text-text-2">
-                  {player?.team?.abbreviation || 'No Nickname'}
+                  {currentRole?.team?.abbreviation || 'No Nickname'}
                 </Text>
               </View>
             </View>
@@ -77,9 +79,10 @@ const Team = () => {
               callbackFn={async () => {
                 setIsLeavingTeam(true);
                 const { error } = await supabase
-                  .from('Players')
-                  .update({ team_id: null })
-                  .eq('id', player?.id);
+                  .from('TeamPlayers')
+                  .delete()
+                  .eq('player_id', player.id)
+                  .eq('team_id', currentRole?.team?.id);
 
                 if (error) {
                   console.error('Error leaving team:', error.message);

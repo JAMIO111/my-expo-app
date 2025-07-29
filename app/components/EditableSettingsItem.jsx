@@ -2,6 +2,7 @@ import { Pressable, Text, TextInput, View, useColorScheme } from 'react-native';
 import IonIcons from 'react-native-vector-icons/Ionicons';
 import { useRouter } from 'expo-router';
 import colors from '@lib/colors';
+import { useRef } from 'react';
 
 const EditableSettingsItem = ({
   title,
@@ -19,8 +20,14 @@ const EditableSettingsItem = ({
   const router = useRouter();
   const colorScheme = useColorScheme();
   const themeColors = colors[colorScheme];
+  const hasNavigated = useRef(false);
 
   const handlePress = () => {
+    if (hasNavigated.current) return;
+    hasNavigated.current = true;
+    setTimeout(() => {
+      hasNavigated.current = false;
+    }, 750);
     if (routerPath) router.push(routerPath);
   };
 

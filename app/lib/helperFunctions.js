@@ -412,7 +412,9 @@ export async function initiateNewSeason(seasonName, districtId) {
   // 2. Get all divisions in this district (you may want to sort them by tier/level if available)
   const { data: divisions, error: divisionError } = await supabase
     .from('Divisions')
-    .select('id, name, tier, default_promotion_spots, default_relegation_spots')
+    .select(
+      'id, name, tier, default_promotion_spots, default_relegation_spots, draws_allowed, special_match'
+    )
     .eq('district', districtId)
     .order('tier', { ascending: true });
 
@@ -445,6 +447,8 @@ export async function initiateNewSeason(seasonName, districtId) {
         relegation_spots: relegationSpots,
         is_top_division: isTop,
         is_bottom_division: isBottom,
+        draws_allowed: division.draws_allowed,
+        special_match: division.special_match,
       })
       .select();
 
@@ -474,7 +478,9 @@ export async function initiateNewSeason(seasonName, districtId) {
       played: 0,
       points: 0,
       won: 0,
+      drawn: 0,
       lost: 0,
+
       position: null,
     }));
 
@@ -490,7 +496,7 @@ export async function initiateNewSeason(seasonName, districtId) {
   for (const division of divisions) {
     const { data: standings, error: standingsFetchError } = await supabase
       .from('Standings')
-      .select('id, team, played, points, won, lost, Teams(display_name)')
+      .select('id, team, played, points, won, drawn, lost, Teams(display_name)')
       .eq('division', division.id)
       .eq('season', seasonId);
 

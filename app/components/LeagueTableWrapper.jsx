@@ -11,11 +11,12 @@ import BottomSheetWrapper from './BottomSheetWrapper';
 import DropdownFilterButton from './DropdownFilterButton';
 
 const LeagueTableWrapper = ({ context }) => {
-  const { player } = useUser();
+  const { player, currentRole } = useUser();
 
-  const defaultDistrict = player?.team?.division?.district?.id ?? null;
-  const defaultDivision = player?.team?.division?.id ?? null;
-  const defaultSeason = player?.activeSeason?.id ?? null;
+  // Default full objects from context
+  const defaultDistrict = currentRole?.team?.division?.district ?? null;
+  const defaultDivision = currentRole?.team?.division ?? null;
+  const defaultSeason = currentRole?.activeSeason ?? null;
 
   const [district, setDistrict] = useState(defaultDistrict);
   const [division, setDivision] = useState(defaultDivision);
@@ -24,33 +25,33 @@ const LeagueTableWrapper = ({ context }) => {
   const bottomSheetRef = useRef(null);
   const openSheet = () => {
     if (bottomSheetRef.current) {
-      console.log('Opening Bottom Sheet...'); // ✅ Sanity check
-      bottomSheetRef.current.expand(); // ✅ Calls expand method
-    } else {
-      console.warn('BottomSheet ref is null!');
+      bottomSheetRef.current.expand();
     }
   };
   const closeSheet = () => bottomSheetRef.current?.close();
 
+  // Fetch districts (no id needed)
   const {
     data: districts = [],
     isLoading: isDistrictsLoading,
     error: districtsError,
   } = useDistricts();
 
+  // Fetch divisions by district id
   const {
     data: divisions = [],
     isLoading: isDivisionsLoading,
     error: divisionsError,
-  } = useDivisions(district);
+  } = useDivisions(district?.id);
 
+  // Fetch seasons by district id
   const {
     data: seasons = [],
     isLoading: isSeasonsLoading,
     error: seasonsError,
-  } = useSeasons(district);
+  } = useSeasons(district?.id);
 
-  // When district changes: reset division + season, fetch active season
+  // When district changes: reset division + season, fetch active season object
   useEffect(() => {
     if (!district) {
       setDivision(null);
@@ -59,7 +60,7 @@ const LeagueTableWrapper = ({ context }) => {
     }
 
     const init = async () => {
-      const active = await getActiveSeason(district);
+      const active = await getActiveSeason(district?.id); // assume returns full season object
       setSeason(active);
     };
 
@@ -68,15 +69,23 @@ const LeagueTableWrapper = ({ context }) => {
     init();
   }, [district]);
 
-  // Set default division only when divisions are loaded
+  // When divisions load, set default division if none selected yet
   useEffect(() => {
     if (divisions.length && defaultDivision && !division) {
-      const found = divisions.find((d) => d.id === defaultDivision);
-      if (found) setDivision(found.id);
+      const found = divisions.find((d) => d.id === defaultDivision.id);
+      if (found) setDivision(found);
     }
   }, [divisions, defaultDivision, division]);
 
-  // Loading / error fallback
+  // When seasons load, set default season if none selected yet
+  useEffect(() => {
+    if (seasons.length && defaultSeason && !season) {
+      const found = seasons.find((s) => s.id === defaultSeason.id);
+      if (found) setSeason(found);
+    }
+  }, [seasons, defaultSeason, season]);
+
+  // Loading or error fallback
   if (isDistrictsLoading || isDivisionsLoading || isSeasonsLoading) {
     return <Text>Loading...</Text>;
   }
@@ -87,7 +96,7 @@ const LeagueTableWrapper = ({ context }) => {
   }
 
   return (
-    <View className="flex-1 ">
+    <View className="flex-1">
       <ScrollView
         contentContainerStyle={{ alignItems: 'center', justifyContent: 'flex-start' }}
         className="w-full flex-1 bg-brand-dark">
@@ -101,8 +110,10 @@ const LeagueTableWrapper = ({ context }) => {
           </View>
         </View>
 
-        <LeagueTable context={context} season={season} division={division} />
+        {/* Pass IDs down to LeagueTable */}
+        <LeagueTable context={context} season={season?.id} division={division?.id} />
       </ScrollView>
+
       <BottomSheetWrapper ref={bottomSheetRef} snapPoints={['25%', '50%']}>
         <Text>This content can be anything!</Text>
         <CTAButton title="Close" callbackFn={closeSheet} />

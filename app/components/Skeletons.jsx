@@ -1,4 +1,4 @@
-import { View } from 'react-native';
+import { View, ActivityIndicator } from 'react-native';
 
 export const FixtureSkeleton = () => {
   return (
@@ -20,27 +20,31 @@ export const FixtureSkeleton = () => {
 
 export const TableSkeleton = () => {
   return (
-    <View className="mt-4 w-full flex-1 items-center p-2">
-      <View className="mb-16 w-full rounded-2xl bg-brand p-3">
-        <View className="h-12 flex-row items-center justify-around gap-2 border-b-[0.5px] border-brand-light">
-          <View className="h-4 w-10 rounded-full bg-brand-light" />
-          <View className="h-4 flex-1 rounded-full bg-brand-light pl-3" />
-          <View className="h-4 w-8 rounded-full bg-brand-light" />
-          <View className="h-4 w-8 rounded-full bg-brand-light" />
-          <View className="h-4 w-8 rounded-full bg-brand-light" />
-          <View className="h-4 w-9 rounded-full bg-brand-light" />
-          <View className="h-4 w-8 rounded-full bg-brand-light" />
+    <View className="w-full flex-1 items-start gap-3 bg-bg-grouped-1 p-2">
+      <View className="w-full flex-row items-center justify-between px-2 pt-3">
+        <View className="h-5 w-1/2 rounded-full bg-theme-gray-5" />
+        <ActivityIndicator size="small" color="gray" />
+      </View>
+      <View className="mb-24 w-full rounded-2xl border border-separator-faint bg-bg-grouped-2 p-3">
+        <View className="h-12 flex-row items-center justify-around gap-2 border-b-[0.5px] border-separator">
+          <View className="h-4 w-10 rounded-full bg-bg-grouped-3" />
+          <View className="shimmer h-4 flex-1 rounded-full bg-bg-grouped-3 pl-3" />
+          <View className="h-4 w-8 rounded-full bg-bg-grouped-3" />
+          <View className="h-4 w-8 rounded-full bg-bg-grouped-3" />
+          <View className="h-4 w-8 rounded-full bg-bg-grouped-3" />
+          <View className="h-4 w-9 rounded-full bg-bg-grouped-3" />
+          <View className="h-4 w-8 rounded-full bg-bg-grouped-3" />
         </View>
         {/* Repeat for each team row */}
         {[...Array(16)].map((_, index) => (
-          <View key={index} className="flex-row items-center justify-around gap-2 py-3">
-            <View className="h-4 w-10 rounded-full bg-brand-light" />
-            <View className="h-4 flex-1 rounded-full bg-brand-light pl-3" />
-            <View className="h-4 w-8 rounded-full bg-brand-light" />
-            <View className="h-4 w-8 rounded-full bg-brand-light" />
-            <View className="h-4 w-8 rounded-full bg-brand-light" />
-            <View className="h-4 w-9 rounded-full bg-brand-light" />
-            <View className="h-4 w-8 rounded-full bg-brand-light" />
+          <View key={index} className="flex-row items-center justify-around gap-2 py-4">
+            <View className="h-4 w-10 rounded-full bg-bg-grouped-3" />
+            <View className="h-4 flex-1 rounded-full bg-bg-grouped-3 pl-3" />
+            <View className="h-4 w-8 rounded-full bg-bg-grouped-3" />
+            <View className="h-4 w-8 rounded-full bg-bg-grouped-3" />
+            <View className="h-4 w-8 rounded-full bg-bg-grouped-3" />
+            <View className="h-4 w-9 rounded-full bg-bg-grouped-3" />
+            <View className="h-4 w-8 rounded-full bg-bg-grouped-3" />
           </View>
         ))}
       </View>

@@ -22,7 +22,8 @@ import { useFixtureDetails } from '@hooks/useFixtureDetails';
 import { useColorScheme } from 'react-native';
 import { useTeamPlayers } from '@hooks/useTeamPlayers';
 import { useResultsByFixture } from '@hooks/useResultsByFixture';
-import { useSubmitMatchResults } from '@hooks/useSubmitMatchResults';
+import { useSaveMatchResults } from '@hooks/useSaveMatchResults';
+import supabase from '@lib/supabaseClient';
 
 const SubmitResultsScreen = () => {
   const [confirmDeleteModalVisible, setConfirmDeleteModalVisible] = useState(false);
@@ -36,7 +37,8 @@ const SubmitResultsScreen = () => {
   const trophyColor = colorScheme === 'dark' ? '#FFD700' : '#EBB30A';
   const homePlayers = useTeamPlayers(fixtureDetails?.homeTeam?.id);
   const awayPlayers = useTeamPlayers(fixtureDetails?.awayTeam?.id);
-  const { submitting, submit } = useSubmitMatchResults(fixtureId, existingResults);
+  const { saving, save } = useSaveMatchResults(fixtureId, existingResults);
+  const [submitting, setSubmitting] = useState(false);
 
   if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
     UIManager.setLayoutAnimationEnabledExperimental(true);
@@ -109,10 +111,49 @@ const SubmitResultsScreen = () => {
   }
 
   const handleSave = async () => {
-    const success = await submit(frames);
+    const success = await save(frames);
     if (success) {
       router.replace(`/home`);
     }
+  };
+
+  const handleSubmit = async () => {
+    setSubmitting(true);
+    const success = await save(frames);
+
+    if (!success) {
+      Toast.show({
+        type: 'error',
+        text1: 'Save Failed',
+        text2: 'Could not save changes before submitting.',
+      });
+      setSubmitting(false);
+      return;
+    }
+
+    const { error } = await supabase
+      .from('Fixtures')
+      .update({ is_complete: true })
+      .eq('id', fixtureId);
+
+    if (error) {
+      console.error('Failed to mark fixture as complete:', error.message);
+      // Optionally show toast
+      Toast.show({
+        type: 'error',
+        text1: 'Error',
+        text2: 'Could not submit results. Please try again.',
+      });
+    } else {
+      Toast.show({
+        type: 'success',
+        text1: 'Success',
+        text2: 'Results submitted successfully.',
+      });
+      router.replace('/home');
+    }
+
+    setSubmitting(false);
   };
 
   console.log('Frames: ', frames);
@@ -365,24 +406,29 @@ const SubmitResultsScreen = () => {
       </ScrollView>
       <View className="p-5">
         {!activeFrameId && (
-          <CTAButton text="Add Frame" type="info" disabled={submitting} callbackFn={addFrame} />
+          <CTAButton
+            text="Add Frame"
+            type="info"
+            disabled={submitting || saving}
+            callbackFn={addFrame}
+          />
         )}
         {frames.length > 0 && !activeFrameId && (
           <View className="mt-4">
             <CTAButton
-              text={submitting ? 'Saving Results...' : 'Save Results'}
+              text={saving ? 'Saving Results...' : 'Save Results'}
               type="success"
               callbackFn={handleSave}
-              disabled={submitting}
-              loading={submitting}
+              disabled={saving || submitting}
+              loading={saving}
             />
           </View>
         )}
         <View className="mt-4">
           <CTAButton
-            text={submitting ? 'Submit Final Results...' : 'Save Results'}
+            text={submitting ? 'Submitting...' : 'Submit Final Result'}
             type="success"
-            callbackFn={handleSave}
+            callbackFn={handleSubmit}
             disabled={submitting}
             loading={submitting}
           />

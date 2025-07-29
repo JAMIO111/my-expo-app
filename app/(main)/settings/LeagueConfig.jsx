@@ -44,7 +44,7 @@ const LeagueConfig = () => {
             routerPath="/settings/FixtureAndScheduling"
           />
           <SettingsItem
-            routerPath="settings/StartNewSeason"
+            routerPath="/StartNewSeason"
             iconBGColor="green"
             title="Start New Season"
             icon="play"

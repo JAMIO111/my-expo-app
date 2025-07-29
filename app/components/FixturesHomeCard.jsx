@@ -3,16 +3,26 @@ import Ioconicons from 'react-native-vector-icons/Ionicons';
 import { useRouter } from 'expo-router';
 import TeamLogo from './TeamLogo';
 import colors from '@lib/colors';
+import { useRef } from 'react';
 
 const FixturesHomeCard = ({ fixtures, isLoading }) => {
   const colorScheme = useColorScheme();
   const themeColors = colors[colorScheme];
   const router = useRouter();
   const fixture = fixtures?.[0];
+  const hasNavigated = useRef(false);
+
   return (
     <Pressable
-      onPress={() => router.push('/home/fixtures')}
-      className="h-28 w-full rounded-xl bg-bg-grouped-2">
+      onPress={() => {
+        if (hasNavigated.current) return;
+        hasNavigated.current = true;
+        setTimeout(() => {
+          hasNavigated.current = false;
+        }, 750); // Reset navigation state after 750ms
+        router.push('/home/fixtures');
+      }}
+      className="h-28 w-full rounded-xl bg-bg-grouped-2 shadow">
       <View className="mx-3 flex-row items-center justify-between border-b border-separator px-1 pb-1 pt-2">
         <Text className="font-saira-medium text-2xl text-text-1">Fixtures</Text>
         <Ioconicons name="chevron-forward" size={20} color={themeColors?.icon} />

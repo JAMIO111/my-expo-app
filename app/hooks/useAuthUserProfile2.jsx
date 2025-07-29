@@ -30,27 +30,7 @@ export const fetchAuthUserProfile = async () => {
     // Fetch full player profile with all related info
     const { data: playerData, error: fullPlayerError } = await supabase
       .from('Players')
-      .select(
-        `*,
-        team:Teams!Players_team_id_fkey(
-          id,
-          name,
-          captain,
-          vice_captain,
-          display_name,
-          crest,
-          abbreviation,
-          address:Addresses(*),
-          division:Divisions(
-            id,
-            name,
-            district:Districts(
-              id,
-              name
-            )
-          )
-        )`
-      )
+      .select('*')
       .eq('id', player.id)
       .single();
 
@@ -73,6 +53,9 @@ export const fetchAuthUserProfile = async () => {
           display_name,
           crest,
           abbreviation,
+          captain,
+          vice_captain,
+          display_name,
           address:Addresses(*),
           division:Divisions (
             id,
@@ -174,8 +157,8 @@ export const useAuthUserProfile = () => {
   return useQuery({
     queryKey: ['authUserProfile'],
     queryFn: fetchAuthUserProfile,
-    staleTime: 1000 * 60 * 5, // 5 minutes
-    cacheTime: 1000 * 60 * 10, // 10 minutes
+    staleTime: 1000 * 60 * 30, // 30 minutes
+    cacheTime: 1000 * 60 * 60, // 1 hour
     retry: false,
   });
 };

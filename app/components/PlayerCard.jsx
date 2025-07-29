@@ -64,34 +64,34 @@ const PlayerCard = ({ player, team, context }) => {
         onPressOut={handlePressOut}
         onPress={handlePress}
         className="w-full">
-        <View className="w-full flex-row items-center justify-between gap-4 rounded-xl border-theme-gray-6 bg-bg-grouped-2 py-3 pl-3 pr-2 shadow-[0_2px_4px_rgba(0,0,0,0.1)]">
+        <View className="w-full flex-row items-center justify-between gap-4 rounded-xl border border-theme-gray-5 bg-bg-grouped-2 py-3 pl-3 pr-2 shadow shadow-theme-gray-6">
           {player?.avatar_url ? (
             <Image
               source={{ uri: player?.avatar_url }}
-              className="mr-2 h-16 w-16 rounded-md border border-separator"
+              className="mr-2 h-14 w-14 rounded-md border border-separator"
               resizeMode="cover"
             />
           ) : (
             <View
-              className="mr-2 h-16 w-16 rounded-md bg-brand-light"
+              className="mr-2 h-14 w-14 rounded-md bg-brand-light"
               style={{
-                width: 60,
-                height: 60,
+                width: 56,
+                height: 56,
                 borderRadius: 5,
                 marginRight: 10,
                 justifyContent: 'center',
                 alignItems: 'center',
               }}>
-              <Text className="text-3xl font-bold text-white">{getInitials()}</Text>
+              <Text className="pt-3 font-saira-semibold text-3xl text-white">{getInitials()}</Text>
             </View>
           )}
           <View className="flex-1 justify-center">
-            <Text numberOfLines={1} className="text-2xl font-bold text-text-1">
+            <Text numberOfLines={1} className="font-saira-semibold text-2xl text-text-1">
               {player?.first_name} {player?.surname}
             </Text>
             <View className="flex-row items-center">
               {player.nickname && (
-                <Text numberOfLines={1} className="text-xl font-semibold text-text-2">
+                <Text numberOfLines={1} className="font-saira-semibold text-xl text-text-2">
                   {player?.nickname}
                 </Text>
               )}
@@ -107,14 +107,18 @@ const PlayerCard = ({ player, team, context }) => {
           {team?.captain === player?.id && (
             <View className="h-12 justify-center rounded border bg-yellow-500 shadow-[0_2px_4px_rgba(0,0,0,0.2)]">
               <View className="w-full items-center justify-center bg-white px-1">
-                <Text>Captain</Text>
+                <Text style={{ lineHeight: 20 }} className="font-saira">
+                  Captain
+                </Text>
               </View>
             </View>
           )}
           {team?.vice_captain === player?.id && (
             <View className="h-12 justify-center rounded border bg-brand-light shadow-[0_2px_4px_rgba(0,0,0,0.2)]">
               <View className="w-full items-center justify-center bg-white px-4">
-                <Text>VC</Text>
+                <Text style={{ lineHeight: 20 }} className="font-saira">
+                  VC
+                </Text>
               </View>
             </View>
           )}

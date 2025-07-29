@@ -3,12 +3,12 @@ import supabase from '@lib/supabaseClient';
 import Toast from 'react-native-toast-message';
 import { useQueryClient } from '@tanstack/react-query';
 
-export function useSubmitMatchResults(fixtureId, existingResults) {
-  const [submitting, setSubmitting] = useState(false);
+export function useSaveMatchResults(fixtureId, existingResults) {
+  const [saving, setSaving] = useState(false);
   const queryClient = useQueryClient();
 
-  const submit = async (frames) => {
-    setSubmitting(true);
+  const save = async (frames) => {
+    setSaving(true);
 
     try {
       // Map frames to include frameNumber based on order
@@ -31,7 +31,7 @@ export function useSubmitMatchResults(fixtureId, existingResults) {
       // - _deleted_ids: array of frame IDs to delete
       // - _fixture_id: current fixture ID
 
-      const { error } = await supabase.rpc('submit_match_results_2', {
+      const { error } = await supabase.rpc('save_match_results', {
         _frames: framesWithNumbers,
         _deleted_ids: deletedIds,
         _fixture_id: fixtureId,
@@ -43,18 +43,18 @@ export function useSubmitMatchResults(fixtureId, existingResults) {
           text1: 'Submission Failed',
           text2: error.message,
         });
-        setSubmitting(false);
+        setSaving(false);
         return false;
       } else {
         Toast.show({
           type: 'success',
-          text1: 'Results Submitted',
-          text2: 'All frames have been successfully submitted.',
+          text1: 'Results Saved',
+          text2: 'All frames have been successfully saved.',
         });
 
         queryClient.invalidateQueries(['results', fixtureId]);
 
-        setSubmitting(false);
+        setSaving(false);
         return true;
       }
     } catch (e) {
@@ -63,10 +63,10 @@ export function useSubmitMatchResults(fixtureId, existingResults) {
         text1: 'Unexpected Error',
         text2: e.message,
       });
-      setSubmitting(false);
+      setSaving(false);
       return false;
     }
   };
 
-  return { submitting, submit };
+  return { saving, save };
 }

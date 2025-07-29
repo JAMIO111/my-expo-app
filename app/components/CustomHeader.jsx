@@ -8,6 +8,7 @@ export default function CustomHeader({
   showBack = true,
   onRightPress,
   rightIcon = 'ellipsis-vertical',
+  backgroundColor = 'bg-brand',
 }) {
   const router = useRouter();
   const segments = useSegments();
@@ -21,7 +22,7 @@ export default function CustomHeader({
   const sideWidth = 48; // or any fixed size matching your buttons
 
   return (
-    <View className="h-16 flex-row items-center bg-brand px-4">
+    <View className={`h-16 flex-row items-center px-4 ${backgroundColor}`}>
       {/* Left container: fixed width */}
       <View style={{ width: sideWidth }}>
         {showBack ? (

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useRef, useState } from 'react';
 import { View, Text, Pressable, FlatList } from 'react-native';
 import { useMonthlyFixtures } from '@/hooks/useGroupedFixtures';
 import { format, addMonths, parseISO, startOfMonth, isBefore } from 'date-fns';
@@ -15,6 +15,7 @@ const FixtureList = () => {
   const seasonId = currentRole?.activeSeason?.id;
   const divisionId = currentRole?.team?.division?.id;
   const seasonStartDate = currentRole?.activeSeason?.start_date;
+  const hasNavigated = useRef(false);
 
   const initialMonth = isBefore(new Date(), seasonStartDate)
     ? startOfMonth(seasonStartDate)
@@ -105,7 +106,14 @@ const FixtureList = () => {
 
             {fixtures.map((f) => (
               <Pressable
-                onPress={() => router.push(`/home/${f.id}`)}
+                onPress={() => {
+                  if (hasNavigated.current) return;
+                  hasNavigated.current = true;
+                  setTimeout(() => {
+                    hasNavigated.current = false;
+                  }, 750);
+                  router.push(`/home/${f.id}`);
+                }}
                 className="my-3 items-center justify-center gap-2"
                 key={f.id}>
                 <View className="flex-row items-center justify-center gap-2 rounded-lg bg-brand">

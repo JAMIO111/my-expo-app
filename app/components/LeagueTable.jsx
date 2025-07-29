@@ -1,4 +1,4 @@
-import { Fragment } from 'react';
+import { Fragment, useRef } from 'react';
 import { Pressable, Text, View } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import TeamLogo from './TeamLogo';
@@ -8,9 +8,16 @@ import { TableSkeleton } from '@components/Skeletons';
 
 const LeagueTable = ({ context, season, division }) => {
   const router = useRouter();
+  const hasNavigated = useRef(false);
 
   const { data: standings, isLoading, error, isFetching } = useStandings(division, season);
+
   const handlePress = (team) => {
+    if (hasNavigated.current) return;
+    hasNavigated.current = true;
+    setTimeout(() => {
+      hasNavigated.current = false;
+    }, 750);
     if (context === 'home/league') {
       router.push(`/home/league/${team.team}`);
     } else {
@@ -21,7 +28,7 @@ const LeagueTable = ({ context, season, division }) => {
   const hasNoStandings = !(standings && standings.standings && standings.standings.length > 0);
 
   // Show skeleton only on first load
-  if (isLoading && !standings) {
+  if (isLoading || !standings) {
     return <TableSkeleton />;
   }
   // Show no data message if loaded and no standings available
@@ -50,9 +57,14 @@ const LeagueTable = ({ context, season, division }) => {
           <Text className="flex-1 pl-3 text-left font-saira font-bold text-text-2">Team</Text>
           <Text className="w-8 text-center font-saira font-bold text-text-2">PL</Text>
           <Text className="w-8 text-center font-saira font-bold text-text-2">W</Text>
+          {standings?.division?.draws_allowed && (
+            <Text className="w-8 text-center font-saira font-bold text-text-2">D</Text>
+          )}
           <Text className="w-8 text-center font-saira font-bold text-text-2">L</Text>
           <Text className="w-9 text-center font-saira font-bold text-text-2">Pts</Text>
-          <Text className="w-8 text-center font-saira font-bold text-text-2">CC</Text>
+          {standings?.division?.special_match && (
+            <Text className="w-8 text-center font-saira font-bold text-text-2">CC</Text>
+          )}
         </View>
         {standings.standings?.map((team, index) => (
           <Fragment key={index}>
@@ -88,13 +100,18 @@ const LeagueTable = ({ context, season, division }) => {
               </Pressable>
               <Text className="w-8 text-center font-saira text-lg text-text-1">{team.played}</Text>
               <Text className="w-8 text-center font-saira text-lg text-text-1">{team.won}</Text>
+              {standings?.division?.draws_allowed && (
+                <Text className="w-8 text-center font-saira text-lg text-text-1">{team.drawn}</Text>
+              )}
               <Text className="w-8 text-center font-saira text-lg text-text-1">{team.lost}</Text>
               <Text className="w-9 text-center font-saira-semibold text-lg text-text-1">
                 {team.points}
               </Text>
-              <Text className="w-8 text-center font-saira text-lg font-semibold text-theme-orange">
-                {team.CaptainCup || '-'}
-              </Text>
+              {standings?.division?.special_match && (
+                <Text className="w-8 text-center font-saira text-lg font-semibold text-theme-orange">
+                  {team.CaptainCup || '-'}
+                </Text>
+              )}
             </View>
             {standings?.division?.promotion_spots !== 0 &&
               index === standings?.division?.promotion_spots && (
