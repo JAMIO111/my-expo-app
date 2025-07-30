@@ -56,6 +56,7 @@ export const fetchAuthUserProfile = async () => {
           captain,
           vice_captain,
           display_name,
+          cover_image_url,
           address:Addresses(*),
           division:Divisions (
             id,

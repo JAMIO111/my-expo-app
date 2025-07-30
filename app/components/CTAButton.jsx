@@ -38,7 +38,7 @@ const CTAButton = ({ type = 'brand', text, icon, callbackFn, disabled, loading =
         onPressOut={handlePressOut}
         onPress={callbackFn}
         disabled={disabled || loading}
-        className="h-14 w-full items-center justify-center rounded-2xl border border-border-color"
+        className="h-16 w-full items-center justify-center rounded-2xl border border-border-color"
         style={{
           backgroundColor: buttonTheme.primary,
           borderColor: buttonTheme.secondary,

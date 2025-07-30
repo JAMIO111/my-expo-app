@@ -1,5 +1,14 @@
 import { Stack } from 'expo-router';
-import { StyleSheet, Text, Image, View, ScrollView, Platform, RefreshControl } from 'react-native';
+import {
+  StyleSheet,
+  Text,
+  View,
+  ScrollView,
+  Platform,
+  RefreshControl,
+  Image,
+  Pressable,
+} from 'react-native';
 import { useState, useCallback } from 'react';
 import { useUser } from '@contexts/UserProvider';
 import LoadingSplash from '@components/LoadingSplash';
@@ -19,6 +28,8 @@ import { useResultsPendingApproval } from '@hooks/useResultsPendingApproval';
 import { useFixturesAwaitingResults } from '@hooks/useFixturesAwaitingResults';
 import { useColorScheme } from 'react-native';
 import supabase from '@lib/supabaseClient';
+import BrandHeader from '@components/BrandHeader';
+import HomeScreenCardLarge from '@components/HomeScreenCardLarge';
 
 const Home = () => {
   const colorScheme = useColorScheme();
@@ -143,19 +154,7 @@ const Home = () => {
           options={{
             header: () => (
               <SafeViewWrapper useBottomInset={false}>
-                <View className="h-16 flex-row items-center justify-center bg-brand">
-                  <Text className="pb-2 font-michroma text-2xl font-bold text-white">Break</Text>
-                  <Image
-                    source={
-                      colorScheme === 'dark'
-                        ? require('@assets/Break-Room-Logo-1024-Background-Dark.png')
-                        : require('@assets/Break-Room-Logo-1024-Background.png')
-                    }
-                    className="mx-1 h-14 w-14"
-                    resizeMode="contain"
-                  />
-                  <Text className="pb-2 font-michroma text-2xl font-bold text-white">Room</Text>
-                </View>
+                <BrandHeader />
               </SafeViewWrapper>
             ),
           }}
@@ -218,7 +217,25 @@ const Home = () => {
                   </View>
                 </View>
               )}
-              <View className="w-full gap-4 p-3 pb-20">
+              <View className="w-full gap-3 p-2 pb-20">
+                <HomeScreenCardLarge
+                  title="Welcome to Break Room!"
+                  body="We're so glad you can join us in this community of pool enthusiasts. Click to learn about all the features we have to offer."
+                  category="Help & Support"
+                  image={require('@assets/pool-table-image.jpg')}
+                  onPress={() => {
+                    console.log('Card pressed');
+                  }}
+                />
+                <HomeScreenCardLarge
+                  title="Upgrade to Pro Membership!"
+                  body="Unlock exclusive features such as in depth statistics, advanced match analysis, and the removal of ads for just an extra £0.99/month"
+                  category="Membership"
+                  image={require('@assets/pool-table-image.jpg')}
+                  onPress={() => {
+                    console.log('Card pressed');
+                  }}
+                />
                 <CTAButton text="Recalc Standings" callbackFn={handleRecalcStandings} />
                 <CTAButton
                   text="Switch Context"

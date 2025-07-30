@@ -10,11 +10,13 @@ import Toast from 'react-native-toast-message';
 import SafeViewWrapper from '@components/SafeViewWrapper';
 import CustomHeader from '@components/CustomHeader';
 import IonIcons from '@expo/vector-icons/Ionicons';
+import ImageUploader from '@components/ImageUploader';
 
 const Account = () => {
   const [isSigningOut, setIsSigningOut] = useState(false);
   const { player, isLoading } = useUser();
   const router = useRouter();
+  const [imageUri, setImageUri] = useState(player?.avatar_url || null);
 
   const initials = player
     ? `${player?.first_name?.charAt(0) ?? ''}${player?.surname?.charAt(0) ?? ''}`
@@ -63,25 +65,30 @@ const Account = () => {
             <View className="mb-8 mt-5 items-center">
               <Pressable className="relative" onPress={() => console.log('Profile Pic pressed')}>
                 {!isLoading && player?.avatar_url ? (
-                  <Image
-                    source={{ uri: player.avatar_url }}
-                    className="h-40 w-40 rounded-xl border-2 border-brand"
-                    style={{ resizeMode: 'cover' }}
+                  <ImageUploader
+                    initialUri={imageUri || currentRole?.team?.cover_image_url}
+                    onImageChange={setImageUri}
+                    aspectRatio={[1, 1]}
+                    borderRadius={12}
+                    editable={true}
+                    size={160}
                   />
                 ) : (
                   <View className="h-40 w-40 items-center justify-center rounded-xl border-2 border-brand bg-brand-light">
                     <Text className="text-5xl font-bold text-white">{initials}</Text>
                   </View>
                 )}
-                <View className="absolute right-0 top-0 rounded-full bg-white p-1 shadow">
-                  <IonIcons name="pencil-outline" size={24} color={'black'} />
+                <View className="absolute bottom-3 right-0 rounded-full border bg-white p-1 shadow">
+                  <IonIcons name="pencil-outline" size={32} color={'black'} />
                 </View>
               </Pressable>
               <View className="items-center gap-2">
-                <Text className="mt-4 text-4xl font-bold text-text-1">
+                <Text
+                  style={{ lineHeight: 40 }}
+                  className="mt-4 font-saira-semibold text-4xl text-text-1">
                   {player?.first_name} {player?.surname}
                 </Text>
-                <Text className="text-xl text-text-2">{player?.nickname}</Text>
+                <Text className="font-saira-medium text-3xl text-text-2">{player?.nickname}</Text>
               </View>
             </View>
 

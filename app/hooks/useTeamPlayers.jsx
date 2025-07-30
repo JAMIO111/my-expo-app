@@ -19,8 +19,8 @@ export function useTeamPlayers(teamId) {
             nickname,
             avatar_url,
             xp,
-            current_win_streak,
-            best_win_streak
+            current_frame_win_streak,
+            best_frame_win_streak
           )
         `
         )

@@ -1,6 +1,5 @@
-import { StyleSheet, Text, View, TextInput } from 'react-native';
+import { StyleSheet, Text, View, Image } from 'react-native';
 import { useRouter, Stack } from 'expo-router';
-import { useState, useRef } from 'react';
 import CTAButton from '@components/CTAButton';
 
 const ProfileCreation5 = () => {
@@ -22,7 +21,16 @@ const ProfileCreation5 = () => {
             Would you like to create a new team or join an existing one?
           </Text>
         </View>
-        <View className="flex-1 p-5"></View>
+        <View className="flex-1 items-center justify-center p-5">
+          <View className="overflow-hidden rounded-2xl shadow-lg">
+            <Image
+              source={require('@assets/pool-player-cartoon.jpg')}
+              className="h-60 w-60 rounded-2xl"
+              resizeMode="cover"
+            />
+          </View>
+        </View>
+
         <View className="justify-end gap-5 rounded-t-3xl bg-bg-grouped-2 p-6 pb-16 pt-10">
           <CTAButton
             type="info"
@@ -34,7 +42,7 @@ const ProfileCreation5 = () => {
               })
             }
           />
-          <View className="mt-5">
+          <View>
             <CTAButton
               type="success"
               text="Join existing team"

@@ -6,6 +6,7 @@ import { useLocalSearchParams, usePathname } from 'expo-router';
 import { isBirthdayToday } from '@lib/helperFunctions';
 import { useColorScheme } from 'react-native';
 import colors from '@lib/colors';
+import CachedImage from './CachedImage';
 
 const PlayerCard = ({ player, team, context }) => {
   const colorScheme = useColorScheme();
@@ -66,21 +67,22 @@ const PlayerCard = ({ player, team, context }) => {
         onPressOut={handlePressOut}
         onPress={handlePress}
         className="w-full">
-        <View className="w-full flex-row items-center justify-between gap-4 rounded-xl border border-theme-gray-5 bg-bg-grouped-2 py-3 pl-3 pr-2 shadow shadow-theme-gray-6">
+        <View className="w-full flex-row items-center justify-between gap-4 rounded-xl border border-theme-gray-5 bg-bg-grouped-2 py-2 pl-2 pr-2 shadow shadow-theme-gray-6">
           {player?.avatar_url ? (
-            <Image
-              source={{ uri: player?.avatar_url }}
-              className="mr-2 h-14 w-14 rounded-md border border-separator"
-              resizeMode="cover"
+            <CachedImage
+              avatarUrl={player.avatar_url}
+              userId={player.id}
+              width={64}
+              height={64}
+              borderRadius={6}
             />
           ) : (
             <View
               className="mr-2 h-14 w-14 rounded-md bg-brand-light"
               style={{
-                width: 56,
-                height: 56,
+                width: 64,
+                height: 64,
                 borderRadius: 5,
-                marginRight: 10,
                 justifyContent: 'center',
                 alignItems: 'center',
               }}>

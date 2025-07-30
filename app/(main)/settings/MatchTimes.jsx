@@ -82,7 +82,7 @@ const MatchTimes = () => {
                       <IonIcons
                         name={isExpanded ? 'chevron-down' : 'chevron-forward'}
                         size={18}
-                        color={themeColors.icon}
+                        color={themeColors?.icon}
                       />
                     </View>
                   </Pressable>

@@ -118,14 +118,14 @@ const ProfileCreation6 = () => {
         <StepPillGroup steps={3} currentStep={2} />
         <View className="bg-bg-grouped-1 p-5">
           <Text
-            style={{ lineHeight: 60 }}
-            className="my-4 font-delagothic text-6xl font-bold text-text-1">
-            Enter the 6 digit code
+            style={{ lineHeight: 50 }}
+            className="my-4 font-delagothic text-5xl font-bold text-text-1">
+            {isNewTeam ? 'Enter League Code' : 'Enter Team Code'}
           </Text>
-          <Text className="text-2xl text-text-2">
+          <Text className="font-saira text-2xl text-text-2">
             {isNewTeam
-              ? 'Enter the code for the league you want to join. Your league official should have provided you with this.'
-              : 'Your team captain should have provided you with your unique code.'}
+              ? 'Your league official should have provided you with your unique 6 digit code.'
+              : 'Your team captain should have provided you with your unique 6 digit code.'}
           </Text>
         </View>
 
@@ -139,7 +139,7 @@ const ProfileCreation6 = () => {
                   onChangeText={(text) => updateDigit(i, text)}
                   keyboardType="number-pad"
                   maxLength={1}
-                  className="border-border-color text-text-1"
+                  className="border-border-color font-saira-semibold text-4xl text-text-1 focus:border-theme-blue"
                   style={styles.input}
                   textAlign="center"
                   returnKeyType={i === digits.length - 1 ? 'done' : 'next'}
@@ -176,10 +176,10 @@ export default ProfileCreation6;
 
 const styles = StyleSheet.create({
   input: {
+    lineHeight: 48,
     height: 60,
     borderWidth: 1,
     borderRadius: 8,
     paddingHorizontal: 16,
-    fontSize: 24,
   },
 });

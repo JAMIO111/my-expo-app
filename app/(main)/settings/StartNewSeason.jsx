@@ -18,6 +18,7 @@ import { matchDaysOptions } from '@lib/fixtureOptions'; // Adjust the import pat
 import SafeViewWrapper from '@components/SafeViewWrapper'; // Adjust the import path as necessary
 import Toast from 'react-native-toast-message';
 import { useRouter } from 'expo-router'; // Adjust the import path as necessary
+import CustomHeader from '@components/CustomHeader'; // Adjust the import path as necessary
 
 const StartNewSeason = () => {
   const queryClient = useQueryClient();
@@ -165,11 +166,7 @@ const StartNewSeason = () => {
         options={{
           header: () => (
             <SafeViewWrapper useBottomInset={false}>
-              <View className="h-16 flex-row items-center justify-center bg-brand">
-                <Text className="font-michroma text-2xl font-bold text-white">
-                  Start New Season
-                </Text>
-              </View>
+              <CustomHeader title="New Season" />
             </SafeViewWrapper>
           ),
         }}
@@ -178,7 +175,7 @@ const StartNewSeason = () => {
       <ScrollView
         contentContainerStyle={{ alignItems: 'center', justifyContent: 'center' }}
         className="mt-16 flex-1 bg-bg-grouped-1 p-5">
-        <MenuContainer>
+        <MenuContainer className="mb-3">
           <SettingsItem
             iconBGColor="gray"
             title="Season Name"
@@ -195,6 +192,10 @@ const StartNewSeason = () => {
             lastItem={true}
           />
         </MenuContainer>
+        <Text className=" mb-10 px-1 text-left text-text-2">
+          We advise that you leave these 2 settings exactly as they are unless you have a specific
+          reason to chnage them.
+        </Text>
         <MenuContainer>
           <SettingsItem
             routerPath="settings/MatchFrequency"
@@ -302,7 +303,7 @@ const StartNewSeason = () => {
                 <IonIcons
                   name={showDatePicker ? 'chevron-down' : 'chevron-forward'}
                   size={18}
-                  color={themeColors.icon}
+                  color={themeColors?.icon}
                 />
               </View>
             </Pressable>
@@ -373,11 +374,10 @@ const StartNewSeason = () => {
             }}
             type="info"
           />
-          <Text className="mt-4 text-center text-text-2">
-            This will create a new season starting on the date selected date. League tables will be
-            initiated and fixtures will be generated. Please ensure all teams are in the correct
-            league and settings such as match day, match time, and match frequency have been
-            configured before proceeding.
+          <Text className="mt-4 px-1 text-left text-text-2">
+            This will create a new season starting on the date selected. League tables and fixtures
+            will be generated. Please ensure all teams are in the correct league and settings such
+            as match day, match time, and match frequency have been configured before proceeding.
           </Text>
           <ConfirmModal
             visible={seasonStartModalVisible}

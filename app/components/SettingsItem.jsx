@@ -66,7 +66,7 @@ const SettingsItem = ({
               </Text>
             )}
 
-            {routerPath && <IonIcons name="chevron-forward" size={18} color={themeColors.icon} />}
+            {routerPath && <IonIcons name="chevron-forward" size={18} color={themeColors?.icon} />}
           </View>
 
           {!lastItem && (

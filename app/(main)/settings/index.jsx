@@ -7,7 +7,7 @@ import CustomHeader from '@components/CustomHeader';
 import { useUser } from '@contexts/UserProvider';
 
 const index = () => {
-  const { currentRole } = useUser();
+  const { currentRole, player } = useUser();
 
   return (
     <SafeViewWrapper topColor="bg-brand" useBottomInset={false}>
@@ -31,12 +31,14 @@ const index = () => {
             title="Account"
             icon="person-outline"
           />
-          <SettingsItem
-            routerPath="/settings/TeamManagement"
-            iconBGColor="green"
-            title="Team Management"
-            icon="people-outline"
-          />
+          {currentRole?.type === player && currentRole?.team?.captain === player?.id && (
+            <SettingsItem
+              routerPath="/settings/TeamManagement"
+              iconBGColor="green"
+              title="Team Management"
+              icon="people-outline"
+            />
+          )}
           <SettingsItem
             lastItem={true}
             iconBGColor="red"

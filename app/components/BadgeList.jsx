@@ -3,7 +3,7 @@ import { useState } from 'react';
 
 const BADGE_SIZE = 100;
 const NUM_COLUMNS = 3;
-const ITEM_MARGIN = 5;
+const ITEM_MARGIN = 10;
 
 const badges = Array.from({ length: 12 }, (_, i) => ({
   id: i.toString(),
@@ -33,7 +33,9 @@ const BadgeList = () => {
             resizeMode="contain"
           />
         </View>
-        <Text className="py-2 text-center font-saira-medium text-text-1" style={styles.badgeText}>
+        <Text
+          className="mt-2 pb-2 text-center font-saira-semibold text-lg text-text-1"
+          style={styles.badgeText}>
           {item.label}
         </Text>
       </View>
@@ -41,7 +43,7 @@ const BadgeList = () => {
   };
 
   return (
-    <View onLayout={onLayout} style={styles.wrapper}>
+    <View className="pt-6" onLayout={onLayout} style={styles.wrapper}>
       {parentWidth && (
         <FlatList
           data={badges}
@@ -62,9 +64,7 @@ const styles = StyleSheet.create({
   wrapper: {
     width: '100%',
   },
-  container: {
-    padding: ITEM_MARGIN,
-  },
+  container: {},
   badgeContainer: {
     alignItems: 'center',
     marginBottom: ITEM_MARGIN * 2,

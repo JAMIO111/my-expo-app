@@ -11,6 +11,7 @@ import Toast from 'react-native-toast-message';
 import LoadingSplash from '@components/LoadingSplash';
 import StatCard from '@components/StatCard';
 import { isBirthdayToday } from '@lib/helperFunctions';
+import CachedImage from '@components/CachedImage';
 
 export default function PlayerProfile({ context, isLoading, playerProfile, error }) {
   const router = useRouter();
@@ -141,12 +142,14 @@ export default function PlayerProfile({ context, isLoading, playerProfile, error
     <ScrollView
       contentContainerStyle={{ alignItems: 'center', justifyContent: 'center' }}
       className="w-full bg-bg-grouped-1 px-4 py-6">
-      <View className="w-full flex-row items-center justify-start gap-6">
+      <View className="w-full flex-row items-center justify-start gap-6 rounded-2xl bg-bg-grouped-2 p-2 shadow-[0_2px_4px_rgba(0,0,0,0.1)]">
         {playerProfile?.avatar_url ? (
-          <Image
-            source={{ uri: playerProfile?.avatar_url }}
-            className="h-32 w-32 rounded-xl border-2 border-brand"
-            style={{ resizeMode: 'cover' }}
+          <CachedImage
+            avatarUrl={playerProfile.avatar_url}
+            userId={playerProfile.id}
+            width={120}
+            height={120}
+            borderRadius={12}
           />
         ) : (
           <View
@@ -158,31 +161,38 @@ export default function PlayerProfile({ context, isLoading, playerProfile, error
             </Text>
           </View>
         )}
-        <View className="h-32 justify-center gap-3">
-          <Text className="text-4xl font-bold text-text-1">
+        <View className="h-32 justify-center">
+          <Text style={{ lineHeight: 50 }} className="font-saira-semibold text-4xl text-text-1">
             {playerProfile?.first_name} {playerProfile?.surname}
           </Text>
-          <Text className="text-3xl font-bold text-text-2">{playerProfile?.nickname}</Text>
+          <Text style={{ lineHeight: 30 }} className="font-saira-medium text-3xl text-text-2">
+            {playerProfile?.nickname}
+          </Text>
+          <Text style={{ lineHeight: 30 }} className="font-saira-medium text-2xl text-text-2">
+            {playerProfile?.nickname}
+          </Text>
         </View>
       </View>
       <View className="w-full">
         <Heading text="Personal Details" />
         <View className="gap-2.5 rounded-xl bg-bg-grouped-2 p-3 shadow-[0_2px_4px_rgba(0,0,0,0.1)]">
           <View className="w-full flex-row items-center justify-between">
-            <Text className="text-xl text-text-2">Team</Text>
-            <Text className="text-lg font-semibold text-text-1">{playerProfile?.team_name}</Text>
+            <Text className="font-saira-medium text-xl text-text-2">Team</Text>
+            <Text className="font-saira-semibold text-lg text-text-1">
+              {playerProfile?.team_name}
+            </Text>
           </View>
           <View className="border-t border-separator"></View>
           <View className="w-full flex-row items-center justify-between">
-            <Text className="text-xl text-text-2">League</Text>
-            <Text className="text-lg font-semibold text-text-1">
+            <Text className="font-saira-medium text-xl text-text-2">League</Text>
+            <Text className="font-saira-semibold text-lg text-text-1">
               {playerProfile?.district_name} - {playerProfile?.division_name}
             </Text>
           </View>
 
           <View className="border-t border-separator"></View>
           <View className="w-full flex-row items-center justify-between">
-            <Text className="text-xl text-text-2">Date of Birth</Text>
+            <Text className="font-saira-medium text-xl text-text-2">Date of Birth</Text>
             <View className="flex-row items-center gap-3">
               {isBirthdayToday(playerProfile?.dob) && (
                 <Image
@@ -191,7 +201,7 @@ export default function PlayerProfile({ context, isLoading, playerProfile, error
                   resizeMode="contain"
                 />
               )}
-              <Text className="text-lg font-semibold text-text-1">
+              <Text className="font-saira-semibold text-lg text-text-1">
                 {new Date(playerProfile?.dob).toLocaleDateString('en-GB', {
                   year: 'numeric',
                   month: '2-digit',
@@ -202,13 +212,13 @@ export default function PlayerProfile({ context, isLoading, playerProfile, error
           </View>
           <View className="border-t border-border-color"></View>
           <View className="w-full flex-row items-center justify-between ">
-            <Text className="text-xl text-text-2">Age</Text>
-            <Text className="text-lg font-semibold text-text-1">{`${years} Years ${days} days`}</Text>
+            <Text className="font-saira-medium text-xl text-text-2">Age</Text>
+            <Text className="font-saira-semibold text-lg text-text-1">{`${years} Years ${days} days`}</Text>
           </View>
           <View className="border-t border-border-color"></View>
           <View className="w-full flex-row items-center justify-between">
-            <Text className="text-xl text-text-2">Member Since</Text>
-            <Text className="text-lg font-semibold text-text-1">
+            <Text className="font-saira-medium text-xl text-text-2">Member Since</Text>
+            <Text className="font-saira-semibold text-lg text-text-1">
               {new Date(playerProfile?.created_at).toLocaleDateString('en-GB', {
                 year: 'numeric',
                 month: 'short',

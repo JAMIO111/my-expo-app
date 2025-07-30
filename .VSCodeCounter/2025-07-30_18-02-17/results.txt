@@ -1,0 +1,231 @@
+Date : 2025-07-30 18:02:17
+Directory : c:\Users\dryde\Documents\Mobile-Apps\my-expo-app
+Total : 167 files,  25334 codes, 191 comments, 1246 blanks, all 26771 lines
+
+Languages
++--------------------+------------+------------+------------+------------+------------+
+| language           | files      | code       | comment    | blank      | total      |
++--------------------+------------+------------+------------+------------+------------+
+| JSON               |          3 |     14,159 |          0 |          3 |     14,162 |
+| JavaScript JSX     |        147 |      9,993 |        144 |      1,087 |     11,224 |
+| JavaScript         |         12 |      1,032 |         41 |        149 |      1,222 |
+| PostCSS            |          1 |        119 |          0 |          3 |        122 |
+| JSON with Comments |          1 |         29 |          2 |          0 |         31 |
+| Properties         |          1 |          2 |          0 |          2 |          4 |
+| TypeScript         |          2 |          0 |          4 |          2 |          6 |
++--------------------+------------+------------+------------+------------+------------+
+
+Directories
++--------------------------------------------------------------------------------------------------------------------+------------+------------+------------+------------+------------+
+| path                                                                                                               | files      | code       | comment    | blank      | total      |
++--------------------------------------------------------------------------------------------------------------------+------------+------------+------------+------------+------------+
+| .                                                                                                                  |        167 |     25,334 |        191 |      1,246 |     26,771 |
+| . (Files)                                                                                                          |         14 |     14,498 |          9 |         24 |     14,531 |
+| app                                                                                                                |        153 |     10,836 |        182 |      1,222 |     12,240 |
+| app (Files)                                                                                                        |          9 |        763 |          7 |         85 |        855 |
+| app\(main)                                                                                                         |         57 |      3,894 |         30 |        412 |      4,336 |
+| app\(main) (Files)                                                                                                 |          1 |         14 |          0 |          3 |         17 |
+| app\(main)\home                                                                                                    |         21 |      1,250 |          6 |        122 |      1,378 |
+| app\(main)\home (Files)                                                                                            |          2 |        251 |          0 |         22 |        273 |
+| app\(main)\home\[fixtureId]                                                                                        |          8 |        746 |          6 |         57 |        809 |
+| app\(main)\home\[fixtureId] (Files)                                                                                |          5 |        675 |          6 |         46 |        727 |
+| app\(main)\home\[fixtureId]\[teamId]                                                                               |          3 |         71 |          0 |         11 |         82 |
+| app\(main)\home\[fixtureId]\[teamId] (Files)                                                                       |          2 |         36 |          0 |          7 |         43 |
+| app\(main)\home\[fixtureId]\[teamId]\[userId]                                                                      |          1 |         35 |          0 |          4 |         39 |
+| app\(main)\home\fixtures                                                                                           |          2 |         35 |          0 |          7 |         42 |
+| app\(main)\home\league                                                                                             |          8 |        154 |          0 |         32 |        186 |
+| app\(main)\home\league (Files)                                                                                     |          2 |         36 |          0 |          8 |         44 |
+| app\(main)\home\league\[teamId]                                                                                    |          6 |        118 |          0 |         24 |        142 |
+| app\(main)\home\league\[teamId] (Files)                                                                            |          2 |         39 |          0 |          8 |         47 |
+| app\(main)\home\league\[teamId]\[userId]                                                                           |          4 |         79 |          0 |         16 |         95 |
+| app\(main)\home\league\[teamId]\[userId] (Files)                                                                   |          2 |         46 |          0 |          8 |         54 |
+| app\(main)\home\league\[teamId]\[userId]\player-stats                                                              |          2 |         33 |          0 |          8 |         41 |
+| app\(main)\home\results                                                                                            |          1 |         64 |          0 |          4 |         68 |
+| app\(main)\onboarding                                                                                              |          9 |        772 |          5 |         86 |        863 |
+| app\(main)\profile                                                                                                 |          2 |        126 |          0 |         10 |        136 |
+| app\(main)\rankings                                                                                                |          4 |        136 |          0 |         16 |        152 |
+| app\(main)\rankings (Files)                                                                                        |          2 |         72 |          0 |          8 |         80 |
+| app\(main)\rankings\podium                                                                                         |          2 |         64 |          0 |          8 |         72 |
+| app\(main)\settings                                                                                                |         16 |      1,480 |         19 |        158 |      1,657 |
+| app\(main)\teams                                                                                                   |          4 |        116 |          0 |         17 |        133 |
+| app\(main)\teams (Files)                                                                                           |          2 |         47 |          0 |          9 |         56 |
+| app\(main)\teams\[userId]                                                                                          |          2 |         69 |          0 |          8 |         77 |
+| app\components                                                                                                     |         57 |      4,300 |         69 |        409 |      4,778 |
+| app\contexts                                                                                                       |          3 |        120 |          3 |         23 |        146 |
+| app\hooks                                                                                                          |         21 |        916 |         35 |        158 |      1,109 |
+| app\lib                                                                                                            |          6 |        843 |         38 |        135 |      1,016 |
++--------------------------------------------------------------------------------------------------------------------+------------+------------+------------+------------+------------+
+
+Files
++--------------------------------------------------------------------------------------------------------------------+--------------------+------------+------------+------------+------------+
+| filename                                                                                                           | language           | code       | comment    | blank      | total      |
++--------------------------------------------------------------------------------------------------------------------+--------------------+------------+------------+------------+------------+
+| c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\.env                                                              | Properties         |          2 |          0 |          2 |          4 |
+| c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app-env.d.ts                                                      | TypeScript         |          0 |          2 |          1 |          3 |
+| c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app.config.js                                                     | JavaScript         |         47 |          1 |          2 |         50 |
+| c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\(main)\_layout.jsx                                            | JavaScript JSX     |         14 |          0 |          3 |         17 |
+| c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\(main)\home\[fixtureId]\PlayerStats.jsx                       | JavaScript JSX     |         51 |          0 |          3 |         54 |
+| c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\(main)\home\[fixtureId]\[teamId]\[userId]\index.jsx           | JavaScript JSX     |         35 |          0 |          4 |         39 |
+| c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\(main)\home\[fixtureId]\[teamId]\_layout.jsx                  | JavaScript JSX     |          9 |          0 |          3 |         12 |
+| c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\(main)\home\[fixtureId]\[teamId]\index.jsx                    | JavaScript JSX     |         27 |          0 |          4 |         31 |
+| c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\(main)\home\[fixtureId]\_layout.jsx                           | JavaScript JSX     |          9 |          0 |          3 |         12 |
+| c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\(main)\home\[fixtureId]\approve-results.jsx                   | JavaScript JSX     |        150 |          0 |          8 |        158 |
+| c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\(main)\home\[fixtureId]\index.jsx                             | JavaScript JSX     |         46 |          0 |          3 |         49 |
+| c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\(main)\home\[fixtureId]\submit-results.jsx                    | JavaScript JSX     |        419 |          6 |         29 |        454 |
+| c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\(main)\home\_layout.jsx                                       | JavaScript JSX     |         11 |          0 |          3 |         14 |
+| c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\(main)\home\fixtures\_layout.jsx                              | JavaScript JSX     |         11 |          0 |          4 |         15 |
+| c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\(main)\home\fixtures\index.jsx                                | JavaScript JSX     |         24 |          0 |          3 |         27 |
+| c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\(main)\home\index.jsx                                         | JavaScript JSX     |        240 |          0 |         19 |        259 |
+| c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\(main)\home\league\[teamId]\[userId]\_layout.jsx              | JavaScript JSX     |         11 |          0 |          4 |         15 |
+| c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\(main)\home\league\[teamId]\[userId]\index.jsx                | JavaScript JSX     |         35 |          0 |          4 |         39 |
+| c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\(main)\home\league\[teamId]\[userId]\player-stats\_layout.jsx | JavaScript JSX     |          8 |          0 |          4 |         12 |
+| c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\(main)\home\league\[teamId]\[userId]\player-stats\index.jsx   | JavaScript JSX     |         25 |          0 |          4 |         29 |
+| c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\(main)\home\league\[teamId]\_layout.jsx                       | JavaScript JSX     |         11 |          0 |          4 |         15 |
+| c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\(main)\home\league\[teamId]\index.jsx                         | JavaScript JSX     |         28 |          0 |          4 |         32 |
+| c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\(main)\home\league\_layout.jsx                                | JavaScript JSX     |         11 |          0 |          4 |         15 |
+| c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\(main)\home\league\index.jsx                                  | JavaScript JSX     |         25 |          0 |          4 |         29 |
+| c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\(main)\home\results\results.jsx                               | JavaScript JSX     |         64 |          0 |          4 |         68 |
+| c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\(main)\onboarding\_layout.jsx                                 | JavaScript JSX     |         23 |          0 |          4 |         27 |
+| c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\(main)\onboarding\profile-creation-avatar.jsx                 | JavaScript JSX     |        214 |          4 |         30 |        248 |
+| c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\(main)\onboarding\profile-creation-dob.jsx                    | JavaScript JSX     |         48 |          0 |          4 |         52 |
+| c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\(main)\onboarding\profile-creation-name.jsx                   | JavaScript JSX     |         73 |          0 |          7 |         80 |
+| c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\(main)\onboarding\profile-creation-nickname.jsx               | JavaScript JSX     |         57 |          0 |          6 |         63 |
+| c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\(main)\onboarding\profile-creation-team-code.jsx              | JavaScript JSX     |        168 |          1 |         17 |        186 |
+| c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\(main)\onboarding\profile-creation-team-confirm.jsx           | JavaScript JSX     |        129 |          0 |         11 |        140 |
+| c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\(main)\onboarding\profile-creation-team-name.jsx              | JavaScript JSX     |          0 |          0 |          1 |          1 |
+| c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\(main)\onboarding\profile-creation-team.jsx                   | JavaScript JSX     |         60 |          0 |          6 |         66 |
+| c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\(main)\profile\_layout.jsx                                    | JavaScript JSX     |         11 |          0 |          4 |         15 |
+| c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\(main)\profile\index.jsx                                      | JavaScript JSX     |        115 |          0 |          6 |        121 |
+| c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\(main)\rankings\_layout.jsx                                   | JavaScript JSX     |         12 |          0 |          4 |         16 |
+| c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\(main)\rankings\index.jsx                                     | JavaScript JSX     |         60 |          0 |          4 |         64 |
+| c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\(main)\rankings\podium\_layout.jsx                            | JavaScript JSX     |          7 |          0 |          4 |         11 |
+| c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\(main)\rankings\podium\index.jsx                              | JavaScript JSX     |         57 |          0 |          4 |         61 |
+| c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\(main)\settings\Abbreviation.jsx                              | JavaScript JSX     |         24 |          0 |          3 |         27 |
+| c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\(main)\settings\Account.jsx                                   | JavaScript JSX     |        115 |          2 |         11 |        128 |
+| c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\(main)\settings\ExcludedDates.jsx                             | JavaScript JSX     |        104 |          2 |          9 |        115 |
+| c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\(main)\settings\FixtureAndScheduling.jsx                      | JavaScript JSX     |         69 |          0 |          5 |         74 |
+| c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\(main)\settings\LeagueConfig.jsx                              | JavaScript JSX     |         72 |          0 |          6 |         78 |
+| c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\(main)\settings\MatchDays.jsx                                 | JavaScript JSX     |        119 |          0 |         15 |        134 |
+| c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\(main)\settings\MatchFrequency.jsx                            | JavaScript JSX     |         43 |          0 |          4 |         47 |
+| c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\(main)\settings\MatchTimes.jsx                                | JavaScript JSX     |        108 |          0 |         15 |        123 |
+| c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\(main)\settings\PersonalDetails.jsx                           | JavaScript JSX     |        152 |          3 |         20 |        175 |
+| c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\(main)\settings\SignInAndSecurity.jsx                         | JavaScript JSX     |         36 |          0 |          5 |         41 |
+| c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\(main)\settings\StartNewSeason.jsx                            | JavaScript JSX     |        354 |          9 |         33 |        396 |
+| c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\(main)\settings\TeamCrest.jsx                                 | JavaScript JSX     |         28 |          0 |          5 |         33 |
+| c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\(main)\settings\TeamDetails.jsx                               | JavaScript JSX     |         72 |          1 |          8 |         81 |
+| c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\(main)\settings\TeamManagement.jsx                            | JavaScript JSX     |        102 |          2 |          8 |        112 |
+| c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\(main)\settings\_layout.jsx                                   | JavaScript JSX     |          7 |          0 |          4 |         11 |
+| c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\(main)\settings\index.jsx                                     | JavaScript JSX     |         75 |          0 |          7 |         82 |
+| c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\(main)\teams\[userId]\PlayerStats.jsx                         | JavaScript JSX     |         34 |          0 |          4 |         38 |
+| c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\(main)\teams\[userId]\index.jsx                               | JavaScript JSX     |         35 |          0 |          4 |         39 |
+| c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\(main)\teams\_layout.jsx                                      | JavaScript JSX     |          6 |          0 |          3 |          9 |
+| c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\(main)\teams\index.jsx                                        | JavaScript JSX     |         41 |          0 |          6 |         47 |
+| c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\+not-found.jsx                                                | JavaScript JSX     |         47 |          1 |          7 |         55 |
+| c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\_layout.jsx                                                   | JavaScript JSX     |         69 |          2 |          7 |         78 |
+| c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\components\AbbreviationEditor.jsx                             | JavaScript JSX     |        123 |          1 |         16 |        140 |
+| c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\components\AvatarUploader.jsx                                 | JavaScript JSX     |         42 |          0 |          6 |         48 |
+| c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\components\AwaitingResultCard.jsx                             | JavaScript JSX     |         66 |          0 |          4 |         70 |
+| c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\components\BadgeList.jsx                                      | JavaScript JSX     |         76 |          0 |         11 |         87 |
+| c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\components\BottomSheetWrapper.jsx                             | JavaScript JSX     |         39 |          1 |          4 |         44 |
+| c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\components\BrandHeader.jsx                                    | JavaScript JSX     |         25 |          0 |          3 |         28 |
+| c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\components\CTAButton.jsx                                      | JavaScript JSX     |         57 |          0 |          7 |         64 |
+| c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\components\CachedImage.jsx                                    | JavaScript JSX     |         15 |          1 |          4 |         20 |
+| c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\components\CircularProgress.jsx                               | JavaScript JSX     |         50 |          2 |          5 |         57 |
+| c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\components\ColoredStatCard.jsx                                | JavaScript JSX     |         44 |          0 |          4 |         48 |
+| c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\components\ConfirmModal.jsx                                   | JavaScript JSX     |         44 |          1 |          5 |         50 |
+| c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\components\CrestEditor.jsx                                    | JavaScript JSX     |         93 |          0 |          6 |         99 |
+| c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\components\CustomHeader.jsx                                   | JavaScript JSX     |         60 |          6 |          8 |         74 |
+| c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\components\DropdownFilterButton.jsx                           | JavaScript JSX     |         16 |          0 |          4 |         20 |
+| c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\components\EditableSettingsItem.jsx                           | JavaScript JSX     |         75 |          0 |          9 |         84 |
+| c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\components\FixturePage.jsx                                    | JavaScript JSX     |        275 |          0 |         10 |        285 |
+| c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\components\FixturesDayCard.jsx                                | JavaScript JSX     |          0 |          0 |          1 |          1 |
+| c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\components\FixturesHomeCard.jsx                               | JavaScript JSX     |         82 |          0 |          5 |         87 |
+| c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\components\FixturesList.jsx                                   | JavaScript JSX     |        159 |          4 |         12 |        175 |
+| c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\components\FormWidget.jsx                                     | JavaScript JSX     |         91 |          1 |         11 |        103 |
+| c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\components\FramesList.jsx                                     | JavaScript JSX     |         82 |          1 |          5 |         88 |
+| c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\components\GradientBall.jsx                                   | JavaScript JSX     |         39 |          0 |          6 |         45 |
+| c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\components\Heading.jsx                                        | JavaScript JSX     |          7 |          0 |          3 |         10 |
+| c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\components\HomeScreenCardLarge.jsx                            | JavaScript JSX     |         23 |          0 |          4 |         27 |
+| c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\components\HorizontalScrollUpcomingFixtures.jsx               | JavaScript JSX     |         45 |          0 |          6 |         51 |
+| c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\components\HorizontalStatBar.jsx                              | JavaScript JSX     |         75 |          2 |          8 |         85 |
+| c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\components\Leaderboard.jsx                                    | JavaScript JSX     |         79 |          3 |          9 |         91 |
+| c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\components\LeagueHomeCard.jsx                                 | JavaScript JSX     |         61 |          0 |          5 |         66 |
+| c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\components\LeagueTable.jsx                                    | JavaScript JSX     |        123 |          3 |          7 |        133 |
+| c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\components\LeagueTableWrapper.jsx                             | JavaScript JSX     |         99 |          9 |         20 |        128 |
+| c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\components\LoadingSplash.jsx                                  | JavaScript JSX     |        107 |          2 |         13 |        122 |
+| c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\components\MenuContainer.jsx                                  | JavaScript JSX     |         10 |          0 |          3 |         13 |
+| c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\components\ModalDropdown.jsx                                  | JavaScript JSX     |         84 |         11 |          7 |        102 |
+| c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\components\ModalWrappedDatePicker.jsx                         | JavaScript JSX     |        124 |          0 |         10 |        134 |
+| c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\components\NavBar2.jsx                                        | JavaScript JSX     |        132 |          3 |         16 |        151 |
+| c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\components\PendingResultCard.jsx                              | JavaScript JSX     |         68 |          0 |          4 |         72 |
+| c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\components\PlayerCard.jsx                                     | JavaScript JSX     |        129 |          1 |         10 |        140 |
+| c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\components\PlayerProfile.jsx                                  | JavaScript JSX     |        332 |          0 |         15 |        347 |
+| c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\components\PlayerStats.jsx                                    | JavaScript JSX     |         98 |          0 |          4 |        102 |
+| c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\components\PlayersList.jsx                                    | JavaScript JSX     |         28 |          0 |          6 |         34 |
+| c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\components\Podium.jsx                                         | JavaScript JSX     |        134 |          4 |         10 |        148 |
+| c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\components\PoolRack.jsx                                       | JavaScript JSX     |        190 |          6 |         20 |        216 |
+| c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\components\ResultCard.jsx                                     | JavaScript JSX     |         31 |          0 |          4 |         35 |
+| c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\components\ResultsHomeCard.jsx                                | JavaScript JSX     |         33 |          1 |          4 |         38 |
+| c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\components\ResultsTable.jsx                                   | JavaScript JSX     |         20 |          0 |          4 |         24 |
+| c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\components\SafeViewWrapper.jsx                                | JavaScript JSX     |         20 |          0 |          4 |         24 |
+| c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\components\SelectionSettingsItem.jsx                          | JavaScript JSX     |         39 |          0 |          7 |         46 |
+| c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\components\SettingsItem.jsx                                   | JavaScript JSX     |         75 |          0 |          9 |         84 |
+| c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\components\Skeletons.jsx                                      | JavaScript JSX     |         50 |          1 |          3 |         54 |
+| c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\components\SlidingTabButton.jsx                               | JavaScript JSX     |         85 |          0 |          8 |         93 |
+| c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\components\StatCard.jsx                                       | JavaScript JSX     |         36 |          4 |          6 |         46 |
+| c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\components\StatCardCompare.jsx                                | JavaScript JSX     |         30 |          1 |          6 |         37 |
+| c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\components\StepPillGroup.jsx                                  | JavaScript JSX     |         56 |          0 |          5 |         61 |
+| c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\components\TeamLogo.jsx                                       | JavaScript JSX     |         78 |          0 |          6 |         84 |
+| c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\components\TeamProfile.jsx                                    | JavaScript JSX     |         81 |          0 |          6 |         87 |
+| c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\components\UpcomingFixtureCard.jsx                            | JavaScript JSX     |         76 |          0 |          5 |         81 |
+| c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\components\svgs.jsx                                           | JavaScript JSX     |         89 |          0 |          6 |         95 |
+| c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\contexts\AdminContext.jsx                                     | JavaScript JSX     |         29 |          0 |          6 |         35 |
+| c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\contexts\AppRealtimeProvider.jsx                              | JavaScript JSX     |         63 |          2 |         11 |         76 |
+| c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\contexts\UserProvider.jsx                                     | JavaScript JSX     |         28 |          1 |          6 |         35 |
+| c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\forgot-password.jsx                                           | JavaScript JSX     |         45 |          1 |          5 |         51 |
+| c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\hooks\Countdown.jsx                                           | JavaScript JSX     |         47 |          2 |         13 |         62 |
+| c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\hooks\useAuthUserProfile.jsx                                  | JavaScript JSX     |         63 |          3 |         10 |         76 |
+| c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\hooks\useAuthUserProfile2.jsx                                 | JavaScript JSX     |        132 |          8 |         25 |        165 |
+| c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\hooks\useCachedImage.jsx                                      | JavaScript JSX     |         50 |          3 |         12 |         65 |
+| c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\hooks\useDistricts.jsx                                        | JavaScript JSX     |         18 |          0 |          3 |         21 |
+| c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\hooks\useDivisions.jsx                                        | JavaScript JSX     |         18 |          0 |          3 |         21 |
+| c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\hooks\useFixtureDetails.jsx                                   | JavaScript JSX     |         56 |          1 |          6 |         63 |
+| c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\hooks\useFixturesAwaitingResults.jsx                          | JavaScript JSX     |         22 |          0 |          3 |         25 |
+| c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\hooks\useGroupedFixtures.jsx                                  | JavaScript JSX     |         35 |          0 |          8 |         43 |
+| c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\hooks\useLast5Results.jsx                                     | JavaScript JSX     |         18 |          0 |          5 |         23 |
+| c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\hooks\useLogChanges.jsx                                       | JavaScript JSX     |         44 |          6 |         11 |         61 |
+| c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\hooks\usePlayerStats.jsx                                      | JavaScript JSX     |         87 |          3 |         12 |        102 |
+| c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\hooks\useResultsByFixture.jsx                                 | JavaScript JSX     |         41 |          0 |          3 |         44 |
+| c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\hooks\useResultsPendingApproval.jsx                           | JavaScript JSX     |         22 |          0 |          3 |         25 |
+| c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\hooks\useSaveMatchResults.jsx                                 | JavaScript JSX     |         55 |          7 |         11 |         73 |
+| c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\hooks\useSeasons.jsx                                          | JavaScript JSX     |         18 |          0 |          3 |         21 |
+| c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\hooks\useStandings.jsx                                        | JavaScript JSX     |         40 |          0 |          6 |         46 |
+| c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\hooks\useTeamPlayers.jsx                                      | JavaScript JSX     |         37 |          1 |          6 |         44 |
+| c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\hooks\useTeamProfile.jsx                                      | JavaScript JSX     |         29 |          0 |          3 |         32 |
+| c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\hooks\useUpcomingFixtures.jsx                                 | JavaScript JSX     |         39 |          1 |          6 |         46 |
+| c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\hooks\useUserProfile.jsx                                      | JavaScript JSX     |         45 |          0 |          6 |         51 |
+| c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\index.jsx                                                     | JavaScript JSX     |          9 |          0 |          2 |         11 |
+| c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\lib\colors.js                                                 | JavaScript         |         90 |          0 |          5 |         95 |
+| c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\lib\fixtureOptions.js                                         | JavaScript         |         21 |          0 |          1 |         22 |
+| c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\lib\helperFunctions.js                                        | JavaScript         |        535 |         37 |        115 |        687 |
+| c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\lib\supabaseClient.js                                         | JavaScript         |         15 |          0 |          4 |         19 |
+| c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\lib\toastConfig.js                                            | JavaScript         |        170 |          0 |          9 |        179 |
+| c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\lib\xpLevels.js                                               | JavaScript         |         12 |          1 |          1 |         14 |
+| c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\login.jsx                                                     | JavaScript JSX     |        213 |          0 |         24 |        237 |
+| c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\reset-password.jsx                                            | JavaScript JSX     |        109 |          2 |          8 |        119 |
+| c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\role-select.jsx                                               | JavaScript JSX     |         68 |          1 |          7 |         76 |
+| c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\signup.jsx                                                    | JavaScript JSX     |        193 |          0 |         21 |        214 |
+| c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\users.jsx                                                     | JavaScript JSX     |         10 |          0 |          4 |         14 |
+| c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\babel.config.js                                                   | JavaScript         |         23 |          0 |          2 |         25 |
+| c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\cesconfig.jsonc                                                   | JSON with Comments |         29 |          2 |          0 |         31 |
+| c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\eas.json                                                          | JSON               |         21 |          0 |          1 |         22 |
+| c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\eslint.config.js                                                  | JavaScript         |         13 |          1 |          2 |         16 |
+| c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\global.css                                                        | PostCSS            |        119 |          0 |          3 |        122 |
+| c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\metro.config.js                                                   | JavaScript         |         12 |          0 |          4 |         16 |
+| c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\nativewind-env.d.ts                                               | TypeScript         |          0 |          2 |          1 |          3 |
+| c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\package-lock.json                                                 | JSON               |     14,069 |          0 |          1 |     14,070 |
+| c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\package.json                                                      | JSON               |         69 |          0 |          1 |         70 |
+| c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\prettier.config.js                                                | JavaScript         |          9 |          0 |          2 |         11 |
+| c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\tailwind.config.js                                                | JavaScript         |         85 |          1 |          2 |         88 |
+| Total                                                                                                              |                    |     25,334 |        191 |      1,246 |     26,771 |
++--------------------------------------------------------------------------------------------------------------------+--------------------+------------+------------+------------+------------+

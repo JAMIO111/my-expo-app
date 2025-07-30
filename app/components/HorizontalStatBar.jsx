@@ -15,20 +15,45 @@ const HorizontalStatBar = ({
   } else {
     width = `${value}%`;
   }
+  let borderColor;
+  let backgroundColor;
+  let filledColor;
+  switch (color) {
+    case 'purple':
+      borderColor = 'border-theme-purple';
+      backgroundColor = 'bg-theme-purple/40';
+      filledColor = 'bg-theme-purple';
+      break;
+    case 'orange':
+      borderColor = 'border-theme-orange';
+      backgroundColor = 'bg-theme-orange/40';
+      filledColor = 'bg-theme-orange';
+      break;
+    case 'blue':
+      borderColor = 'border-theme-blue';
+      backgroundColor = 'bg-theme-blue/40';
+      filledColor = 'bg-theme-blue';
+      break;
+
+    default:
+      break;
+  }
+
   return (
     <View className="mb-4 w-full">
-      <Text className="mb-2 font-saira-medium text-2xl text-text-2">{title}</Text>
+      <Text className="mb-1 font-saira-semibold text-xl text-text-2">{title}</Text>
 
-      <View className={`relative h-16 w-full overflow-hidden rounded-xl bg-theme-${color}/20`}>
+      <View
+        className={`relative h-16 w-full overflow-hidden rounded-xl border ${backgroundColor} ${borderColor}`}>
         {/* Filled Bar */}
         <View
-          className={`absolute left-0 top-0 h-full bg-theme-${color}`}
+          className={`absolute left-0 top-0 h-full ${filledColor}`}
           style={{
             width: `${width}`,
-            borderTopLeftRadius: 12,
-            borderBottomLeftRadius: 12,
-            borderTopRightRadius: value >= 99 ? 12 : 0,
-            borderBottomRightRadius: value >= 99 ? 12 : 0,
+            borderTopLeftRadius: 8,
+            borderBottomLeftRadius: 8,
+            borderTopRightRadius: value >= 99 ? 8 : 0,
+            borderBottomRightRadius: value >= 99 ? 8 : 0,
           }}
         />
 
@@ -46,8 +71,8 @@ const HorizontalStatBar = ({
       </View>
       {(valueLabel || targetLabel) && (
         <View className="mt-2 flex-row items-center justify-between">
-          <Text className="font-saira-semibold text-xl text-text-2">{valueLabel}</Text>
-          <Text className="font-saira-semibold text-xl text-text-2">{targetLabel}</Text>
+          <Text className="font-saira-medium text-xl text-text-2">{valueLabel}</Text>
+          <Text className="font-saira-medium text-xl text-text-2">{targetLabel}</Text>
         </View>
       )}
     </View>

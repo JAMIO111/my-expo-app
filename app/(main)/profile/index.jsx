@@ -13,6 +13,7 @@ import BadgeList from '@components/BadgeList';
 import { usePlayerStats } from '@hooks/usePlayerStats';
 import { calculateLevel } from '@lib/helperFunctions';
 import PlayerStats from '@components/PlayerStats';
+import CachedImage from '../../components/CachedImage';
 
 const ProfilePage = () => {
   const router = useRouter();
@@ -53,7 +54,13 @@ const ProfilePage = () => {
           <View className="mb-4 items-center p-2 ">
             <View className="rounded-full border-8 border-brand p-2">
               <View className="rounded-full border border-brand-light">
-                <Image source={require('@assets/avatar.jpg')} className="h-40 w-40 rounded-full" />
+                <CachedImage
+                  avatarUrl={player?.avatar_url}
+                  userId={player?.id}
+                  width={140}
+                  height={140}
+                  borderRadius={70}
+                />
               </View>
             </View>
           </View>

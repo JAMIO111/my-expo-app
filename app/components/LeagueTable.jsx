@@ -28,7 +28,7 @@ const LeagueTable = ({ context, season, division }) => {
   const hasNoStandings = !(standings && standings.standings && standings.standings.length > 0);
 
   // Show skeleton only on first load
-  if (isLoading || !standings) {
+  if (isLoading) {
     return <TableSkeleton />;
   }
   // Show no data message if loaded and no standings available

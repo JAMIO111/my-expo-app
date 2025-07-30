@@ -16,7 +16,7 @@ const NavBar = () => {
       href: '/teams',
       icon: TeamIcon,
     },
-    { name: 'Comps', href: '/onboarding/profile-creation-team', icon: TrophyIcon },
+    { name: 'Comps', href: '/onboarding/profile-creation-avatar', icon: TrophyIcon },
     { name: 'Home', href: '/home' }, // Center item — spinner
     { name: 'Rankings', href: '/rankings', icon: ChartIcon },
     { name: 'Profile', href: '/profile', icon: UserIcon },

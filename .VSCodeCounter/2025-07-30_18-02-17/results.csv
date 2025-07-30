@@ -1,0 +1,169 @@
+"filename", "language", "JavaScript", "JSON", "TypeScript", "PostCSS", "Properties", "JavaScript JSX", "JSON with Comments", "comment", "blank", "total"
+"c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\.env", "Properties", 0, 0, 0, 0, 2, 0, 0, 0, 2, 4
+"c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app-env.d.ts", "TypeScript", 0, 0, 0, 0, 0, 0, 0, 2, 1, 3
+"c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app.config.js", "JavaScript", 47, 0, 0, 0, 0, 0, 0, 1, 2, 50
+"c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\(main)\_layout.jsx", "JavaScript JSX", 0, 0, 0, 0, 0, 14, 0, 0, 3, 17
+"c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\(main)\home\[fixtureId]\PlayerStats.jsx", "JavaScript JSX", 0, 0, 0, 0, 0, 51, 0, 0, 3, 54
+"c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\(main)\home\[fixtureId]\[teamId]\[userId]\index.jsx", "JavaScript JSX", 0, 0, 0, 0, 0, 35, 0, 0, 4, 39
+"c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\(main)\home\[fixtureId]\[teamId]\_layout.jsx", "JavaScript JSX", 0, 0, 0, 0, 0, 9, 0, 0, 3, 12
+"c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\(main)\home\[fixtureId]\[teamId]\index.jsx", "JavaScript JSX", 0, 0, 0, 0, 0, 27, 0, 0, 4, 31
+"c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\(main)\home\[fixtureId]\_layout.jsx", "JavaScript JSX", 0, 0, 0, 0, 0, 9, 0, 0, 3, 12
+"c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\(main)\home\[fixtureId]\approve-results.jsx", "JavaScript JSX", 0, 0, 0, 0, 0, 150, 0, 0, 8, 158
+"c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\(main)\home\[fixtureId]\index.jsx", "JavaScript JSX", 0, 0, 0, 0, 0, 46, 0, 0, 3, 49
+"c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\(main)\home\[fixtureId]\submit-results.jsx", "JavaScript JSX", 0, 0, 0, 0, 0, 419, 0, 6, 29, 454
+"c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\(main)\home\_layout.jsx", "JavaScript JSX", 0, 0, 0, 0, 0, 11, 0, 0, 3, 14
+"c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\(main)\home\fixtures\_layout.jsx", "JavaScript JSX", 0, 0, 0, 0, 0, 11, 0, 0, 4, 15
+"c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\(main)\home\fixtures\index.jsx", "JavaScript JSX", 0, 0, 0, 0, 0, 24, 0, 0, 3, 27
+"c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\(main)\home\index.jsx", "JavaScript JSX", 0, 0, 0, 0, 0, 240, 0, 0, 19, 259
+"c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\(main)\home\league\[teamId]\[userId]\_layout.jsx", "JavaScript JSX", 0, 0, 0, 0, 0, 11, 0, 0, 4, 15
+"c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\(main)\home\league\[teamId]\[userId]\index.jsx", "JavaScript JSX", 0, 0, 0, 0, 0, 35, 0, 0, 4, 39
+"c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\(main)\home\league\[teamId]\[userId]\player-stats\_layout.jsx", "JavaScript JSX", 0, 0, 0, 0, 0, 8, 0, 0, 4, 12
+"c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\(main)\home\league\[teamId]\[userId]\player-stats\index.jsx", "JavaScript JSX", 0, 0, 0, 0, 0, 25, 0, 0, 4, 29
+"c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\(main)\home\league\[teamId]\_layout.jsx", "JavaScript JSX", 0, 0, 0, 0, 0, 11, 0, 0, 4, 15
+"c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\(main)\home\league\[teamId]\index.jsx", "JavaScript JSX", 0, 0, 0, 0, 0, 28, 0, 0, 4, 32
+"c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\(main)\home\league\_layout.jsx", "JavaScript JSX", 0, 0, 0, 0, 0, 11, 0, 0, 4, 15
+"c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\(main)\home\league\index.jsx", "JavaScript JSX", 0, 0, 0, 0, 0, 25, 0, 0, 4, 29
+"c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\(main)\home\results\results.jsx", "JavaScript JSX", 0, 0, 0, 0, 0, 64, 0, 0, 4, 68
+"c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\(main)\onboarding\_layout.jsx", "JavaScript JSX", 0, 0, 0, 0, 0, 23, 0, 0, 4, 27
+"c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\(main)\onboarding\profile-creation-avatar.jsx", "JavaScript JSX", 0, 0, 0, 0, 0, 214, 0, 4, 30, 248
+"c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\(main)\onboarding\profile-creation-dob.jsx", "JavaScript JSX", 0, 0, 0, 0, 0, 48, 0, 0, 4, 52
+"c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\(main)\onboarding\profile-creation-name.jsx", "JavaScript JSX", 0, 0, 0, 0, 0, 73, 0, 0, 7, 80
+"c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\(main)\onboarding\profile-creation-nickname.jsx", "JavaScript JSX", 0, 0, 0, 0, 0, 57, 0, 0, 6, 63
+"c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\(main)\onboarding\profile-creation-team-code.jsx", "JavaScript JSX", 0, 0, 0, 0, 0, 168, 0, 1, 17, 186
+"c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\(main)\onboarding\profile-creation-team-confirm.jsx", "JavaScript JSX", 0, 0, 0, 0, 0, 129, 0, 0, 11, 140
+"c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\(main)\onboarding\profile-creation-team-name.jsx", "JavaScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 1, 1
+"c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\(main)\onboarding\profile-creation-team.jsx", "JavaScript JSX", 0, 0, 0, 0, 0, 60, 0, 0, 6, 66
+"c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\(main)\profile\_layout.jsx", "JavaScript JSX", 0, 0, 0, 0, 0, 11, 0, 0, 4, 15
+"c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\(main)\profile\index.jsx", "JavaScript JSX", 0, 0, 0, 0, 0, 115, 0, 0, 6, 121
+"c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\(main)\rankings\_layout.jsx", "JavaScript JSX", 0, 0, 0, 0, 0, 12, 0, 0, 4, 16
+"c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\(main)\rankings\index.jsx", "JavaScript JSX", 0, 0, 0, 0, 0, 60, 0, 0, 4, 64
+"c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\(main)\rankings\podium\_layout.jsx", "JavaScript JSX", 0, 0, 0, 0, 0, 7, 0, 0, 4, 11
+"c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\(main)\rankings\podium\index.jsx", "JavaScript JSX", 0, 0, 0, 0, 0, 57, 0, 0, 4, 61
+"c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\(main)\settings\Abbreviation.jsx", "JavaScript JSX", 0, 0, 0, 0, 0, 24, 0, 0, 3, 27
+"c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\(main)\settings\Account.jsx", "JavaScript JSX", 0, 0, 0, 0, 0, 115, 0, 2, 11, 128
+"c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\(main)\settings\ExcludedDates.jsx", "JavaScript JSX", 0, 0, 0, 0, 0, 104, 0, 2, 9, 115
+"c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\(main)\settings\FixtureAndScheduling.jsx", "JavaScript JSX", 0, 0, 0, 0, 0, 69, 0, 0, 5, 74
+"c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\(main)\settings\LeagueConfig.jsx", "JavaScript JSX", 0, 0, 0, 0, 0, 72, 0, 0, 6, 78
+"c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\(main)\settings\MatchDays.jsx", "JavaScript JSX", 0, 0, 0, 0, 0, 119, 0, 0, 15, 134
+"c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\(main)\settings\MatchFrequency.jsx", "JavaScript JSX", 0, 0, 0, 0, 0, 43, 0, 0, 4, 47
+"c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\(main)\settings\MatchTimes.jsx", "JavaScript JSX", 0, 0, 0, 0, 0, 108, 0, 0, 15, 123
+"c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\(main)\settings\PersonalDetails.jsx", "JavaScript JSX", 0, 0, 0, 0, 0, 152, 0, 3, 20, 175
+"c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\(main)\settings\SignInAndSecurity.jsx", "JavaScript JSX", 0, 0, 0, 0, 0, 36, 0, 0, 5, 41
+"c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\(main)\settings\StartNewSeason.jsx", "JavaScript JSX", 0, 0, 0, 0, 0, 354, 0, 9, 33, 396
+"c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\(main)\settings\TeamCrest.jsx", "JavaScript JSX", 0, 0, 0, 0, 0, 28, 0, 0, 5, 33
+"c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\(main)\settings\TeamDetails.jsx", "JavaScript JSX", 0, 0, 0, 0, 0, 72, 0, 1, 8, 81
+"c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\(main)\settings\TeamManagement.jsx", "JavaScript JSX", 0, 0, 0, 0, 0, 102, 0, 2, 8, 112
+"c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\(main)\settings\_layout.jsx", "JavaScript JSX", 0, 0, 0, 0, 0, 7, 0, 0, 4, 11
+"c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\(main)\settings\index.jsx", "JavaScript JSX", 0, 0, 0, 0, 0, 75, 0, 0, 7, 82
+"c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\(main)\teams\[userId]\PlayerStats.jsx", "JavaScript JSX", 0, 0, 0, 0, 0, 34, 0, 0, 4, 38
+"c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\(main)\teams\[userId]\index.jsx", "JavaScript JSX", 0, 0, 0, 0, 0, 35, 0, 0, 4, 39
+"c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\(main)\teams\_layout.jsx", "JavaScript JSX", 0, 0, 0, 0, 0, 6, 0, 0, 3, 9
+"c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\(main)\teams\index.jsx", "JavaScript JSX", 0, 0, 0, 0, 0, 41, 0, 0, 6, 47
+"c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\+not-found.jsx", "JavaScript JSX", 0, 0, 0, 0, 0, 47, 0, 1, 7, 55
+"c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\_layout.jsx", "JavaScript JSX", 0, 0, 0, 0, 0, 69, 0, 2, 7, 78
+"c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\components\AbbreviationEditor.jsx", "JavaScript JSX", 0, 0, 0, 0, 0, 123, 0, 1, 16, 140
+"c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\components\AvatarUploader.jsx", "JavaScript JSX", 0, 0, 0, 0, 0, 42, 0, 0, 6, 48
+"c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\components\AwaitingResultCard.jsx", "JavaScript JSX", 0, 0, 0, 0, 0, 66, 0, 0, 4, 70
+"c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\components\BadgeList.jsx", "JavaScript JSX", 0, 0, 0, 0, 0, 76, 0, 0, 11, 87
+"c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\components\BottomSheetWrapper.jsx", "JavaScript JSX", 0, 0, 0, 0, 0, 39, 0, 1, 4, 44
+"c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\components\BrandHeader.jsx", "JavaScript JSX", 0, 0, 0, 0, 0, 25, 0, 0, 3, 28
+"c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\components\CTAButton.jsx", "JavaScript JSX", 0, 0, 0, 0, 0, 57, 0, 0, 7, 64
+"c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\components\CachedImage.jsx", "JavaScript JSX", 0, 0, 0, 0, 0, 15, 0, 1, 4, 20
+"c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\components\CircularProgress.jsx", "JavaScript JSX", 0, 0, 0, 0, 0, 50, 0, 2, 5, 57
+"c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\components\ColoredStatCard.jsx", "JavaScript JSX", 0, 0, 0, 0, 0, 44, 0, 0, 4, 48
+"c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\components\ConfirmModal.jsx", "JavaScript JSX", 0, 0, 0, 0, 0, 44, 0, 1, 5, 50
+"c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\components\CrestEditor.jsx", "JavaScript JSX", 0, 0, 0, 0, 0, 93, 0, 0, 6, 99
+"c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\components\CustomHeader.jsx", "JavaScript JSX", 0, 0, 0, 0, 0, 60, 0, 6, 8, 74
+"c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\components\DropdownFilterButton.jsx", "JavaScript JSX", 0, 0, 0, 0, 0, 16, 0, 0, 4, 20
+"c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\components\EditableSettingsItem.jsx", "JavaScript JSX", 0, 0, 0, 0, 0, 75, 0, 0, 9, 84
+"c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\components\FixturePage.jsx", "JavaScript JSX", 0, 0, 0, 0, 0, 275, 0, 0, 10, 285
+"c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\components\FixturesDayCard.jsx", "JavaScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 1, 1
+"c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\components\FixturesHomeCard.jsx", "JavaScript JSX", 0, 0, 0, 0, 0, 82, 0, 0, 5, 87
+"c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\components\FixturesList.jsx", "JavaScript JSX", 0, 0, 0, 0, 0, 159, 0, 4, 12, 175
+"c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\components\FormWidget.jsx", "JavaScript JSX", 0, 0, 0, 0, 0, 91, 0, 1, 11, 103
+"c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\components\FramesList.jsx", "JavaScript JSX", 0, 0, 0, 0, 0, 82, 0, 1, 5, 88
+"c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\components\GradientBall.jsx", "JavaScript JSX", 0, 0, 0, 0, 0, 39, 0, 0, 6, 45
+"c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\components\Heading.jsx", "JavaScript JSX", 0, 0, 0, 0, 0, 7, 0, 0, 3, 10
+"c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\components\HomeScreenCardLarge.jsx", "JavaScript JSX", 0, 0, 0, 0, 0, 23, 0, 0, 4, 27
+"c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\components\HorizontalScrollUpcomingFixtures.jsx", "JavaScript JSX", 0, 0, 0, 0, 0, 45, 0, 0, 6, 51
+"c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\components\HorizontalStatBar.jsx", "JavaScript JSX", 0, 0, 0, 0, 0, 75, 0, 2, 8, 85
+"c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\components\Leaderboard.jsx", "JavaScript JSX", 0, 0, 0, 0, 0, 79, 0, 3, 9, 91
+"c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\components\LeagueHomeCard.jsx", "JavaScript JSX", 0, 0, 0, 0, 0, 61, 0, 0, 5, 66
+"c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\components\LeagueTable.jsx", "JavaScript JSX", 0, 0, 0, 0, 0, 123, 0, 3, 7, 133
+"c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\components\LeagueTableWrapper.jsx", "JavaScript JSX", 0, 0, 0, 0, 0, 99, 0, 9, 20, 128
+"c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\components\LoadingSplash.jsx", "JavaScript JSX", 0, 0, 0, 0, 0, 107, 0, 2, 13, 122
+"c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\components\MenuContainer.jsx", "JavaScript JSX", 0, 0, 0, 0, 0, 10, 0, 0, 3, 13
+"c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\components\ModalDropdown.jsx", "JavaScript JSX", 0, 0, 0, 0, 0, 84, 0, 11, 7, 102
+"c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\components\ModalWrappedDatePicker.jsx", "JavaScript JSX", 0, 0, 0, 0, 0, 124, 0, 0, 10, 134
+"c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\components\NavBar2.jsx", "JavaScript JSX", 0, 0, 0, 0, 0, 132, 0, 3, 16, 151
+"c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\components\PendingResultCard.jsx", "JavaScript JSX", 0, 0, 0, 0, 0, 68, 0, 0, 4, 72
+"c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\components\PlayerCard.jsx", "JavaScript JSX", 0, 0, 0, 0, 0, 129, 0, 1, 10, 140
+"c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\components\PlayerProfile.jsx", "JavaScript JSX", 0, 0, 0, 0, 0, 332, 0, 0, 15, 347
+"c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\components\PlayerStats.jsx", "JavaScript JSX", 0, 0, 0, 0, 0, 98, 0, 0, 4, 102
+"c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\components\PlayersList.jsx", "JavaScript JSX", 0, 0, 0, 0, 0, 28, 0, 0, 6, 34
+"c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\components\Podium.jsx", "JavaScript JSX", 0, 0, 0, 0, 0, 134, 0, 4, 10, 148
+"c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\components\PoolRack.jsx", "JavaScript JSX", 0, 0, 0, 0, 0, 190, 0, 6, 20, 216
+"c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\components\ResultCard.jsx", "JavaScript JSX", 0, 0, 0, 0, 0, 31, 0, 0, 4, 35
+"c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\components\ResultsHomeCard.jsx", "JavaScript JSX", 0, 0, 0, 0, 0, 33, 0, 1, 4, 38
+"c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\components\ResultsTable.jsx", "JavaScript JSX", 0, 0, 0, 0, 0, 20, 0, 0, 4, 24
+"c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\components\SafeViewWrapper.jsx", "JavaScript JSX", 0, 0, 0, 0, 0, 20, 0, 0, 4, 24
+"c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\components\SelectionSettingsItem.jsx", "JavaScript JSX", 0, 0, 0, 0, 0, 39, 0, 0, 7, 46
+"c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\components\SettingsItem.jsx", "JavaScript JSX", 0, 0, 0, 0, 0, 75, 0, 0, 9, 84
+"c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\components\Skeletons.jsx", "JavaScript JSX", 0, 0, 0, 0, 0, 50, 0, 1, 3, 54
+"c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\components\SlidingTabButton.jsx", "JavaScript JSX", 0, 0, 0, 0, 0, 85, 0, 0, 8, 93
+"c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\components\StatCard.jsx", "JavaScript JSX", 0, 0, 0, 0, 0, 36, 0, 4, 6, 46
+"c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\components\StatCardCompare.jsx", "JavaScript JSX", 0, 0, 0, 0, 0, 30, 0, 1, 6, 37
+"c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\components\StepPillGroup.jsx", "JavaScript JSX", 0, 0, 0, 0, 0, 56, 0, 0, 5, 61
+"c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\components\TeamLogo.jsx", "JavaScript JSX", 0, 0, 0, 0, 0, 78, 0, 0, 6, 84
+"c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\components\TeamProfile.jsx", "JavaScript JSX", 0, 0, 0, 0, 0, 81, 0, 0, 6, 87
+"c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\components\UpcomingFixtureCard.jsx", "JavaScript JSX", 0, 0, 0, 0, 0, 76, 0, 0, 5, 81
+"c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\components\svgs.jsx", "JavaScript JSX", 0, 0, 0, 0, 0, 89, 0, 0, 6, 95
+"c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\contexts\AdminContext.jsx", "JavaScript JSX", 0, 0, 0, 0, 0, 29, 0, 0, 6, 35
+"c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\contexts\AppRealtimeProvider.jsx", "JavaScript JSX", 0, 0, 0, 0, 0, 63, 0, 2, 11, 76
+"c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\contexts\UserProvider.jsx", "JavaScript JSX", 0, 0, 0, 0, 0, 28, 0, 1, 6, 35
+"c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\forgot-password.jsx", "JavaScript JSX", 0, 0, 0, 0, 0, 45, 0, 1, 5, 51
+"c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\hooks\Countdown.jsx", "JavaScript JSX", 0, 0, 0, 0, 0, 47, 0, 2, 13, 62
+"c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\hooks\useAuthUserProfile.jsx", "JavaScript JSX", 0, 0, 0, 0, 0, 63, 0, 3, 10, 76
+"c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\hooks\useAuthUserProfile2.jsx", "JavaScript JSX", 0, 0, 0, 0, 0, 132, 0, 8, 25, 165
+"c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\hooks\useCachedImage.jsx", "JavaScript JSX", 0, 0, 0, 0, 0, 50, 0, 3, 12, 65
+"c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\hooks\useDistricts.jsx", "JavaScript JSX", 0, 0, 0, 0, 0, 18, 0, 0, 3, 21
+"c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\hooks\useDivisions.jsx", "JavaScript JSX", 0, 0, 0, 0, 0, 18, 0, 0, 3, 21
+"c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\hooks\useFixtureDetails.jsx", "JavaScript JSX", 0, 0, 0, 0, 0, 56, 0, 1, 6, 63
+"c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\hooks\useFixturesAwaitingResults.jsx", "JavaScript JSX", 0, 0, 0, 0, 0, 22, 0, 0, 3, 25
+"c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\hooks\useGroupedFixtures.jsx", "JavaScript JSX", 0, 0, 0, 0, 0, 35, 0, 0, 8, 43
+"c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\hooks\useLast5Results.jsx", "JavaScript JSX", 0, 0, 0, 0, 0, 18, 0, 0, 5, 23
+"c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\hooks\useLogChanges.jsx", "JavaScript JSX", 0, 0, 0, 0, 0, 44, 0, 6, 11, 61
+"c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\hooks\usePlayerStats.jsx", "JavaScript JSX", 0, 0, 0, 0, 0, 87, 0, 3, 12, 102
+"c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\hooks\useResultsByFixture.jsx", "JavaScript JSX", 0, 0, 0, 0, 0, 41, 0, 0, 3, 44
+"c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\hooks\useResultsPendingApproval.jsx", "JavaScript JSX", 0, 0, 0, 0, 0, 22, 0, 0, 3, 25
+"c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\hooks\useSaveMatchResults.jsx", "JavaScript JSX", 0, 0, 0, 0, 0, 55, 0, 7, 11, 73
+"c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\hooks\useSeasons.jsx", "JavaScript JSX", 0, 0, 0, 0, 0, 18, 0, 0, 3, 21
+"c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\hooks\useStandings.jsx", "JavaScript JSX", 0, 0, 0, 0, 0, 40, 0, 0, 6, 46
+"c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\hooks\useTeamPlayers.jsx", "JavaScript JSX", 0, 0, 0, 0, 0, 37, 0, 1, 6, 44
+"c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\hooks\useTeamProfile.jsx", "JavaScript JSX", 0, 0, 0, 0, 0, 29, 0, 0, 3, 32
+"c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\hooks\useUpcomingFixtures.jsx", "JavaScript JSX", 0, 0, 0, 0, 0, 39, 0, 1, 6, 46
+"c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\hooks\useUserProfile.jsx", "JavaScript JSX", 0, 0, 0, 0, 0, 45, 0, 0, 6, 51
+"c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\index.jsx", "JavaScript JSX", 0, 0, 0, 0, 0, 9, 0, 0, 2, 11
+"c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\lib\colors.js", "JavaScript", 90, 0, 0, 0, 0, 0, 0, 0, 5, 95
+"c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\lib\fixtureOptions.js", "JavaScript", 21, 0, 0, 0, 0, 0, 0, 0, 1, 22
+"c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\lib\helperFunctions.js", "JavaScript", 535, 0, 0, 0, 0, 0, 0, 37, 115, 687
+"c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\lib\supabaseClient.js", "JavaScript", 15, 0, 0, 0, 0, 0, 0, 0, 4, 19
+"c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\lib\toastConfig.js", "JavaScript", 170, 0, 0, 0, 0, 0, 0, 0, 9, 179
+"c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\lib\xpLevels.js", "JavaScript", 12, 0, 0, 0, 0, 0, 0, 1, 1, 14
+"c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\login.jsx", "JavaScript JSX", 0, 0, 0, 0, 0, 213, 0, 0, 24, 237
+"c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\reset-password.jsx", "JavaScript JSX", 0, 0, 0, 0, 0, 109, 0, 2, 8, 119
+"c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\role-select.jsx", "JavaScript JSX", 0, 0, 0, 0, 0, 68, 0, 1, 7, 76
+"c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\signup.jsx", "JavaScript JSX", 0, 0, 0, 0, 0, 193, 0, 0, 21, 214
+"c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\app\users.jsx", "JavaScript JSX", 0, 0, 0, 0, 0, 10, 0, 0, 4, 14
+"c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\babel.config.js", "JavaScript", 23, 0, 0, 0, 0, 0, 0, 0, 2, 25
+"c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\cesconfig.jsonc", "JSON with Comments", 0, 0, 0, 0, 0, 0, 29, 2, 0, 31
+"c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\eas.json", "JSON", 0, 21, 0, 0, 0, 0, 0, 0, 1, 22
+"c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\eslint.config.js", "JavaScript", 13, 0, 0, 0, 0, 0, 0, 1, 2, 16
+"c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\global.css", "PostCSS", 0, 0, 0, 119, 0, 0, 0, 0, 3, 122
+"c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\metro.config.js", "JavaScript", 12, 0, 0, 0, 0, 0, 0, 0, 4, 16
+"c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\nativewind-env.d.ts", "TypeScript", 0, 0, 0, 0, 0, 0, 0, 2, 1, 3
+"c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\package-lock.json", "JSON", 0, 14069, 0, 0, 0, 0, 0, 0, 1, 14070
+"c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\package.json", "JSON", 0, 69, 0, 0, 0, 0, 0, 0, 1, 70
+"c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\prettier.config.js", "JavaScript", 9, 0, 0, 0, 0, 0, 0, 0, 2, 11
+"c:\Users\dryde\Documents\Mobile-Apps\my-expo-app\tailwind.config.js", "JavaScript", 85, 0, 0, 0, 0, 0, 0, 1, 2, 88
+"Total", "-", 1032, 14159, 0, 119, 2, 9993, 29, 191, 1246, 26771

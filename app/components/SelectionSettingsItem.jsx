@@ -17,7 +17,7 @@ const SelectionSettingsItem = ({ title, value, setValue, internalValue, lastItem
         <View className="w-full">
           <View
             className={`flex-row items-center gap-5 px-4 py-3 ${
-              pressed ? 'bg-bg-grouped-2' : 'bg-bg-grouped-2'
+              pressed ? 'bg-theme-gray-5' : 'bg-bg-grouped-2'
             }`}>
             <Text className="flex-1 pl-3 text-lg font-medium text-text-1">{title}</Text>
 

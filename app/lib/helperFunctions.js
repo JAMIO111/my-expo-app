@@ -1,25 +1,18 @@
 import supabase from '@/lib/supabaseClient';
-import { xpLevels } from '@/lib/xpLevels';
 
 export function calculateLevel(xp) {
-  let currentLevel = xpLevels[0];
-
-  for (let i = 1; i < xpLevels.length; i++) {
-    if (xp < xpLevels[i].xp) break;
-    currentLevel = xpLevels[i];
-  }
-
-  const nextLevel = xpLevels.find((l) => l.level === currentLevel.level + 1);
+  const level = Math.floor(Math.sqrt(xp / 100));
+  const currentLevelXp = 100 * level * level;
+  const nextLevel = level + 1;
+  const nextLevelXp = 100 * nextLevel * nextLevel;
 
   return {
-    level: currentLevel.level,
+    level,
     currentXp: xp,
-    currentLevelXp: currentLevel.xp,
-    nextLevelXp: nextLevel?.xp ?? null,
-    progressToNextLevel: nextLevel
-      ? ((xp - currentLevel.xp) / (nextLevel.xp - currentLevel.xp)) * 100
-      : 100,
-    isMaxLevel: !nextLevel,
+    currentLevelXp,
+    nextLevelXp,
+    progressToNextLevel: ((xp - currentLevelXp) / (nextLevelXp - currentLevelXp)) * 100,
+    isMaxLevel: false, // You can add a cap if needed
   };
 }
 

@@ -1,11 +1,12 @@
-import { StyleSheet, Text, View, Image, ScrollView } from 'react-native';
+import { StyleSheet, Text, View, ScrollView } from 'react-native';
 import { Stack } from 'expo-router';
-import { useUser } from '@contexts/UserProvider';
 import PlayersList from '@components/PlayersList';
 import Heading from '@components/Heading';
 import TeamLogo from '@components/TeamLogo';
 import CTAButton from '@components/CTAButton';
 import StatCard from '@components/StatCard';
+import CachedImage from '@components/CachedImage';
+import { Dimensions } from 'react-native';
 
 const TeamProfile = ({ context, profile, isLoading }) => {
   if (isLoading || !profile)
@@ -22,11 +23,20 @@ const TeamProfile = ({ context, profile, isLoading }) => {
     );
 
   const { line_1, line_2, city, postcode } = profile?.address || {};
+  console.log('Debug Team Profile:', profile);
 
   return (
-    <ScrollView className=" flex-1 bg-bg-1" contentContainerStyle={{ flexGrow: 1 }}>
-      <Image source={require('@assets/cover-photo.jpg')} style={{ width: '100%', height: 200 }} />
-      <View className=" w-full flex-row items-center justify-start gap-6 border-b border-separator bg-bg-grouped-2 py-5 pl-5">
+    <ScrollView className="flex-1 bg-bg-1" contentContainerStyle={{ flexGrow: 1 }}>
+      <View className="border-b border-theme-gray-3">
+        <CachedImage
+          avatarUrl={profile.cover_image_url}
+          userId={profile?.id}
+          width={Dimensions.get('window').width}
+          height={(Dimensions.get('window').width * 9) / 16}
+          borderRadius={0}
+        />
+      </View>
+      <View className=" w-full flex-row items-center justify-start gap-6 border-b border-theme-gray-5 bg-bg-grouped-2 py-5 pl-5">
         <View className="items-center justify-center gap-3">
           <View className="rounded-full border border-separator">
             <TeamLogo
@@ -60,7 +70,7 @@ const TeamProfile = ({ context, profile, isLoading }) => {
           </View>
         </View>
       </View>
-      <View className="gap-5 bg-bg-grouped-1 px-3 pb-12 pt-6">
+      <View className="gap-4 bg-bg-grouped-1 px-3 pb-12 pt-4">
         <View className="gap-3">
           <View className="flex-row gap-3">
             <StatCard title="Matches Played" value="86" />
@@ -71,7 +81,7 @@ const TeamProfile = ({ context, profile, isLoading }) => {
             <StatCard title="Losses" value="34" />
           </View>
         </View>
-        <CTAButton type="success" text="View Team Stats" callbackFn={() => {}} />
+        <CTAButton type="default" text="View All Stats" callbackFn={() => {}} />
         <View className="">
           <Heading text="Roster" />
           <PlayersList team={profile} context={context} />

@@ -4,8 +4,11 @@ import SettingsItem from '@components/SettingsItem';
 import MenuContainer from '@components/MenuContainer';
 import SafeViewWrapper from '@components/SafeViewWrapper';
 import CustomHeader from '@components/CustomHeader'; // Adjust the import path as necessary
+import { useUser } from '@contexts/UserProvider';
 
 const LeagueConfig = () => {
+  const { currentRole } = useUser();
+
   return (
     <SafeViewWrapper topColor="bg-brand" useBottomInset={false}>
       <Stack.Screen
@@ -27,14 +30,18 @@ const LeagueConfig = () => {
             iconBGColor="gray"
             title="District Name"
             icon="text-outline"
-            text={'Blyth & District'}
+            text={currentRole?.district?.name || 'Not Set'}
           />
           <SettingsItem
             routerPath="settings/LeagueConfig/Divisions"
             iconBGColor="gray"
             title="Divisions"
             icon="podium-outline"
-            text={'3 Divisions'}
+            text={
+              currentRole?.divisions?.length === 1
+                ? currentRole?.divisions[0].name
+                : `${currentRole?.divisions?.length} Divisions` || 'No Divisions'
+            }
           />
           <SettingsItem iconBGColor="gray" title="Auto-Generate Fixtures" icon="sync-outline" />
           <SettingsItem
@@ -43,13 +50,22 @@ const LeagueConfig = () => {
             icon="calendar-outline"
             routerPath="/settings/FixtureAndScheduling"
           />
-          <SettingsItem
-            routerPath="/StartNewSeason"
-            iconBGColor="green"
-            title="Start New Season"
-            icon="play"
-          />
-          <SettingsItem iconBGColor="red" title="End Current Season" icon="square" />
+          {!currentRole?.activeSeason ? (
+            <SettingsItem
+              routerPath="/settings/StartNewSeason"
+              iconBGColor="green"
+              title="Start New Season"
+              icon="play"
+              lastItem={true}
+            />
+          ) : (
+            <SettingsItem
+              iconBGColor="red"
+              title="End Current Season"
+              icon="square"
+              lastItem={true}
+            />
+          )}
         </MenuContainer>
       </ScrollView>
     </SafeViewWrapper>

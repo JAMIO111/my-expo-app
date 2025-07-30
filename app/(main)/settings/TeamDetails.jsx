@@ -70,7 +70,7 @@ const TeamDetails = () => {
 
         <MenuContainer>
           <SettingsItem routerPath="/settings/TeamCrest" title="Team Crest" />
-          <SettingsItem routerPath="/settings/CoverImage" title="Cover Image" lastItem={true} />
+          <SettingsItem routerPath="/settings/TeamCoverImage" title="Cover Image" lastItem={true} />
         </MenuContainer>
       </ScrollView>
     </SafeViewWrapper>

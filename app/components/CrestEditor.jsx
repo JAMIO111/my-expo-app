@@ -7,15 +7,15 @@ import CTAButton from '@components/CTAButton';
 const THICKNESSES = [
   {
     label: 'Thin',
-    value: 4,
+    value: '4',
   },
   {
     label: 'Medium',
-    value: 3,
+    value: '3',
   },
   {
     label: 'Thick',
-    value: 2,
+    value: '2',
   },
 ];
 
@@ -54,15 +54,15 @@ const CrestEditor = () => {
         size={150}
       />
       <View className="w-full gap-3 rounded-2xl bg-bg-grouped-2 p-3">
-        <View className="flex-row items-center justify-between">
-          <Text className="font-saira text-2xl text-text-1">Type</Text>
-          <Text className="font-saira text-2xl text-text-1">
+        <View className="flex-row items-center justify-between py-2">
+          <Text className="font-saira text-2xl text-text-2">Type</Text>
+          <Text className="font-saira-medium text-2xl text-text-1">
             {TYPES.find((item) => item === type) || 'Solids'}
           </Text>
         </View>
         <View className="border-b border-theme-gray-5"></View>
         <View className="flex-row items-center justify-between">
-          <Text className="font-saira text-2xl text-text-1">Primary Team Color</Text>
+          <Text className="font-saira text-2xl text-text-2">Primary Team Color</Text>
           <View
             className="h-12 w-12 rounded-full"
             style={{
@@ -71,16 +71,18 @@ const CrestEditor = () => {
         </View>
         <View className="border-b border-theme-gray-5"></View>
         <View className="flex-row items-center justify-between">
-          <Text className="font-saira text-2xl text-text-1">Secondary Team Color</Text>
+          <Text className="font-saira text-2xl text-text-2">Secondary Team Color</Text>
           <View
             className="h-12 w-12 rounded-full"
             style={{ backgroundColor: secondaryColor || 'black' }}></View>
         </View>
         <View className="border-b border-theme-gray-5"></View>
         {type !== 'solids' && (
-          <View className="flex-row items-center justify-between">
-            <Text className="font-saira text-2xl text-text-1">Thickness</Text>
-            <Text>{THICKNESSES.find((item) => item.value === thickness)?.label}</Text>
+          <View className="flex-row items-center justify-between py-2">
+            <Text className="font-saira text-2xl text-text-2">Thickness</Text>
+            <Text className="font-saira-medium text-2xl text-text-1">
+              {THICKNESSES.find((item) => item.value === thickness)?.label}
+            </Text>
           </View>
         )}
       </View>
