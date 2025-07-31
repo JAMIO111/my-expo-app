@@ -12,8 +12,9 @@ import { FixtureSkeleton } from '@components/Skeletons';
 const FixtureList = () => {
   const router = useRouter();
   const { currentRole } = useUser();
-  const seasonId = currentRole?.activeSeason?.id;
-  const divisionId = currentRole?.team?.division?.id;
+  const [district, setDistrict] = useState(currentRole?.team?.division?.district);
+  const [season, setSeason] = useState(currentRole?.activeSeason);
+  const [division, setDivision] = useState(currentRole?.team?.division);
   const seasonStartDate = currentRole?.activeSeason?.start_date;
   const hasNavigated = useRef(false);
 
@@ -29,8 +30,8 @@ const FixtureList = () => {
     error,
   } = useMonthlyFixtures({
     month: selectedMonth,
-    seasonId,
-    divisionId,
+    seasonId: season?.id,
+    divisionId: division?.id,
   });
 
   const grouped = Object.entries(fixtureData ?? {});
@@ -41,9 +42,9 @@ const FixtureList = () => {
     <View className="bg-brand-dark p-4">
       {/* Filter Selectors */}
       <View className="mb-4 flex-row items-center justify-between gap-3">
-        <DropdownFilterButton text="2025/26" callbackFn={() => {}} />
-        <DropdownFilterButton text="Blyth & District" callbackFn={() => {}} />
-        <DropdownFilterButton text="Super League" callbackFn={() => {}} />
+        <DropdownFilterButton text={season?.name} callbackFn={() => {}} />
+        <DropdownFilterButton text={district?.name} callbackFn={() => {}} />
+        <DropdownFilterButton text={division?.name} callbackFn={() => {}} />
       </View>
 
       {/* Month Selector */}
@@ -118,14 +119,20 @@ const FixtureList = () => {
                     }, 750);
                     router.push(`/home/${f.id}`);
                   }}
-                  className="my-3 items-center justify-center gap-2"
+                  className="mb-3 mt-2 items-center justify-center gap-2"
                   key={f.id}>
-                  {!isLive && (
-                    <View className="flex-row items-center justify-center gap-2 rounded-lg bg-theme-gray-5 px-2 py-0.5">
-                      <View className="h-3 w-3 rounded-full bg-theme-red"></View>
-                      <Text className="font-saira-medium text-text-1">Live</Text>
-                    </View>
-                  )}
+                  {isLive ? (
+                    f.is_complete ? (
+                      <Text className="mb-1 items-center justify-center gap-2 rounded-lg bg-theme-gray-5 px-2 py-0.5 text-center font-saira-medium text-lg text-text-1">
+                        Final Score
+                      </Text>
+                    ) : (
+                      <View className="mb-1 flex-row items-center justify-center gap-2 rounded-lg bg-theme-gray-5 px-2 py-0.5">
+                        <View className="h-3 w-3 rounded-full bg-theme-red"></View>
+                        <Text className="font-saira-medium text-text-1">Live</Text>
+                      </View>
+                    )
+                  ) : null}
                   <View className="flex-row items-center justify-center gap-2 rounded-lg">
                     <Text className="flex-1 text-right font-saira-semibold text-lg text-text-1">
                       {f.home_team.abbreviation}
@@ -159,7 +166,7 @@ const FixtureList = () => {
                     </Text>
                   </View>
                   {index !== fixtures.length - 1 && (
-                    <View className="mt-2 h-[1px] w-[70%] bg-separator" />
+                    <View className="mt-2 h-[1px] w-[80%] bg-theme-gray-5" />
                   )}
                 </Pressable>
               );

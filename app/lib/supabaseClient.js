@@ -15,4 +15,13 @@ const supabase = createClient(supabaseUrl, supabaseKey, {
   },
 });
 
+export const createSupabaseClient = () =>
+  createClient(supabaseUrl, supabaseKey, {
+    realtime: {
+      params: {
+        eventsPerSecond: 10,
+      },
+    },
+  });
+
 export default supabase;

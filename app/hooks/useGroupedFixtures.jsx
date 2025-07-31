@@ -13,6 +13,7 @@ const fetchFixturesByMonth = async ({ month, seasonId, divisionId }) => {
     )
     .eq('season', seasonId)
     .eq('division', divisionId) // Adjust this if you need a different division
+    .eq('approved', false)
     .gte('date_time', start)
     .lte('date_time', end)
     .order('date_time', { ascending: true });

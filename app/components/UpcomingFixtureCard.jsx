@@ -17,7 +17,7 @@ const UpcomingFixtureCard = ({ fixture }) => {
         }, 750); // Reset navigation state after 750ms
         router.push(`/home/${fixture.id}`);
       }}
-      className="h-36 w-72 items-center justify-center gap-2 rounded-xl bg-bg-grouped-2 shadow">
+      className="h-36 w-72 items-center justify-center gap-2 rounded-xl border border-theme-gray-5 bg-bg-grouped-2 shadow">
       <View className="w-full items-center justify-between px-4">
         <View className="w-full flex-row items-center justify-center gap-2">
           <TeamLogo

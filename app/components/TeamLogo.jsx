@@ -6,6 +6,7 @@ const TeamLogo = ({
   color1 = 'white',
   color2 = 'red',
   thickness = 3,
+  borderThickness = 0.5,
 }) => {
   const innerView = (type, color2, thickness) => {
     switch (type) {
@@ -71,7 +72,7 @@ const TeamLogo = ({
 
   return (
     <View
-      style={{ height: size, width: size, backgroundColor: color1 }}
+      style={{ height: size, width: size, backgroundColor: color1, borderWidth: borderThickness }}
       className="items-center justify-center overflow-hidden rounded-full border border-theme-gray-3">
       {innerView(type, color2, thickness)}
     </View>

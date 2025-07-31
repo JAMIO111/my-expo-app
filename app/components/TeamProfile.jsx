@@ -7,6 +7,19 @@ import CTAButton from '@components/CTAButton';
 import StatCard from '@components/StatCard';
 import CachedImage from '@components/CachedImage';
 import { Dimensions } from 'react-native';
+import TrophyCabinet from '@components/TrophyCabinet';
+
+const trophies = [
+  { id: 1, name: 'League Champion', image: require('../assets/trophy_1.png') },
+  { id: 2, name: 'Perfect Season', image: require('../assets/trophy_2.png') },
+  { id: 3, name: 'Top Scorer', image: require('../assets/trophy_3.png') },
+  { id: 4, name: 'Best Defense', image: require('../assets/trophy_4.png') },
+  { id: 5, name: 'Fair Play Award', image: require('../assets/trophy_5.png') },
+  { id: 6, name: 'Most Improved Team', image: require('../assets/trophy_6.png') },
+  { id: 7, name: 'Fan Favorite', image: require('../assets/trophy_7.png') },
+  { id: 8, name: 'Best Coach', image: require('../assets/trophy_8.png') },
+  { id: 9, name: 'Community Impact', image: require('../assets/trophy_9.png') },
+];
 
 const TeamProfile = ({ context, profile, isLoading }) => {
   if (isLoading || !profile)
@@ -36,54 +49,58 @@ const TeamProfile = ({ context, profile, isLoading }) => {
           borderRadius={0}
         />
       </View>
-      <View className=" w-full flex-row items-center justify-start gap-6 border-b border-theme-gray-5 bg-bg-grouped-2 py-5 pl-5">
-        <View className="items-center justify-center gap-3">
+      <View className=" items-items-start w-full flex-row justify-start gap-8 border-b border-theme-gray-5 bg-bg-grouped-2 py-5 pl-5">
+        <View className="items-center justify-start gap-4">
           <View className="rounded-full border border-separator">
             <TeamLogo
-              size={60}
+              size={68}
               color1={profile?.crest?.color1}
               color2={profile?.crest?.color2}
               type={profile?.crest?.type}
               thickness={profile?.crest?.thickness}
             />
           </View>
-          <Text className=" rounded-lg bg-bg-grouped-3 px-4 py-1 font-saira text-lg font-semibold text-text-1">
+          <Text className="rounded-lg border border-theme-gray-4 bg-bg-grouped-3 px-4 py-1 font-saira text-lg font-semibold text-text-1">
             {profile?.abbreviation}
           </Text>
         </View>
         <View className="max-w-full items-start justify-between gap-2">
           <View>
-            <Text className="max-w-xs font-saira text-3xl font-bold text-text-1">
+            <Text className="mt-2 max-w-xs font-saira text-3xl font-bold text-text-1">
               {profile?.name}
             </Text>
-            <Text className="max-w-xs font-saira text-lg font-semibold text-text-2">
+            <Text className="mb-3 max-w-xs font-saira text-lg font-semibold text-text-2">
               {profile?.division?.district?.name} - {profile?.division?.name}
             </Text>
           </View>
           <View className="gap-1">
-            <Text style={{ lineHeight: 16 }} className="text-md max-w-xs font-saira text-text-3">
+            <Text style={{ lineHeight: 20 }} className="max-w-xs font-saira text-lg text-text-3">
               {line_1} {line_2}
             </Text>
-            <Text style={{ lineHeight: 16 }} className="text-md max-w-xs font-saira text-text-3">
+            <Text style={{ lineHeight: 20 }} className="max-w-xs font-saira text-lg text-text-3">
               {city} {postcode}
             </Text>
           </View>
         </View>
       </View>
-      <View className="gap-4 bg-bg-grouped-1 px-3 pb-12 pt-4">
-        <View className="gap-3">
-          <View className="flex-row gap-3">
-            <StatCard title="Matches Played" value="86" />
-            <StatCard title="Win %" value="68%" />
+      <View className="bg-bg-grouped-1 px-3 pb-12 pt-8">
+        <Heading text="Team Stats" />
+        <View className="mb-8 gap-4">
+          <View className="gap-3">
+            <View className="flex-row gap-3">
+              <StatCard title="Matches Played" value="86" />
+              <StatCard title="Win %" value="68%" />
+            </View>
+            <View className="flex-row gap-3">
+              <StatCard title="Wins" value="52" />
+              <StatCard title="Losses" value="34" />
+            </View>
           </View>
-          <View className="flex-row gap-3">
-            <StatCard title="Wins" value="52" />
-            <StatCard title="Losses" value="34" />
-          </View>
+          <CTAButton type="brand" text="View All Stats" callbackFn={() => {}} />
         </View>
-        <CTAButton type="default" text="View All Stats" callbackFn={() => {}} />
-        <View className="">
-          <Heading text="Roster" />
+        <TrophyCabinet trophies={trophies} />
+        <View className="mb-8">
+          <Heading text="Team Roster" />
           <PlayersList team={profile} context={context} />
         </View>
       </View>

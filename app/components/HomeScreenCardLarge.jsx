@@ -1,10 +1,10 @@
-import { StyleSheet, Text, View, Image, Pressable, onPress } from 'react-native';
+import { Text, View, Image, Pressable } from 'react-native';
 
 const HomeScreenCardLarge = ({ title, body, category, image, onPress }) => {
   return (
     <Pressable
       onPress={onPress}
-      className="w-full items-center justify-between overflow-hidden rounded-2xl bg-bg-grouped-2 shadow">
+      className="w-full items-center justify-between overflow-hidden rounded-2xl border border-theme-gray-6 bg-bg-grouped-2 shadow">
       <Image
         source={image}
         style={{ resizeMode: 'cover', height: 220, width: '100%' }}
@@ -22,5 +22,3 @@ const HomeScreenCardLarge = ({ title, body, category, image, onPress }) => {
 };
 
 export default HomeScreenCardLarge;
-
-const styles = StyleSheet.create({});

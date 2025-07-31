@@ -2,7 +2,7 @@ import { StyleSheet, Text, View } from 'react-native';
 
 const Heading = ({ text }) => {
   return (
-    <Text className="mt-8 w-full text-left font-saira-semibold text-3xl text-text-2">{text}</Text>
+    <Text className="w-full pl-2 text-left font-saira-medium text-3xl text-text-2">{text}</Text>
   );
 };
 

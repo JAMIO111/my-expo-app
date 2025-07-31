@@ -217,7 +217,7 @@ const Home = () => {
                   </View>
                 </View>
               )}
-              <View className="w-full gap-3 p-2 pb-20">
+              <View className="w-full gap-5 p-3 pb-20 pt-1">
                 <HomeScreenCardLarge
                   title="Welcome to Break Room!"
                   body="We're so glad you can join us in this community of pool enthusiasts. Click to learn about all the features we have to offer."
@@ -231,7 +231,7 @@ const Home = () => {
                   title="Upgrade to Pro Membership!"
                   body="Unlock exclusive features such as in depth statistics, advanced match analysis, and the removal of ads for just an extra £0.99/month"
                   category="Membership"
-                  image={require('@assets/pool-table-image.jpg')}
+                  image={require('@assets/premium-card.jpg')}
                   onPress={() => {
                     console.log('Card pressed');
                   }}

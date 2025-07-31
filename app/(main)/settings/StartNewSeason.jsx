@@ -40,7 +40,7 @@ const StartNewSeason = () => {
   }
   const { colorScheme } = useColorScheme();
   const themeColors = colors[colorScheme];
-  const districtId = currentRole?.team?.division?.district?.id;
+  const districtId = currentRole?.district?.id;
   const [seasonStartModalVisible, setSeasonStartModalVisible] = useState(false);
   const [showDatePicker, setShowDatePicker] = useState(false);
   const handleConfirmSeasonStart = async () => {
@@ -380,10 +380,11 @@ const StartNewSeason = () => {
             as match day, match time, and match frequency have been configured before proceeding.
           </Text>
           <ConfirmModal
+            type="success"
             visible={seasonStartModalVisible}
             onConfirm={handleConfirmSeasonStart}
             onCancel={handleCancel}
-            title="Here we go!"
+            title="Initiate new season?"
             message={`Are you sure you want to start the ${new Date().getFullYear()}/${String(new Date().getFullYear() + 1).slice(-2)} season?`}
           />
         </View>

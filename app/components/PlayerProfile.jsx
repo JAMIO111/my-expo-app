@@ -142,7 +142,7 @@ export default function PlayerProfile({ context, isLoading, playerProfile, error
     <ScrollView
       contentContainerStyle={{ alignItems: 'center', justifyContent: 'center' }}
       className="w-full bg-bg-grouped-1 px-4 py-6">
-      <View className="w-full flex-row items-center justify-start gap-6 rounded-2xl bg-bg-grouped-2 p-2 shadow-[0_2px_4px_rgba(0,0,0,0.1)]">
+      <View className="w-full flex-row items-center justify-start gap-6 rounded-2xl border border-theme-gray-5 bg-bg-grouped-2 p-2 shadow-[0_2px_4px_rgba(0,0,0,0.1)]">
         {playerProfile?.avatar_url ? (
           <CachedImage
             avatarUrl={playerProfile.avatar_url}
@@ -173,16 +173,16 @@ export default function PlayerProfile({ context, isLoading, playerProfile, error
           </Text>
         </View>
       </View>
-      <View className="w-full">
+      <View className="w-full pt-8">
         <Heading text="Personal Details" />
-        <View className="gap-2.5 rounded-xl bg-bg-grouped-2 p-3 shadow-[0_2px_4px_rgba(0,0,0,0.1)]">
+        <View className="gap-2.5 rounded-2xl border border-theme-gray-5 bg-bg-grouped-2 p-3 shadow-[0_2px_4px_rgba(0,0,0,0.1)]">
           <View className="w-full flex-row items-center justify-between">
             <Text className="font-saira-medium text-xl text-text-2">Team</Text>
             <Text className="font-saira-semibold text-lg text-text-1">
               {playerProfile?.team_name}
             </Text>
           </View>
-          <View className="border-t border-separator"></View>
+          <View className="border-t border-theme-gray-5"></View>
           <View className="w-full flex-row items-center justify-between">
             <Text className="font-saira-medium text-xl text-text-2">League</Text>
             <Text className="font-saira-semibold text-lg text-text-1">
@@ -190,7 +190,7 @@ export default function PlayerProfile({ context, isLoading, playerProfile, error
             </Text>
           </View>
 
-          <View className="border-t border-separator"></View>
+          <View className="border-t border-theme-gray-5"></View>
           <View className="w-full flex-row items-center justify-between">
             <Text className="font-saira-medium text-xl text-text-2">Date of Birth</Text>
             <View className="flex-row items-center gap-3">
@@ -210,12 +210,12 @@ export default function PlayerProfile({ context, isLoading, playerProfile, error
               </Text>
             </View>
           </View>
-          <View className="border-t border-border-color"></View>
+          <View className="border-t border-theme-gray-5"></View>
           <View className="w-full flex-row items-center justify-between ">
             <Text className="font-saira-medium text-xl text-text-2">Age</Text>
             <Text className="font-saira-semibold text-lg text-text-1">{`${years} Years ${days} days`}</Text>
           </View>
-          <View className="border-t border-border-color"></View>
+          <View className="border-t border-theme-gray-5"></View>
           <View className="w-full flex-row items-center justify-between">
             <Text className="font-saira-medium text-xl text-text-2">Member Since</Text>
             <Text className="font-saira-semibold text-lg text-text-1">
@@ -229,7 +229,7 @@ export default function PlayerProfile({ context, isLoading, playerProfile, error
         </View>
       </View>
 
-      <View className="w-full">
+      <View className="w-full pt-8">
         <Heading text="Statistics" />
         <View className="gap-3">
           <View className="flex-row gap-3">

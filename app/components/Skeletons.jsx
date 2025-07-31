@@ -1,4 +1,4 @@
-import { View, ActivityIndicator } from 'react-native';
+import { View, ActivityIndicator, Text } from 'react-native';
 
 export const FixtureSkeleton = () => {
   return (
@@ -13,6 +13,47 @@ export const FixtureSkeleton = () => {
       <View className="flex-row items-center justify-center gap-5 px-12">
         <View className="h-3 flex-1 rounded-full bg-bg-grouped-3" />
         <View className="h-3 flex-1 rounded-full bg-bg-grouped-3" />
+      </View>
+    </View>
+  );
+};
+
+export const FixtureDetailsSkeleton = ({ fixtureDetails }) => {
+  return (
+    <View className="bg-bg-grouped-1">
+      <View
+        style={{ borderBottomLeftRadius: 24, borderBottomRightRadius: 24 }}
+        className="bg-brand p-3 pb-5">
+        <View className="rounded-3xl bg-bg-2 p-5">
+          <View className="mb-3 flex-row items-center justify-around">
+            <View className="h-14 w-12 rounded-lg bg-bg-3"></View>
+            <View className="h-14 w-12 rounded-lg bg-bg-3"></View>
+            <View className="h-14 w-12 rounded-lg bg-bg-3"></View>
+            <View className="h-14 w-12 rounded-lg bg-bg-3"></View>
+          </View>
+          <View className="relative mb-2 flex-row items-start justify-center p-3">
+            <View className="absolute left-0 z-50">
+              <View style={{ width: 60, height: 60 }} className="rounded-full bg-bg-3"></View>
+            </View>
+            <View className="h-10 flex-1 items-center justify-center bg-bg-3 py-0.5"></View>
+            <View className="h-14 w-24 rounded-b-2xl border-x-2 border-bg-2 bg-bg-3"></View>
+            <View className="absolute right-0 z-50">
+              <View style={{ width: 60, height: 60 }} className="rounded-full bg-bg-3"></View>
+            </View>
+            <View className="h-10 flex-1 items-center justify-center bg-bg-3 py-0.5"></View>
+          </View>
+          <View className="w-full flex-row items-center gap-2 pb-2">
+            <View className="h-6 flex-1 rounded-full bg-bg-3"></View>
+            <Text className="w-6 text-text-2"> vs </Text>
+            <View className="h-6 flex-1 rounded-full bg-bg-3"></View>
+          </View>
+          <View className="border-t border-theme-gray-4 py-2"></View>
+          <View className="w-full gap-3">
+            <View className="h-6 w-full rounded-full bg-bg-3"></View>
+            <View className="h-6 w-full rounded-full bg-bg-3"></View>
+            <View className="h-6 w-full rounded-full bg-bg-3"></View>
+          </View>
+        </View>
       </View>
     </View>
   );

@@ -43,6 +43,11 @@ const colors = {
       secondary: '#2563eb',
       transparent: 'rgba(30, 64, 175, 0.15)', // from #1e40af
     },
+    default: {
+      primary: '#111827',
+      secondary: '#1f2937',
+      transparent: 'rgba(17, 24, 39, 0.15)', // from #111827
+    },
   },
 
   dark: {
@@ -87,6 +92,11 @@ const colors = {
       primary: '#1e3a8a',
       secondary: '#3b82f6',
       transparent: 'rgba(30, 58, 138, 0.15)', // from #1e3a8a
+    },
+    default: {
+      primary: '#f3f4f6',
+      secondary: '#e5e7eb',
+      transparent: 'rgba(243, 244, 246, 0.15)', // from #f3f4f6
     },
   },
 };
