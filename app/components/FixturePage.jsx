@@ -33,12 +33,21 @@ const FixturePage = ({ fixtureDetails, isLoading, context }) => {
     }
   };
 
+  const handleViewChange = (newView) => {
+    setView(newView);
+    if (newView === 'right') {
+      setTeam('left'); // reset to home team when switching to Squads view
+    }
+  };
+
   const homeTextColor = getContrastColor(
     fixtureDetails?.homeTeam?.crest?.color1 || themeColors.bg1
   );
   const awayTextColor = getContrastColor(
     fixtureDetails?.awayTeam?.crest?.color1 || themeColors.bg1
   );
+
+  const isLive = new Date() >= new Date(fixtureDetails?.date_time);
 
   return (
     <ScrollView className="mt-16 flex-1 bg-brand">
@@ -48,7 +57,7 @@ const FixturePage = ({ fixtureDetails, isLoading, context }) => {
         <View className="bg-bg-grouped-1">
           <View
             style={{ borderBottomLeftRadius: 24, borderBottomRightRadius: 24 }}
-            className="bg-brand p-3 pb-5">
+            className="bg-brand p-3 pb-4">
             <View className="rounded-3xl bg-bg-2 p-5">
               {!isPast ? (
                 <View className="mb-3 flex-row items-center justify-around">
@@ -77,8 +86,25 @@ const FixturePage = ({ fixtureDetails, isLoading, context }) => {
                     <Text className="text-center font-saira text-lg text-text-2">Secs</Text>
                   </View>
                 </View>
+              ) : fixtureDetails?.is_complete ? (
+                <View className="flex-row items-center justify-around px-2">
+                  <Text
+                    style={{ lineHeight: 32 }}
+                    className="items-center justify-center gap-2 rounded-xl bg-theme-gray-5 px-4 py-1 text-center font-saira-medium text-2xl text-text-1">
+                    Final Score
+                  </Text>
+                </View>
               ) : (
-                <Text className="text-center text-3xl font-bold text-text-1">Time to cue off!</Text>
+                <View className="items-center justify-around">
+                  <View className="mb-1 flex-row items-center justify-center gap-2 rounded-lg bg-theme-gray-5 px-4 py-0.5">
+                    <View className="h-4 w-4 rounded-full bg-theme-red"></View>
+                    <Text
+                      style={{ lineHeight: 32 }}
+                      className="font-saira-medium text-2xl text-text-1">
+                      Live
+                    </Text>
+                  </View>
+                </View>
               )}
               <View className="relative mb-2 flex-row items-start justify-center p-3">
                 <Pressable
@@ -104,14 +130,16 @@ const FixturePage = ({ fixtureDetails, isLoading, context }) => {
                     {fixtureDetails?.homeTeam?.abbreviation}
                   </Text>
                 </Pressable>
-                <Text className="rounded-b-2xl border-x-2 border-bg-2 bg-bg-3 p-3 font-saira text-2xl text-text-1">
-                  {new Date(fixtureDetails?.date_time).toLocaleString('en-GB', {
-                    timeZone: 'Europe/London',
+                <Text className="rounded-b-2xl border-x-2 border-bg-2 bg-bg-3 p-3 font-saira-medium text-3xl text-text-1">
+                  {isPast
+                    ? `${fixtureDetails?.home_score} - ${fixtureDetails?.away_score}`
+                    : new Date(fixtureDetails?.date_time).toLocaleString('en-GB', {
+                        timeZone: 'Europe/London',
 
-                    hour: '2-digit',
-                    minute: '2-digit',
-                    hour12: false, // 24-hour format
-                  })}
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        hour12: false, // 24-hour format
+                      })}
                 </Text>
                 <Pressable
                   onPress={() => handleTeamPress(fixtureDetails?.awayTeam?.id)}
@@ -181,7 +209,7 @@ const FixturePage = ({ fixtureDetails, isLoading, context }) => {
       )}
       <View className="bg-bg-grouped-1 pb-16">
         <View className="p-3">
-          <SlidingTabButton option1="Stats" option2="Squads" onChange={setView} />
+          <SlidingTabButton option1="Stats" option2="Squads" onChange={handleViewChange} />
         </View>
         {view === 'right' ? (
           <View>
@@ -190,23 +218,13 @@ const FixturePage = ({ fixtureDetails, isLoading, context }) => {
               option2={fixtureDetails?.awayTeam?.display_name}
               onChange={setTeam}
             />
-            {team === 'left' ? (
-              <View className="mt-5 h-full p-3">
-                <PlayersList
-                  team={fixtureDetails?.homeTeam}
-                  context={context}
-                  fixtureId={fixtureId}
-                />
-              </View>
-            ) : (
-              <View className="mt-5 h-full p-3">
-                <PlayersList
-                  team={fixtureDetails?.awayTeam}
-                  context={context}
-                  fixtureId={fixtureId}
-                />
-              </View>
-            )}
+            <View className="h-full p-3">
+              <PlayersList
+                team={team === 'left' ? fixtureDetails?.homeTeam : fixtureDetails?.awayTeam}
+                context={context}
+                fixtureId={fixtureId}
+              />
+            </View>
           </View>
         ) : (
           <View className="mt-5 h-full">

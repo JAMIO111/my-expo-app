@@ -11,13 +11,15 @@ import Animated, {
 import { useRouter } from 'expo-router';
 import { useFonts } from 'expo-font';
 import { Michroma_400Regular } from '@expo-google-fonts/michroma';
-import supabase from '@lib/supabaseClient';
+import { useSupabaseClient } from '@contexts/SupabaseClientContext';
 import { useUser } from '@contexts/UserProvider';
 import { fetchAuthUserProfile } from '@hooks/useAuthUserProfile2';
 import { useColorScheme } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 
 const PoolRack = () => {
+  const { client: supabase } = useSupabaseClient();
+  console.log(supabase, 'Supabase Client in PoolRack');
   const colorScheme = useColorScheme();
   const [fontsLoaded] = useFonts({
     Michroma: Michroma_400Regular,
@@ -66,6 +68,9 @@ const PoolRack = () => {
       error,
     } = await supabase.auth.getUser();
 
+    console.log('👤 User result:', user);
+    console.log('⚠️ Error result:', error);
+
     if (error || !user) {
       console.warn('🔴 No user or error getting user:', error);
       router.replace('/login');
@@ -76,7 +81,7 @@ const PoolRack = () => {
 
     let profile;
     try {
-      profile = await fetchAuthUserProfile();
+      profile = await fetchAuthUserProfile(supabase);
       console.log('🟣 Profile fetched:', profile);
     } catch (e) {
       console.error('🔴 Failed to fetch profile:', e);

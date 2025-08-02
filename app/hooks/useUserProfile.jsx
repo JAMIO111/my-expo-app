@@ -1,7 +1,8 @@
 import { useQuery } from '@tanstack/react-query';
-import supabase from '@lib/supabaseClient';
+import { useSupabaseClient } from '@contexts/SupabaseClientContext';
 
 export default function useUserProfile(userId) {
+  const { client: supabase } = useSupabaseClient();
   return useQuery({
     queryKey: ['PlayerProfile', userId],
     queryFn: async () => {

@@ -241,4 +241,9 @@ const styles = StyleSheet.create({
     // optional elevation for Android
     elevation: 5,
   },
+  modalImage: {
+    width: '100%',
+    height: 200,
+    borderRadius: 10,
+  },
 });

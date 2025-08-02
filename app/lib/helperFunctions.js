@@ -1,5 +1,18 @@
 import supabase from '@/lib/supabaseClient';
 
+export function generateQuadraticTiers(startValue, endValue, numTiers, curveStrength = 2) {
+  const tiers = [];
+
+  for (let i = 0; i < numTiers; i++) {
+    const t = i / (numTiers - 1); // normalized progress [0, 1]
+    const curved = Math.pow(t, curveStrength); // apply quadratic curve
+    const value = Math.round(startValue + (endValue - startValue) * curved);
+    tiers.push(value);
+  }
+  console.log('Generated tiers:', [...tiers]);
+  return tiers;
+}
+
 export function calculateLevel(xp) {
   const level = Math.floor(Math.sqrt(xp / 100));
   const currentLevelXp = 100 * level * level;

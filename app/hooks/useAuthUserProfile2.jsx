@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
-import supabase from '@lib/supabaseClient';
+import { useSupabaseClient } from '@contexts/SupabaseClientContext';
 
-export const fetchAuthUserProfile = async () => {
+export const fetchAuthUserProfile = async (supabase) => {
   // Step 1: Get the authenticated user
   const {
     data: { user },
@@ -63,8 +63,8 @@ export const fetchAuthUserProfile = async () => {
             name,
             tier,
             district:Districts(id, name)
-          )
-        )
+            )
+            )
       `
       )
       .eq('player_id', player.id);
@@ -105,7 +105,7 @@ export const fetchAuthUserProfile = async () => {
       district_id,
       role,
       district:Districts ( id, name )
-    `
+      `
     )
     .eq('user_id', user.id);
 
@@ -155,9 +155,10 @@ export const fetchAuthUserProfile = async () => {
 };
 
 export const useAuthUserProfile = () => {
+  const { client: supabase } = useSupabaseClient();
   return useQuery({
     queryKey: ['authUserProfile'],
-    queryFn: fetchAuthUserProfile,
+    queryFn: () => fetchAuthUserProfile(supabase),
     staleTime: 1000 * 60 * 30, // 30 minutes
     cacheTime: 1000 * 60 * 60, // 1 hour
     retry: false,

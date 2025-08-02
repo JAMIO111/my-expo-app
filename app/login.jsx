@@ -11,13 +11,14 @@ import {
   Easing,
 } from 'react-native';
 import SafeViewWrapper from '@components/SafeViewWrapper';
-import supabase from '@lib/supabaseClient';
 import { useRouter, Link } from 'expo-router';
 import * as AuthSession from 'expo-auth-session';
 import { useFonts } from 'expo-font';
 import { Michroma_400Regular } from '@expo-google-fonts/michroma';
+import { useSupabaseClient } from '@contexts/SupabaseClientContext';
 
-export default function LoginPage() {
+const LoginPage = () => {
+  const { client: supabase } = useSupabaseClient();
   const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -219,7 +220,9 @@ export default function LoginPage() {
       </SafeViewWrapper>
     </Animated.View>
   );
-}
+};
+
+export default LoginPage;
 
 const styles = StyleSheet.create({
   container: { flex: 1, justifyContent: 'center', padding: 32 },

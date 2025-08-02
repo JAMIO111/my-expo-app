@@ -4,10 +4,11 @@ import { useState, useRef, useEffect } from 'react';
 import { Stack, useLocalSearchParams } from 'expo-router';
 import CTAButton from '@components/CTAButton';
 import StepPillGroup from '@components/StepPillGroup';
-import supabase from '@lib/supabaseClient';
+import { useSupabaseClient } from '@contexts/SupabaseClientContext';
 import Toast from 'react-native-toast-message';
 
 const ProfileCreation6 = () => {
+  const { client: supabase } = useSupabaseClient();
   const router = useRouter();
   const params = useLocalSearchParams();
   const isNewTeam = params.isNewTeam === 'true'; // Convert string to boolean

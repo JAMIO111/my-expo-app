@@ -1,4 +1,4 @@
-import { Stack } from 'expo-router';
+import { router, Stack } from 'expo-router';
 import {
   StyleSheet,
   Text,
@@ -27,12 +27,12 @@ import AwaitingResultCard from '@components/AwaitingResultCard';
 import { useResultsPendingApproval } from '@hooks/useResultsPendingApproval';
 import { useFixturesAwaitingResults } from '@hooks/useFixturesAwaitingResults';
 import { useColorScheme } from 'react-native';
-import supabase from '@lib/supabaseClient';
+import { useSupabaseClient } from '@contexts/SupabaseClientContext';
 import BrandHeader from '@components/BrandHeader';
 import HomeScreenCardLarge from '@components/HomeScreenCardLarge';
 
 const Home = () => {
-  const colorScheme = useColorScheme();
+  const { client: supabase } = useSupabaseClient();
   const [refreshing, setRefreshing] = useState(false);
   const {
     user,
@@ -224,7 +224,7 @@ const Home = () => {
                   category="Help & Support"
                   image={require('@assets/pool-table-image.jpg')}
                   onPress={() => {
-                    console.log('Card pressed');
+                    router.push('/(main)/help');
                   }}
                 />
                 <HomeScreenCardLarge
@@ -238,9 +238,20 @@ const Home = () => {
                 />
                 <CTAButton text="Recalc Standings" callbackFn={handleRecalcStandings} />
                 <CTAButton
-                  text="Switch Context"
-                  callbackFn={() => {
-                    setCurrentRole(roles[1]);
+                  text="Check Badges"
+                  callbackFn={async () => {
+                    try {
+                      const { data, error } = await supabase.rpc('check_player_badges', {
+                        _player_id: player.id,
+                      });
+                      if (error) {
+                        console.error('Badge check RPC error:', error);
+                      } else {
+                        console.log('Badge check RPC success:', data);
+                      }
+                    } catch (err) {
+                      console.error('Unexpected error calling badge check RPC:', err);
+                    }
                   }}
                 />
               </View>

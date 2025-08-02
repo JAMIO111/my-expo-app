@@ -6,14 +6,15 @@ import { useUser } from '@contexts/UserProvider';
 import { getAgeInYearsAndDays } from '@lib/helperFunctions';
 import CTAButton from '@components/CTAButton';
 import Heading from '@components/Heading';
-import supabase from '@lib/supabaseClient';
+import { useSupabaseClient } from '@contexts/SupabaseClientContext';
 import Toast from 'react-native-toast-message';
 import LoadingSplash from '@components/LoadingSplash';
 import StatCard from '@components/StatCard';
 import { isBirthdayToday } from '@lib/helperFunctions';
 import CachedImage from '@components/CachedImage';
 
-export default function PlayerProfile({ context, isLoading, playerProfile, error }) {
+const PlayerProfile = ({ context, isLoading, playerProfile, error }) => {
+  const { client: supabase } = useSupabaseClient();
   const router = useRouter();
   const { teamId, userId } = useLocalSearchParams();
   const colorScheme = useColorScheme();
@@ -332,7 +333,9 @@ export default function PlayerProfile({ context, isLoading, playerProfile, error
       </View>
     </ScrollView>
   );
-}
+};
+
+export default PlayerProfile;
 
 const styles = StyleSheet.create({
   card: {

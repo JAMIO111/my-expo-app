@@ -31,7 +31,7 @@ const UpcomingFixtureCard = ({ fixture }) => {
             numberOfLines={1}
             ellipsizeMode="tail"
             className="pt-1 font-saira-semibold text-xl text-text-1">
-            {fixture?.homeTeam?.display_name || 'Home Team'}
+            {fixture?.homeTeam?.display_name || 'Home Team'} {'(H)'}
           </Text>
         </View>
         <Text className="font-saira text-text-2">vs</Text>
@@ -47,7 +47,7 @@ const UpcomingFixtureCard = ({ fixture }) => {
             numberOfLines={1}
             ellipsizeMode="tail"
             className="pt-1 font-saira-semibold text-xl text-text-1">
-            {fixture?.awayTeam?.display_name || 'Away Team'}
+            {fixture?.awayTeam?.display_name || 'Away Team'} {'(A)'}
           </Text>
         </View>
       </View>

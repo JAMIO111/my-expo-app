@@ -31,7 +31,7 @@ const index = () => {
             title="Account"
             icon="person-outline"
           />
-          {currentRole?.type === player && currentRole?.team?.captain === player?.id && (
+          {currentRole?.type === 'player' && currentRole?.team?.captain === player?.id && (
             <SettingsItem
               routerPath="/settings/TeamManagement"
               iconBGColor="green"

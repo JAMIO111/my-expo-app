@@ -5,7 +5,7 @@ import SettingsItem from '@components/SettingsItem';
 import MenuContainer from '@components/MenuContainer';
 import { useUser } from '@contexts/UserProvider';
 import CTAButton from '@components/CTAButton';
-import supabase from '@lib/supabaseClient';
+import { useSupabaseClient } from '@contexts/SupabaseClientContext';
 import Toast from 'react-native-toast-message';
 import SafeViewWrapper from '@components/SafeViewWrapper';
 import CustomHeader from '@components/CustomHeader';
@@ -13,6 +13,7 @@ import IonIcons from '@expo/vector-icons/Ionicons';
 import ImageUploader from '@components/ImageUploader';
 
 const Account = () => {
+  const { client: supabase } = useSupabaseClient();
   const [isSigningOut, setIsSigningOut] = useState(false);
   const { player, isLoading } = useUser();
   const router = useRouter();

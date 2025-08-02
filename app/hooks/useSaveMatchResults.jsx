@@ -1,9 +1,10 @@
 import { useState } from 'react';
-import supabase from '@lib/supabaseClient';
+import { useSupabaseClient } from '@contexts/SupabaseClientContext';
 import Toast from 'react-native-toast-message';
 import { useQueryClient } from '@tanstack/react-query';
 
 export function useSaveMatchResults(fixtureId, existingResults) {
+  const { client: supabase } = useSupabaseClient();
   const [saving, setSaving] = useState(false);
   const queryClient = useQueryClient();
 

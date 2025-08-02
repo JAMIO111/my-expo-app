@@ -5,7 +5,7 @@ import { useUser } from '@contexts/UserProvider';
 import { useSupabaseClient } from '@contexts/SupabaseClientContext';
 
 const AppRealtimeProvider = ({ children }) => {
-  const { client: supabase } = useSupabaseClient();
+  const { client: supabase, refreshClient } = useSupabaseClient();
   const queryClient = useQueryClient();
   const { currentRole } = useUser();
 

@@ -1,7 +1,9 @@
 import { useQuery } from '@tanstack/react-query';
-import supabase from '@lib/supabaseClient';
+import { useSupabaseClient } from '@contexts/SupabaseClientContext';
 
 export function useFixturesAwaitingResults({ homeTeamId, enabled = true }) {
+  const { client: supabase } = useSupabaseClient();
+
   return useQuery({
     queryKey: ['FixturesAwaitingResults', homeTeamId],
     queryFn: async () => {

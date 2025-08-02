@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { View, TextInput, Button, Alert, Text, Pressable } from 'react-native';
-import supabase from '@lib/supabaseClient';
+import { useSupabaseClient } from '@contexts/SupabaseClientContext';
 import { useRouter, useSearchParams } from 'expo-router';
 import CTAButton from '@components/CTAButton';
 import IonIcons from 'react-native-vector-icons/Ionicons';
 
-export default function ResetPassword() {
+const ResetPassword = () => {
+  const { client: supabase } = useSupabaseClient();
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -115,4 +116,6 @@ export default function ResetPassword() {
       </View>
     </View>
   );
-}
+};
+
+export default ResetPassword;

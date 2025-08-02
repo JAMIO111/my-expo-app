@@ -6,7 +6,7 @@ import CTAButton from '@components/CTAButton';
 import ConfirmModal from '@components/ConfirmModal';
 import { initiateNewSeason, generateFixtures } from '@/lib/helperFunctions'; // Adjust the import path as necessary
 import { useState } from 'react';
-import supabase from '@lib/supabaseClient'; // Adjust the import path as necessary
+import { useSupabaseClient } from '@contexts/SupabaseClientContext';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import IonIcons from '@expo/vector-icons/Ionicons';
 import { useQueryClient } from '@tanstack/react-query';
@@ -21,6 +21,7 @@ import { useRouter } from 'expo-router'; // Adjust the import path as necessary
 import CustomHeader from '@components/CustomHeader'; // Adjust the import path as necessary
 
 const StartNewSeason = () => {
+  const { client: supabase } = useSupabaseClient();
   const queryClient = useQueryClient();
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);

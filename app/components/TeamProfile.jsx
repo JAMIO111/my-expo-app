@@ -10,15 +10,28 @@ import { Dimensions } from 'react-native';
 import TrophyCabinet from '@components/TrophyCabinet';
 
 const trophies = [
-  { id: 1, name: 'League Champion', image: require('../assets/trophy_1.png') },
-  { id: 2, name: 'Perfect Season', image: require('../assets/trophy_2.png') },
-  { id: 3, name: 'Top Scorer', image: require('../assets/trophy_3.png') },
-  { id: 4, name: 'Best Defense', image: require('../assets/trophy_4.png') },
-  { id: 5, name: 'Fair Play Award', image: require('../assets/trophy_5.png') },
-  { id: 6, name: 'Most Improved Team', image: require('../assets/trophy_6.png') },
-  { id: 7, name: 'Fan Favorite', image: require('../assets/trophy_7.png') },
-  { id: 8, name: 'Best Coach', image: require('../assets/trophy_8.png') },
-  { id: 9, name: 'Community Impact', image: require('../assets/trophy_9.png') },
+  { id: 3, name: 'Top Scorer', image: require('../assets/trophies/trophy-3-gold.png') },
+  { id: 12, name: 'Defensive Wall', image: require('../assets/trophies/trophy-3-silver.png') },
+  { id: 2, name: 'Perfect Season', image: require('../assets/trophies/trophy-2-gold.png') },
+  { id: 10, name: 'Sportsmanship', image: require('../assets/trophies/trophy-1-silver.png') },
+  { id: 4, name: 'Best Defense', image: require('../assets/trophies/trophy-4-gold.png') },
+  { id: 15, name: 'Ultimate Fan', image: require('../assets/trophies/trophy-6-silver.png') },
+  { id: 5, name: 'Fair Play Award', image: require('../assets/trophies/trophy-5-gold.png') },
+  { id: 1, name: 'League Champion', image: require('../assets/trophies/trophy-1-gold.png') },
+  { id: 13, name: 'Strategic Genius', image: require('../assets/trophies/trophy-4-silver.png') },
+  { id: 7, name: 'Fan Favorite', image: require('../assets/trophies/trophy-7-gold.png') },
+  { id: 9, name: 'Community Impact', image: require('../assets/trophies/trophy-9-gold.png') },
+  { id: 18, name: 'Legacy Builder', image: require('../assets/trophies/trophy-9-silver.png') },
+  { id: 6, name: 'Most Improved Team', image: require('../assets/trophies/trophy-6-gold.png') },
+  { id: 14, name: 'Team Spirit', image: require('../assets/trophies/trophy-5-silver.png') },
+  {
+    id: 16,
+    name: 'Leadership Excellence',
+    image: require('../assets/trophies/trophy-7-silver.png'),
+  },
+  { id: 11, name: 'Rising Star', image: require('../assets/trophies/trophy-2-silver.png') },
+  { id: 8, name: 'Best Coach', image: require('../assets/trophies/trophy-8-gold.png') },
+  { id: 17, name: 'Innovation in Play', image: require('../assets/trophies/trophy-8-silver.png') },
 ];
 
 const TeamProfile = ({ context, profile, isLoading }) => {

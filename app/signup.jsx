@@ -10,12 +10,13 @@ import {
   Animated,
   Easing,
 } from 'react-native';
-import supabase from '@lib/supabaseClient';
+import { useSupabaseClient } from '@contexts/SupabaseClientContext';
 import { useRouter, Link } from 'expo-router';
 import * as AuthSession from 'expo-auth-session';
-import SafeViewWrapper from './components/SafeViewWrapper';
+import SafeViewWrapper from '@components/SafeViewWrapper';
 
-export default function SignUpPage() {
+const SignUpPage = () => {
+  const { client: supabase } = useSupabaseClient();
   const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -196,7 +197,9 @@ export default function SignUpPage() {
       </SafeViewWrapper>
     </Animated.View>
   );
-}
+};
+
+export default SignUpPage;
 
 const styles = StyleSheet.create({
   container: { flex: 1, justifyContent: 'center', padding: 32 },

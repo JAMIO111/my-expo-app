@@ -13,16 +13,16 @@ import BadgeList from '@components/BadgeList';
 import { usePlayerStats } from '@hooks/usePlayerStats';
 import { calculateLevel } from '@lib/helperFunctions';
 import PlayerStats from '@components/PlayerStats';
-import CachedImage from '../../components/CachedImage';
+import CachedImage from '@components/CachedImage';
+import usePlayerBadges from '@hooks/usePlayerBadges';
 
 const ProfilePage = () => {
   const router = useRouter();
   const { user, player, currentRole } = useUser();
   const { data: playerStats, isLoading: isStatsLoading } = usePlayerStats(player?.id);
+  const { badges } = usePlayerBadges(player?.id);
   const [view, setView] = useState('left');
-  console.log('Debug User:', user);
-  console.log('Debug Player:', player);
-  console.log('Player stats:', playerStats);
+  console.log('Badges:', badges);
 
   return (
     <SafeViewWrapper topColor="bg-brand" bottomColor="bg-brand">
@@ -102,7 +102,7 @@ const ProfilePage = () => {
             <SlidingTabButton option1="Badges" option2="Stats" onChange={setView} />
             <View className="p-3">
               <View style={{ display: view === 'left' ? 'flex' : 'none' }}>
-                <BadgeList />
+                <BadgeList badges={badges} />
               </View>
               <View style={{ display: view === 'right' ? 'flex' : 'none' }}>
                 <PlayerStats playerId={player?.id} />

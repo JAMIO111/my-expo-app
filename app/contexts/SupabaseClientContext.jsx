@@ -1,14 +1,25 @@
-import { createContext, useContext, useState } from 'react';
+import { createContext, useContext, useState, useEffect } from 'react';
 import { createSupabaseClient } from '@lib/supabaseClient';
 
 const SupabaseClientContext = createContext(null);
 
 export const SupabaseClientProvider = ({ children }) => {
-  const [client, setClient] = useState(createSupabaseClient());
+  const [client, setClient] = useState(null);
 
-  const refreshClient = () => {
-    setClient(createSupabaseClient());
+  // Create client on mount
+  useEffect(() => {
+    (async () => {
+      const supabase = await createSupabaseClient();
+      setClient(supabase);
+    })();
+  }, []);
+
+  const refreshClient = async () => {
+    const newClient = await createSupabaseClient();
+    setClient(newClient);
   };
+
+  if (!client) return null; // or a loading screen
 
   return (
     <SupabaseClientContext.Provider value={{ client, refreshClient }}>

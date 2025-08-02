@@ -4,11 +4,10 @@ import { useRouter } from 'expo-router';
 import { useUser } from '@contexts/UserProvider';
 import CTAButton from '@components/CTAButton';
 import Ionicons from '@expo/vector-icons/Ionicons';
-import supabase from '@lib/supabaseClient';
-import { useQueryClient } from '@tanstack/react-query';
+import { useSupabaseClient } from '@contexts/SupabaseClientContext';
 
 const AbbreviationEditor = () => {
-  const queryClient = useQueryClient();
+  const { client: supabase } = useSupabaseClient();
   const router = useRouter();
   const { currentRole, setCurrentRole, player } = useUser(); // Assuming currentRole contains team information
   const [abbreviation, setAbbreviation] = useState(currentRole?.team?.abbreviation || '');

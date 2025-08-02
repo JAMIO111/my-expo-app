@@ -4,13 +4,12 @@ import { useEffect, useState } from 'react';
 import MenuContainer from '@components/MenuContainer';
 import { useUser } from '@contexts/UserProvider';
 import SettingsItem from '@components/SettingsItem';
-import supabase from '@lib/supabaseClient';
-import { useQueryClient } from '@tanstack/react-query';
+import { useSupabaseClient } from '@contexts/SupabaseClientContext';
 import SafeViewWrapper from '@components/SafeViewWrapper';
 import CustomHeader from '@components/CustomHeader'; // Adjust the import path as necessary
 
 const TeamDetails = () => {
-  const queryClient = useQueryClient();
+  const { client: supabase } = useSupabaseClient();
   const { player, loading: playerLoading, refetch, currentRole } = useUser(); // Assume refreshUser reloads user data
   const [teamName, setTeamName] = useState(currentRole?.team?.name || '');
   const [teamDisplayName, setTeamDisplayName] = useState(currentRole?.team?.display_name || '');

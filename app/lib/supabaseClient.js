@@ -6,17 +6,14 @@ import Constants from 'expo-constants';
 const supabaseUrl = Constants.expoConfig?.extra?.SUPABASE_URL;
 const supabaseKey = Constants.expoConfig?.extra?.SUPABASE_KEY;
 
-const supabase = createClient(supabaseUrl, supabaseKey, {
-  auth: {
-    storage: AsyncStorage,
-    persistSession: true,
-    autoRefreshToken: true,
-    detectSessionInUrl: false,
-  },
-});
-
-export const createSupabaseClient = () =>
-  createClient(supabaseUrl, supabaseKey, {
+export const createSupabaseClient = async () => {
+  const client = createClient(supabaseUrl, supabaseKey, {
+    auth: {
+      storage: AsyncStorage,
+      persistSession: true,
+      autoRefreshToken: true,
+      detectSessionInUrl: false,
+    },
     realtime: {
       params: {
         eventsPerSecond: 10,
@@ -24,4 +21,13 @@ export const createSupabaseClient = () =>
     },
   });
 
-export default supabase;
+  // Load session from AsyncStorage
+  const raw = await AsyncStorage.getItem('supabase.auth.token');
+  const sessionObj = raw ? JSON.parse(raw) : null;
+
+  if (sessionObj?.currentSession) {
+    await client.auth.setSession(sessionObj.currentSession);
+  }
+
+  return client;
+};

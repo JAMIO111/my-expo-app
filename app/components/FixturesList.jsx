@@ -26,13 +26,15 @@ const FixtureList = () => {
 
   const {
     data: fixtureData,
-    isFetching,
+    isLoading,
     error,
   } = useMonthlyFixtures({
     month: selectedMonth,
     seasonId: season?.id,
     divisionId: division?.id,
   });
+
+  console.log('Fixture Data:', fixtureData);
 
   const grouped = Object.entries(fixtureData ?? {});
 
@@ -67,9 +69,9 @@ const FixtureList = () => {
       </View>
 
       {/* Loading Skeleton */}
-      {isFetching && (
+      {isLoading && (
         <View className="mb-4 rounded-3xl border border-theme-gray-5 bg-bg-grouped-2 p-4">
-          <View className="mb-8 h-8 w-16 rounded-xl bg-bg-grouped-3"></View>
+          <View className="mb-8 h-8 w-16 gap-3 rounded-xl bg-bg-grouped-3"></View>
           <FixtureSkeleton />
           <FixtureSkeleton />
           <FixtureSkeleton />
@@ -82,7 +84,7 @@ const FixtureList = () => {
       )}
 
       {/* No Fixtures */}
-      {grouped.length === 0 && !isFetching && (
+      {grouped.length === 0 && !isLoading && (
         <View className="items-center justify-center gap-3 rounded-3xl border border-theme-gray-5 bg-bg-grouped-2 px-8 py-12">
           <Text className="text-center font-saira-medium text-xl text-text-1">{`No fixtures available for ${format(
             selectedMonth,
@@ -108,7 +110,7 @@ const FixtureList = () => {
             </Text>
 
             {fixtures.map((f, index) => {
-              const isLive = new Date() >= new Date(f.date_time) && !f.is_complete;
+              const isLive = new Date() >= new Date(f.date_time);
               return (
                 <Pressable
                   onPress={() => {
@@ -138,9 +140,9 @@ const FixtureList = () => {
                       {f.home_team.abbreviation}
                     </Text>
                     <TeamLogo {...f.home_team.crest} size={20} />
-                    {!isLive ? (
+                    {isLive ? (
                       <Text className="pt-1 text-right font-saira-semibold text-xl text-text-1">
-                        {f.home_score ?? '0'} : {f.away_score ?? '0'}
+                        {f.home_score ?? '0'} - {f.away_score ?? '0'}
                       </Text>
                     ) : (
                       <Text className="w-16 text-center font-saira-medium text-lg text-text-1">

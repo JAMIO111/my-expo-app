@@ -8,9 +8,10 @@ import TeamLogo from '@components/TeamLogo';
 import SafeViewWrapper from '@components/SafeViewWrapper';
 import { useTeamProfile } from '@hooks/useTeamProfile';
 import Ionicons from 'react-native-vector-icons/Ionicons';
-import supabase from '@lib/supabaseClient';
+import { useSupabaseClient } from '@contexts/SupabaseClientContext';
 
 const ProfileCreation = () => {
+  const { client: supabase } = useSupabaseClient();
   const router = useRouter();
   const params = useLocalSearchParams();
   const team = JSON.parse(params.team || '{}');

@@ -5,13 +5,14 @@ import SettingsItem from '@components/SettingsItem';
 import MenuContainer from '@components/MenuContainer';
 import { useUser } from '@contexts/UserProvider';
 import CTAButton from '@components/CTAButton';
-import supabase from '@lib/supabaseClient';
+import { useSupabaseClient } from '@contexts/SupabaseClientContext';
 import Toast from 'react-native-toast-message';
 import SafeViewWrapper from '@components/SafeViewWrapper';
 import CustomHeader from '@components/CustomHeader';
 import TeamLogo from '@components/TeamLogo';
 
 const Team = () => {
+  const { client: supabase } = useSupabaseClient();
   const colorScheme = useColorScheme();
   const [isLeavingTeam, setIsLeavingTeam] = useState(false);
   const { player, currentRole, isLoading } = useUser();
