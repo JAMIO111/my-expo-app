@@ -24,6 +24,12 @@ const ProfilePage = () => {
   const [view, setView] = useState('left');
   console.log('Badges:', badges);
 
+  const getInitials = (firstName, lastName) => {
+    const firstInitial = firstName ? firstName.charAt(0).toUpperCase() : '';
+    const lastInitial = lastName ? lastName.charAt(0).toUpperCase() : '';
+    return `${firstInitial}${lastInitial}`;
+  };
+
   return (
     <SafeViewWrapper topColor="bg-brand" bottomColor="bg-brand">
       <Stack.Screen
@@ -54,13 +60,25 @@ const ProfilePage = () => {
           <View className="mb-4 items-center p-2 ">
             <View className="rounded-full border-8 border-brand p-2">
               <View className="rounded-full border border-brand-light">
-                <CachedImage
-                  avatarUrl={player?.avatar_url}
-                  userId={player?.id}
-                  width={140}
-                  height={140}
-                  borderRadius={70}
-                />
+                {player?.avatar_url ? (
+                  <CachedImage
+                    avatarUrl={player?.avatar_url}
+                    userId={player?.id}
+                    width={140}
+                    height={140}
+                    borderRadius={70}
+                  />
+                ) : (
+                  <View
+                    style={{ width: 140, height: 140 }}
+                    className="items-center justify-center rounded-full border border-brand-light bg-brand-light">
+                    <Text
+                      style={{ lineHeight: 130 }}
+                      className="font-saira-medium text-6xl text-white">
+                      {getInitials(player?.first_name, player?.surname)}
+                    </Text>
+                  </View>
+                )}
               </View>
             </View>
           </View>
