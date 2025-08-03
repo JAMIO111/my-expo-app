@@ -14,7 +14,12 @@ const LeagueHomeCard = ({ standings }) => {
   const { currentRole } = useUser();
   const hasNavigated = useRef(false);
 
-  const myTeam = standings?.standings?.find((team) => team.team === currentRole?.teamId);
+  const displayTeam =
+    currentRole?.role === 'admin'
+      ? standings?.standings?.[0]
+      : standings?.standings?.find((team) => team.team === currentRole?.teamId);
+
+  console.log('Display Team:', displayTeam);
   return (
     <Pressable
       onPress={() => {
@@ -27,7 +32,9 @@ const LeagueHomeCard = ({ standings }) => {
       }}
       className={`h-28 w-full rounded-xl border border-theme-gray-5 bg-bg-grouped-2 shadow`}>
       <View className="mx-3 flex-row items-center justify-between border-b border-theme-gray-5 px-1 pb-1 pt-2">
-        <Text className="font-saira-medium text-2xl text-text-1">League Table</Text>
+        <Text className="font-saira-medium text-2xl text-text-1">
+          League Table {currentRole?.role === 'admin' && `- ${currentRole?.divisions[0]?.name}`}
+        </Text>
         <Ioconicons name="chevron-forward" size={20} color={themeColors?.icon} />
       </View>
       {standings === undefined || standings.standings.length === 0 ? (
@@ -40,20 +47,20 @@ const LeagueHomeCard = ({ standings }) => {
         <View className="flex-1 flex-row items-center justify-between px-4 py-3">
           <View className="flex-1 flex-row items-center justify-start gap-3">
             <Text className="font-saira text-2xl font-semibold text-text-1">
-              {myTeam?.position}.
+              {displayTeam?.position}.
             </Text>
             <TeamLogo
               size={20}
-              type={myTeam?.Teams?.crest?.type}
-              color1={myTeam?.Teams?.crest?.color1}
-              color2={myTeam?.Teams?.crest?.color2}
-              thickness={myTeam?.Teams?.crest?.thickness}
+              type={displayTeam?.Teams?.crest?.type}
+              color1={displayTeam?.Teams?.crest?.color1}
+              color2={displayTeam?.Teams?.crest?.color2}
+              thickness={displayTeam?.Teams?.crest?.thickness}
             />
             <Text className="font-saira text-xl text-text-2">
-              {currentRole?.team?.display_name}
+              {displayTeam?.Teams?.display_name}
             </Text>
           </View>
-          <Text className="font-saira text-2xl font-semibold text-text-1">{`${myTeam?.points} Pts`}</Text>
+          <Text className="font-saira text-2xl font-semibold text-text-1">{`${displayTeam?.points} Pts`}</Text>
         </View>
       )}
     </Pressable>

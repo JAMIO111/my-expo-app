@@ -131,7 +131,8 @@ export const fetchAuthUserProfile = async (supabase) => {
       const { data: divisions, error: divisionError } = await supabase
         .from('Divisions')
         .select('id, name')
-        .eq('district', districtId);
+        .eq('district', districtId)
+        .order('tier', { ascending: true });
 
       if (divisionError) throw new Error(divisionError.message);
 

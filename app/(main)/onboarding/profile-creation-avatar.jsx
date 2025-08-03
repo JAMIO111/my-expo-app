@@ -1,6 +1,6 @@
 import { StyleSheet, Text, View, Alert, useColorScheme } from 'react-native';
 import { useState } from 'react';
-import supabase from '@/lib/supabaseClient.js';
+import { useSupabaseClient } from '@contexts/SupabaseClientContext';
 import CTAButton from '@components/CTAButton';
 import { useLocalSearchParams, Stack } from 'expo-router';
 import { useNavigation } from '@react-navigation/native';
@@ -12,6 +12,7 @@ import ImageUploader from '@components/ImageUploader';
 const PROJECT_URL = 'https://ionhcfjampzewimsgsmr.supabase.co'; // Replace with your actual Supabase project URL
 
 const ProfileCreation4 = () => {
+  const { client: supabase } = useSupabaseClient();
   const { colorScheme } = useColorScheme();
   const [imageUri, setImageUri] = useState(null);
   const navigation = useNavigation();

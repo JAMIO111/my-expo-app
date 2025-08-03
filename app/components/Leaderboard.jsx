@@ -10,11 +10,6 @@ const Leaderboard = ({ title, type }) => {
     { id: 3, name: 'David Walton', value: 609 },
     { id: 4, name: 'John Doe', value: 504 },
     { id: 5, name: 'Jane Smith', value: 500 },
-    { id: 6, name: 'Emily Johnson', value: 499 },
-    { id: 7, name: 'Michael Brown', value: 490 },
-    { id: 8, name: 'Sarah Davis', value: 480 },
-    { id: 9, name: 'Chris Wilson', value: 475 },
-    { id: 10, name: 'Jessica Taylor', value: 450 },
   ];
 
   const getInitials = (name) => {

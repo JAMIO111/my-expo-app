@@ -14,8 +14,12 @@ const LeagueTableWrapper = ({ context }) => {
   const { player, currentRole } = useUser();
 
   // Default full objects from context
-  const defaultDistrict = currentRole?.team?.division?.district ?? null;
-  const defaultDivision = currentRole?.team?.division ?? null;
+  const defaultDistrict =
+    currentRole?.role === 'admin'
+      ? currentRole?.district
+      : (currentRole?.team?.division?.district ?? null);
+  const defaultDivision =
+    currentRole?.role === 'admin' ? currentRole?.divisions[0] : currentRole?.team?.division;
   const defaultSeason = currentRole?.activeSeason ?? null;
 
   const [district, setDistrict] = useState(defaultDistrict);

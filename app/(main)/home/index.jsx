@@ -53,11 +53,15 @@ const Home = () => {
   console.log('index DivisionId', currentRole?.team?.division?.id);
   console.log('index SeasonId', currentRole?.activeSeason?.id);
 
+  const divisionId =
+    currentRole?.role === 'admin' ? currentRole?.divisions[0]?.id : currentRole?.team?.division?.id;
+  console.log('Division ID:', divisionId);
+
   const {
     data: standings,
     isLoading,
     refetch: standingsRefetch,
-  } = useStandings(currentRole?.team?.division?.id, currentRole?.activeSeason?.id);
+  } = useStandings(divisionId, currentRole?.activeSeason?.id);
 
   const {
     data: upcomingFixtures,
@@ -191,7 +195,7 @@ const Home = () => {
               <ResultsHomeCard />
               <LeagueHomeCard standings={standings} />
             </View>
-            <View className="w-full gap-4 bg-bg-grouped-1 pb-24">
+            <View className="w-full bg-bg-grouped-1 pb-24">
               {(currentRole?.team?.captain === player?.id ||
                 currentRole?.team?.vice_captain === player?.id) && (
                 <View className="w-full bg-bg-grouped-1">
@@ -217,7 +221,7 @@ const Home = () => {
                   </View>
                 </View>
               )}
-              <View className="w-full gap-5 p-3 pb-20 pt-1">
+              <View className="w-full gap-5 p-3 pb-20 pt-5">
                 <HomeScreenCardLarge
                   title="Welcome to Break Room!"
                   body="We're so glad you can join us in this community of pool enthusiasts. Click to learn about all the features we have to offer."

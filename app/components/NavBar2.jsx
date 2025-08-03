@@ -13,7 +13,7 @@ const NavBar = () => {
   const NAV_ITEMS = [
     {
       name: `My ${currentRole?.type === 'admin' ? 'League' : 'Team'}`,
-      href: '/teams',
+      href: `/${currentRole?.type === 'admin' ? 'my-leagues' : 'teams'}`,
       icon: TeamIcon,
     },
     { name: 'Comps', href: '/onboarding/profile-creation-avatar', icon: TrophyIcon },

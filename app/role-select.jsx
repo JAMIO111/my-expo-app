@@ -4,6 +4,7 @@ import { useRouter } from 'expo-router';
 import IonIcon from '@expo/vector-icons/Ionicons';
 import SafeViewWrapper from '@components/SafeViewWrapper';
 import BrandHeader from '@components/BrandHeader';
+import TeamLogo from './components/TeamLogo';
 
 const RoleSelect = () => {
   const router = useRouter();
@@ -37,7 +38,7 @@ const RoleSelect = () => {
               router.replace('/(main)/home');
             }}>
             <View className="mb-5 flex-row items-center justify-between gap-2 rounded-xl border border-theme-gray-5 bg-bg-grouped-2 px-4 py-3 shadow-lg">
-              <View className="flex-1 gap-1">
+              <View className="flex-1">
                 <Text
                   numberOfLines={1}
                   ellipsizeMode="tail"
@@ -52,11 +53,21 @@ const RoleSelect = () => {
                 </Text>
               </View>
               <View className="flex-row items-center gap-2">
-                <IonIcon
-                  name={role?.type === 'admin' ? 'shield' : 'people'}
-                  size={28}
-                  color="gray"
-                />
+                {role?.type === 'admin' ? (
+                  <IonIcon
+                    name={role?.type === 'admin' ? 'shield' : 'people'}
+                    size={40}
+                    color="gray"
+                  />
+                ) : (
+                  <TeamLogo
+                    size={40}
+                    type={role?.team?.crest?.type}
+                    color1={role?.team?.crest?.color1}
+                    color2={role?.team?.crest?.color2}
+                    thickness={role?.team?.crest?.thickness}
+                  />
+                )}
                 <IonIcon name="chevron-forward-outline" size={24} color="gray" />
               </View>
             </View>
