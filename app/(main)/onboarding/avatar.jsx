@@ -11,7 +11,7 @@ import ImageUploader from '@components/ImageUploader';
 
 const PROJECT_URL = 'https://ionhcfjampzewimsgsmr.supabase.co'; // Replace with your actual Supabase project URL
 
-const ProfileCreation4 = () => {
+const Avatar = () => {
   const { client: supabase } = useSupabaseClient();
   const { colorScheme } = useColorScheme();
   const [imageUri, setImageUri] = useState(null);
@@ -76,7 +76,7 @@ const ProfileCreation4 = () => {
       } else {
         navigation.reset({
           index: 0,
-          routes: [{ name: 'profile-creation5' }],
+          routes: [{ name: 'create-join-team' }],
         });
         Toast.show({
           type: 'success',
@@ -136,6 +136,6 @@ const ProfileCreation4 = () => {
   );
 };
 
-export default ProfileCreation4;
+export default Avatar;
 
 const styles = StyleSheet.create({});

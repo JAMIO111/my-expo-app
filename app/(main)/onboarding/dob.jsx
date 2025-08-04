@@ -4,7 +4,7 @@ import ModalWrappedDatePicker from '@components/ModalWrappedDatePicker';
 import CTAButton from '@components/CTAButton';
 import { useRouter, useLocalSearchParams, Stack } from 'expo-router';
 import StepPillGroup from '@components/StepPillGroup';
-const ProfileCreation3 = () => {
+const Dob = () => {
   const [dob, setDob] = useState(null);
   const router = useRouter();
   const params = useLocalSearchParams();
@@ -34,7 +34,7 @@ const ProfileCreation3 = () => {
               text="Continue"
               callbackFn={() =>
                 router.push({
-                  pathname: '/(main)/onboarding/profile-creation-avatar',
+                  pathname: '/(main)/onboarding/avatar',
                   params: { ...params, dob },
                 })
               }
@@ -46,6 +46,6 @@ const ProfileCreation3 = () => {
   );
 };
 
-export default ProfileCreation3;
+export default Dob;
 
 const styles = StyleSheet.create({});

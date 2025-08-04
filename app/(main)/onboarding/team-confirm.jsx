@@ -9,8 +9,9 @@ import SafeViewWrapper from '@components/SafeViewWrapper';
 import { useTeamProfile } from '@hooks/useTeamProfile';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { useSupabaseClient } from '@contexts/SupabaseClientContext';
+import CustomNativeHeader from '@components/CustomNativeHeader';
 
-const ProfileCreation = () => {
+const TeamConfirm = () => {
   const { client: supabase } = useSupabaseClient();
   const router = useRouter();
   const params = useLocalSearchParams();
@@ -25,7 +26,7 @@ const ProfileCreation = () => {
 
     const fetchData = async () => {
       const { data: playersData, error: playersError } = await supabase
-        .from('Players')
+        .from('TeamPlayers')
         .select('id')
         .eq('team_id', team.id);
 
@@ -40,9 +41,6 @@ const ProfileCreation = () => {
       } else {
         setPlayerCount(playersData.length);
         setCaptainName(`${captainData.first_name} ${captainData.surname}`);
-        console.log('Team Profile:', teamProfile);
-        console.log('Players Data:', playersData);
-        console.log('Captain Data:', captainData);
         console.log({
           playerCount: playersData.length,
           captainName: `${captainData.first_name} ${captainData.surname}`,
@@ -53,21 +51,28 @@ const ProfileCreation = () => {
     fetchData();
   }, [teamProfile, team?.id]);
 
+  const handleContinue = () => {
+    router.push({
+      pathname: '/(main)/onboarding/profile-creation',
+      params: { team: JSON.stringify(teamProfile) },
+    });
+  };
+
   return (
     <>
       <Stack.Screen
         options={{
-          title: 'Step 3 of 3',
+          title: 'Step 3 of 4',
         }}
       />
-      <SafeViewWrapper useTopInset={false} topColor="bg-bg-grouped-2" bottomColor="bg-bg-grouped-2">
-        <View className="flex-1 justify-between gap-3 bg-bg-grouped-1">
+      <SafeViewWrapper useTopInset={false} topColor="bg-brand" bottomColor="bg-bg-grouped-2">
+        <View className="flex-1 justify-between gap-3 bg-brand">
           <StepPillGroup steps={3} currentStep={3} />
-          <View className="flex-1 gap-3 bg-bg-grouped-1 p-5">
+          <View className="flex-1 gap-3 p-5">
             <View className="">
               <Text
                 style={{ lineHeight: 60 }}
-                className="mb-4 font-delagothic text-6xl font-bold text-text-1">
+                className="mb-4 font-delagothic text-6xl font-bold text-text-on-brand">
                 Is this your team?
               </Text>
               <View className="flex-row items-center gap-5 rounded-2xl bg-bg-grouped-2 px-5 py-5 ">
@@ -123,10 +128,8 @@ const ProfileCreation = () => {
           <View className="gap-5 rounded-t-3xl bg-bg-grouped-2 px-5 pb-2 pt-5">
             <CTAButton callbackFn={() => router.back()} type="error" text="No - Go Back" />
             <View>
-              <CTAButton type="success" text="Yes - Continue" />
-              <Text className="px-3 text-lg text-text-2">
-                Please allow the captain some time to accept your request.
-              </Text>
+              <CTAButton type="success" text="Yes - Continue" callbackFn={handleContinue} />
+              <Text className="px-3 text-lg text-text-2"></Text>
             </View>
           </View>
         </View>
@@ -135,6 +138,6 @@ const ProfileCreation = () => {
   );
 };
 
-export default ProfileCreation;
+export default TeamConfirm;
 
 const styles = StyleSheet.create({});

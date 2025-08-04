@@ -2,7 +2,7 @@ import { StyleSheet, Text, View, Image } from 'react-native';
 import { useRouter, Stack } from 'expo-router';
 import CTAButton from '@components/CTAButton';
 
-const ProfileCreation5 = () => {
+const CreateJoinTeam = () => {
   const router = useRouter();
 
   return (
@@ -37,7 +37,7 @@ const ProfileCreation5 = () => {
             text="Create a new team"
             callbackFn={() =>
               router.push({
-                pathname: '/(main)/onboarding/profile-creation-team-code',
+                pathname: '/(main)/onboarding/team-code',
                 params: { isNewTeam: true },
               })
             }
@@ -48,7 +48,7 @@ const ProfileCreation5 = () => {
               text="Join existing team"
               callbackFn={() =>
                 router.push({
-                  pathname: '/(main)/onboarding/profile-creation-team-code',
+                  pathname: '/(main)/onboarding/team-code',
                   params: { isNewTeam: false },
                 })
               }
@@ -60,6 +60,6 @@ const ProfileCreation5 = () => {
   );
 };
 
-export default ProfileCreation5;
+export default CreateJoinTeam;
 
 const styles = StyleSheet.create({});

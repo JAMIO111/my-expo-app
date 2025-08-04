@@ -5,7 +5,7 @@ import { Stack } from 'expo-router';
 import CTAButton from '@components/CTAButton';
 import StepPillGroup from '@components/StepPillGroup';
 
-const ProfileCreation = () => {
+const Name = () => {
   const [firstName, setFirstName] = useState('');
   const [surname, setSurname] = useState('');
   const router = useRouter();
@@ -62,7 +62,7 @@ const ProfileCreation = () => {
               text="Continue"
               callbackFn={() =>
                 router.push({
-                  pathname: '/(main)/onboarding/profile-creation-nickname',
+                  pathname: '/(main)/onboarding/nickname',
                   params: { firstName, surname },
                 })
               }
@@ -74,6 +74,6 @@ const ProfileCreation = () => {
   );
 };
 
-export default ProfileCreation;
+export default Name;
 
 const styles = StyleSheet.create({});

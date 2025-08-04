@@ -1,5 +1,4 @@
-import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, StyleSheet } from 'react-native';
 
 const StepPillGroup = ({ steps, currentStep }) => {
   return (
@@ -11,7 +10,7 @@ const StepPillGroup = ({ steps, currentStep }) => {
         return (
           <View
             key={stepNum}
-            className={isActive ? 'bg-text-1' : 'bg-border-color'}
+            className={isActive ? 'bg-text-on-brand' : 'bg-text-on-brand-2'}
             style={[
               styles.pill,
               isActive ? styles.pillActive : styles.pillInactive,

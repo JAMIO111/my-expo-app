@@ -4,7 +4,7 @@ import CTAButton from '@components/CTAButton';
 import { useRouter, useLocalSearchParams, Stack } from 'expo-router';
 import StepPillGroup from '@components/StepPillGroup';
 
-const ProfileCreation2 = () => {
+const Nickname = () => {
   const [nickname, setNickname] = useState('');
   const router = useRouter();
   const params = useLocalSearchParams();
@@ -45,7 +45,7 @@ const ProfileCreation2 = () => {
               text="Continue"
               callbackFn={() =>
                 router.push({
-                  pathname: '/(main)/onboarding/profile-creation-dob',
+                  pathname: '/(main)/onboarding/dob',
                   params: { ...params, nickname },
                 })
               }
@@ -57,6 +57,6 @@ const ProfileCreation2 = () => {
   );
 };
 
-export default ProfileCreation2;
+export default Nickname;
 
 const styles = StyleSheet.create({});
