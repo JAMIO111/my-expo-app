@@ -9,17 +9,17 @@ export default () => ({
     slug: 'break-room',
     version: '1.0.0',
     web: {
-      favicon: './assets/Break-Room-Logo-1024-Background.png',
+      favicon: './app/assets/Break-Room-Logo-1024-Background.png',
     },
     experiments: {
       tsconfigPaths: true,
     },
     plugins: ['expo-router', 'expo-font'],
     orientation: 'portrait',
-    icon: './assets/Break-Room-Logo-1024-Background.png',
+    icon: './app/assets/Break-Room-Logo-1024-Background.png',
     userInterfaceStyle: 'automatic',
     splash: {
-      image: './assets/splash.png',
+      image: './app/assets/splash.png',
       resizeMode: 'contain',
       backgroundColor: '#ffffff',
     },
@@ -34,7 +34,7 @@ export default () => ({
     android: {
       package: 'com.jdigital.breakroom',
       adaptiveIcon: {
-        foregroundImage: './assets/adaptive-icon.png',
+        foregroundImage: './app/assets/adaptive-icon.png',
         backgroundColor: '#ffffff',
       },
     },
