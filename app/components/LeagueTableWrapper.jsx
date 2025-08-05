@@ -26,13 +26,12 @@ const LeagueTableWrapper = ({ context }) => {
   const [division, setDivision] = useState(defaultDivision);
   const [season, setSeason] = useState(defaultSeason);
 
+  const [sheetIndex, setSheetIndex] = useState(-1); // -1 means closed
+
   const bottomSheetRef = useRef(null);
-  const openSheet = () => {
-    if (bottomSheetRef.current) {
-      bottomSheetRef.current.expand();
-    }
-  };
-  const closeSheet = () => bottomSheetRef.current?.close();
+
+  const openSheet = () => setSheetIndex(0);
+  const closeSheet = () => setSheetIndex(-1);
 
   // Fetch districts (no id needed)
   const {
@@ -118,7 +117,11 @@ const LeagueTableWrapper = ({ context }) => {
         <LeagueTable context={context} season={season?.id} division={division?.id} />
       </ScrollView>
 
-      <BottomSheetWrapper ref={bottomSheetRef} snapPoints={['25%', '50%']}>
+      <BottomSheetWrapper
+        ref={bottomSheetRef}
+        index={sheetIndex}
+        onChange={setSheetIndex}
+        snapPoints={['25%', '50%']}>
         <Text>This content can be anything!</Text>
         <CTAButton title="Close" callbackFn={closeSheet} />
       </BottomSheetWrapper>

@@ -4,7 +4,7 @@ import BottomSheet from '@gorhom/bottom-sheet';
 
 // Using forwardRef to expose control to parent
 const BottomSheetWrapper = forwardRef(
-  ({ children, snapPoints = ['25%', '50%'], initialIndex = -1 }, ref) => {
+  ({ children, snapPoints = ['25%', '50%'], index, onChange, initialIndex = -1 }, ref) => {
     const memoizedSnapPoints = useMemo(() => snapPoints, [snapPoints]);
     useEffect(() => {
       if (ref && typeof ref !== 'function' && ref.current) {
@@ -16,7 +16,8 @@ const BottomSheetWrapper = forwardRef(
     return (
       <BottomSheet
         ref={ref}
-        index={0}
+        index={index}
+        onChange={onChange}
         snapPoints={memoizedSnapPoints}
         enablePanDownToClose
         backgroundStyle={styles.sheetBackground}
