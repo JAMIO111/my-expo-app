@@ -1,4 +1,4 @@
-import { StyleSheet, ScrollView, View, Text } from 'react-native';
+import { StyleSheet, ScrollView, View, Text, Pressable } from 'react-native';
 import { useEffect, useState, useRef } from 'react';
 import LeagueTable from '@components/LeagueTable';
 import { getActiveSeason } from '@lib/helperFunctions';
@@ -9,8 +9,13 @@ import { useSeasons } from '@hooks/useSeasons';
 import CTAButton from './CTAButton';
 import BottomSheetWrapper from './BottomSheetWrapper';
 import DropdownFilterButton from './DropdownFilterButton';
+import IonIcons from '@expo/vector-icons/Ionicons';
+import { useColorScheme } from 'react-native';
+import colors from '@lib/colors';
 
 const LeagueTableWrapper = ({ context }) => {
+  const colorScheme = useColorScheme();
+  const themeColors = colors[colorScheme] || colors.light; // Fallback to light theme if colorScheme is undefined
   const { player, currentRole } = useUser();
 
   // Default full objects from context
@@ -25,13 +30,22 @@ const LeagueTableWrapper = ({ context }) => {
   const [district, setDistrict] = useState(defaultDistrict);
   const [division, setDivision] = useState(defaultDivision);
   const [season, setSeason] = useState(defaultSeason);
+  const [tempDistrict, setTempDistrict] = useState(defaultDistrict);
+  const [tempDivision, setTempDivision] = useState(defaultDivision);
+  const [tempSeason, setTempSeason] = useState(defaultSeason);
 
-  const [sheetIndex, setSheetIndex] = useState(-1); // -1 means closed
+  const [activeFilter, setActiveFilter] = useState(null);
 
   const bottomSheetRef = useRef(null);
 
-  const openSheet = () => setSheetIndex(0);
-  const closeSheet = () => setSheetIndex(-1);
+  const openSheet = () => {
+    bottomSheetRef.current?.expand();
+  };
+
+  const closeSheet = () => {
+    console.log('Closing sheet...'); // Add this
+    bottomSheetRef.current?.close();
+  };
 
   // Fetch districts (no id needed)
   const {
@@ -105,11 +119,29 @@ const LeagueTableWrapper = ({ context }) => {
         className="w-full flex-1 bg-brand-dark">
         <View className="h-fit w-full items-center justify-between gap-3 border-b border-brand bg-brand-dark p-3">
           <View className="flex-row gap-3">
-            <DropdownFilterButton text="Blyth & District" callbackFn={openSheet} />
+            <DropdownFilterButton
+              text={district?.name || 'Select District'}
+              callbackFn={() => {
+                setActiveFilter('district');
+                openSheet();
+              }}
+            />
           </View>
           <View className="flex-row gap-3">
-            <DropdownFilterButton text="Super League" callbackFn={openSheet} />
-            <DropdownFilterButton text="2025/26" callbackFn={openSheet} />
+            <DropdownFilterButton
+              text={division?.name || 'Select Division'}
+              callbackFn={() => {
+                setActiveFilter('division');
+                openSheet();
+              }}
+            />
+            <DropdownFilterButton
+              text={season?.name || 'Select Season'}
+              callbackFn={() => {
+                setActiveFilter('season');
+                openSheet();
+              }}
+            />
           </View>
         </View>
 
@@ -117,13 +149,111 @@ const LeagueTableWrapper = ({ context }) => {
         <LeagueTable context={context} season={season?.id} division={division?.id} />
       </ScrollView>
 
-      <BottomSheetWrapper
-        ref={bottomSheetRef}
-        index={sheetIndex}
-        onChange={setSheetIndex}
-        snapPoints={['25%', '50%']}>
-        <Text>This content can be anything!</Text>
-        <CTAButton title="Close" callbackFn={closeSheet} />
+      <BottomSheetWrapper ref={bottomSheetRef} initialIndex={-1} snapPoints={['90%']}>
+        <View className="w-full flex-1 justify-between">
+          <View className="flex-1 p-8">
+            <Text className="mb-6 w-full text-left font-saira-semibold text-3xl text-text-1">
+              {activeFilter === 'district'
+                ? 'Districts'
+                : activeFilter === 'division'
+                  ? 'Divisions'
+                  : activeFilter === 'season'
+                    ? 'Seasons'
+                    : ''}
+            </Text>
+
+            <ScrollView className="w-full">
+              <View className="flex-1 gap-4">
+                {activeFilter === 'district' &&
+                  districts.map((d) => (
+                    <Pressable
+                      className="flex-row items-center justify-between"
+                      key={d.id}
+                      onPress={() => {
+                        setTempDistrict(d);
+                      }}>
+                      <Text
+                        className={`font-saira text-2xl ${
+                          tempDistrict?.id === d.id ? 'text-text-1' : 'text-text-2'
+                        }`}>
+                        {d.name}
+                      </Text>
+                      <IonIcons
+                        size={24}
+                        color={themeColors.primaryText}
+                        name={tempDistrict?.id === d.id ? 'checkbox' : 'square-outline'}
+                      />
+                    </Pressable>
+                  ))}
+
+                {activeFilter === 'division' &&
+                  divisions.map((d) => (
+                    <Pressable
+                      className="flex-row items-center justify-between"
+                      key={d.id}
+                      onPress={() => {
+                        setTempDivision(d);
+                      }}>
+                      <Text
+                        className={`font-saira text-2xl  ${
+                          tempDivision?.id === d.id ? 'text-text-1' : 'text-text-2'
+                        }`}>
+                        {d.name}
+                      </Text>
+                      <IonIcons
+                        name={tempDivision?.id === d.id ? 'checkbox' : 'square-outline'}
+                        size={24}
+                        color={themeColors.primaryText}
+                      />
+                    </Pressable>
+                  ))}
+
+                {activeFilter === 'season' &&
+                  seasons.map((s) => (
+                    <Pressable
+                      className="flex-row items-center justify-between"
+                      key={s.id}
+                      onPress={() => {
+                        setTempSeason(s);
+                      }}>
+                      <Text
+                        className={`font-saira text-2xl ${
+                          tempSeason?.id === s.id ? 'text-text-1' : 'text-text-2'
+                        }`}>
+                        {s.name}
+                      </Text>
+                      <IonIcons
+                        name={tempSeason?.id === s.id ? 'checkbox' : 'square-outline'}
+                        size={24}
+                        color={themeColors.primaryText}
+                      />
+                    </Pressable>
+                  ))}
+              </View>
+            </ScrollView>
+          </View>
+          <View className="w-full rounded-t-2xl bg-bg-grouped-3 p-8">
+            <CTAButton
+              text="Save"
+              type="brand"
+              callbackFn={() => {
+                switch (activeFilter) {
+                  case 'district':
+                    setDistrict(tempDistrict);
+                    break;
+                  case 'division':
+                    setDivision(tempDivision);
+                    break;
+                  case 'season':
+                    setSeason(tempSeason);
+                    break;
+                }
+                closeSheet();
+                setActiveFilter(null);
+              }}
+            />
+          </View>
+        </View>
       </BottomSheetWrapper>
     </View>
   );

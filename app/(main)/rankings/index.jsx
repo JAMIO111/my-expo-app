@@ -8,6 +8,7 @@ import { Stack } from 'expo-router';
 import { usePlayerLeaderboards } from '@hooks/usePlayerLeaderboards';
 import { useTeamLeaderboards } from '@hooks/useTeamLeaderboards';
 import { useUser } from '@contexts/UserProvider';
+import BottomSheet from '@gorhom/bottom-sheet';
 
 const index = () => {
   const { currentRole } = useUser();

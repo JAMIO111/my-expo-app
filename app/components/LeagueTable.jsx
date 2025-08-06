@@ -35,7 +35,7 @@ const LeagueTable = ({ context, season, division }) => {
   if (!isLoading && !isFetching && hasNoStandings) {
     return (
       <View className="mt-4 w-full flex-1 items-center justify-center px-3">
-        <View className="w-full gap-5 rounded-xl bg-bg-grouped-2 px-6 py-16">
+        <View className="w-full gap-5 rounded-2xl border border-theme-gray-5 bg-bg-grouped-2 px-6 py-16">
           <Text className="w-full text-center text-lg text-text-1">
             No standings available yet for this season.
           </Text>

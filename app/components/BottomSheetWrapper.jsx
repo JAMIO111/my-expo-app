@@ -1,44 +1,43 @@
-import { forwardRef, useCallback, useMemo, useEffect } from 'react';
-import { View, StyleSheet } from 'react-native';
-import BottomSheet from '@gorhom/bottom-sheet';
+import React, { forwardRef, useMemo, useCallback } from 'react';
+import { View, StyleSheet, useColorScheme } from 'react-native';
+import BottomSheet, { BottomSheetView, BottomSheetBackdrop } from '@gorhom/bottom-sheet';
+import colors from '@lib/colors';
 
-// Using forwardRef to expose control to parent
 const BottomSheetWrapper = forwardRef(
-  ({ children, snapPoints = ['25%', '50%'], index, onChange, initialIndex = -1 }, ref) => {
+  ({ children, snapPoints = ['75%'], initialIndex = -1 }, ref) => {
     const memoizedSnapPoints = useMemo(() => snapPoints, [snapPoints]);
-    useEffect(() => {
-      if (ref && typeof ref !== 'function' && ref.current) {
-        console.log('✅ BottomSheet ref received in wrapper:', ref.current);
-      } else {
-        console.warn('❌ BottomSheet ref not available yet');
-      }
-    }, [ref]);
+    const colorScheme = useColorScheme();
+    const themeColors = colors[colorScheme] || colors.light;
+
+    // 👇 Render backdrop that closes on press
+    const renderBackdrop = useCallback(
+      (props) => (
+        <BottomSheetBackdrop
+          {...props}
+          appearsOnIndex={0}
+          disappearsOnIndex={-1}
+          pressBehavior="close" // 👈 tap backdrop to close
+        />
+      ),
+      []
+    );
+
     return (
       <BottomSheet
         ref={ref}
-        index={index}
-        onChange={onChange}
+        index={initialIndex}
         snapPoints={memoizedSnapPoints}
         enablePanDownToClose
-        backgroundStyle={styles.sheetBackground}
-        handleIndicatorStyle={styles.handle}>
-        <View style={{ flex: 1, backgroundColor: 'red', borderWidth: 2 }}>{children}</View>
+        backgroundStyle={{ backgroundColor: themeColors.bgGrouped2 }}
+        handleIndicatorStyle={{ backgroundColor: themeColors.themeGray4 }}
+        backdropComponent={renderBackdrop} // 👈 pass the backdrop
+      >
+        <BottomSheetView className="flex-1">
+          <View className="flex-1">{children}</View>
+        </BottomSheetView>
       </BottomSheet>
     );
   }
 );
-
-const styles = StyleSheet.create({
-  content: {
-    flex: 1,
-    padding: 16,
-  },
-  sheetBackground: {
-    backgroundColor: 'white',
-  },
-  handle: {
-    backgroundColor: '#ccc',
-  },
-});
 
 export default BottomSheetWrapper;
