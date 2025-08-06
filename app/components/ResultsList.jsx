@@ -41,10 +41,32 @@ const ResultsList = () => {
   return (
     <View className="bg-brand-dark p-4">
       {/* Filter Selectors */}
-      <View className="mb-4 flex-row items-center justify-between gap-3">
-        <DropdownFilterButton text={season?.name} callbackFn={() => {}} />
-        <DropdownFilterButton text={district?.name} callbackFn={() => {}} />
-        <DropdownFilterButton text={division?.name} callbackFn={() => {}} />
+      <View className="h-fit w-full items-center justify-between gap-3 border-b border-brand bg-brand-dark p-3">
+        <View className="flex-row gap-3">
+          <DropdownFilterButton
+            text={district?.name || 'Select District'}
+            callbackFn={() => {
+              setActiveFilter('district');
+              openSheet();
+            }}
+          />
+        </View>
+        <View className="flex-row gap-3">
+          <DropdownFilterButton
+            text={division?.name || 'Select Division'}
+            callbackFn={() => {
+              setActiveFilter('division');
+              openSheet();
+            }}
+          />
+          <DropdownFilterButton
+            text={season?.name || 'Select Season'}
+            callbackFn={() => {
+              setActiveFilter('season');
+              openSheet();
+            }}
+          />
+        </View>
       </View>
 
       {/* Month Selector */}

@@ -3,6 +3,7 @@ import CircularProgress from '@components/CircularProgress';
 import HorizontalStatBar from '@components/HorizontalStatBar';
 import ColoredStatCard from '@components/ColoredStatCard';
 import { usePlayerStats } from '../hooks/usePlayerStats';
+import MatchBreakdownBar from './MatchBreakdownBar';
 
 const PlayerStats = ({ playerId }) => {
   console.log('PlayerStats Component Rendered with playerId:', playerId);
@@ -36,6 +37,12 @@ const PlayerStats = ({ playerId }) => {
         </View>
       </View>
       <View className="gap-2">
+        <MatchBreakdownBar
+          wins={data?.totalStats?.frames_won ?? 0}
+          losses={data?.totalStats?.frames_lost ?? 0}
+          draws={data?.totalStats?.frames_drawn ?? 0}
+        />
+
         <HorizontalStatBar
           title="Frame Win %"
           color="purple"

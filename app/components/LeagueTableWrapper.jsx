@@ -1,4 +1,4 @@
-import { StyleSheet, ScrollView, View, Text, Pressable } from 'react-native';
+import { StyleSheet, View, Text, Pressable } from 'react-native';
 import { useEffect, useState, useRef } from 'react';
 import LeagueTable from '@components/LeagueTable';
 import { getActiveSeason } from '@lib/helperFunctions';
@@ -9,9 +9,15 @@ import { useSeasons } from '@hooks/useSeasons';
 import CTAButton from './CTAButton';
 import BottomSheetWrapper from './BottomSheetWrapper';
 import DropdownFilterButton from './DropdownFilterButton';
-import IonIcons from '@expo/vector-icons/Ionicons';
 import { useColorScheme } from 'react-native';
 import colors from '@lib/colors';
+import BottomSheet, {
+  BottomSheetFooter,
+  BottomSheetScrollView,
+  BottomSheetView,
+} from '@gorhom/bottom-sheet';
+import Ionicons from '@expo/vector-icons/Ionicons';
+import { ScrollView } from 'react-native-gesture-handler';
 
 const LeagueTableWrapper = ({ context }) => {
   const colorScheme = useColorScheme();
@@ -112,11 +118,27 @@ const LeagueTableWrapper = ({ context }) => {
     return <Text>Error loading data</Text>;
   }
 
+  const handleSave = () => {
+    switch (activeFilter) {
+      case 'district':
+        setDistrict(tempDistrict);
+        break;
+      case 'division':
+        setDivision(tempDivision);
+        break;
+      case 'season':
+        setSeason(tempSeason);
+        break;
+    }
+    closeSheet();
+    setActiveFilter(null);
+  };
+
   return (
     <View className="flex-1">
       <ScrollView
         contentContainerStyle={{ alignItems: 'center', justifyContent: 'flex-start' }}
-        className="w-full flex-1 bg-brand-dark">
+        className="w-full bg-brand-dark">
         <View className="h-fit w-full items-center justify-between gap-3 border-b border-brand bg-brand-dark p-3">
           <View className="flex-row gap-3">
             <DropdownFilterButton
@@ -149,111 +171,105 @@ const LeagueTableWrapper = ({ context }) => {
         <LeagueTable context={context} season={season?.id} division={division?.id} />
       </ScrollView>
 
-      <BottomSheetWrapper ref={bottomSheetRef} initialIndex={-1} snapPoints={['90%']}>
-        <View className="w-full flex-1 justify-between">
-          <View className="flex-1 p-8">
-            <Text className="mb-6 w-full text-left font-saira-semibold text-3xl text-text-1">
-              {activeFilter === 'district'
-                ? 'Districts'
-                : activeFilter === 'division'
-                  ? 'Divisions'
-                  : activeFilter === 'season'
-                    ? 'Seasons'
-                    : ''}
-            </Text>
+      <BottomSheetWrapper
+        ref={bottomSheetRef}
+        initialIndex={-1}
+        snapPoints={['90%']}
+        footerComponent={(props) => (
+          <BottomSheetFooter {...props}>
+            <View
+              style={{ paddingBottom: 80 }}
+              className="w-full rounded-t-3xl bg-bg-grouped-3 p-6">
+              <CTAButton text="Save" type="brand" callbackFn={handleSave} />
+            </View>
+          </BottomSheetFooter>
+        )}>
+        {/* Fixed Header */}
+        <BottomSheetView
+          style={{
+            paddingHorizontal: 32,
+            paddingTop: 8,
+            paddingBottom: 8,
+            borderBottomWidth: 1,
+            borderBottomColor: '#ccc',
+            backgroundColor: themeColors.bgGrouped2,
+            zIndex: 10,
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+          }}>
+          <Text style={{ lineHeight: 40 }} className="font-saira-medium text-3xl text-text-1">
+            Select {activeFilter}
+          </Text>
+          <Pressable className="p-2" onPress={closeSheet}>
+            <Ionicons name="close" size={24} color={themeColors.primaryText} />
+          </Pressable>
+        </BottomSheetView>
 
-            <ScrollView className="w-full">
-              <View className="flex-1 gap-4">
-                {activeFilter === 'district' &&
-                  districts.map((d) => (
-                    <Pressable
-                      className="flex-row items-center justify-between"
-                      key={d.id}
-                      onPress={() => {
-                        setTempDistrict(d);
-                      }}>
-                      <Text
-                        className={`font-saira text-2xl ${
-                          tempDistrict?.id === d.id ? 'text-text-1' : 'text-text-2'
-                        }`}>
-                        {d.name}
-                      </Text>
-                      <IonIcons
-                        size={24}
-                        color={themeColors.primaryText}
-                        name={tempDistrict?.id === d.id ? 'checkbox' : 'square-outline'}
-                      />
-                    </Pressable>
-                  ))}
+        {/* Scrollable content with top padding to avoid overlap */}
+        <BottomSheetScrollView
+          contentContainerStyle={{ paddingBottom: 240, paddingTop: 80, paddingHorizontal: 32 }}>
+          {/* Your selectable items */}
+          {activeFilter === 'district' &&
+            districts.map((d) => (
+              <Pressable
+                className="mb-3 flex-row items-center justify-between"
+                key={d.id}
+                onPress={() => setTempDistrict(d)}>
+                <Text
+                  className={`font-saira text-2xl ${
+                    tempDistrict?.id === d.id ? 'text-text-1' : 'text-text-2'
+                  }`}>
+                  {d.name}
+                </Text>
+                <Ionicons
+                  size={24}
+                  color={themeColors.primaryText}
+                  name={tempDistrict?.id === d.id ? 'checkbox' : 'square-outline'}
+                />
+              </Pressable>
+            ))}
 
-                {activeFilter === 'division' &&
-                  divisions.map((d) => (
-                    <Pressable
-                      className="flex-row items-center justify-between"
-                      key={d.id}
-                      onPress={() => {
-                        setTempDivision(d);
-                      }}>
-                      <Text
-                        className={`font-saira text-2xl  ${
-                          tempDivision?.id === d.id ? 'text-text-1' : 'text-text-2'
-                        }`}>
-                        {d.name}
-                      </Text>
-                      <IonIcons
-                        name={tempDivision?.id === d.id ? 'checkbox' : 'square-outline'}
-                        size={24}
-                        color={themeColors.primaryText}
-                      />
-                    </Pressable>
-                  ))}
+          {activeFilter === 'division' &&
+            divisions.map((d) => (
+              <Pressable
+                className="mb-3 flex-row items-center justify-between"
+                key={d.id}
+                onPress={() => setTempDivision(d)}>
+                <Text
+                  className={`font-saira text-2xl ${
+                    tempDivision?.id === d.id ? 'text-text-1' : 'text-text-2'
+                  }`}>
+                  {d.name}
+                </Text>
+                <Ionicons
+                  size={24}
+                  color={themeColors.primaryText}
+                  name={tempDivision?.id === d.id ? 'checkbox' : 'square-outline'}
+                />
+              </Pressable>
+            ))}
 
-                {activeFilter === 'season' &&
-                  seasons.map((s) => (
-                    <Pressable
-                      className="flex-row items-center justify-between"
-                      key={s.id}
-                      onPress={() => {
-                        setTempSeason(s);
-                      }}>
-                      <Text
-                        className={`font-saira text-2xl ${
-                          tempSeason?.id === s.id ? 'text-text-1' : 'text-text-2'
-                        }`}>
-                        {s.name}
-                      </Text>
-                      <IonIcons
-                        name={tempSeason?.id === s.id ? 'checkbox' : 'square-outline'}
-                        size={24}
-                        color={themeColors.primaryText}
-                      />
-                    </Pressable>
-                  ))}
-              </View>
-            </ScrollView>
-          </View>
-          <View className="w-full rounded-t-2xl bg-bg-grouped-3 p-8">
-            <CTAButton
-              text="Save"
-              type="brand"
-              callbackFn={() => {
-                switch (activeFilter) {
-                  case 'district':
-                    setDistrict(tempDistrict);
-                    break;
-                  case 'division':
-                    setDivision(tempDivision);
-                    break;
-                  case 'season':
-                    setSeason(tempSeason);
-                    break;
-                }
-                closeSheet();
-                setActiveFilter(null);
-              }}
-            />
-          </View>
-        </View>
+          {activeFilter === 'season' &&
+            seasons.map((s) => (
+              <Pressable
+                className="mb-3 flex-row items-center justify-between"
+                key={s.id}
+                onPress={() => setTempSeason(s)}>
+                <Text
+                  className={`font-saira text-2xl ${
+                    tempSeason?.id === s.id ? 'text-text-1' : 'text-text-2'
+                  }`}>
+                  {s.name}
+                </Text>
+                <Ionicons
+                  size={24}
+                  color={themeColors.primaryText}
+                  name={tempSeason?.id === s.id ? 'checkbox' : 'square-outline'}
+                />
+              </Pressable>
+            ))}
+        </BottomSheetScrollView>
       </BottomSheetWrapper>
     </View>
   );

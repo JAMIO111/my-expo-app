@@ -17,5 +17,6 @@ export function useSeasons(districtId) {
     },
     staleTime: 5 * 60 * 1000, // 5 minutes
     cacheTime: 60 * 60 * 1000, // 1 hour
+    enabled: !!districtId, // only run query if districtId is provided
   });
 }

@@ -108,7 +108,7 @@ const NavBar = () => {
             <View
               key={href || index}
               className="absolute h-20 items-center justify-between"
-              style={{ width: 64, top: -8, alignSelf: 'center' }}>
+              style={{ width: 64, top: 5, alignSelf: 'center' }}>
               <Pressable
                 {...pressableProps}
                 className="h-16 w-16 items-center justify-center rounded-full bg-black pb-1 shadow-lg">

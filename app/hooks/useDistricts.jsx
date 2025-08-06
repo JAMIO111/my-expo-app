@@ -1,17 +1,19 @@
 import { useQuery } from '@tanstack/react-query';
 import { useSupabaseClient } from '@contexts/SupabaseClientContext';
 
-export function useDistricts() {
+export function useDistricts(includePrivate = false) {
   const { client: supabase } = useSupabaseClient();
 
   return useQuery({
-    queryKey: ['Districts'],
+    queryKey: ['Districts', includePrivate],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('Districts')
-        .select('*')
-        .eq('private', false)
-        .order('name', { ascending: true });
+      let query = supabase.from('Districts').select('*');
+
+      if (!includePrivate) {
+        query = query.eq('private', false);
+      }
+
+      const { data, error } = await query.order('name', { ascending: true });
 
       if (error) throw error;
       return data;

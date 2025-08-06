@@ -1,14 +1,5 @@
 import { router, Stack } from 'expo-router';
-import {
-  StyleSheet,
-  Text,
-  View,
-  ScrollView,
-  Platform,
-  RefreshControl,
-  Image,
-  Pressable,
-} from 'react-native';
+import { StyleSheet, Text, View, ScrollView, Platform, RefreshControl } from 'react-native';
 import { useState, useCallback } from 'react';
 import { useUser } from '@contexts/UserProvider';
 import LoadingSplash from '@components/LoadingSplash';
@@ -26,11 +17,9 @@ import PendingResultCard from '@components/PendingResultCard';
 import AwaitingResultCard from '@components/AwaitingResultCard';
 import { useResultsPendingApproval } from '@hooks/useResultsPendingApproval';
 import { useFixturesAwaitingResults } from '@hooks/useFixturesAwaitingResults';
-import { useColorScheme } from 'react-native';
 import { useSupabaseClient } from '@contexts/SupabaseClientContext';
 import BrandHeader from '@components/BrandHeader';
 import HomeScreenCardLarge from '@components/HomeScreenCardLarge';
-import BottomSheetTest from '../../components/BottomSheetTest';
 
 const Home = () => {
   const { client: supabase } = useSupabaseClient();
@@ -259,7 +248,6 @@ const Home = () => {
                     }
                   }}
                 />
-                <BottomSheetTest />
               </View>
             </View>
           </View>
