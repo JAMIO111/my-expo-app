@@ -7,6 +7,7 @@ import { isBirthdayToday } from '@lib/helperFunctions';
 import { useColorScheme } from 'react-native';
 import colors from '@lib/colors';
 import CachedImage from './CachedImage';
+import Avatar from './Avatar';
 
 const PlayerCard = ({ player, team, context }) => {
   const colorScheme = useColorScheme();
@@ -68,27 +69,7 @@ const PlayerCard = ({ player, team, context }) => {
         onPress={handlePress}
         className="w-full">
         <View className="w-full flex-row items-center justify-between gap-4 rounded-xl border border-theme-gray-5 bg-bg-grouped-2 py-2 pl-2 pr-2 shadow shadow-theme-gray-6">
-          {player?.avatar_url ? (
-            <CachedImage
-              avatarUrl={player.avatar_url}
-              userId={player.id}
-              width={64}
-              height={64}
-              borderRadius={6}
-            />
-          ) : (
-            <View
-              className="mr-2 h-14 w-14 rounded-md bg-brand-light"
-              style={{
-                width: 64,
-                height: 64,
-                borderRadius: 5,
-                justifyContent: 'center',
-                alignItems: 'center',
-              }}>
-              <Text className="pt-3 font-saira-semibold text-3xl text-white">{getInitials()}</Text>
-            </View>
-          )}
+          <Avatar player={player} size={64} borderRadius={6} />
           <View className="flex-1 justify-center">
             <Text numberOfLines={1} className="font-saira-semibold text-2xl text-text-1">
               {player?.first_name} {player?.surname}

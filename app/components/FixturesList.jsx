@@ -177,7 +177,7 @@ const FixtureList = () => {
 
   return (
     <View className="flex-1 bg-brand-dark">
-      <View className="flex-1 p-4">
+      <View className="flex-1 px-4 pt-4">
         {/* Filter Selectors */}
         <View className="mb-4 h-fit w-full items-center justify-between gap-3 bg-brand-dark">
           <View className="flex-row gap-3">

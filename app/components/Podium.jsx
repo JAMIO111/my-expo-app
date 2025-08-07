@@ -1,76 +1,85 @@
 import { View, Text, Image, StyleSheet } from 'react-native';
-
-const podiumData = [
-  {
-    position: 2,
-    name: 'Robert Fox',
-    xp: 3148,
-  },
-  {
-    position: 1,
-    name: 'Dianne Russell',
-    xp: 3579,
-  },
-  {
-    position: 3,
-    name: 'Wade Warren',
-    xp: 2785,
-  },
-];
+import TeamLogo from '@components/TeamLogo';
 
 const heights = {
-  2: 110,
-  1: 140,
-  3: 90,
+  0: 140, // 1st
+  1: 110, // 2nd
+  2: 90, // 3rd
 };
 
-const colors = {
-  2: 'bg-theme-gray-5', // silver
-  1: 'bg-theme-gray-4', // gold
-  3: 'bg-theme-gray-3', // bronze
+const medals = {
+  0: require('@assets/gold-medal.png'),
+  1: require('@assets/silver-medal.png'),
+  2: require('@assets/bronze-medal.png'),
 };
 
-const LeaderboardPodium = () => {
+const LeaderboardPodium = ({ data, statKey, type }) => {
+  const getValue =
+    typeof statKey === 'function'
+      ? statKey
+      : (item) =>
+          item?.[statKey] ?? // top-level stat
+          item?.stats?.[statKey] ?? // nested inside `stats`
+          0;
+
+  // Ensure we only use the top 3
+  const podium = data.slice(0, 3);
+
+  // Arrange visually: [2nd, 1st, 3rd]
+  const layoutOrder = [1, 0, 2]; // index positions to show
+
   return (
     <View style={styles.container}>
-      {podiumData.map((item) => (
-        <View key={item.position} style={styles.podiumWrapper}>
-          {/* Avatar */}
-          <Image className="mb-1 h-16 w-16 rounded" source={require('@assets/avatar.jpg')} />
+      {layoutOrder.map((orderIndex) => {
+        const item = podium[orderIndex];
+        const index = orderIndex;
 
-          {/* Name & XP */}
-          <Text className={`text-text-on-brand font-saira-medium text-lg`}>{item.name}</Text>
-          <Text className={`text-text-on-brand-2 mb-4 font-saira-regular`}>
-            {item.xp.toLocaleString()} WINS
-          </Text>
+        if (!item) return null;
 
-          {/* Trapezoid Top */}
-          <View
-            className="border-brand-light"
-            style={
-              item.position === 2
-                ? styles.trapezoidLeft
-                : item.position === 3
-                  ? styles.trapezoidRight
-                  : styles.trapezoidMiddle
-            }
-          />
+        const trapezoidStyle =
+          index === 0
+            ? styles.trapezoidLeft
+            : index === 2
+              ? styles.trapezoidRight
+              : styles.trapezoidMiddle;
 
-          {/* Podium Block */}
-          <View
-            className={`w-30 h-20  items-center justify-center bg-brand shadow-lg`}
-            style={[
-              styles.block,
-              {
-                height: heights[item.position],
-              },
-            ]}>
-            <Text style={{ lineHeight: 80 }} className={`font-saira-medium text-7xl text-white`}>
-              {item.position}
+        const height = heights[index] || 100;
+
+        return (
+          <View key={index} style={styles.podiumWrapper}>
+            {/* Avatar */}
+
+            {/* Name & XP */}
+            <Text className={`mt-2 font-saira-medium text-lg text-text-on-brand`}>
+              {type === 'player' ? `${item.first_name} ${item.surname}` : item.display_name}
             </Text>
+            <Text className={`mb-4 font-saira-regular text-text-on-brand-2`}>
+              {getValue(item)} WINS
+            </Text>
+            {type === 'player' ? (
+              <Image className="mb-1 h-16 w-16 rounded" source={require('@assets/avatar.jpg')} />
+            ) : (
+              <TeamLogo
+                thickness={item?.crest?.thickness}
+                color1={item?.crest?.color1}
+                color2={item?.crest?.color2}
+                size={80}
+                type={item?.crest?.type}
+              />
+            )}
+
+            {/* Trapezoid */}
+            <View className="border-brand-light" style={trapezoidStyle} />
+
+            {/* Podium Block */}
+            <View
+              className={`w-30 h-20 items-center justify-center bg-brand shadow-lg`}
+              style={[styles.block, { height }]}>
+              <Image source={medals[index]} className="absolute top-0 h-20 w-12 object-contain" />
+            </View>
           </View>
-        </View>
-      ))}
+        );
+      })}
     </View>
   );
 };
@@ -89,17 +98,7 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
     position: 'relative',
   },
-  name: {
-    fontWeight: '600',
-    fontSize: 14,
-    color: 'white',
-  },
-  xp: {
-    fontSize: 12,
-    color: '#aaa',
-    marginBottom: 6,
-  },
-  trapezoidLeft: {
+  trapezoidMiddle: {
     width: 120,
     height: 0,
     borderBottomWidth: 20,
@@ -108,7 +107,7 @@ const styles = StyleSheet.create({
     borderLeftColor: 'transparent',
     borderRightColor: 'transparent',
     borderStyle: 'solid',
-    marginBottom: -1, // closes gap between trapezoid and block
+    marginBottom: -1,
   },
   trapezoidRight: {
     width: 120,
@@ -119,9 +118,9 @@ const styles = StyleSheet.create({
     borderLeftColor: 'transparent',
     borderRightColor: 'transparent',
     borderStyle: 'solid',
-    marginBottom: -1, // closes gap between trapezoid and block
+    marginBottom: -1,
   },
-  trapezoidMiddle: {
+  trapezoidLeft: {
     width: 120,
     height: 0,
     borderBottomWidth: 20,
@@ -130,7 +129,7 @@ const styles = StyleSheet.create({
     borderLeftColor: 'transparent',
     borderRightColor: 'transparent',
     borderStyle: 'solid',
-    marginBottom: -1, // closes gap between trapezoid and block
+    marginBottom: -1,
   },
   block: {
     width: 120,

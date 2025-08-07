@@ -29,6 +29,7 @@ export default () => ({
       supportsTablet: true,
       infoPlist: {
         ITSAppUsesNonExemptEncryption: false,
+        NSPhotoLibraryUsageDescription: 'This app needs access to your photo library.',
       },
     },
     android: {

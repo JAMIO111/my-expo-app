@@ -1,5 +1,5 @@
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
-import Leaderboard from '@components/Leaderboard';
+import LeaderboardCard from '@components/LeaderboardCard';
 import NavBar from '@components/NavBar2';
 import SafeViewWrapper from '@components/SafeViewWrapper';
 import { StatusBar } from 'expo-status-bar';
@@ -8,7 +8,6 @@ import { Stack } from 'expo-router';
 import { usePlayerLeaderboards } from '@hooks/usePlayerLeaderboards';
 import { useTeamLeaderboards } from '@hooks/useTeamLeaderboards';
 import { useUser } from '@contexts/UserProvider';
-import BottomSheet from '@gorhom/bottom-sheet';
 
 const index = () => {
   const { currentRole } = useUser();
@@ -44,29 +43,33 @@ const index = () => {
               alignItems: 'flex-start',
             }}
             className="mb-8 flex-row space-x-5">
-            <Leaderboard
+            <LeaderboardCard
               type="player"
               data={playerLeaderboards}
               statKey="frames_played"
               title="Frames Played"
+              label="Frames"
             />
-            <Leaderboard
+            <LeaderboardCard
               type="player"
               data={playerLeaderboards}
               statKey="frames_won"
               title="Frames Won"
+              label="Wins"
             />
-            <Leaderboard
+            <LeaderboardCard
               type="player"
               statKey="frame_win_percent"
               data={playerLeaderboards}
               title="Frame Win %"
+              label=""
             />
-            <Leaderboard
+            <LeaderboardCard
               type="player"
               statKey="best_frame_win_streak"
               data={playerLeaderboards}
               title="Best Win Streak"
+              label="Wins"
             />
           </ScrollView>
           <Text className="px-2 font-saira-medium text-3xl text-white">All-time Team Stats</Text>
@@ -78,25 +81,25 @@ const index = () => {
               alignItems: 'flex-start',
             }}
             className="mb-8 flex-row space-x-5">
-            <Leaderboard
+            <LeaderboardCard
               type="team"
               statKey="matches_played"
               data={teamLeaderboards}
               title="Matches Played"
             />
-            <Leaderboard
+            <LeaderboardCard
               type="team"
               statKey="matches_won"
               data={teamLeaderboards}
               title="Matches Won"
             />
-            <Leaderboard
+            <LeaderboardCard
               type="team"
               statKey="match_win_percent"
               data={teamLeaderboards}
               title="Match Win %"
             />
-            <Leaderboard
+            <LeaderboardCard
               type="team"
               statKey="best_match_win_streak"
               data={teamLeaderboards}

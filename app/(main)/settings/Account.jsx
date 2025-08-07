@@ -64,10 +64,10 @@ const Account = () => {
           {/* Profile section */}
           <View>
             <View className="mb-8 mt-5 items-center">
-              <Pressable className="relative" onPress={() => console.log('Profile Pic pressed')}>
-                {!isLoading && player?.avatar_url ? (
+              <View className="relative">
+                {!isLoading && !player?.avatar_url ? (
                   <ImageUploader
-                    initialUri={imageUri || currentRole?.team?.cover_image_url}
+                    initialUri={imageUri || player?.avatar_url}
                     onImageChange={setImageUri}
                     aspectRatio={[1, 1]}
                     borderRadius={12}
@@ -76,13 +76,13 @@ const Account = () => {
                   />
                 ) : (
                   <View className="h-40 w-40 items-center justify-center rounded-xl border-2 border-brand bg-brand-light">
-                    <Text className="text-5xl font-bold text-white">{initials}</Text>
+                    <Text className="text-6xl font-semibold text-white">{initials}</Text>
                   </View>
                 )}
                 <View className="absolute bottom-3 right-0 rounded-full border bg-white p-1 shadow">
                   <IonIcons name="pencil-outline" size={32} color={'black'} />
                 </View>
-              </Pressable>
+              </View>
               <View className="items-center gap-2">
                 <Text
                   style={{ lineHeight: 40 }}
