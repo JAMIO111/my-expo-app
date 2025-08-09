@@ -1,14 +1,53 @@
-import { StyleSheet, Text, View } from 'react-native';
-import { useState } from 'react';
+import { StyleSheet, View } from 'react-native';
 import CrestEditor from '@components/CrestEditor';
 import CustomHeader from '@components/CustomHeader';
 import SafeViewWrapper from '@components/SafeViewWrapper';
 import { Stack } from 'expo-router';
+import { useUser } from '@contexts/UserProvider';
+import { useSupabaseClient } from '@contexts/SupabaseClientContext';
+import Toast from 'react-native-toast-message';
+import { useColorScheme } from 'react-native';
 
 const TeamCrest = () => {
-  const [hasChanges, setHasChanges] = useState(false);
+  const { client: supabase } = useSupabaseClient();
+  const { currentRole } = useUser();
+  const colorScheme = useColorScheme();
 
-  const handleSave = () => {};
+  const handleSave = ({ type, color1, color2, thickness }) => {
+    // Save the changes to the database
+    supabase
+      .from('Teams')
+      .update({
+        crest: {
+          type,
+          color1,
+          color2,
+          thickness,
+        },
+      })
+      .eq('id', currentRole?.team?.id)
+      .then(() => {
+        Toast.show({
+          type: 'success',
+          text1: 'Crest Updated',
+          text2: 'Your team crest has been successfully updated.',
+          props: {
+            colorScheme: colorScheme,
+          },
+        });
+      })
+      .catch((error) => {
+        Toast.show({
+          type: 'error',
+          text1: 'Update Failed',
+          text2: `Failed to update crest: ${error.message}`,
+          props: {
+            colorScheme: colorScheme,
+          },
+        });
+      });
+  };
+
   return (
     <SafeViewWrapper topColor="bg-brand" useBottomInset={false}>
       <Stack.Screen
@@ -20,8 +59,8 @@ const TeamCrest = () => {
           ),
         }}
       />
-      <View className="mt-16 flex-1 bg-bg-grouped-1 p-5">
-        <CrestEditor />
+      <View className="mt-16 flex-1 bg-bg-grouped-1">
+        <CrestEditor handleSave={handleSave} />
       </View>
     </SafeViewWrapper>
   );

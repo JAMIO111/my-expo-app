@@ -14,6 +14,7 @@ const SettingsItem = ({
   iconColor = '#fff',
   lastItem = false,
   disabled = false,
+  callbackFn,
   value,
   setValue,
 }) => {
@@ -34,7 +35,10 @@ const SettingsItem = ({
   };
 
   return (
-    <Pressable disabled={disabled} onPress={handlePress} className="w-full">
+    <Pressable
+      disabled={disabled}
+      onPress={routerPath ? handlePress : callbackFn}
+      className="w-full">
       {({ pressed }) => (
         <View className="w-full">
           <View

@@ -2,13 +2,14 @@
 import { useState } from 'react';
 import * as FileSystem from 'expo-file-system';
 import * as ImageManipulator from 'expo-image-manipulator';
-import supabase from '@/lib/supabaseClient';
+import { useSupabaseClient } from '@contexts/SupabaseClientContext';
 import uuid from 'react-native-uuid';
 
 const PROJECT_URL = 'https://ionhcfjampzewimsgsmr.supabase.co'; // Replace with your Supabase project URL
 
 const useCompressAndUploadImage = () => {
   const [uploading, setUploading] = useState(false);
+  const { client: supabase } = useSupabaseClient();
 
   const compressImage = async (uri) => {
     const result = await ImageManipulator.manipulateAsync(uri, [{ resize: { width: 512 } }], {

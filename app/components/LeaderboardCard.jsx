@@ -2,7 +2,14 @@ import { Pressable, StyleSheet, Text, View, Image } from 'react-native';
 import TeamLogo from '@components/TeamLogo';
 import { useRouter } from 'expo-router';
 
-const LeaderboardCard = ({ title, type = 'player', data = [], statKey = 'value', onPress }) => {
+const LeaderboardCard = ({
+  title,
+  type = 'player',
+  data = [],
+  statKey = 'value',
+  onPress,
+  label,
+}) => {
   const router = useRouter();
 
   const getInitials = (firstName, surname) => {
@@ -35,6 +42,7 @@ const LeaderboardCard = ({ title, type = 'player', data = [], statKey = 'value',
               statKey,
               type,
               title,
+              label,
             },
           }))
       }

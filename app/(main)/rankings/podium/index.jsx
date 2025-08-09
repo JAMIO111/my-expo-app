@@ -4,9 +4,10 @@ import { Stack, useLocalSearchParams } from 'expo-router';
 import CustomHeader from '@components/CustomHeader';
 import SafeViewWrapper from '@components/SafeViewWrapper';
 import TeamLogo from '@components/TeamLogo';
+import Avatar from '@components/Avatar';
 
 const index = () => {
-  const { data, statKey, type, title } = useLocalSearchParams();
+  const { data, statKey, type, title, label } = useLocalSearchParams();
   console.log('Data:', data);
   const parsedData = JSON.parse(data);
   const sortedData = parsedData.sort((a, b) => b[statKey] - a[statKey]);
@@ -31,7 +32,7 @@ const index = () => {
         }}
       />
       <View className="mt-16 flex-1 items-center justify-center bg-brand-dark pt-8">
-        <Podium3D data={parsedData.slice(0, 3)} statKey={statKey} type={type} />
+        <Podium3D data={parsedData.slice(0, 3)} statKey={statKey} type={type} label={label} />
         <View className="w-full flex-1 rounded-t-3xl border border-theme-gray-6 bg-bg-grouped-1 px-5 pt-5">
           <ScrollView
             showsVerticalScrollIndicator={false}
@@ -45,7 +46,7 @@ const index = () => {
                   {index + 1}
                 </Text>
                 {type === 'player' ? (
-                  <Image source={require('@assets/avatar.jpg')} className="h-14 w-14 rounded" />
+                  <Avatar player={item} size={45} borderRadius={8} />
                 ) : (
                   <TeamLogo
                     thickness={2}

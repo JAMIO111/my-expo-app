@@ -45,6 +45,7 @@ export const fetchAuthUserProfile = async (supabase) => {
       .from('TeamPlayers')
       .select(
         `
+        id,
         team_id,
         role,
         team:Teams (
@@ -87,6 +88,7 @@ export const fetchAuthUserProfile = async (supabase) => {
         if (seasonError) throw new Error(seasonError.message);
 
         return {
+          id: tp.id,
           type: 'player',
           role: tp.role,
           teamId: tp.team_id,
@@ -102,6 +104,7 @@ export const fetchAuthUserProfile = async (supabase) => {
     .from('DistrictAdmins')
     .select(
       `
+      id,
       district_id,
       role,
       district:Districts ( id, name )
@@ -137,6 +140,7 @@ export const fetchAuthUserProfile = async (supabase) => {
       if (divisionError) throw new Error(divisionError.message);
 
       return {
+        id: admin.id,
         type: 'admin',
         role: admin.role,
         districtId: admin.district_id,

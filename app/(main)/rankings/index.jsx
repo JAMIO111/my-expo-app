@@ -3,11 +3,11 @@ import LeaderboardCard from '@components/LeaderboardCard';
 import NavBar from '@components/NavBar2';
 import SafeViewWrapper from '@components/SafeViewWrapper';
 import { StatusBar } from 'expo-status-bar';
-import CustomHeader from '@components/CustomHeader';
 import { Stack } from 'expo-router';
 import { usePlayerLeaderboards } from '@hooks/usePlayerLeaderboards';
 import { useTeamLeaderboards } from '@hooks/useTeamLeaderboards';
 import { useUser } from '@contexts/UserProvider';
+import BrandHeader from '@components/BrandHeader';
 
 const index = () => {
   const { currentRole } = useUser();
@@ -21,19 +21,19 @@ const index = () => {
   console.log('Team Leaderboards:', teamLeaderboards);
 
   return (
-    <SafeViewWrapper topColor="bg-brand-dark" bottomColor="bg-brand">
+    <SafeViewWrapper topColor="bg-brand" bottomColor="bg-brand">
       <StatusBar style="light" backgroundColor="#000" />
       <Stack.Screen
         options={{
           header: () => (
             <SafeViewWrapper useBottomInset={false}>
-              <CustomHeader backgroundColor="bg-brand-dark" showBack={false} title="Stat Room" />
+              <BrandHeader text1="Stat" text2="Room" />
             </SafeViewWrapper>
           ),
         }}
       />
       <View className="flex-1">
-        <ScrollView className="mt-16 flex-1 bg-brand-dark p-5">
+        <ScrollView className="mt-16 flex-1 bg-brand px-3 py-5">
           <Text className="px-2 font-saira-medium text-3xl text-white">All-time Player Stats</Text>
           <ScrollView
             horizontal

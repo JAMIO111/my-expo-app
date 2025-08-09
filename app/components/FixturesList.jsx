@@ -18,7 +18,6 @@ import { useDistricts } from '@hooks/useDistricts';
 import { useDivisions } from '@hooks/useDivisions';
 import { useSeasons } from '@hooks/useSeasons';
 import { getActiveSeason } from '@lib/helperFunctions';
-import SafeViewWrapper from '@components/SafeViewWrapper';
 
 const FixtureList = () => {
   const router = useRouter();

@@ -27,7 +27,7 @@ const index = () => {
                 rightIcon="settings-outline"
                 onRightPress={() => router.push(`/settings`)}
                 showBack={false}
-                title={currentRole?.team?.name || 'Team'}
+                title={currentRole?.team?.display_name || 'Team'}
               />
             </SafeViewWrapper>
           ),

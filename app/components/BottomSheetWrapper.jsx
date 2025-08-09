@@ -1,15 +1,13 @@
-import React, { forwardRef, useMemo, useCallback } from 'react';
+import { forwardRef, useMemo, useCallback } from 'react';
 import { useColorScheme } from 'react-native';
-import BottomSheet, {
-  BottomSheetScrollView,
-  BottomSheetView,
-  BottomSheetBackdrop,
-} from '@gorhom/bottom-sheet';
+import BottomSheet, { BottomSheetBackdrop } from '@gorhom/bottom-sheet';
 import colors from '@lib/colors';
-import { Text, View } from 'react-native';
 
 const BottomSheetWrapper = forwardRef(
-  ({ children, footerComponent = null, snapPoints = ['75%'], initialIndex = -1 }, ref) => {
+  (
+    { children, footerComponent = null, snapPoints = ['75%'], initialIndex = -1, marginTop = 50 },
+    ref
+  ) => {
     const memoizedSnapPoints = useMemo(() => snapPoints, [snapPoints]);
     const colorScheme = useColorScheme();
     const themeColors = colors[colorScheme] || colors.light;
@@ -30,7 +28,7 @@ const BottomSheetWrapper = forwardRef(
       <BottomSheet
         enableContentPanningGesture={false} // allow drag from scroll area
         enableHandlePanningGesture={true} // allow drag from handle
-        style={{ marginTop: 50 }}
+        style={{ marginTop }}
         ref={ref}
         index={initialIndex}
         snapPoints={memoizedSnapPoints}

@@ -1,5 +1,6 @@
 import { View, Text, Image, StyleSheet } from 'react-native';
 import TeamLogo from '@components/TeamLogo';
+import Avatar from './Avatar';
 
 const heights = {
   0: 140, // 1st
@@ -13,7 +14,7 @@ const medals = {
   2: require('@assets/bronze-medal.png'),
 };
 
-const LeaderboardPodium = ({ data, statKey, type }) => {
+const LeaderboardPodium = ({ data, statKey, type, label }) => {
   const getValue =
     typeof statKey === 'function'
       ? statKey
@@ -46,18 +47,43 @@ const LeaderboardPodium = ({ data, statKey, type }) => {
         const height = heights[index] || 100;
 
         return (
-          <View key={index} style={styles.podiumWrapper}>
-            {/* Avatar */}
+          <View key={index} style={[styles.podiumWrapper, { width: 120 }]}>
+            {/* Name */}
+            <Text
+              numberOfLines={2}
+              ellipsizeMode="tail"
+              style={{
+                marginTop: 8,
+                fontFamily: 'Saira-Medium',
+                fontSize: 18,
+                color: '#fff',
+                maxWidth: 110, // ensures text won't push layout
+                textAlign: 'center',
+                lineHeight: 24,
+              }}>
+              {type === 'player'
+                ? `${item.nickname ?? `${item.first_name} ${item.surname}`}`
+                : item.display_name}
+            </Text>
 
-            {/* Name & XP */}
-            <Text className={`mt-2 font-saira-medium text-lg text-text-on-brand`}>
-              {type === 'player' ? `${item.first_name} ${item.surname}` : item.display_name}
+            {/* Stat */}
+            <Text
+              style={{
+                marginBottom: 12,
+                fontFamily: 'Saira-Regular',
+                fontSize: 16,
+                color: '#ccc',
+                maxWidth: 110,
+                textAlign: 'center',
+              }}>
+              {getValue(item)} {label || ''}
             </Text>
-            <Text className={`mb-4 font-saira-regular text-text-on-brand-2`}>
-              {getValue(item)} WINS
-            </Text>
+
+            {/* Avatar or Logo */}
             {type === 'player' ? (
-              <Image className="mb-1 h-16 w-16 rounded" source={require('@assets/avatar.jpg')} />
+              <View style={{ marginBottom: 4 }}>
+                <Avatar player={item} size={70} borderRadius={8} />
+              </View>
             ) : (
               <TeamLogo
                 thickness={item?.crest?.thickness}
@@ -73,9 +99,18 @@ const LeaderboardPodium = ({ data, statKey, type }) => {
 
             {/* Podium Block */}
             <View
-              className={`w-30 h-20 items-center justify-center bg-brand shadow-lg`}
-              style={[styles.block, { height }]}>
-              <Image source={medals[index]} className="absolute top-0 h-20 w-12 object-contain" />
+              className={`items-center justify-center bg-brand shadow-lg`}
+              style={[styles.block, { height, width: 120 }]}>
+              <Image
+                source={medals[index]}
+                style={{
+                  position: 'absolute',
+                  top: 0,
+                  height: 80,
+                  width: 48,
+                  resizeMode: 'contain',
+                }}
+              />
             </View>
           </View>
         );

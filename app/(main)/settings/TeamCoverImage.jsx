@@ -89,7 +89,12 @@ const TeamCoverImage = () => {
         editable={true}
       />
       <View className="mt-5 w-full p-4">
-        <CTAButton text="Save Cover Photo" callbackFn={handleSaveProfile} disabled={uploading} />
+        <CTAButton
+          type="success"
+          text="Save Cover Photo"
+          callbackFn={handleSaveProfile}
+          disabled={uploading}
+        />
       </View>
     </View>
   );

@@ -1,5 +1,5 @@
-import { StyleSheet, Text, View, ScrollView, Image, Pressable, useColorScheme } from 'react-native';
-import { useState } from 'react';
+import { StyleSheet, Text, View, ScrollView, Pressable, useColorScheme, Alert } from 'react-native';
+import { useState, useRef, useEffect } from 'react';
 import { useRouter, Stack } from 'expo-router';
 import SettingsItem from '@components/SettingsItem';
 import MenuContainer from '@components/MenuContainer';
@@ -9,15 +9,25 @@ import { useSupabaseClient } from '@contexts/SupabaseClientContext';
 import Toast from 'react-native-toast-message';
 import SafeViewWrapper from '@components/SafeViewWrapper';
 import CustomHeader from '@components/CustomHeader';
-import IonIcons from '@expo/vector-icons/Ionicons';
 import ImageUploader from '@components/ImageUploader';
+import useCompressAndUploadImage from '@hooks/useCompressAndUploadImage';
+import BottomSheetWrapper from '@components/BottomSheetWrapper';
+import { BottomSheetView, BottomSheetScrollView, BottomSheetFooter } from '@gorhom/bottom-sheet';
+import Ionicons from '@expo/vector-icons/Ionicons';
+import colors from '@lib/colors';
 
 const Account = () => {
-  const { client: supabase } = useSupabaseClient();
+  const { client: supabase, sessionRestored } = useSupabaseClient();
+  console.log(supabase, 'Supabase Client in Account');
   const [isSigningOut, setIsSigningOut] = useState(false);
-  const { player, isLoading } = useUser();
+  const { user, player, roles, currentRole, setCurrentRole, isLoading } = useUser();
+  const [tempRole, setTempRole] = useState(null);
   const router = useRouter();
   const [imageUri, setImageUri] = useState(player?.avatar_url || null);
+  const uploaderRef = useRef();
+  const bottomSheetRef = useRef(null);
+  const colorScheme = useColorScheme();
+  const themeColors = colors[colorScheme] || colors.light; // Fallback to light theme if colorScheme is undefined
 
   const initials = player
     ? `${player?.first_name?.charAt(0) ?? ''}${player?.surname?.charAt(0) ?? ''}`
@@ -45,6 +55,85 @@ const Account = () => {
     }
   };
 
+  const { uploadToSupabase, uploading } = useCompressAndUploadImage();
+
+  const handleSaveProfile = async (selectedUri) => {
+    const previousImage = imageUri; // remember current
+    setImageUri(selectedUri); // optimistically update UI
+
+    if (!user) {
+      setImageUri(previousImage); // revert
+      Alert.alert('Error', 'User not authenticated');
+      return;
+    }
+
+    const folderPath = `${user.id}/`;
+
+    try {
+      // Delete old files
+      const { data: existingFiles, error: listError } = await supabase.storage
+        .from('avatars')
+        .list(folderPath, { limit: 100 });
+
+      if (listError) throw new Error(`Failed to list old avatars: ${listError.message}`);
+
+      if (existingFiles?.length) {
+        const filePaths = existingFiles.map((f) => `${folderPath}${f.name}`);
+        const { error: deleteError } = await supabase.storage.from('avatars').remove(filePaths);
+        if (deleteError) throw new Error(`Failed to delete old avatars: ${deleteError.message}`);
+      }
+
+      // Upload new image
+      const avatarUrl = await uploadToSupabase(selectedUri, folderPath, 'avatars');
+      if (!avatarUrl) throw new Error('Upload returned no URL');
+
+      // Save to DB
+      const { error } = await supabase
+        .from('Players')
+        .update({ avatar_url: avatarUrl })
+        .eq('auth_id', user.id);
+
+      if (error) throw new Error(error.message);
+
+      Toast.show({
+        type: 'success',
+        text1: 'Avatar Updated',
+        text2: 'Your avatar has been successfully updated.',
+        props: { colorScheme },
+      });
+    } catch (err) {
+      setImageUri(previousImage); // revert UI
+      Alert.alert('Error', err.message || 'Failed to update avatar');
+      throw err; // rethrow for logging
+    }
+  };
+
+  const openSwitchRoleBottomSheet = () => {
+    setTempRole(null);
+    bottomSheetRef.current?.expand();
+  };
+
+  const closeSheet = () => {
+    bottomSheetRef.current?.close();
+  };
+
+  const handleSwitchRole = (role) => {
+    if (!role) {
+      Alert.alert('Error', 'No role selected');
+      return;
+    }
+    setCurrentRole(role);
+    router.replace('/(main)/home');
+    Toast.show({
+      type: 'success',
+      text1: 'Role Switched',
+      text2: `Your are now logged in as a${role.type === 'admin' ? 'n' : ''} ${role.type} for ${role.type === 'admin' ? role.district.name : role.team.display_name}.`,
+      props: { colorScheme },
+    });
+  };
+
+  console.log('Player roles:', player?.roles);
+
   return (
     <SafeViewWrapper topColor="bg-brand" useBottomInset={false}>
       <Stack.Screen
@@ -65,28 +154,32 @@ const Account = () => {
           <View>
             <View className="mb-8 mt-5 items-center">
               <View className="relative">
-                {!isLoading && !player?.avatar_url ? (
-                  <ImageUploader
-                    initialUri={imageUri || player?.avatar_url}
-                    onImageChange={setImageUri}
-                    aspectRatio={[1, 1]}
-                    borderRadius={12}
-                    editable={true}
-                    size={160}
-                  />
-                ) : (
-                  <View className="h-40 w-40 items-center justify-center rounded-xl border-2 border-brand bg-brand-light">
-                    <Text className="text-6xl font-semibold text-white">{initials}</Text>
-                  </View>
-                )}
-                <View className="absolute bottom-3 right-0 rounded-full border bg-white p-1 shadow">
-                  <IonIcons name="pencil-outline" size={32} color={'black'} />
-                </View>
+                <ImageUploader
+                  ref={uploaderRef}
+                  initialUri={imageUri || player?.avatar_url}
+                  onImageChange={async (newUri, revert) => {
+                    try {
+                      await handleSaveProfile(newUri); // upload to Supabase
+                    } catch (error) {
+                      revert(); // restore old image if upload fails
+                      Alert.alert('Upload Failed', error.message);
+                    }
+                  }}
+                  aspectRatio={[1, 1]}
+                  borderRadius={12}
+                  editable={true}
+                  size={160}
+                />
               </View>
-              <View className="items-center gap-2">
+              <Pressable onPress={() => uploaderRef.current?.openPicker()}>
+                <Text className="rounded-lg border border-brand-light bg-brand px-7 py-1 font-saira-semibold text-lg text-white">
+                  Change Avatar
+                </Text>
+              </Pressable>
+              <View className="mt-8 items-center gap-2">
                 <Text
                   style={{ lineHeight: 40 }}
-                  className="mt-4 font-saira-semibold text-4xl text-text-1">
+                  className="font-saira-semibold text-4xl text-text-1">
                   {player?.first_name} {player?.surname}
                 </Text>
                 <Text className="font-saira-medium text-3xl text-text-2">{player?.nickname}</Text>
@@ -105,8 +198,16 @@ const Account = () => {
                 iconBGColor="gray"
                 title="Sign-In & Security"
                 icon="key-outline"
-                lastItem
               />
+              <Pressable className="w-full" onPress={() => console.log('Switch Role')}>
+                <SettingsItem
+                  callbackFn={openSwitchRoleBottomSheet}
+                  iconBGColor="gray"
+                  title="Switch Role"
+                  icon="shield-checkmark-outline"
+                  lastItem
+                />
+              </Pressable>
             </MenuContainer>
           </View>
 
@@ -121,6 +222,76 @@ const Account = () => {
           </View>
         </View>
       </ScrollView>
+      <BottomSheetWrapper
+        ref={bottomSheetRef}
+        initialIndex={-1}
+        snapPoints={['20%']}
+        footerComponent={(props) => (
+          <BottomSheetFooter {...props}>
+            <View
+              style={{ paddingBottom: 80 }}
+              className="w-full rounded-t-3xl bg-bg-grouped-3 p-6">
+              <CTAButton
+                text="Switch Role"
+                type="brand"
+                callbackFn={() => handleSwitchRole(tempRole)}
+              />
+            </View>
+          </BottomSheetFooter>
+        )}>
+        {/* Fixed Header */}
+        <BottomSheetView
+          style={{
+            paddingHorizontal: 32,
+            paddingTop: 8,
+            paddingBottom: 8,
+            borderBottomWidth: 1,
+            borderBottomColor: '#ccc',
+            backgroundColor: themeColors.bgGrouped2,
+            zIndex: 10,
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+          }}>
+          <Text style={{ lineHeight: 40 }} className="font-saira-medium text-3xl text-text-1">
+            Select Role
+          </Text>
+          <Pressable className="p-2" onPress={closeSheet}>
+            <Ionicons name="close" size={24} color={themeColors.primaryText} />
+          </Pressable>
+        </BottomSheetView>
+
+        {/* Scrollable content with top padding to avoid overlap */}
+        <BottomSheetScrollView
+          contentContainerStyle={{ paddingBottom: 200, paddingTop: 80, paddingHorizontal: 32 }}>
+          {/* Your selectable items */}
+          {roles
+            ?.filter((r) => r.id !== currentRole?.id)
+            .map((r, index) => (
+              <Pressable
+                className="mb-3 flex-row items-center justify-between"
+                key={index}
+                onPress={() => setTempRole(r)}>
+                <View>
+                  <Text
+                    className={`font-saira text-2xl ${
+                      tempRole?.id === r.id ? 'text-text-2' : 'text-text-2'
+                    }`}>
+                    {r.type.charAt(0).toUpperCase() + r.type.slice(1)}
+                  </Text>
+                  <Text className="font-saira text-2xl text-text-1">
+                    {r.type === 'admin' ? r.district.name : r.team.display_name}
+                  </Text>
+                </View>
+                <Ionicons
+                  size={32}
+                  color={themeColors.primaryText}
+                  name={tempRole?.id === r.id ? 'checkbox' : 'square-outline'}
+                />
+              </Pressable>
+            ))}
+        </BottomSheetScrollView>
+      </BottomSheetWrapper>
     </SafeViewWrapper>
   );
 };
