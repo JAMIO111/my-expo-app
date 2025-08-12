@@ -15,6 +15,7 @@ import BottomSheetWrapper from '@components/BottomSheetWrapper';
 import { BottomSheetView, BottomSheetScrollView, BottomSheetFooter } from '@gorhom/bottom-sheet';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import colors from '@lib/colors';
+import TeamLogo from '../../components/TeamLogo';
 
 const Account = () => {
   const { client: supabase, sessionRestored } = useSupabaseClient();
@@ -188,7 +189,7 @@ const Account = () => {
 
             <MenuContainer>
               <SettingsItem
-                routerPath="PersonalDetails"
+                routerPath="/settings/PersonalDetails"
                 iconBGColor="gray"
                 title="Personal Information"
                 icon="id-card-outline"
@@ -269,19 +270,36 @@ const Account = () => {
             ?.filter((r) => r.id !== currentRole?.id)
             .map((r, index) => (
               <Pressable
-                className="mb-3 flex-row items-center justify-between"
+                className="mb-5 flex-row items-center justify-between"
                 key={index}
                 onPress={() => setTempRole(r)}>
-                <View>
-                  <Text
-                    className={`font-saira text-2xl ${
-                      tempRole?.id === r.id ? 'text-text-2' : 'text-text-2'
-                    }`}>
-                    {r.type.charAt(0).toUpperCase() + r.type.slice(1)}
-                  </Text>
-                  <Text className="font-saira text-2xl text-text-1">
-                    {r.type === 'admin' ? r.district.name : r.team.display_name}
-                  </Text>
+                <View className="flex-row items-center gap-5">
+                  {r.type === 'admin' ? (
+                    <Ionicons
+                      name="shield-checkmark-outline"
+                      size={40}
+                      color={themeColors.primaryText}
+                    />
+                  ) : (
+                    <TeamLogo
+                      thickness={r.team?.crest?.thickness}
+                      type={r.team?.crest?.type}
+                      color1={r.team?.crest?.color1}
+                      color2={r.team?.crest?.color2}
+                      size={40}
+                    />
+                  )}
+                  <View>
+                    <Text
+                      className={`font-saira text-2xl ${
+                        tempRole?.id === r.id ? 'text-text-2' : 'text-text-2'
+                      }`}>
+                      {r.type.charAt(0).toUpperCase() + r.type.slice(1)}
+                    </Text>
+                    <Text className="font-saira text-2xl text-text-1">
+                      {r.type === 'admin' ? r.district.name : r.team.display_name}
+                    </Text>
+                  </View>
                 </View>
                 <Ionicons
                   size={32}

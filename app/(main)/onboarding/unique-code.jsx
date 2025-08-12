@@ -59,7 +59,7 @@ const UniqueCode = () => {
     if (error) {
       Toast.show({
         type: 'error',
-        text1: 'League could not be found',
+        text1: 'Invalid League Code',
         text2: 'Please check the code and try again.',
       });
     } else if (LeagueData) {
@@ -182,7 +182,7 @@ const UniqueCode = () => {
                   onChangeText={(text) => updateDigit(i, text)}
                   keyboardType="number-pad"
                   maxLength={1}
-                  className="border-border-color bg-white font-saira-semibold text-4xl text-text-1 focus:border-theme-blue"
+                  className="border-border-color bg-white font-saira-semibold text-4xl text-black focus:border-theme-blue"
                   style={styles.input}
                   textAlign="center"
                   returnKeyType={i === digits.length - 1 ? 'done' : 'next'}

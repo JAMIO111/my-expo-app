@@ -17,7 +17,7 @@ const PendingResultCard = ({ fixture }) => {
       <View className="items-center justify-between gap-8 border-b border-separator bg-bg-grouped-2 px-4 py-3 shadow-[0_2px_4px_rgba(0,0,0,0.1)]">
         <View className="w-full flex-1 flex-row items-center justify-between">
           <Text className="font-saira-medium text-2xl text-text-1">Pending Result</Text>
-          <Text className="w-fit rounded-full bg-theme-yellow/75 px-3 py-1 text-center font-saira-medium text-black">
+          <Text className="w-fit rounded-full border border-theme-yellow bg-theme-yellow/70 px-3 py-1 text-center font-saira-medium text-black">
             Awaiting Approval
           </Text>
         </View>

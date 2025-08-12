@@ -181,8 +181,13 @@ const Home = () => {
                   <View className="mb-2 h-1 w-full items-center justify-between border-b border-brand-light"></View>
                 </>
               )}
-              <FixturesHomeCard fixtures={upcomingFixtures} isLoading={isUpcomingFixturesLoading} />
-              <ResultsHomeCard />
+              <FixturesHomeCard
+                fixture={upcomingFixtures?.[0]}
+                isLoading={isUpcomingFixturesLoading}
+              />
+              <ResultsHomeCard
+                result={upcomingFixtures?.filter((result) => result.approved)?.[0]}
+              />
               <LeagueHomeCard standings={standings} />
             </View>
             <View className="w-full bg-bg-grouped-1 pb-24">
@@ -218,7 +223,7 @@ const Home = () => {
                   category="Help & Support"
                   image={require('@assets/pool-table-image.jpg')}
                   onPress={() => {
-                    router.push('/(main)/help');
+                    router.push('/(main)/home/help');
                   }}
                 />
                 <HomeScreenCardLarge
@@ -227,7 +232,7 @@ const Home = () => {
                   category="Membership"
                   image={require('@assets/premium-card.jpg')}
                   onPress={() => {
-                    console.log('Card pressed');
+                    router.push('/(main)/home/premium');
                   }}
                 />
                 <CTAButton text="Recalc Standings" callbackFn={handleRecalcStandings} />

@@ -63,9 +63,9 @@ const index = () => {
         )}
 
         <MenuContainer>
-          <SettingsItem title="Privacy" icon="lock-closed-outline" />
-          <SettingsItem title="Language" icon="language-outline" />
-          <SettingsItem title="Help" icon="help-circle-outline" />
+          <SettingsItem title="Privacy" icon="lock-closed-outline" routerPath="/settings/Privacy" />
+          <SettingsItem title="Language" icon="language-outline" routerPath="/settings/Language" />
+          <SettingsItem title="Help" icon="help-circle-outline" routerPath="/home/help" />
           <SettingsItem
             lastItem={true}
             iconBGColor="blue"

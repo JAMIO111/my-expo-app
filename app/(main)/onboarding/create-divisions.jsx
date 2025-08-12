@@ -2,7 +2,8 @@ import { View, Text, TextInput, FlatList } from 'react-native';
 import { useState } from 'react';
 import { Stack } from 'expo-router';
 import CTAButton from '@components/CTAButton';
-import StepPillGroup from '../../components/StepPillGroup';
+import StepPillGroup from '@components/StepPillGroup';
+import CustomTextInput from '@components/CustomTextInput';
 
 export default function CreateDivisions() {
   const [name, setName] = useState('');
@@ -53,12 +54,14 @@ export default function CreateDivisions() {
         <Text className="mb-4 pt-10 text-xl font-bold text-white">Add Division</Text>
         <View className="flex-row items-center justify-between gap-5">
           <View className="flex-1">
-            <Text className="mb-1 font-saira-medium text-white">Division Name</Text>
-            <TextInput
+            <CustomTextInput
               value={name}
               onChangeText={setName}
+              title="Division Name"
               placeholder="e.g. Premier Division"
-              className="mb-4 h-12 rounded-lg border border-gray-300 bg-white px-3 pb-2 text-xl"
+              className="mb-4 h-12 rounded-lg border border-gray-300 bg-white px-3 font-saira text-xl"
+              leftIconName="trophy-outline"
+              titleColor="text-text-on-brand"
             />
           </View>
           <View className="w-16">

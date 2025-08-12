@@ -30,7 +30,11 @@ const Avatar = ({ player, size = 64, borderRadius = 5 }) => {
         justifyContent: 'center',
         alignItems: 'center',
       }}>
-      <Text className="pt-3 font-saira-semibold text-3xl text-white">{getInitials()}</Text>
+      <Text
+        style={{ fontSize: size / 3, lineHeight: size / 2.5 }}
+        className="pt-3 font-saira-semibold text-white">
+        {getInitials()}
+      </Text>
     </View>
   );
 };

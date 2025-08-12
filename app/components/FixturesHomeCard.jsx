@@ -5,11 +5,10 @@ import TeamLogo from './TeamLogo';
 import colors from '@lib/colors';
 import { useRef } from 'react';
 
-const FixturesHomeCard = ({ fixtures, isLoading }) => {
+const FixturesHomeCard = ({ fixture, isLoading }) => {
   const colorScheme = useColorScheme();
   const themeColors = colors[colorScheme];
   const router = useRouter();
-  const fixture = fixtures?.[0];
   const hasNavigated = useRef(false);
 
   return (

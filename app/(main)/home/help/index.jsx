@@ -1,21 +1,15 @@
 import { StyleSheet, Text, View, Image } from 'react-native';
-import React from 'react';
-import HomeScreenCardLarge from '@components/HomeScreenCardLarge';
 import SafeViewWrapper from '@components/SafeViewWrapper';
 import CustomHeader from '@components/CustomHeader';
 import { ScrollView } from 'react-native-gesture-handler';
 
 const index = () => {
   return (
-    <SafeViewWrapper
-      useTopInsets={false}
-      useBottomInsets={false}
-      bottomColor="bg-bg-grouped-1"
-      topColor="bg-brand">
+    <SafeViewWrapper useTopInsets={false} useBottomInsets={false} topColor="bg-brand">
       <CustomHeader title="Help Centre" />
       <ScrollView
         contentContainerStyle={{ justifyContent: 'flex-start', alignItems: 'center' }}
-        className="flex-1 bg-bg-grouped-1 p-3">
+        className="flex-1 bg-bg-grouped-1">
         <View className="mb-4 w-full items-start justify-start rounded-2xl bg-bg-grouped-2 p-3">
           <Text className="mb-3 text-left font-saira-bold text-2xl text-text-1">
             Submitting Results
@@ -49,7 +43,7 @@ const index = () => {
           <View className="w-full items-center justify-center">
             <Image
               resizeMode="contain"
-              style={{ width: '80%' }}
+              style={{ width: '90%', height: 250 }}
               source={require('@assets/progression-teaser.png')}
             />
           </View>

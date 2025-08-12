@@ -12,6 +12,7 @@ import colors from '@lib/colors'; // Adjust the import path as necessary
 import { useQueryClient } from '@tanstack/react-query';
 import SafeViewWrapper from '@components/SafeViewWrapper';
 import CustomHeader from '@components/CustomHeader'; // Adjust the import path as necessary
+import Toast from 'react-native-toast-message';
 
 const PersonalDetails = () => {
   const { client: supabase } = useSupabaseClient();
@@ -31,6 +32,20 @@ const PersonalDetails = () => {
 
   // ✅ Detect changes
   useEffect(() => {
+    if (player) {
+      setFirstName(player.first_name || '');
+      setSurname(player.surname || '');
+      setNickname(player.nickname || '');
+      setDob(player.dob ? new Date(player.dob) : new Date());
+    }
+  }, [player]);
+
+  useEffect(() => {
+    if (!player) {
+      setHasChanges(false);
+      return;
+    }
+
     const requiredFieldsFilled =
       firstName.trim() !== '' &&
       surname.trim() !== '' &&
@@ -38,38 +53,44 @@ const PersonalDetails = () => {
       dob instanceof Date &&
       !isNaN(dob);
 
+    const dobStr = dob.toISOString().split('T')[0] || '';
+    const playerDobStr = player.dob || '';
+
     const changed =
-      firstName !== player?.first_name ||
-      surname !== player?.surname ||
-      nickname !== player?.nickname ||
-      dob.toISOString().split('T')[0] !== player?.dob;
+      firstName !== player.first_name ||
+      surname !== player.surname ||
+      nickname !== player.nickname ||
+      dobStr !== playerDobStr;
 
     setHasChanges(requiredFieldsFilled && changed);
   }, [firstName, surname, nickname, dob, player]);
 
-  // ✅ Save handler
   const handleSave = async () => {
-    if (!hasChanges || isSaving) return;
+    if (!hasChanges || isSaving || !player) return;
 
     setIsSaving(true);
 
     const updates = {};
+    if (firstName !== player.first_name) updates.first_name = firstName;
+    if (surname !== player.surname) updates.surname = surname;
+    if (nickname !== player.nickname) updates.nickname = nickname;
 
-    if (firstName !== player?.first_name) updates.first_name = firstName;
-    if (surname !== player?.surname) updates.surname = surname;
-    if (nickname !== player?.nickname) updates.nickname = nickname;
-    if (dob.toISOString().split('T')[0] !== player?.dob) {
-      updates.dob = dob.toISOString().split('T')[0]; // store as 'YYYY-MM-DD'
-    }
+    const dobStr = dob.toISOString().split('T')[0];
+    if (dobStr !== player.dob) updates.dob = dobStr;
 
     const { error } = await supabase.from('Players').update(updates).eq('id', player.id);
 
     if (error) {
       console.error('Failed to save changes:', error.message);
     } else {
-      await queryClient.invalidateQueries({ queryKey: ['TeamPlayers', currentRole?.team?.id] });
-      await queryClient.invalidateQueries({ queryKey: ['PlayerProfile', player?.id] });
-      await refetch(); // Refresh user data
+      await queryClient.invalidateQueries({ queryKey: ['PlayerProfile', player.id] });
+      await refetch();
+      Toast.show({
+        type: 'success',
+        text1: 'Profile Updated',
+        text2: 'Your personal details have been successfully updated.',
+        props: { colorScheme },
+      });
     }
 
     setIsSaving(false);
