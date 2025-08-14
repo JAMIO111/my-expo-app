@@ -337,7 +337,7 @@ const ResultsList = () => {
                         </Text>
                       </View>
                       <Text
-                        className={`${f.home_score > f.away_score ? 'font-saira-semibold' : 'font-saira'} text-2xl text-text-1`}>
+                        className={`${f.home_score > f.away_score ? 'font-saira-semibold' : 'font-saira'} w-12 text-center text-2xl text-text-1`}>
                         {f.home_score}
                       </Text>
                     </View>
@@ -353,7 +353,7 @@ const ResultsList = () => {
                         </Text>
                       </View>
                       <Text
-                        className={`${f.away_score > f.home_score ? 'font-saira-semibold' : 'font-saira'} text-2xl text-text-1`}>
+                        className={`${f.away_score > f.home_score ? 'font-saira-semibold' : 'font-saira'} w-12 text-center text-2xl text-text-1`}>
                         {f.away_score}
                       </Text>
                     </View>

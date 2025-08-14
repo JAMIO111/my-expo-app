@@ -2,6 +2,7 @@ import { forwardRef, useMemo, useCallback } from 'react';
 import { useColorScheme } from 'react-native';
 import BottomSheet, { BottomSheetBackdrop } from '@gorhom/bottom-sheet';
 import colors from '@lib/colors';
+import { Keyboard } from 'react-native';
 
 const BottomSheetWrapper = forwardRef(
   (
@@ -32,8 +33,18 @@ const BottomSheetWrapper = forwardRef(
         ref={ref}
         index={initialIndex}
         snapPoints={memoizedSnapPoints}
+        onChange={(index) => {
+          if (index === -1) {
+            // sheet is closed
+            Keyboard.dismiss();
+          }
+        }}
         enablePanDownToClose
-        backgroundStyle={{ backgroundColor: themeColors.bgGrouped2 }}
+        backgroundStyle={{
+          backgroundColor: themeColors.bgGrouped2,
+          borderTopLeftRadius: 26,
+          borderTopRightRadius: 26,
+        }}
         handleIndicatorStyle={{ backgroundColor: themeColors.themeGray4 }}
         backdropComponent={renderBackdrop}
         footerComponent={footerComponent}>

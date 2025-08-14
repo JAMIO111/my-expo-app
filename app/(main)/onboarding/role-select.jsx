@@ -42,7 +42,7 @@ const RoleSelect = () => {
               params: { isNewLeague: true },
             });
           }}
-          icon="people"
+          icon="trophy"
         />
         <RoleCard
           title="Captain"
@@ -54,7 +54,7 @@ const RoleSelect = () => {
               params: { isNewTeam: true },
             });
           }}
-          icon="person-circle"
+          icon="people"
         />
         <RoleCard
           title="Player"

@@ -24,6 +24,7 @@ import { useTeamPlayers } from '@hooks/useTeamPlayers';
 import { useResultsByFixture } from '@hooks/useResultsByFixture';
 import { useSaveMatchResults } from '@hooks/useSaveMatchResults';
 import { useSupabaseClient } from '@contexts/SupabaseClientContext';
+import { getContrastColor } from '@lib/helperFunctions';
 
 const SubmitResultsScreen = () => {
   const { client: supabase } = useSupabaseClient();
@@ -101,6 +102,9 @@ const SubmitResultsScreen = () => {
 
   const homeScore = frames.filter((f) => f.winner === f.homePlayer).length;
   const awayScore = frames.filter((f) => f.winner === f.awayPlayer).length;
+
+  const homeTextColor = getContrastColor(fixtureDetails?.homeTeam?.crest?.color1);
+  const awayTextColor = getContrastColor(fixtureDetails?.awayTeam?.crest?.color1);
 
   function getOrdinalSuffix(n) {
     const j = n % 10,
@@ -186,12 +190,12 @@ const SubmitResultsScreen = () => {
           </View>
           <View
             style={{ backgroundColor: fixtureDetails?.homeTeam?.crest?.color1 }}
-            className="ml-10 flex-1 items-center justify-center py-1">
-            <Text className="mt-1 font-saira-semibold text-2xl text-white">
+            className="ml-10 flex-1 items-center justify-center border border-theme-gray-4 py-1">
+            <Text className={`${homeTextColor} mt-1 font-saira-semibold text-2xl`}>
               {fixtureDetails?.homeTeam?.abbreviation}
             </Text>
           </View>
-          <Text className="rounded-b-2xl border-x-2 border-bg-grouped-1 bg-bg-3 p-3 font-saira text-2xl text-text-1">
+          <Text className="rounded-b-2xl border-x-2 border-bg-grouped-1 bg-bg-3 p-3 font-saira-medium text-2xl text-text-1">
             {homeScore} - {awayScore}
           </Text>
           <View className="absolute right-0 z-50">
@@ -207,8 +211,8 @@ const SubmitResultsScreen = () => {
           </View>
           <View
             style={{ backgroundColor: fixtureDetails?.awayTeam?.crest?.color1 }}
-            className="mr-10 flex-1 items-center justify-center py-1">
-            <Text className="mt-1 font-saira-semibold text-2xl text-white">
+            className="mr-10 flex-1 items-center justify-center border border-theme-gray-4 py-1">
+            <Text className={`${awayTextColor} mt-1 font-saira-semibold text-2xl`}>
               {fixtureDetails?.awayTeam?.abbreviation}
             </Text>
           </View>

@@ -97,7 +97,7 @@ const PremiumPaywall = () => {
         </View>
       </View>
       <View className="mt-10 w-full">
-        <CTAButton type="success" text="Continue with payment" onPress={() => {}} />
+        <CTAButton type="success" text="Upgrade Now!" onPress={() => {}} />
       </View>
     </View>
   );

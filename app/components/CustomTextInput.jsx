@@ -11,21 +11,29 @@ const CustomTextInput = React.forwardRef((props, ref) => {
     title,
     leftIconName,
     leftIconSize = 24,
+    iconColor = '#9CA3AF',
+    keyboardType = 'default',
+    clearButtonMode = 'while-editing',
+    editable = true,
   } = props;
 
   return (
     <View>
       <Text className={`font-saira-medium text-lg ${titleColor}`}>{title}</Text>
-      <View className="h-16 flex-row items-center rounded-xl border border-theme-gray-3 bg-input-background px-3">
-        <View className="border-r-2 border-theme-gray-2 pr-2">
-          <Ionicons name={leftIconName} size={leftIconSize} color="#9CA3AF" />
+      <View className="h-14 flex-row items-center rounded-xl border border-theme-gray-3 bg-input-background pr-3">
+        <View className="h-full justify-center rounded-l-xl border-r border-theme-gray-2 bg-bg-grouped-1 pl-3 pr-4">
+          <Ionicons name={leftIconName} size={leftIconSize} color={iconColor} />
         </View>
         <TextInput
+          editable={editable}
+          keyboardType={keyboardType}
           style={{ lineHeight: 28 }}
-          clearButtonMode="while-editing"
-          className="ml-2 flex-1 py-1 font-saira text-xl text-text-1"
+          clearButtonMode={clearButtonMode}
+          className="flex-1 py-1 pl-3 font-saira text-xl text-text-1"
           placeholder={placeholder}
           placeholderTextColor="#9CA3AF"
+          value={value}
+          onChangeText={onChangeText}
         />
       </View>
     </View>

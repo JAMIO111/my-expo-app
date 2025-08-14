@@ -1,87 +1,77 @@
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Text, View } from 'react-native';
+import { useResultsByFixture } from '@hooks/useResultsByFixture';
+import Avatar from '@components/Avatar';
 
-const FramesList = ({ results, isLoading, disputedFrames, setDisputedFrames }) => {
+const FramesList = ({ fixtureId }) => {
+  const { data: frames, isLoading } = useResultsByFixture(fixtureId);
+  console.log('FramesList data:', frames);
+
   if (isLoading) {
     return <Text>Loading...</Text>;
   }
 
+  if (!frames || frames.length === 0) {
+    return (
+      <View className="h-full px-2">
+        <View className="items-center justify-center rounded-xl bg-bg-grouped-2 p-6">
+          <Text className="font-saira text-lg text-text-1">No frames submitted yet.</Text>
+        </View>
+      </View>
+    );
+  }
+
   return (
-    <View className="flex-1 bg-bg-grouped-2">
-      {results?.length > 0 ? (
-        results.map((result, index) => {
-          const homeWinner = result.home_player.id === result.winner_id;
-          const awayWinner = result.away_player.id === result.winner_id;
-          return (
-            <Pressable
-              onPress={() => {
-                // Handle frame press
-                setDisputedFrames((prev) => {
-                  if (prev.includes(result.id)) {
-                    return prev.filter((id) => id !== result.id);
-                  } else {
-                    return [...prev, result.id];
-                  }
-                });
-              }}
-              key={result.id}>
-              <View className="relative mt-1 gap-1">
-                <Text
-                  className={`${disputedFrames.includes(result.id) ? 'font-semibold text-theme-red' : 'font-medium'} pl-5 font-saira text-text-2`}>
-                  {disputedFrames.includes(result.id)
-                    ? `Frame ${result.frame_number} - Disputed`
-                    : `Frame ${result.frame_number}`}
+    <View>
+      {frames?.map((f, index) => (
+        <View key={index} className="mb-2 mt-2 items-center justify-center gap-2">
+          <Text className="w-full px-4 font-saira-medium text-xl text-text-2">
+            Frame {f.frame_number}
+          </Text>
+
+          {/* Home player row */}
+          <View className="w-full flex-row items-center justify-between px-4">
+            <View className="flex-row items-center gap-3">
+              <Avatar player={f.home_player} size={36} />
+              <View className="flex-row items-center gap-2">
+                <Text className="font-saira text-2xl text-text-1">{f.home_player.first_name}</Text>
+                <Text className="font-saira-semibold text-2xl text-text-1">
+                  {f.home_player.surname}
                 </Text>
-                <View className="flex-row items-center justify-between gap-3">
-                  <View
-                    className={`${homeWinner ? 'bg-brand' : 'bg-transparent'}`}
-                    style={{
-                      height: 26, // h-6 = 26px
-                      width: 5, // w-2 = 5px
-                      borderTopRightRadius: 5, // rounded-r = 5px
-                      borderBottomRightRadius: 5,
-                    }}></View>
-                  <Text
-                    numberOfLines={1}
-                    className={`${homeWinner ? 'font-saira-semibold' : 'font-saira'} mt-1 flex-1 text-2xl text-text-1`}>
-                    {result.home_player.first_name} {result.home_player.surname}
-                  </Text>
-                  <Text
-                    className={`${homeWinner ? 'font-saira-semibold text-text-1' : 'font-saira text-text-2'} pr-5 text-2xl`}>
-                    {homeWinner ? 'Winner' : 'Loser'}
-                  </Text>
-                </View>
-                <View className="flex-row items-center justify-between gap-3">
-                  <View
-                    className={`${awayWinner ? 'bg-brand' : 'bg-transparent'}`}
-                    style={{
-                      height: 26, // h-6 = 26px
-                      width: 5, // w-2 = 5px
-                      borderTopRightRadius: 5, // rounded-r = 5px
-                      borderBottomRightRadius: 5,
-                    }}></View>
-                  <Text
-                    numberOfLines={1}
-                    className={`${awayWinner ? 'font-saira-semibold' : 'font-saira'} mt-1 flex-1 text-2xl text-text-1`}>
-                    {result.away_player.first_name} {result.away_player.surname}{' '}
-                  </Text>
-                  <Text
-                    className={`${awayWinner ? 'font-saira-semibold text-text-1' : 'font-saira text-text-2'} pr-5 text-2xl`}>
-                    {awayWinner ? 'Winner' : 'Loser'}
-                  </Text>
-                </View>
-                <View
-                  className={`${index !== results.length - 1 ? 'mx-5 border-b border-theme-gray-5' : ''}`}></View>
               </View>
-            </Pressable>
-          );
-        })
-      ) : (
-        <Text className="text-center text-text-2">No frames available for this fixture.</Text>
-      )}
+            </View>
+            <Text
+              className={`${
+                f.winner?.id === f.home_player.id ? 'font-saira-semibold' : 'font-saira'
+              } w-12 text-center text-2xl text-text-1`}>
+              {f.winner?.id === f.home_player.id ? 1 : 0}
+            </Text>
+          </View>
+
+          {/* Away player row */}
+          <View className="w-full flex-row items-center justify-between px-4">
+            <View className="flex-row items-center gap-3">
+              <Avatar player={f.away_player} size={36} />
+              <View className="flex-row items-center gap-2">
+                <Text className="font-saira text-2xl text-text-1">{f.away_player.first_name}</Text>
+                <Text className="font-saira-semibold text-2xl text-text-1">
+                  {f.away_player.surname}
+                </Text>
+              </View>
+            </View>
+            <Text
+              className={`${
+                f.winner?.id === f.away_player.id ? 'font-saira-semibold' : 'font-saira'
+              } w-12 text-center text-2xl text-text-1`}>
+              {f.winner?.id === f.away_player.id ? 1 : 0}
+            </Text>
+          </View>
+
+          {/* Divider */}
+          {index !== frames.length - 1 && <View className="mt-2 h-[1px] w-[95%] bg-theme-gray-4" />}
+        </View>
+      ))}
     </View>
   );
 };
 
 export default FramesList;
-
-const styles = StyleSheet.create({});

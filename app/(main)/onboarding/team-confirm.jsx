@@ -53,7 +53,7 @@ const TeamConfirm = () => {
 
   const handleContinue = () => {
     router.push({
-      pathname: '/(main)/onboarding/profile-creation',
+      pathname: '/(main)/onboarding/profile-claim',
       params: { team: JSON.stringify(teamProfile) },
     });
   };
@@ -81,6 +81,7 @@ const TeamConfirm = () => {
                   color1={team?.crest?.color1}
                   color2={team?.crest?.color2}
                   thickness={team?.crest?.thickness}
+                  type={team?.crest?.type}
                 />
                 <View>
                   <Text className="font-saira-bold text-3xl text-text-1">{teamProfile?.name}</Text>

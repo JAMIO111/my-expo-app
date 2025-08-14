@@ -48,6 +48,11 @@ const colors = {
       secondary: '#1f2937',
       transparent: 'rgba(17, 24, 39, 0.15)', // from #111827
     },
+    brown: {
+      primary: '#251300',
+      secondary: '#190C00',
+      transparent: 'rgba(67, 20, 7, 0.15)', // from #6B4F4F
+    },
   },
 
   dark: {
@@ -97,6 +102,11 @@ const colors = {
       primary: '#f3f4f6',
       secondary: '#e5e7eb',
       transparent: 'rgba(243, 244, 246, 0.15)', // from #f3f4f6
+    },
+    brown: {
+      primary: '#1D1000',
+      secondary: '#190C00',
+      transparent: 'rgba(67, 20, 7, 0.15)', // from #6B4F4F
     },
   },
 };

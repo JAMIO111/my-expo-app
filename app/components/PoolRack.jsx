@@ -51,7 +51,7 @@ const PoolRack = () => {
     if (fontsLoaded && !loading) {
       textOpacity.value = withRepeat(
         withTiming(0.1, {
-          duration: 1000,
+          duration: 500,
           easing: Easing.inOut(Easing.ease),
         }),
         -1,

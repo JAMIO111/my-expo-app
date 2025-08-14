@@ -16,13 +16,15 @@ export function useResultsByFixture(fixtureId) {
     id,
     first_name,
     surname,
-    nickname
+    nickname,
+    avatar_url
   ),
   away_player:away_player(
     id,
     first_name,
     surname,
-    nickname
+    nickname,
+    avatar_url
   ),
   winner:winner_id(
     id,

@@ -5,7 +5,7 @@ import colors from '@lib/colors';
 const CTAButton = ({ type = 'brand', text, icon, callbackFn, disabled, loading = false }) => {
   const colorScheme = useColorScheme();
   const themeColors = colorScheme === 'dark' ? colors.dark : colors.light;
-  const buttonTheme = themeColors[type] || themeColors.brand;
+  const buttonTheme = themeColors[type] || themeColors.default;
 
   const scale = useRef(new Animated.Value(1)).current;
 

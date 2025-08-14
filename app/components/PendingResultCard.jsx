@@ -14,15 +14,15 @@ const PendingResultCard = ({ fixture }) => {
   const awayWinner = awayScore > homeScore;
   return (
     <Pressable onPress={() => router.push(`home/${fixture?.id}/approve-results`)}>
-      <View className="items-center justify-between gap-8 border-b border-separator bg-bg-grouped-2 px-4 py-3 shadow-[0_2px_4px_rgba(0,0,0,0.1)]">
+      <View className="items-center justify-between gap-5 border-b border-separator bg-bg-grouped-2 px-4 py-3 shadow-[0_2px_4px_rgba(0,0,0,0.1)]">
         <View className="w-full flex-1 flex-row items-center justify-between">
           <Text className="font-saira-medium text-2xl text-text-1">Pending Result</Text>
           <Text className="w-fit rounded-full border border-theme-yellow bg-theme-yellow/70 px-3 py-1 text-center font-saira-medium text-black">
             Awaiting Approval
           </Text>
         </View>
-        <View className="flex-1 items-center justify-between gap-2">
-          <View className="flex-1 flex-row justify-between gap-3">
+        <View className="flex-1 items-center justify-between gap-1">
+          <View className="flex-1 flex-row justify-between gap-2">
             <TeamLogo
               size={20}
               type={fixture?.home_team?.crest?.type}
@@ -30,18 +30,21 @@ const PendingResultCard = ({ fixture }) => {
               color2={fixture?.home_team?.crest?.color2}
               thickness={fixture?.home_team?.crest?.thickness}
             />
+            <Text className="font-saira-semibold text-xl text-text-1">
+              {fixture?.home_team?.abbreviation || 'Home Team'}
+            </Text>
             <Text
               numberOfLines={1}
               ellipsizeMode="tail"
-              className={` ${homeWinner ? 'font-semibold' : ''} flex-1 text-left font-saira text-xl text-text-1`}>
+              className={` ${homeWinner ? 'font-semibold' : ''} flex-1 text-left font-saira text-xl text-text-2`}>
               {fixture?.home_team?.display_name || 'Home Team'}
             </Text>
             <Text
-              className={`${homeWinner ? 'font-semibold' : ''} w-12 text-center font-saira text-xl text-text-1`}>
+              className={`${homeWinner ? 'font-semibold' : ''} w-12 text-center font-saira text-2xl text-text-1`}>
               {homeScore}
             </Text>
           </View>
-          <View className="flex-1 flex-row items-center justify-between gap-3">
+          <View className="flex-1 flex-row items-center justify-between gap-2">
             <TeamLogo
               size={20}
               type={fixture?.away_team?.crest?.type}
@@ -49,14 +52,17 @@ const PendingResultCard = ({ fixture }) => {
               color2={fixture?.away_team?.crest?.color2}
               thickness={fixture?.away_team?.crest?.thickness}
             />
+            <Text className="font-saira-semibold text-xl text-text-1">
+              {fixture?.away_team?.abbreviation || 'Away Team'}
+            </Text>
             <Text
               numberOfLines={1}
               ellipsizeMode="tail"
-              className={` ${awayWinner ? 'font-semibold' : ''} flex-1 text-left font-saira text-xl text-text-1`}>
+              className={` ${awayWinner ? 'font-semibold' : ''} flex-1 text-left font-saira text-xl text-text-2`}>
               {fixture?.away_team?.display_name || 'Away Team'}
             </Text>
             <Text
-              className={`${awayWinner ? 'font-semibold' : ''} w-12 text-center font-saira text-xl text-text-1`}>
+              className={`${awayWinner ? 'font-semibold' : ''} w-12 text-center font-saira text-2xl text-text-1`}>
               {awayScore}
             </Text>
           </View>

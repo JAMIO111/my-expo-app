@@ -11,6 +11,8 @@ import colors from '@lib/colors';
 import { getContrastColor } from '@lib/helperFunctions';
 import FormWidget from '@components/FormWidget';
 import { FixtureDetailsSkeleton } from '@components/Skeletons';
+import FramesList from '@components/FramesList';
+import HeadToHead from './HeadToHead';
 
 const FixturePage = ({ fixtureDetails, isLoading, context }) => {
   const router = useRouter();
@@ -209,23 +211,33 @@ const FixturePage = ({ fixtureDetails, isLoading, context }) => {
       )}
       <View className="bg-bg-grouped-1 pb-16">
         <View className="p-3">
-          <SlidingTabButton option1="Stats" option2="Squads" onChange={handleViewChange} />
+          <SlidingTabButton
+            option1="Stats"
+            option2={fixtureDetails?.approved ? 'Frames' : 'Squads'}
+            onChange={handleViewChange}
+          />
         </View>
         {view === 'right' ? (
-          <View>
-            <SlidingTabButton
-              option1={fixtureDetails?.homeTeam?.display_name}
-              option2={fixtureDetails?.awayTeam?.display_name}
-              onChange={setTeam}
-            />
-            <View className="h-full p-3">
-              <PlayersList
-                team={team === 'left' ? fixtureDetails?.homeTeam : fixtureDetails?.awayTeam}
-                context={context}
-                fixtureId={fixtureId}
-              />
+          fixtureDetails?.approved ? (
+            <View className="p-3">
+              <FramesList fixtureId={fixtureId} />
             </View>
-          </View>
+          ) : (
+            <View>
+              <SlidingTabButton
+                option1={fixtureDetails?.homeTeam?.display_name}
+                option2={fixtureDetails?.awayTeam?.display_name}
+                onChange={setTeam}
+              />
+              <View className="h-full p-3">
+                <PlayersList
+                  team={team === 'left' ? fixtureDetails?.homeTeam : fixtureDetails?.awayTeam}
+                  context={context}
+                  fixtureId={fixtureId}
+                />
+              </View>
+            </View>
+          )
         ) : (
           <View className="mt-5 h-full">
             <View className="border-b-[0.5px] border-theme-gray-5">
@@ -234,6 +246,9 @@ const FixturePage = ({ fixtureDetails, isLoading, context }) => {
                 awayTeamId={fixtureDetails?.awayTeam?.id}
               />
             </View>
+            <Text className="px-3 py-3 pb-1 font-saira-medium text-xl text-text-1">
+              Current Season
+            </Text>
             <StatCardCompare
               fixture={fixtureDetails}
               stat={{
@@ -282,14 +297,10 @@ const FixturePage = ({ fixtureDetails, isLoading, context }) => {
                 awayValue: 32,
               }}
             />
-            <StatCardCompare
-              fixture={fixtureDetails}
-              stat={{
-                statName: 'Game Win %',
-                homeValue: 21,
-                awayValue: 62,
-              }}
-            />
+            <Text className="px-3 py-3 pb-1 font-saira-medium text-xl text-text-1">
+              Head to Head - All Time
+            </Text>
+            <HeadToHead homeTeam={fixtureDetails?.homeTeam} awayTeam={fixtureDetails?.awayTeam} />
           </View>
         )}
       </View>

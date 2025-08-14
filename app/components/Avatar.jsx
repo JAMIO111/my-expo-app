@@ -22,7 +22,7 @@ const Avatar = ({ player, size = 64, borderRadius = 5 }) => {
 
   return (
     <View
-      className="mr-2 h-14 w-14 rounded-md bg-brand-light"
+      className="h-14 w-14 rounded-md bg-brand-light"
       style={{
         width: size,
         height: size,

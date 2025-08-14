@@ -12,25 +12,25 @@ const ResultsHomeCard = ({ result }) => {
   return (
     <Pressable
       onPress={() => router.push('/home/results')}
-      className="w-full rounded-xl border border-theme-gray-5 bg-bg-grouped-2 shadow">
+      className="w-full rounded-xl border border-theme-gray-5 bg-bg-grouped-2 shadow"
+      style={{ minHeight: 110 }} // prevents vertical collapse
+    >
       <View className="mx-3 flex-row items-center justify-between border-b border-theme-gray-5 px-1 pb-1 pt-2">
         <Text className="font-saira-medium text-2xl text-text-1">Results</Text>
         <Ioconicons name="chevron-forward" size={20} color={themeColors?.icon} />
       </View>
+
       {!result ? (
-        <View className="items-left flex-1 justify-center px-4 py-4">
+        <View className="px-4 py-4">
           <Text className="text-left font-saira text-xl text-text-2">
             No results available yet.
           </Text>
         </View>
       ) : (
-        <View
-          className="flex-1 items-center 
-        
-        
-        justify-center py-2">
+        <View className="py-2">
+          {/* Home */}
           <View className="flex-row justify-between px-5">
-            <View className="flex-1 flex-row items-center justify-start">
+            <View className="flex-shrink flex-row items-center">
               <TeamLogo {...result?.homeTeam?.crest} size={20} />
               <Text className="mx-2 font-saira-semibold text-xl text-text-1">
                 {result?.homeTeam?.abbreviation}
@@ -41,8 +41,10 @@ const ResultsHomeCard = ({ result }) => {
             </View>
             <Text className="font-saira-semibold text-2xl text-text-1">{result?.home_score}</Text>
           </View>
+
+          {/* Away */}
           <View className="flex-row justify-between px-5">
-            <View className="flex-1 flex-row items-center justify-start">
+            <View className="flex-shrink flex-row items-center">
               <TeamLogo {...result?.awayTeam?.crest} size={20} />
               <Text className="mx-2 font-saira-semibold text-xl text-text-1">
                 {result?.awayTeam?.abbreviation}

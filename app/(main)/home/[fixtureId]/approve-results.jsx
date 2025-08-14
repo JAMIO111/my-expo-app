@@ -1,6 +1,6 @@
 import { StyleSheet, Text, View, ScrollView } from 'react-native';
 import { useState } from 'react';
-import FramesList from '@components/FramesList';
+import ConfirmFramesList from '@components/ConfirmFramesList';
 import { router, useLocalSearchParams } from 'expo-router';
 import CTAButton from '@components/CTAButton';
 import SafeViewWrapper from '@components/SafeViewWrapper';
@@ -119,7 +119,7 @@ const ApproveResults = () => {
         </View>
         <ScrollView className="flex-1">
           <View className=""></View>
-          <FramesList
+          <ConfirmFramesList
             results={results}
             isLoading={isLoading}
             disputedFrames={disputedFrames}
