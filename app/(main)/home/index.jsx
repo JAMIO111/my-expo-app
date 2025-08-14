@@ -49,7 +49,7 @@ const Home = () => {
 
   const {
     data: standings,
-    isLoading,
+    isLoading: isStandingsLoading,
     refetch: standingsRefetch,
   } = useStandings(divisionId, currentRole?.activeSeason?.id);
 
@@ -187,8 +187,9 @@ const Home = () => {
               />
               <ResultsHomeCard
                 result={upcomingFixtures?.filter((result) => result.approved)?.[0]}
+                isLoading={isUpcomingFixturesLoading}
               />
-              <LeagueHomeCard standings={standings} />
+              <LeagueHomeCard standings={standings} isLoading={isStandingsLoading} />
             </View>
             <View className="w-full bg-bg-grouped-1 pb-24">
               {(currentRole?.team?.captain === player?.id ||
