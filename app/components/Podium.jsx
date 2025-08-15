@@ -61,9 +61,7 @@ const LeaderboardPodium = ({ data, statKey, type, label }) => {
                 textAlign: 'center',
                 lineHeight: 24,
               }}>
-              {type === 'player'
-                ? `${item.nickname ?? `${item.first_name} ${item.surname}`}`
-                : item.display_name}
+              {type === 'player' ? `${`${item.first_name} ${item.surname}`}` : item.display_name}
             </Text>
 
             {/* Stat */}

@@ -9,14 +9,15 @@ import { useTeamLeaderboards } from '@hooks/useTeamLeaderboards';
 import { useUser } from '@contexts/UserProvider';
 import BrandHeader from '@components/BrandHeader';
 
-const index = () => {
+const Index = () => {
   const { currentRole } = useUser();
-  console.log('Current Role District:', currentRole?.team?.division?.district?.id);
-  const { data: playerLeaderboards } = usePlayerLeaderboards(
-    currentRole?.team?.division?.district?.id
-  );
+  const activeDistrictId =
+    currentRole?.type === 'admin'
+      ? currentRole?.district?.id
+      : currentRole?.team?.division?.district?.id;
 
-  const { data: teamLeaderboards } = useTeamLeaderboards(currentRole?.team?.division?.district?.id);
+  const { data: playerLeaderboards } = usePlayerLeaderboards(activeDistrictId);
+  const { data: teamLeaderboards } = useTeamLeaderboards(activeDistrictId);
   console.log('Player Leaderboards:', playerLeaderboards);
   console.log('Team Leaderboards:', teamLeaderboards);
 
@@ -113,6 +114,6 @@ const index = () => {
   );
 };
 
-export default index;
+export default Index;
 
 const styles = StyleSheet.create({});

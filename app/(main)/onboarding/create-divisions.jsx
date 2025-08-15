@@ -1,18 +1,130 @@
-import { View, Text, FlatList, Pressable, Switch } from 'react-native';
+import {
+  View,
+  Text,
+  FlatList,
+  Pressable,
+  Switch,
+  Platform,
+  KeyboardAvoidingView,
+  Alert,
+} from 'react-native';
 import { useState, useRef } from 'react';
 import { Stack, useRouter, useLocalSearchParams } from 'expo-router';
 import CTAButton from '@components/CTAButton';
 import StepPillGroup from '@components/StepPillGroup';
 import CustomTextInput from '@components/CustomTextInput';
 import BottomSheetWrapper from '@/components/BottomSheetWrapper';
-import BottomSheet, {
-  BottomSheetFooter,
-  BottomSheetScrollView,
-  BottomSheetView,
-} from '@gorhom/bottom-sheet';
+import { BottomSheetFooter, BottomSheetScrollView, BottomSheetView } from '@gorhom/bottom-sheet';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import colors from '@lib/colors';
 import { useColorScheme } from 'react-native';
+import { PanGestureHandler } from 'react-native-gesture-handler';
+import Animated, {
+  useAnimatedGestureHandler,
+  useAnimatedStyle,
+  useSharedValue,
+  runOnJS,
+  withSpring,
+  interpolate,
+} from 'react-native-reanimated';
+
+// SwipeableCard component for individual division cards
+const SwipeableCard = ({ item, onDelete, children }) => {
+  const translateX = useSharedValue(0);
+  const opacity = useSharedValue(1);
+  const height = useSharedValue(1);
+
+  const DELETE_THRESHOLD = -240;
+  const REVEAL_THRESHOLD = -60;
+
+  // Create a reset function that can be called from JavaScript
+  const resetPosition = () => {
+    translateX.value = withSpring(0);
+  };
+
+  const gestureHandler = useAnimatedGestureHandler({
+    onStart: (_, context) => {
+      context.startX = translateX.value;
+    },
+    onActive: (event, context) => {
+      const newTranslateX = context.startX + event.translationX;
+      // Only allow left swipe (negative values) and limit the swipe distance
+      translateX.value = Math.min(0, Math.max(newTranslateX, -250));
+    },
+    onEnd: (event) => {
+      const shouldShowDialog = translateX.value < DELETE_THRESHOLD;
+
+      if (shouldShowDialog) {
+        // Show confirmation dialog instead of immediately deleting
+        translateX.value = withSpring(-80); // Snap to show delete button
+        runOnJS(onDelete)(item.id, resetPosition);
+      } else if (translateX.value < REVEAL_THRESHOLD) {
+        // Snap to show delete button
+        translateX.value = withSpring(-80);
+      } else {
+        // Snap back to original position
+        translateX.value = withSpring(0);
+      }
+    },
+  });
+
+  const cardStyle = useAnimatedStyle(() => {
+    return {
+      transform: [{ translateX: translateX.value }],
+      opacity: opacity.value,
+    };
+  });
+
+  const containerStyle = useAnimatedStyle(() => {
+    return {
+      height: height.value === 1 ? undefined : height.value,
+      overflow: 'hidden',
+    };
+  });
+
+  const deleteBackgroundStyle = useAnimatedStyle(() => {
+    // Clamp translateX to max swipe
+    const clampedX = Math.max(translateX.value, -80);
+
+    const deleteOpacity = interpolate(clampedX, [-80, 0], [1, 0], 'clamp');
+    const scale = interpolate(clampedX, [-80, 0], [1, 0.8], 'clamp');
+
+    return {
+      opacity: deleteOpacity,
+      transform: [{ scale }],
+    };
+  });
+
+  const handleDeletePress = () => {
+    // Show confirmation dialog and pass reset function
+    runOnJS(onDelete)(item.id, resetPosition);
+  };
+
+  return (
+    <Animated.View style={containerStyle}>
+      <View className="relative mb-3">
+        {/* Delete background - positioned absolutely */}
+        <Animated.View
+          style={deleteBackgroundStyle}
+          className="absolute bottom-0 right-0 top-0 z-0 w-20 items-center justify-center rounded-2xl bg-theme-red">
+          <Pressable
+            onPress={handleDeletePress}
+            className="h-full w-full items-center justify-center">
+            <Ionicons name="trash-outline" size={24} color="white" />
+            <Text className="mt-2 font-saira-medium text-white">Delete</Text>
+          </Pressable>
+        </Animated.View>
+
+        {/* Swipeable card */}
+        <PanGestureHandler onGestureEvent={gestureHandler}>
+          <Animated.View style={cardStyle} className="z-10">
+            {children}
+          </Animated.View>
+        </PanGestureHandler>
+      </View>
+    </Animated.View>
+  );
+};
 
 export default function CreateDivisions() {
   const [name, setName] = useState('');
@@ -21,26 +133,100 @@ export default function CreateDivisions() {
   const [divisions, setDivisions] = useState([]);
   const [drawsEnabled, setDrawsEnabled] = useState(false);
   const [specialMatchesEnabled, setSpecialMatchesEnabled] = useState(false);
+  const [specialMatchName, setSpecialMatchName] = useState('');
+  const [specialMatchAbbreviation, setSpecialMatchAbbreviation] = useState('');
+  const [selectedDivision, setSelectedDivision] = useState(null);
   const bottomSheetRef = useRef(null);
   const colorScheme = useColorScheme();
-  const themeColors = colors[colorScheme] || colors.light; // Fallback to light theme if colorScheme is undefined
+  const themeColors = colors[colorScheme] || colors.light;
   const router = useRouter();
-  const { districtName } = useLocalSearchParams();
+  const { districtId, districtName, privateDistrict } = useLocalSearchParams();
+  console.log('District:', districtName);
+  console.log('Private:', privateDistrict);
+  console.log('ID:', districtId);
+
   // Auto-assign tier based on number of existing divisions
   const nextTier = divisions.length + 1;
-
-  // Determine if it's top or bottom
   const isTopTier = nextTier === 1;
-  const isBottomTier = true; // Always treat the next as bottom until another is added after
 
   const resetForm = () => {
     setName('');
     setPromotionSpots('');
     setRelegationSpots('');
+    setDrawsEnabled(false);
+    setSpecialMatchesEnabled(false);
+    setSpecialMatchName('');
+    setSpecialMatchAbbreviation('');
+    setSelectedDivision(null);
   };
 
   const handleSave = () => {
-    // Save the division data
+    // Check top tier promotions
+    const topTier = divisions.find((d) => d.tier === 1);
+    if (topTier.promotionSpots !== 0) {
+      alert('Top tier promotions must be 0.');
+      return;
+    }
+
+    // Check bottom tier relegations
+    const bottomTier = divisions.find((d) => d.tier === divisions.length);
+    if (bottomTier.relegationSpots !== 0) {
+      alert('Bottom tier relegations must be 0.');
+      return;
+    }
+
+    // Check intermediate tiers for mismatch
+    const mismatchedTiers = [];
+    for (let i = 0; i < divisions.length - 1; i++) {
+      const current = divisions[i];
+      const next = divisions[i + 1];
+      if (current.relegationSpots !== next.promotionSpots) {
+        mismatchedTiers.push({
+          currentTier: current.tier,
+          nextTier: next.tier,
+          currentRelegation: current.relegationSpots,
+          nextPromotion: next.promotionSpots,
+        });
+      }
+    }
+
+    if (mismatchedTiers.length > 0) {
+      const message = mismatchedTiers
+        .map(
+          (m) =>
+            `Tier ${m.currentTier} relegations (${m.currentRelegation}) do not match Tier ${m.nextTier} promotions (${m.nextPromotion})`
+        )
+        .join('\n');
+
+      Alert.alert(
+        'Warning',
+        `Some intermediate tiers have mismatched promotions/relegations:\n\n${message}\n\nAre you sure this is what you want?`,
+        [
+          { text: 'No. Change it.', style: 'destructive' },
+          {
+            text: 'Yes. Continue anyway.',
+            onPress: () =>
+              router.push({
+                pathname: '/(main)/onboarding/division-rewards',
+                params: {
+                  divisions: JSON.stringify(divisions),
+                  districtId,
+                  districtName,
+                  privateDistrict,
+                },
+              }),
+          },
+        ]
+      );
+      return;
+    }
+
+    // If all checks pass
+    console.log('Saving divisions:', divisions);
+    router.push({
+      pathname: '/(main)/onboarding/division-rewards',
+      params: { divisions: JSON.stringify(divisions), districtId, districtName, privateDistrict },
+    });
   };
 
   const closeSheet = () => {
@@ -56,20 +242,161 @@ export default function CreateDivisions() {
       alert('Please enter a division name.');
       return;
     }
+    if (!isTopTier && !promotionSpots) {
+      alert('Please enter number of promotion spots.');
+      return;
+    }
+    if (!relegationSpots) {
+      alert('Please enter number of relegation spots.');
+      return;
+    }
+    if (specialMatchesEnabled && !specialMatchName) {
+      alert('Please enter a name for the special match.');
+      return;
+    }
+    if (specialMatchesEnabled && !specialMatchAbbreviation) {
+      alert('Please enter an abbreviation for the special match.');
+      return;
+    }
 
-    const newDivision = {
-      id: Date.now().toString(),
+    const newDivisionData = {
+      id: selectedDivision ? selectedDivision.id : Date.now().toString(),
       name,
-      tier: nextTier,
+      tier: selectedDivision ? selectedDivision.tier : nextTier,
       promotionSpots: isTopTier ? 0 : Number(promotionSpots) || 0,
-      relegationSpots: isBottomTier ? 0 : Number(relegationSpots) || 0,
+      relegationSpots: Number(relegationSpots) || 0,
       drawsEnabled,
       specialMatchesEnabled,
+      specialMatchName: specialMatchesEnabled ? specialMatchName : '',
+      specialMatchAbbreviation: specialMatchesEnabled ? specialMatchAbbreviation : '',
     };
 
-    setDivisions((prev) => [...prev, newDivision]);
+    setDivisions((prev) => {
+      let updated;
+      if (selectedDivision) {
+        // Update existing
+        updated = prev.map((d) => (d.id === selectedDivision.id ? newDivisionData : d));
+      } else {
+        // Add new
+        updated = [...prev, newDivisionData];
+      }
+
+      // Sort and adjust tiers/promotions/relegations
+      return updated
+        .sort((a, b) => a.tier - b.tier)
+        .map((division, index, array) => ({
+          ...division,
+          promotionSpots: index === 0 ? 0 : division.promotionSpots,
+          relegationSpots: division.relegationSpots,
+        }));
+    });
+
     closeSheet();
     resetForm();
+    setSelectedDivision(null);
+  };
+
+  const handleDeleteDivision = (divisionId, resetCardPosition) => {
+    const division = divisions.find((d) => d.id === divisionId);
+
+    Alert.alert('Delete Division', `Are you sure you want to delete "${division?.name}"?`, [
+      {
+        text: 'Cancel',
+        style: 'cancel',
+        onPress: () => {
+          // Reset card position when cancelled
+          if (resetCardPosition) {
+            resetCardPosition();
+          }
+        },
+      },
+      {
+        text: 'Delete',
+        style: 'destructive',
+        onPress: () => {
+          // Remove the division and renumber all tiers
+          setDivisions((prev) => {
+            const filtered = prev.filter((d) => d.id !== divisionId);
+            // Renumber tiers sequentially starting from 1
+            return filtered
+              .sort((a, b) => a.tier - b.tier) // Sort by current tier first
+              .map((division, index) => ({
+                ...division,
+                tier: index + 1, // Assign new tier numbers 1, 2, 3, etc.
+              }));
+          });
+        },
+      },
+    ]);
+  };
+
+  const renderDivisionCard = ({ item }) => (
+    <SwipeableCard
+      item={item}
+      onDelete={(divisionId, resetCardPosition) =>
+        handleDeleteDivision(divisionId, resetCardPosition)
+      }>
+      <Pressable
+        onPress={() => handleEditDivision(item)}
+        className="flex-row items-center justify-between gap-5 rounded-2xl bg-bg-grouped-2 px-5 py-3 shadow-sm">
+        <View className="flex-1 gap-2">
+          <View className="flex-row items-center gap-2">
+            <Text className="font-saira-medium text-2xl text-text-1">Tier {item.tier} -</Text>
+            <Text className="font-saira-medium text-2xl text-text-2">{item.name}</Text>
+          </View>
+          <View className="flex-row flex-wrap items-center gap-3">
+            <View
+              className={`${
+                item.drawsEnabled
+                  ? 'border-theme-green bg-theme-green/50'
+                  : 'border-theme-red bg-theme-red/50'
+              } max-w-[50%] rounded-full border px-2`}>
+              <Text className="font-saira text-text-1" numberOfLines={1} ellipsizeMode="tail">
+                {item.drawsEnabled ? 'Draws Enabled' : 'Draws Disabled'}
+              </Text>
+            </View>
+
+            <View
+              className={`${
+                item.specialMatchesEnabled
+                  ? 'border-theme-purple bg-theme-purple/50'
+                  : 'border-theme-red bg-theme-red/50'
+              } max-w-[100%] rounded-full border px-2`}>
+              <Text className="font-saira text-text-1" numberOfLines={1} ellipsizeMode="tail">
+                {item.specialMatchesEnabled ? item.specialMatchName : 'No Special Matches'}
+              </Text>
+            </View>
+          </View>
+        </View>
+        <View>
+          <View className="flex-row items-center gap-1">
+            <Ionicons name="caret-up-outline" size={32} color="#4CAF50" />
+            <Text className="pt-1 font-saira-medium text-2xl text-text-1">
+              {item.promotionSpots}
+            </Text>
+          </View>
+
+          <View className="flex-row items-center gap-1">
+            <Ionicons name="caret-down-outline" size={32} color="#FF3B30" />
+            <Text className="pt-1 font-saira-medium text-2xl text-text-1">
+              {item.relegationSpots}
+            </Text>
+          </View>
+        </View>
+      </Pressable>
+    </SwipeableCard>
+  );
+
+  const handleEditDivision = (division) => {
+    setSelectedDivision(division);
+    setName(division.name);
+    setPromotionSpots(division.promotionSpots.toString());
+    setRelegationSpots(division.relegationSpots.toString());
+    setDrawsEnabled(division.drawsEnabled);
+    setSpecialMatchesEnabled(division.specialMatchesEnabled);
+    setSpecialMatchName(division.specialMatchName);
+    setSpecialMatchAbbreviation(division.specialMatchAbbreviation);
+    openSheet();
   };
 
   return (
@@ -82,10 +409,19 @@ export default function CreateDivisions() {
       <View className="flex-1 bg-brand px-4">
         <StepPillGroup steps={4} currentStep={4} />
         <View className="my-8">
+          <Text className="pb-4 font-delagothic text-3xl text-text-on-brand">
+            Add and configure your league's divisions.
+          </Text>
           <CTAButton
             text={divisions.length === 0 ? 'Add Division' : 'Add Another Division'}
-            type="brown"
-            callbackFn={openSheet}
+            icon={<Ionicons name="add" size={24} color="black" />}
+            type="yellow"
+            textColor="text-black"
+            iconColor="black"
+            callbackFn={() => {
+              resetForm();
+              openSheet();
+            }}
           />
         </View>
 
@@ -95,55 +431,33 @@ export default function CreateDivisions() {
               {districtName} Divisions
             </Text>
             <FlatList
-              data={divisions}
+              data={divisions.sort((a, b) => a.tier - b.tier)} // Always display in tier order
               keyExtractor={(item) => item.id}
-              renderItem={({ item }) => (
-                <View className="mb-3 flex-row items-center justify-between gap-5 rounded-2xl bg-white px-5 py-3 shadow-sm">
-                  <Text className="h-12 w-12 items-center justify-center rounded-full bg-brand p-3 text-center font-saira-medium text-2xl text-text-on-brand">
-                    {item.tier}
-                  </Text>
-                  <View className="flex-1 gap-2">
-                    <Text className="font-saira-medium text-2xl text-text-1">{item.name}</Text>
-                    <View className="flex-row items-center gap-3">
-                      <View
-                        className={`${item.drawsEnabled ? 'border-theme-green bg-theme-green/50' : 'border-theme-red bg-theme-red/50'} rounded-full border px-2 py-1`}>
-                        <Text>{item.drawsEnabled ? 'Draws' : 'No Draws'}</Text>
-                      </View>
-                      <View
-                        className={`${item.specialMatchesEnabled ? 'border-theme-green bg-theme-green/50' : 'border-theme-red bg-theme-red/50'} rounded-full border px-2 py-1`}>
-                        <Text>
-                          {item.specialMatchesEnabled ? 'Special Matches' : 'No Special Matches'}
-                        </Text>
-                      </View>
-                    </View>
-                  </View>
-                  <View>
-                    <View className="flex-row items-center gap-1">
-                      <Ionicons name="caret-up-outline" size={32} color="#4CAF50" />
-                      <Text className="pt-1 font-saira-medium text-2xl text-text-1">
-                        {item.promotionSpots}
-                      </Text>
-                    </View>
-
-                    <View className="flex-row items-center gap-1">
-                      <Ionicons name="caret-down-outline" size={32} color="#FF3B30" />
-                      <Text className="pt-1 font-saira-medium text-2xl text-text-1">
-                        {item.relegationSpots}
-                      </Text>
-                    </View>
-                  </View>
-                </View>
-              )}
+              renderItem={renderDivisionCard}
+              showsVerticalScrollIndicator={false}
             />
             <View className="mb-16 mt-8 w-full">
-              <CTAButton text="Save & Continue" type="brown" />
+              <CTAButton
+                icon={<Ionicons name="checkmark" size={24} color="black" />}
+                text="Save & Continue"
+                type="yellow"
+                textColor="text-black"
+                iconColor="black"
+                callbackFn={handleSave}
+              />
             </View>
           </>
         ) : (
-          <View className="items-center justify-center rounded-2xl bg-bg-grouped-1 p-16">
-            <Text className="font-saira text-xl text-text-1">No divisions added yet.</Text>
+          <View>
+            <Text className="mb-2 font-saira-medium text-2xl text-text-on-brand">
+              {districtName} Divisions
+            </Text>
+            <View className="items-center justify-center rounded-2xl bg-bg-grouped-1 p-8">
+              <Text className="font-saira text-xl text-text-1">No divisions added yet.</Text>
+            </View>
           </View>
         )}
+
         <BottomSheetWrapper
           ref={bottomSheetRef}
           initialIndex={-1}
@@ -179,105 +493,157 @@ export default function CreateDivisions() {
             </Pressable>
           </BottomSheetView>
 
-          {/* Scrollable content with top padding to avoid overlap */}
-          <BottomSheetScrollView
-            contentContainerStyle={{
-              paddingBottom: 240,
-              paddingTop: 80,
-              paddingHorizontal: 32,
-            }}>
-            <View className="mb-5 flex-1">
-              <CustomTextInput
-                value={name}
-                onChangeText={setName}
-                title="Division Name"
-                placeholder="e.g. Premier Division"
-                className="mb-4 h-12 rounded-lg border border-gray-300 bg-white px-3 font-saira text-xl"
-                leftIconName="trophy-outline"
-                iconColor="#A259FF" //purple
-                titleColor="text-text-1"
-              />
-            </View>
-            <View className="mb-4 flex-row items-center justify-between gap-3">
-              <View className="flex-1">
+          <KeyboardAvoidingView
+            behavior="height"
+            keyboardVerticalOffset={Platform.OS === 'ios' ? 100 : 0}>
+            <BottomSheetScrollView
+              contentContainerStyle={{
+                paddingBottom: 200,
+                paddingTop: 80,
+                paddingHorizontal: 32,
+              }}>
+              <View className="mb-5 flex-1">
                 <CustomTextInput
-                  value={nextTier.toString()}
-                  editable={false}
-                  className="mb-4 h-12 rounded-lg border border-gray-300 bg-white px-3 pb-2 text-xl"
-                  title="Tier"
-                  placeholder="e.g. 1"
-                  leftIconName="medal-outline"
-                  iconColor="#D7AF31" // Dark Gold color for tier
+                  value={name}
+                  onChangeText={setName}
+                  title="Division Name"
+                  placeholder="e.g. Super League"
+                  className="mb-4 h-12 rounded-lg border border-gray-300 bg-white px-3 font-saira text-xl"
+                  leftIconName="trophy-outline"
+                  iconColor="#A259FF"
                   titleColor="text-text-1"
-                  keyboardType="numeric"
-                  clearButtonMode="never"
                 />
               </View>
-              <View className="flex-1">
-                <CustomTextInput
-                  value={isTopTier ? '0' : promotionSpots}
-                  onChangeText={setPromotionSpots}
-                  title="Promotions"
-                  placeholder="e.g. 3"
-                  leftIconName="caret-up-outline"
-                  iconColor="#34C757" //RGB(52,199,89)
-                  titleColor="text-text-1"
-                  editable={!isTopTier}
-                  keyboardType="numeric"
-                  clearButtonMode="never"
-                />
-              </View>
-              <View className="flex-1">
-                <CustomTextInput
-                  value={isBottomTier ? '0' : relegationSpots}
-                  onChangeText={setRelegationSpots}
-                  title="Relegations"
-                  placeholder="e.g. 3"
-                  iconColor="#FF3B30" //RGB(255,59,48)
-                  leftIconName="caret-down-outline"
-                  titleColor="text-text-1"
-                  keyboardType="numeric"
-                  clearButtonMode="never"
-                />
-              </View>
-            </View>
-            <View className="mt-5 w-full gap-5">
-              <View className="h-16 flex-row items-center gap-5 rounded-xl border border-theme-gray-4 bg-bg-grouped-2 pr-5">
-                <View className="h-full justify-center rounded-l-xl border-r border-theme-gray-2 bg-bg-grouped-1 pl-3 pr-4">
-                  <Ionicons name="hourglass-outline" size={26} color="#A259FF" />
-                </View>
-                <Text className="flex-1 font-saira-medium text-xl text-text-1">Allow Draws</Text>
 
-                <Switch
-                  value={drawsEnabled}
-                  onValueChange={setDrawsEnabled}
-                  thumbColor="white"
-                  trackColor={{
-                    false: 'gray',
-                    true: '#4CAF50',
-                  }}
-                />
-              </View>
-              <View className="h-16 flex-row items-center gap-5 rounded-xl border border-theme-gray-4 bg-bg-grouped-2 pr-5">
-                <View className="h-full justify-center rounded-l-xl border-r border-theme-gray-2 bg-bg-grouped-1 pl-3 pr-4">
-                  <Ionicons name="star-outline" size={26} color="#A259FF" />
+              <View className="mb-4 flex-row items-center justify-between gap-3">
+                <View className="flex-1">
+                  <CustomTextInput
+                    value={
+                      selectedDivision ? selectedDivision.tier.toString() : nextTier.toString()
+                    }
+                    editable={false}
+                    className="mb-4 h-12 rounded-lg border border-gray-300 bg-white px-3 pb-2 text-xl"
+                    title="Tier"
+                    placeholder="e.g. 1"
+                    leftIconName="medal-outline"
+                    iconColor="#D7AF31"
+                    titleColor="text-text-1"
+                    keyboardType="numeric"
+                    clearButtonMode="never"
+                  />
                 </View>
-                <Text className="flex-1 font-saira-medium text-xl text-text-1">
-                  Include Special Matches
-                </Text>
-
-                <Switch
-                  value={specialMatchesEnabled}
-                  onValueChange={setSpecialMatchesEnabled}
-                  thumbColor="white"
-                  trackColor={{
-                    false: 'gray',
-                    true: '#4CAF50',
-                  }}
-                />
+                <View className="flex-1">
+                  <CustomTextInput
+                    value={isTopTier ? '0' : promotionSpots}
+                    onChangeText={setPromotionSpots}
+                    title="Promotions"
+                    placeholder="e.g. 3"
+                    leftIconName="caret-up-outline"
+                    iconColor="#34C757"
+                    titleColor="text-text-1"
+                    editable={!isTopTier}
+                    keyboardType="numeric"
+                    clearButtonMode="never"
+                  />
+                </View>
+                <View className="flex-1">
+                  <CustomTextInput
+                    value={relegationSpots}
+                    onChangeText={setRelegationSpots}
+                    title="Relegations"
+                    placeholder="e.g. 3"
+                    iconColor="#FF3B30"
+                    leftIconName="caret-down-outline"
+                    titleColor="text-text-1"
+                    keyboardType="numeric"
+                    clearButtonMode="never"
+                  />
+                </View>
               </View>
-            </View>
-          </BottomSheetScrollView>
+
+              <View className="mt-5 w-full gap-5">
+                <View>
+                  <View className="h-16 flex-row items-center gap-5 rounded-xl border border-theme-gray-4 bg-bg-grouped-2 pr-5">
+                    <View className="h-full justify-center rounded-l-xl border-r border-theme-gray-3 bg-bg-grouped-1 pl-3 pr-4">
+                      <Ionicons name="hourglass-outline" size={26} color="#A259FF" />
+                    </View>
+                    <Text className="flex-1 font-saira-medium text-xl text-text-1">
+                      Allow Draws
+                    </Text>
+                    <Switch
+                      value={drawsEnabled}
+                      onValueChange={setDrawsEnabled}
+                      thumbColor="white"
+                      trackColor={{
+                        false: 'gray',
+                        true: '#4CAF50',
+                      }}
+                    />
+                  </View>
+                  <Text className="mt-2 text-text-2">
+                    This setting controls whether ties are permitted upon match submission and shown
+                    in the league table.{' '}
+                  </Text>
+                </View>
+                <View>
+                  <View className="h-16 flex-row items-center gap-5 rounded-xl border border-theme-gray-4 bg-bg-grouped-2 pr-5">
+                    <View className="h-full justify-center rounded-l-xl border-r border-theme-gray-3 bg-bg-grouped-1 pl-3 pr-4">
+                      <Ionicons name="star-outline" size={26} color="#A259FF" />
+                    </View>
+                    <Text className="flex-1 font-saira-medium text-xl text-text-1">
+                      Include Bonus Frame
+                    </Text>
+                    <Switch
+                      value={specialMatchesEnabled}
+                      onValueChange={(newValue) => {
+                        setSpecialMatchesEnabled(newValue);
+                        if (!newValue) {
+                          setSpecialMatchName('');
+                          setSpecialMatchAbbreviation('');
+                        }
+                      }}
+                      thumbColor="white"
+                      trackColor={{
+                        false: 'gray',
+                        true: '#4CAF50',
+                      }}
+                    />
+                  </View>
+                  <Text className="mt-2 text-text-2">
+                    This setting allows you to create a bonus frame which is to be played once per
+                    match and displayed separately in the league table.
+                  </Text>
+                </View>
+
+                {specialMatchesEnabled && (
+                  <View className="flex-1 gap-5">
+                    <CustomTextInput
+                      value={specialMatchName}
+                      onChangeText={setSpecialMatchName}
+                      title="Special Match Name"
+                      placeholder="e.g. Captain's Cup"
+                      leftIconName="trophy-outline"
+                      iconColor="#A259FF"
+                      titleColor="text-text-1"
+                    />
+                    <View>
+                      <CustomTextInput
+                        value={specialMatchAbbreviation}
+                        onChangeText={setSpecialMatchAbbreviation}
+                        title="Special Match Abbreviation"
+                        placeholder="e.g. CC"
+                        leftIconName="pricetag-outline"
+                        iconColor="#A259FF"
+                        titleColor="text-text-1"
+                        maxLength={3}
+                      />
+                      <Text className="mt-2 text-text-2">Max Length: 3</Text>
+                    </View>
+                  </View>
+                )}
+              </View>
+            </BottomSheetScrollView>
+          </KeyboardAvoidingView>
         </BottomSheetWrapper>
       </View>
     </>

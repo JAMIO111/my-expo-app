@@ -2,7 +2,16 @@ import { Pressable, Text, Animated, useColorScheme, ActivityIndicator, View } fr
 import { useRef } from 'react';
 import colors from '@lib/colors';
 
-const CTAButton = ({ type = 'brand', text, icon, callbackFn, disabled, loading = false }) => {
+const CTAButton = ({
+  type = 'brand',
+  text,
+  textColor = 'text-white',
+  icon,
+  iconColor = 'white',
+  callbackFn,
+  disabled,
+  loading = false,
+}) => {
   const colorScheme = useColorScheme();
   const themeColors = colorScheme === 'dark' ? colors.dark : colors.light;
   const buttonTheme = themeColors[type] || themeColors.default;
@@ -46,14 +55,14 @@ const CTAButton = ({ type = 'brand', text, icon, callbackFn, disabled, loading =
         }}>
         {loading ? (
           <View className="flex-row items-center justify-center gap-3">
-            <ActivityIndicator size="small" color="#ffffff" />
-            <Text className="pt-1 font-saira text-2xl text-white">{text}</Text>
+            <ActivityIndicator size="small" color={iconColor} />
+            <Text className={`pt-1 font-saira text-2xl ${textColor}`}>{text}</Text>
           </View>
         ) : (
-          <>
-            {icon && <View className="absolute left-4">{icon}</View>}
-            <Text className="pt-1 font-saira text-2xl text-white">{text}</Text>
-          </>
+          <View className="flex-row items-center justify-center gap-3">
+            {icon && icon}
+            <Text className={`pt-1 font-saira text-2xl ${textColor}`}>{text}</Text>
+          </View>
         )}
       </Pressable>
     </Animated.View>

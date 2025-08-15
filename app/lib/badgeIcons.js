@@ -16,24 +16,96 @@ export const badgeIcons = {
   // Add others as needed
 };
 
-export const trophyIcons = {
-  'trophy-1-gold': require('@assets/trophies/trophy-1-gold.png'),
-  'trophy-1-silver': require('@assets/trophies/trophy-1-silver.png'),
-  'trophy-2-gold': require('@assets/trophies/trophy-2-gold.png'),
-  'trophy-2-silver': require('@assets/trophies/trophy-2-silver.png'),
-  'trophy-3-gold': require('@assets/trophies/trophy-3-gold.png'),
-  'trophy-3-silver': require('@assets/trophies/trophy-3-silver.png'),
-  'trophy-4-gold': require('@assets/trophies/trophy-4-gold.png'),
-  'trophy-4-silver': require('@assets/trophies/trophy-4-silver.png'),
-  'trophy-5-gold': require('@assets/trophies/trophy-5-gold.png'),
-  'trophy-5-silver': require('@assets/trophies/trophy-5-silver.png'),
-  'trophy-6-gold': require('@assets/trophies/trophy-6-gold.png'),
-  'trophy-6-silver': require('@assets/trophies/trophy-6-silver.png'),
-  'trophy-7-gold': require('@assets/trophies/trophy-7-gold.png'),
-  'trophy-7-silver': require('@assets/trophies/trophy-7-silver.png'),
-  'trophy-8-gold': require('@assets/trophies/trophy-8-gold.png'),
-  'trophy-8-silver': require('@assets/trophies/trophy-8-silver.png'),
-  'trophy-9-gold': require('@assets/trophies/trophy-9-gold.png'),
-  'trophy-9-silver': require('@assets/trophies/trophy-9-silver.png'),
-  // Add others as needed
-};
+export const trophyIcons = [
+  {
+    key: 'trophy-1-gold',
+    icon: require('@assets/trophies/trophy-1-gold.png'),
+    name: 'Gold Trophy',
+  },
+  {
+    key: 'trophy-1-silver',
+    icon: require('@assets/trophies/trophy-1-silver.png'),
+    name: 'Silver Trophy',
+  },
+  {
+    key: 'trophy-2-gold',
+    icon: require('@assets/trophies/trophy-2-gold.png'),
+    name: 'Gold Star',
+  },
+  {
+    key: 'trophy-2-silver',
+    icon: require('@assets/trophies/trophy-2-silver.png'),
+    name: 'Silver Star',
+  },
+  {
+    key: 'trophy-3-gold',
+    icon: require('@assets/trophies/trophy-3-gold.png'),
+    name: 'Gold Globe',
+  },
+  {
+    key: 'trophy-3-silver',
+    icon: require('@assets/trophies/trophy-3-silver.png'),
+    name: 'Silver Globe',
+  },
+  {
+    key: 'trophy-4-gold',
+    icon: require('@assets/trophies/trophy-4-gold.png'),
+    name: 'Gold Statuette',
+  },
+  {
+    key: 'trophy-4-silver',
+    icon: require('@assets/trophies/trophy-4-silver.png'),
+    name: 'Silver Statuette',
+  },
+  {
+    key: 'trophy-5-gold',
+    icon: require('@assets/trophies/trophy-5-gold.png'),
+    name: 'Gold Chalice',
+  },
+  {
+    key: 'trophy-5-silver',
+    icon: require('@assets/trophies/trophy-5-silver.png'),
+    name: 'Silver Chalice',
+  },
+  {
+    key: 'trophy-6-gold',
+    icon: require('@assets/trophies/trophy-6-gold.png'),
+    name: 'Gold Retro Trophy',
+  },
+  {
+    key: 'trophy-6-silver',
+    icon: require('@assets/trophies/trophy-6-silver.png'),
+    name: 'Silver Retro Trophy',
+  },
+  {
+    key: 'trophy-7-gold',
+    icon: require('@assets/trophies/trophy-7-gold.png'),
+    name: 'Gold Cup',
+  },
+  {
+    key: 'trophy-7-silver',
+    icon: require('@assets/trophies/trophy-7-silver.png'),
+    name: 'Silver Cup',
+  },
+  {
+    key: 'trophy-8-gold',
+    icon: require('@assets/trophies/trophy-8-gold.png'),
+    name: 'Gold Vase',
+  },
+  {
+    key: 'trophy-8-silver',
+    icon: require('@assets/trophies/trophy-8-silver.png'),
+    name: 'Silver Vase',
+  },
+  {
+    key: 'trophy-9-gold',
+    icon: require('@assets/trophies/trophy-9-gold.png'),
+    name: 'Gold Laurel',
+  },
+  {
+    key: 'trophy-9-silver',
+    icon: require('@assets/trophies/trophy-9-silver.png'),
+    name: 'Silver Laurel',
+  },
+  // Add more trophies as needed
+];

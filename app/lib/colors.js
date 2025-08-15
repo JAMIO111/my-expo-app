@@ -53,6 +53,11 @@ const colors = {
       secondary: '#190C00',
       transparent: 'rgba(67, 20, 7, 0.15)', // from #6B4F4F
     },
+    yellow: {
+      primary: '#E0AC00',
+      secondary: '#CDAA00',
+      transparent: 'rgba(224, 172, 0, 0.15)', // from #E0AC00
+    },
   },
 
   dark: {
@@ -107,6 +112,11 @@ const colors = {
       primary: '#1D1000',
       secondary: '#190C00',
       transparent: 'rgba(67, 20, 7, 0.15)', // from #6B4F4F
+    },
+    yellow: {
+      primary: '#E1B521',
+      secondary: '#CDAA00',
+      transparent: 'rgba(225, 181, 33, 0.15)', // from #E1B521
     },
   },
 };

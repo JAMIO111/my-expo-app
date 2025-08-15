@@ -65,7 +65,7 @@ const UniqueCode = () => {
     } else if (LeagueData) {
       router.push({
         pathname: '/(main)/onboarding/district-name',
-        params: { league: JSON.stringify(LeagueData) },
+        params: { districtId: LeagueData.id },
       });
     }
     setIsLoading(false);
