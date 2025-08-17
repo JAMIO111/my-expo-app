@@ -341,8 +341,8 @@ export default function CreateDivisions() {
         className="flex-row items-center justify-between gap-5 rounded-2xl bg-bg-grouped-2 px-5 py-3 shadow-sm">
         <View className="flex-1 gap-2">
           <View className="flex-row items-center gap-2">
-            <Text className="font-saira-medium text-2xl text-text-1">Tier {item.tier} -</Text>
-            <Text className="font-saira-medium text-2xl text-text-2">{item.name}</Text>
+            <Text className="font-saira-medium text-2xl text-text-2">Tier {item.tier} -</Text>
+            <Text className="font-saira-medium text-2xl text-text-1">{item.name}</Text>
           </View>
           <View className="flex-row flex-wrap items-center gap-3">
             <View
@@ -403,11 +403,11 @@ export default function CreateDivisions() {
     <>
       <Stack.Screen
         options={{
-          title: 'Step 4',
+          title: 'Step 2',
         }}
       />
       <View className="flex-1 bg-brand px-4">
-        <StepPillGroup steps={4} currentStep={4} />
+        <StepPillGroup steps={3} currentStep={2} />
         <View className="my-8">
           <Text className="pb-4 font-delagothic text-3xl text-text-on-brand">
             Add and configure your league's divisions.

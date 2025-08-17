@@ -10,9 +10,11 @@ import colors from '@lib/colors';
 import CTAButton from '@components/CTAButton';
 import { ScrollView } from 'react-native-gesture-handler';
 import StepPillGroup from '@components/StepPillGroup';
+import { useSupabaseClient } from '@contexts/SupabaseClientContext';
 
 const DivisionRewards = () => {
   const router = useRouter();
+  const { client: supabase } = useSupabaseClient();
   const { divisions, districtId, districtName, privateDistrict } = useLocalSearchParams();
   const parsedDivisions = JSON.parse(divisions || '[]');
   const colorScheme = useColorScheme();
@@ -86,10 +88,13 @@ const DivisionRewards = () => {
               }));
 
               // Example Supabase insert/update
-              const { error: districtError } = await supabase.from('Districts').upsert({
-                name: districtName,
-                private: privateDistrict,
-              });
+              const { error: districtError } = await supabase
+                .from('Districts')
+                .update({
+                  name: districtName,
+                  private: privateDistrict,
+                })
+                .eq('id', districtId);
 
               const { error: divisionsError } = await supabase.from('Divisions').upsert(payload);
 
@@ -101,7 +106,7 @@ const DivisionRewards = () => {
               });
             } catch (err) {
               console.error(err);
-              Alert.alert('Error', 'There was a problem saving the rewards. Please try again.');
+              Alert.alert('Error', 'There was a problem creating your district. Please try again.');
             }
           },
         },
@@ -113,11 +118,11 @@ const DivisionRewards = () => {
     <>
       <Stack.Screen
         options={{
-          title: 'Step 5',
+          title: 'Step 3',
         }}
       />
       <View className="flex-1 items-center justify-start bg-brand">
-        <StepPillGroup steps={5} currentStep={5} />
+        <StepPillGroup steps={3} currentStep={3} />
         <Text
           style={{ fontSize: 36, lineHeight: 50 }}
           className="mb-8 px-4 font-delagothic text-text-on-brand">
@@ -132,10 +137,10 @@ const DivisionRewards = () => {
               key={index}
               className="mb-3 w-full rounded-3xl border border-theme-gray-4 bg-bg-grouped-1 p-3">
               <View className="mb-3 flex-row items-center gap-2">
-                <Text className="font-saira-medium text-2xl text-text-1">
+                <Text className="px-2 font-saira-medium text-2xl text-text-2">
                   Tier {division.tier} -
                 </Text>
-                <Text className="font-saira-medium text-2xl text-text-2">{division.name}</Text>
+                <Text className="font-saira-medium text-2xl text-text-1">{division.name}</Text>
               </View>
 
               {/* Winner reward */}
@@ -240,7 +245,13 @@ const DivisionRewards = () => {
               <Pressable
                 key={idx}
                 onPress={() => selectReward(reward)}
-                className="rounded-2xl border border-theme-gray-4 bg-bg-grouped-2"
+                className={`rounded-2xl bg-bg-grouped-2 ${
+                  selectedDivisionIndex !== null &&
+                  selectedRewardType &&
+                  divisionRewards[selectedDivisionIndex][selectedRewardType]?.name === reward.name
+                    ? 'border-2 border-brand'
+                    : 'border border-theme-gray-4'
+                }`}
                 style={{
                   width: '48%',
                   marginBottom: 20,
@@ -264,7 +275,13 @@ const DivisionRewards = () => {
             ))}
             <Pressable
               onPress={() => selectReward({ name: 'No Reward' })}
-              className="w-full flex-row items-center justify-center gap-4 rounded-2xl border border-theme-gray-4 bg-bg-grouped-2 p-6"
+              className={`${
+                selectedDivisionIndex !== null &&
+                selectedRewardType &&
+                divisionRewards[selectedDivisionIndex][selectedRewardType]?.name === 'No Reward'
+                  ? 'border-2 border-brand'
+                  : 'border border-theme-gray-4'
+              } w-full flex-row items-center justify-center gap-4 rounded-2xl bg-bg-grouped-2 p-6`}
               style={{
                 width: '100%',
                 marginBottom: 20,

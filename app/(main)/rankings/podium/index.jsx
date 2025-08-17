@@ -5,6 +5,7 @@ import CustomHeader from '@components/CustomHeader';
 import SafeViewWrapper from '@components/SafeViewWrapper';
 import TeamLogo from '@components/TeamLogo';
 import Avatar from '@components/Avatar';
+import { getBgClass, getTextClass } from '@lib/helperFunctions';
 
 const index = () => {
   const { data, statKey, type, title, label } = useLocalSearchParams();
@@ -42,7 +43,8 @@ const index = () => {
               <View
                 key={index}
                 className="mb-2 w-full flex-row items-center justify-between gap-5 rounded-xl border border-theme-gray-5 bg-bg-grouped-2 p-3 shadow shadow-theme-gray-6">
-                <Text className="h-10 w-10 rounded bg-bg-grouped-3 p-2 text-center font-saira text-2xl text-text-1">
+                <Text
+                  className={`${getBgClass(index)} h-10 w-10 rounded p-2 text-center font-saira text-2xl ${getTextClass(index)}`}>
                   {index + 1}
                 </Text>
                 {type === 'player' ? (

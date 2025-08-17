@@ -82,34 +82,40 @@ const ApproveResults = () => {
       />
       <View className="mt-16 flex-1 bg-bg-grouped-1">
         <View className="gap-2 border-b border-separator bg-bg-grouped-2 px-5 py-3">
-          <View className="flex-row items-center justify-start gap-5">
+          <View className="flex-row items-center justify-start gap-2">
             <TeamLogo
-              size={30}
+              size={36}
               type={fixtureDetails?.homeTeam?.crest?.type}
               color1={fixtureDetails?.homeTeam?.crest?.color1}
               color2={fixtureDetails?.homeTeam?.crest?.color2}
               thickness={fixtureDetails?.homeTeam?.crest?.thickness}
             />
+            <Text className="ml-3 pt-1 font-saira-medium text-2xl text-text-1">
+              {fixtureDetails?.homeTeam?.abbreviation}
+            </Text>
             <Text
               numberOfLines={1}
-              className="flex-1 pt-1 text-left font-saira-medium text-2xl text-text-1">
+              className="flex-1 pt-1 text-left font-saira-medium text-2xl text-text-2">
               {fixtureDetails?.homeTeam?.display_name}
             </Text>
             <Text className="pt-3 text-center font-saira-bold text-3xl text-text-1">
               {results.filter((result) => result.home_player.id === result?.winner_id).length}
             </Text>
           </View>
-          <View className="flex-row items-center justify-start gap-5">
+          <View className="flex-row items-center justify-start gap-2">
             <TeamLogo
-              size={30}
+              size={36}
               type={fixtureDetails?.awayTeam?.crest?.type}
               color1={fixtureDetails?.awayTeam?.crest?.color1}
               color2={fixtureDetails?.awayTeam?.crest?.color2}
               thickness={fixtureDetails?.awayTeam?.crest?.thickness}
             />
+            <Text className="ml-3 pt-1 font-saira-medium text-2xl text-text-1">
+              {fixtureDetails?.awayTeam?.abbreviation}
+            </Text>
             <Text
               numberOfLines={1}
-              className="flex-1 pt-1 text-left font-saira-medium text-2xl text-text-1">
+              className="flex-1 pt-1 text-left font-saira-medium text-2xl text-text-2">
               {fixtureDetails?.awayTeam?.display_name}
             </Text>
             <Text className="pt-3 text-center font-saira-bold text-3xl text-text-1">

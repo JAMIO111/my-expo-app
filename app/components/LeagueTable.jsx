@@ -11,6 +11,7 @@ const LeagueTable = ({ context, season, division }) => {
   const hasNavigated = useRef(false);
 
   const { data: standings, isLoading, error, isFetching } = useStandings(division, season);
+  console.log('LeagueTable standings:', standings);
 
   const handlePress = (team) => {
     if (hasNavigated.current) return;

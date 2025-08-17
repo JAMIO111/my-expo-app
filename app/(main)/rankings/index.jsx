@@ -8,6 +8,7 @@ import { usePlayerLeaderboards } from '@hooks/usePlayerLeaderboards';
 import { useTeamLeaderboards } from '@hooks/useTeamLeaderboards';
 import { useUser } from '@contexts/UserProvider';
 import BrandHeader from '@components/BrandHeader';
+import { LeaderboardSkeleton } from '@components/Skeletons';
 
 const Index = () => {
   const { currentRole } = useUser();
@@ -16,8 +17,10 @@ const Index = () => {
       ? currentRole?.district?.id
       : currentRole?.team?.division?.district?.id;
 
-  const { data: playerLeaderboards } = usePlayerLeaderboards(activeDistrictId);
-  const { data: teamLeaderboards } = useTeamLeaderboards(activeDistrictId);
+  const { data: playerLeaderboards, isLoading: isLoadingPlayers } =
+    usePlayerLeaderboards(activeDistrictId);
+  const { data: teamLeaderboards, isLoading: isLoadingTeams } =
+    useTeamLeaderboards(activeDistrictId);
   console.log('Player Leaderboards:', playerLeaderboards);
   console.log('Team Leaderboards:', teamLeaderboards);
 
@@ -50,6 +53,7 @@ const Index = () => {
               statKey="frames_played"
               title="Frames Played"
               label="Frames"
+              loading={isLoadingPlayers}
             />
             <LeaderboardCard
               type="player"
@@ -57,6 +61,7 @@ const Index = () => {
               statKey="frames_won"
               title="Frames Won"
               label="Wins"
+              loading={isLoadingPlayers}
             />
             <LeaderboardCard
               type="player"
@@ -64,6 +69,7 @@ const Index = () => {
               data={playerLeaderboards}
               title="Frame Win %"
               label=""
+              loading={isLoadingPlayers}
             />
             <LeaderboardCard
               type="player"
@@ -71,6 +77,7 @@ const Index = () => {
               data={playerLeaderboards}
               title="Best Win Streak"
               label="Wins"
+              loading={isLoadingPlayers}
             />
           </ScrollView>
           <Text className="px-2 font-saira-medium text-3xl text-white">All-time Team Stats</Text>
@@ -87,17 +94,20 @@ const Index = () => {
               statKey="matches_played"
               data={teamLeaderboards}
               title="Matches Played"
+              loading={isLoadingTeams}
             />
             <LeaderboardCard
               type="team"
               statKey="matches_won"
               data={teamLeaderboards}
               title="Matches Won"
+              loading={isLoadingTeams}
             />
             <LeaderboardCard
               type="team"
               statKey="match_win_percent"
               data={teamLeaderboards}
+              loading={isLoadingTeams}
               title="Match Win %"
             />
             <LeaderboardCard
@@ -105,6 +115,7 @@ const Index = () => {
               statKey="best_match_win_streak"
               data={teamLeaderboards}
               title="Best Win Streak"
+              loading={isLoadingTeams}
             />
           </ScrollView>
         </ScrollView>

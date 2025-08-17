@@ -1,6 +1,7 @@
 import { Pressable, StyleSheet, Text, View, Image } from 'react-native';
 import TeamLogo from '@components/TeamLogo';
 import { useRouter } from 'expo-router';
+import { LeaderboardSkeleton } from '@components/Skeletons';
 
 const LeaderboardCard = ({
   title,
@@ -9,6 +10,7 @@ const LeaderboardCard = ({
   statKey = 'value',
   onPress,
   label,
+  loading,
 }) => {
   const router = useRouter();
 
@@ -30,6 +32,36 @@ const LeaderboardCard = ({
 
   const sortedData = [...data].sort((a, b) => getValue(b) - getValue(a));
 
+  const getBgClass = (index) => {
+    switch (index) {
+      case 0:
+        return 'bg-gold';
+      case 1:
+        return 'bg-silver';
+      case 2:
+        return 'bg-bronze';
+      default:
+        return 'bg-brand-light';
+    }
+  };
+
+  const getTextClass = (index) => {
+    switch (index) {
+      case 0:
+        return 'text-black';
+      case 1:
+        return 'text-black';
+      case 2:
+        return 'text-black';
+      default:
+        return 'text-white';
+    }
+  };
+
+  if (loading) {
+    return <LeaderboardSkeleton />;
+  }
+
   return (
     <Pressable
       onPress={
@@ -46,12 +78,17 @@ const LeaderboardCard = ({
             },
           }))
       }
-      className="min-w-[300px] rounded-3xl border border-theme-gray-5 bg-bg-grouped-2 p-3 shadow-[0_2px_4px_rgba(0,0,0,0.1)]">
+      className="h-[300px] min-w-[300px] rounded-3xl border border-theme-gray-5 bg-bg-grouped-2 p-3 pl-0 shadow-[0_2px_4px_rgba(0,0,0,0.1)]">
       <Text className="mb-2 pl-2 font-saira-semibold text-2xl text-text-1">{title}</Text>
       {sortedData.slice(0, 5).map((item, index) => (
-        <View key={index} className="flex-row items-center justify-between p-2">
+        <View key={index} className="flex-row items-center justify-between p-2 pl-0">
           <View className="min-w-0 flex-1 flex-row items-center">
-            <Text className="w-6 font-saira text-text-1">{index + 1}.</Text>
+            <View
+              className={`mr-2 h-10 items-center justify-center rounded-r-lg ${getBgClass(index)}`}>
+              <Text className={`w-6 text-center font-saira-medium ${getTextClass(index)}`}>
+                {index + 1}
+              </Text>
+            </View>
 
             {/* Avatar or Team Crest */}
             {type === 'team' ? (
@@ -67,11 +104,11 @@ const LeaderboardCard = ({
             ) : item?.avatar_url ? (
               <Image
                 source={{ uri: item.avatar_url }}
-                className="mr-2 h-11 w-11 rounded-md border border-separator"
+                className="mx-2 h-10 w-10 rounded-md border border-separator"
                 resizeMode="cover"
               />
             ) : (
-              <View className="mr-2 h-11 w-11 items-center justify-center rounded-md bg-brand-light">
+              <View className="mx-2 h-10 w-10 items-center justify-center rounded-md bg-brand-light">
                 <Text className="pt-1 font-saira-medium text-xl text-white">
                   {getInitials(item.first_name, item.surname)}
                 </Text>

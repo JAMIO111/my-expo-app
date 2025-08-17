@@ -3,11 +3,18 @@ import { useHeadToHeadStats } from '@hooks/useHeadToHeadStats';
 import TeamLogo from '@components/TeamLogo';
 import StatCardCompare from '@components/StatCardCompare';
 
-const HeadToHead = ({ homeTeam, awayTeam, fixtureDetails }) => {
+const HeadToHead = ({ homeTeam, awayTeam }) => {
   const { data, isLoading } = useHeadToHeadStats(homeTeam?.id, awayTeam?.id);
 
   if (isLoading) return <Text>Loading...</Text>;
-  if (!data || data.length < 2) return <Text>No head-to-head data available.</Text>;
+  if (!data || data.length < 2)
+    return (
+      <View className="bg-bg-grouped-2 p-8">
+        <Text className="w-full text-center font-saira text-lg text-text-2">
+          No head-to-head data available.
+        </Text>
+      </View>
+    );
 
   // Find home and away objects
   const homeStats = data.find((d) => d.team_id === homeTeam?.id);

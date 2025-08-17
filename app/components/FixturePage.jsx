@@ -4,7 +4,6 @@ import { useState, useRef } from 'react';
 import TeamLogo from '@components/TeamLogo';
 import useKickoffCountdown from '@hooks/Countdown';
 import SlidingTabButton from '@components/SlidingTabButton';
-import StatCardCompare from '@components/StatCardCompare';
 import { useRouter } from 'expo-router';
 import PlayersList from '@components/PlayersList';
 import colors from '@lib/colors';
@@ -12,7 +11,8 @@ import { getContrastColor } from '@lib/helperFunctions';
 import FormWidget from '@components/FormWidget';
 import { FixtureDetailsSkeleton } from '@components/Skeletons';
 import FramesList from '@components/FramesList';
-import HeadToHead from './HeadToHead';
+import HeadToHead from '@components/HeadToHead';
+import SeasonStats from '@components/SeasonStats';
 
 const FixturePage = ({ fixtureDetails, isLoading, context }) => {
   const router = useRouter();
@@ -23,6 +23,8 @@ const FixturePage = ({ fixtureDetails, isLoading, context }) => {
   const [view, setView] = useState('left');
   const [team, setTeam] = useState('left');
   const hasNavigated = useRef(false);
+
+  console.log('FixturePage fixtureDetails:', fixtureDetails);
 
   const handleTeamPress = (teamId) => {
     if (hasNavigated.current) return;
@@ -246,58 +248,13 @@ const FixturePage = ({ fixtureDetails, isLoading, context }) => {
                 awayTeamId={fixtureDetails?.awayTeam?.id}
               />
             </View>
-            <Text className="px-3 py-3 pb-1 font-saira-medium text-xl text-text-1">
-              Current Season
-            </Text>
-            <StatCardCompare
-              fixture={fixtureDetails}
-              stat={{
-                statName: 'Games Played',
-                homeValue: 12,
-                awayValue: 8,
-              }}
+            <Text className="p-3 pb-1 font-saira-medium text-xl text-text-1">Current Season</Text>
+            <SeasonStats
+              fixtureDetails={fixtureDetails}
+              homeTeam={fixtureDetails?.homeTeam}
+              awayTeam={fixtureDetails?.awayTeam}
             />
-            <StatCardCompare
-              fixture={fixtureDetails}
-              stat={{
-                statName: 'Games Won',
-                homeValue: 11,
-                awayValue: 5,
-              }}
-            />
-            <StatCardCompare
-              fixture={fixtureDetails}
-              stat={{
-                statName: 'Game Win %',
-                homeValue: 61,
-                awayValue: 32,
-              }}
-            />
-            <StatCardCompare
-              fixture={fixtureDetails}
-              stat={{
-                statName: 'Frames Played',
-                homeValue: 61,
-                awayValue: 32,
-              }}
-            />
-            <StatCardCompare
-              fixture={fixtureDetails}
-              stat={{
-                statName: 'Frames Won',
-                homeValue: 61,
-                awayValue: 32,
-              }}
-            />
-            <StatCardCompare
-              fixture={fixtureDetails}
-              stat={{
-                statName: 'Frame Win %',
-                homeValue: 52,
-                awayValue: 32,
-              }}
-            />
-            <Text className="px-3 py-3 pb-1 font-saira-medium text-xl text-text-1">
+            <Text className="p-3 pb-1 font-saira-medium text-xl text-text-1">
               Head to Head - All Time
             </Text>
             <HeadToHead homeTeam={fixtureDetails?.homeTeam} awayTeam={fixtureDetails?.awayTeam} />

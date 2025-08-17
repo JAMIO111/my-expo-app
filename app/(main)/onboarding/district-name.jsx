@@ -72,11 +72,11 @@ export default function DistrictName() {
     <>
       <Stack.Screen
         options={{
-          title: 'Step 3',
+          title: 'Step 1',
         }}
       />
       <View className="flex-1 bg-brand px-4">
-        <StepPillGroup steps={3} currentStep={3} />
+        <StepPillGroup steps={3} currentStep={1} />
         <Text className="my-4 pt-5 font-delagothic text-5xl text-text-on-brand">
           Please enter the name of your district.
         </Text>

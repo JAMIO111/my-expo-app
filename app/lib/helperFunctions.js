@@ -690,3 +690,29 @@ export async function handleSubmitResults({
     await supabase.from('Standings').update({ position: row.position }).eq('id', row.id);
   }
 }
+
+export const getBgClass = (index) => {
+  switch (index) {
+    case 0:
+      return 'bg-gold';
+    case 1:
+      return 'bg-silver';
+    case 2:
+      return 'bg-bronze';
+    default:
+      return 'bg-brand-light';
+  }
+};
+
+export const getTextClass = (index) => {
+  switch (index) {
+    case 0:
+      return 'text-black';
+    case 1:
+      return 'text-black';
+    case 2:
+      return 'text-black';
+    default:
+      return 'text-white';
+  }
+};

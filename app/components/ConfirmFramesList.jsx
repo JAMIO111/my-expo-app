@@ -76,7 +76,9 @@ const ConfirmFramesList = ({ results, isLoading, disputedFrames, setDisputedFram
           );
         })
       ) : (
-        <Text className="text-center text-text-2">No frames available for this fixture.</Text>
+        <Text className="px-12 py-16 text-center font-saira text-xl text-text-2">
+          No frames have been submitted for this fixture yet.
+        </Text>
       )}
     </View>
   );
