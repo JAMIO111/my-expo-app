@@ -102,6 +102,7 @@ const Index = () => {
               data={teamLeaderboards}
               title="Matches Won"
               loading={isLoadingTeams}
+              label="Wins"
             />
             <LeaderboardCard
               type="team"
@@ -116,6 +117,7 @@ const Index = () => {
               data={teamLeaderboards}
               title="Best Win Streak"
               loading={isLoadingTeams}
+              label="Wins"
             />
           </ScrollView>
         </ScrollView>

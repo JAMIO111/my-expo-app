@@ -3,6 +3,7 @@ import { useState } from 'react';
 import CTAButton from '@components/CTAButton';
 import { useRouter, useLocalSearchParams, Stack } from 'expo-router';
 import StepPillGroup from '@components/StepPillGroup';
+import CustomTextInput from '@components/CustomTextInput';
 
 const Nickname = () => {
   const [nickname, setNickname] = useState('');
@@ -16,32 +17,35 @@ const Nickname = () => {
           title: 'Step 2 of 4',
         }}
       />
-      <View className="flex-1 gap-3 bg-bg-grouped-1">
+      <View className="flex-1 gap-3 bg-brand">
         <StepPillGroup steps={4} currentStep={2} />
-        <View className="bg-bg-grouped-1 p-4">
-          <Text className="font-delagothic text-6xl font-bold text-text-1">
+        <View className="p-4">
+          <Text className="font-delagothic text-5xl font-bold text-text-on-brand">
             What do you want to be known as?
           </Text>
-          <Text className=" text-2xl text-text-2">
+          <Text className=" font-saira text-2xl text-text-on-brand-2">
             This will be used to identify you in the app. It can be your first name, surname, or a
             nickname.
           </Text>
         </View>
 
-        <View className="flex-1 rounded-t-3xl bg-bg-grouped-2 p-6">
+        <View className="flex-1 rounded-t-3xl bg-brand-dark p-6">
           <View className="gap-1">
-            <Text className="px-2 text-2xl font-bold text-text-1">Display Name</Text>
-            <TextInput
-              className="h-16 rounded-xl border border-border-color bg-input-background px-4 pb-1 text-xl text-text-1 placeholder:text-text-muted"
-              placeholder="Enter Nickname..."
-              autoCapitalize="words"
+            <CustomTextInput
+              placeholder="e.g. Johnny"
+              title="Display Name"
+              titleColor="text-text-on-brand"
+              leftIconName="person"
+              iconColor="green"
               value={nickname}
               onChangeText={setNickname}
+              returnKeyType="done"
             />
           </View>
-          <View className="mt-5">
+          <View className="mt-8">
             <CTAButton
-              type="info"
+              type="yellow"
+              textColor="black"
               text="Continue"
               callbackFn={() =>
                 router.push({

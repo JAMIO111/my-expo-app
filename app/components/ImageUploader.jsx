@@ -24,6 +24,7 @@ const ImageUploader = forwardRef(
     const imageWidth = isSquare ? size : screenWidth;
     const imageHeight = isSquare ? size : (screenWidth * aspectH) / aspectW;
 
+    // Keep local state synced with initialUri
     useEffect(() => {
       setImageUri(initialUri);
     }, [initialUri]);
@@ -36,7 +37,6 @@ const ImageUploader = forwardRef(
 
       const result = await ImagePicker.launchImageLibraryAsync({
         mediaTypes: ImagePicker.MediaTypeOptions.Images,
-        allowsMultipleSelection: false,
         allowsEditing: true,
         aspect: aspectRatio,
         quality: 0.8,
@@ -50,15 +50,15 @@ const ImageUploader = forwardRef(
           { compress: 0.7, format: ImageManipulator.SaveFormat.JPEG }
         );
 
-        const previousUri = imageUri; // remember old image
+        const previousUri = imageUri;
         setImageUri(manipResult.uri); // optimistic UI update
 
-        // let parent decide if it succeeds or fails
-        onImageChange(manipResult.uri, () => setImageUri(previousUri));
+        // Notify parent and let them handle upload/failure
+        onImageChange(manipResult.uri, previousUri);
       }
     };
 
-    // 🔹 Expose pickImage to parent
+    // Expose pickImage to parent
     useImperativeHandle(ref, () => ({
       openPicker: pickImage,
     }));

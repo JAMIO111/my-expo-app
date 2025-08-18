@@ -68,6 +68,7 @@ const Avatar = () => {
               })()
             : null,
           avatar_url: avatarUrl,
+          onboarding: 1,
         })
         .eq('auth_id', user.id);
 
@@ -100,15 +101,15 @@ const Avatar = () => {
           title: 'Step 4 of 4',
         }}
       />
-      <View className="flex-1 gap-3 bg-bg-grouped-1">
+      <View className="flex-1 gap-3 bg-brand">
         <StepPillGroup steps={4} currentStep={4} />
-        <View className="bg-bg-grouped-1 p-4">
+        <View className="p-4">
           <Text
-            style={{ lineHeight: 65 }}
-            className="mb-4 font-delagothic text-6xl font-bold text-text-1">
+            style={{ lineHeight: 50 }}
+            className="mb-4 font-delagothic text-5xl font-bold text-text-on-brand">
             Why not add a photo?
           </Text>
-          <Text className="mb-6 text-2xl text-text-2">
+          <Text className="text-2xl text-text-on-brand-2">
             So that your teammates and opponents can identify you.
           </Text>
         </View>
@@ -116,19 +117,17 @@ const Avatar = () => {
           <ImageUploader
             initialUri={imageUri}
             onImageChange={setImageUri}
-            size={200}
+            size={250}
             aspectRatio={[1, 1]}
           />
-          <View className="mt-5 w-full items-center gap-5">
-            <View className="w-full"></View>
-            <View className="w-full">
-              <CTAButton
-                type="success"
-                text="Save Profile"
-                callbackFn={handleSaveProfile}
-                disabled={uploading}
-              />
-            </View>
+          <View className="mt-5 w-full">
+            <CTAButton
+              type="yellow"
+              textColor="black"
+              text="Save Profile"
+              callbackFn={handleSaveProfile}
+              disabled={uploading}
+            />
           </View>
         </View>
       </View>

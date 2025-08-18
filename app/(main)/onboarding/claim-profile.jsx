@@ -1,4 +1,4 @@
-import { StyleSheet, Text, View, TextInput } from 'react-native';
+import { Text, View } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { Stack } from 'expo-router';
@@ -9,10 +9,9 @@ import SafeViewWrapper from '@components/SafeViewWrapper';
 import { useTeamProfile } from '@hooks/useTeamProfile';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { useSupabaseClient } from '@contexts/SupabaseClientContext';
-import CustomNativeHeader from '@components/CustomNativeHeader';
 import { ScrollView } from 'react-native-gesture-handler';
 
-const TeamConfirm = () => {
+const ClaimProfile = () => {
   const { client: supabase } = useSupabaseClient();
   const router = useRouter();
   const params = useLocalSearchParams();
@@ -138,6 +137,4 @@ const TeamConfirm = () => {
   );
 };
 
-export default TeamConfirm;
-
-const styles = StyleSheet.create({});
+export default ClaimProfile;

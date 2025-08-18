@@ -16,11 +16,14 @@ const CustomTextInput = forwardRef((props, ref) => {
     clearButtonMode = 'while-editing',
     editable = true,
     maxLength,
+    returnKeyType = 'default',
+    onSubmitEditing,
+    autoComplete = 'off',
   } = props;
 
   return (
     <View>
-      <Text className={`font-saira-medium text-lg ${titleColor}`}>{title}</Text>
+      <Text className={`pb-1 pl-2 font-saira-medium text-lg ${titleColor}`}>{title}</Text>
       <View className="h-14 flex-row items-center rounded-xl border border-theme-gray-3 bg-input-background pr-3">
         <View className="h-full justify-center rounded-l-xl border-r border-theme-gray-3 bg-bg-grouped-1 pl-3 pr-4">
           <Ionicons name={leftIconName} size={leftIconSize} color={iconColor} />
@@ -36,6 +39,10 @@ const CustomTextInput = forwardRef((props, ref) => {
           value={value}
           onChangeText={onChangeText}
           maxLength={maxLength}
+          ref={ref}
+          returnKeyType={returnKeyType}
+          onSubmitEditing={onSubmitEditing}
+          autoComplete={autoComplete}
         />
       </View>
     </View>

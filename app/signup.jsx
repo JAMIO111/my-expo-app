@@ -56,7 +56,7 @@ const SignUpPage = () => {
     if (error) {
       setError(error.message);
     } else if (data.user) {
-      router.replace('/(main)/home');
+      router.replace({ pathname: '/(main)/onboarding/name', params: { user: data.user } });
     }
   };
 

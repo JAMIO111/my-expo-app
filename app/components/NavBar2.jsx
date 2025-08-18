@@ -1,10 +1,17 @@
 import { View, Text, Animated, Pressable } from 'react-native';
 import { useRef, useEffect } from 'react';
 import { useRouter, usePathname } from 'expo-router';
-import { TeamIcon, ChartIcon, TrophyIcon, UserIcon } from '@components/svgs';
+import {
+  TeamIcon,
+  ChartIcon,
+  TrophyIcon,
+  UserIcon,
+  DiamondIcon,
+  SearchIcon,
+} from '@components/svgs';
 import { useUser } from '@contexts/UserProvider';
 
-const NavBar = () => {
+const NavBar = ({ type = 'main' }) => {
   const { currentRole } = useUser();
   const router = useRouter();
   const pathname = usePathname();
@@ -16,11 +23,20 @@ const NavBar = () => {
       href: `/${currentRole?.type === 'admin' ? 'my-leagues' : 'teams'}`,
       icon: TeamIcon,
     },
-    { name: 'Comps', href: '/onboarding/role-select', icon: TrophyIcon },
+    { name: 'Comps', href: '/onboarding/explore', icon: TrophyIcon },
     { name: 'Home', href: '/home' }, // Center item — spinner
     { name: 'Rankings', href: '/rankings', icon: ChartIcon },
     { name: 'Profile', href: '/profile', icon: UserIcon },
   ];
+
+  const ONBOARDING_NAV_ITEMS = [
+    { name: 'Upgrade', href: '/onboarding/upgrade', icon: DiamondIcon },
+    { name: 'Setup', href: '/onboarding/setup', icon: UserIcon },
+    { name: 'Explore', href: '/onboarding/explore', icon: SearchIcon },
+    { name: 'Profile', href: '/onboarding/profile', icon: UserIcon },
+  ];
+
+  const ACTIVE_NAV_ITEMS = type === 'onboarding' ? ONBOARDING_NAV_ITEMS : NAV_ITEMS;
 
   const spinValue = useRef(new Animated.Value(0)).current;
   const opacityValue = useRef(new Animated.Value(0)).current;
@@ -84,7 +100,7 @@ const NavBar = () => {
 
       <View className="absolute top-6 h-4 w-full bg-brand-light" />
 
-      {NAV_ITEMS.map(({ name, href, icon: Icon }, index) => {
+      {ACTIVE_NAV_ITEMS.map(({ name, href, icon: Icon }, index) => {
         const isActive = pathname === href;
         const isCenter = index === 2;
 
@@ -103,7 +119,7 @@ const NavBar = () => {
           disabled: isActive,
         };
 
-        if (isCenter) {
+        if (isCenter && type !== 'onboarding') {
           return (
             <View
               key={href || index}
@@ -131,7 +147,11 @@ const NavBar = () => {
             <Pressable
               {...pressableProps}
               className={`${
-                index === 1 ? 'mr-10' : index === 3 ? 'ml-10' : ''
+                index === 1 && type !== 'onboarding'
+                  ? 'mr-10'
+                  : index === 3 && type !== 'onboarding'
+                    ? 'ml-10'
+                    : ''
               } h-full flex-1 items-center justify-center`}>
               <Animated.View style={{ transform: [{ scale: scaleValues[index] }] }}>
                 {Icon && (

@@ -92,3 +92,42 @@ export const UserIcon = (props) => (
     <Circle cx="12" cy="7" r="4"></Circle>
   </Svg>
 );
+
+export const DiamondIcon = (props) => (
+  <Svg
+    xmlns="http://www.w3.org/2000/svg"
+    width={24}
+    height={24}
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth={2}
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    {...props}>
+    {/* Outer diamond shape with flat top */}
+    <Path d="M8 2 L16 2 L22 9 L12 22 L2 9 Z" />
+
+    {/* Facets */}
+    <Line x1="2" y1="9" x2="22" y2="9" />
+    <Line x1="8" y1="2" x2="12" y2="22" />
+    <Line x1="16" y1="2" x2="12" y2="22" />
+  </Svg>
+);
+
+export const SearchIcon = (props) => (
+  <Svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="24"
+    height="24"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    className="feather feather-search">
+    <Circle cx="11" cy="11" r="8"></Circle>
+    <Line x1="21" y1="21" x2="16.65" y2="16.65"></Line>
+  </Svg>
+);
