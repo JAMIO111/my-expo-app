@@ -23,7 +23,7 @@ const ProfilePage = () => {
 
   return (
     <SafeViewWrapper topColor="bg-brand" bottomColor="bg-brand">
-      <ScrollView className="mt-16 flex-1 bg-bg-grouped-1">
+      <ScrollView className="mt-16 flex-1 bg-bg-grouped-1 p-5">
         <View className="flex-1 bg-bg-grouped-1 pt-5">
           <View className="mb-4 items-center p-2 ">
             {player?.avatar_url ? (

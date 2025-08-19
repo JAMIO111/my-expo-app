@@ -32,12 +32,12 @@ const index = () => {
           ),
         }}
       />
-      <View className="mt-16 flex-1 items-center justify-center bg-brand-dark pt-8">
+      <View className="mt-16 flex-1 items-center justify-center bg-brand-dark px-4 pt-8">
         <Podium3D data={parsedData.slice(0, 3)} statKey={statKey} type={type} label={label} />
         <View className="w-full flex-1 rounded-t-3xl border border-theme-gray-6 bg-bg-grouped-1 px-5 pt-5">
           <ScrollView
             showsVerticalScrollIndicator={false}
-            style={{ borderTopLeftRadius: 12, borderTopRightRadius: 12 }}
+            style={{ borderTopLeftRadius: 16, borderTopRightRadius: 16 }}
             className="w-full flex-1 bg-bg-grouped-1">
             {parsedData?.map((item, index) => (
               <View
@@ -68,7 +68,7 @@ const index = () => {
                 </View>
                 <Text
                   style={{ lineHeight: 50 }}
-                  className="pr-2 text-center font-saira-bold text-4xl text-text-1">
+                  className="pr-2 text-center font-saira-semibold text-3xl text-text-1">
                   {getValue(item)}
                 </Text>
               </View>

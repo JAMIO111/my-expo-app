@@ -79,17 +79,10 @@ const LeaderboardCard = ({
           }))
       }
       className="h-[300px] min-w-[300px] rounded-3xl border border-theme-gray-5 bg-bg-grouped-2 p-3 pl-0 shadow-[0_2px_4px_rgba(0,0,0,0.1)]">
-      <Text className="mb-2 pl-2 font-saira-semibold text-2xl text-text-1">{title}</Text>
+      <Text className="mb-2 pl-4 font-saira-semibold text-2xl text-text-1">{title}</Text>
       {sortedData.slice(0, 5).map((item, index) => (
-        <View key={index} className="flex-row items-center justify-between p-2 pl-0">
+        <View key={index} className="flex-row items-center justify-between p-2">
           <View className="min-w-0 flex-1 flex-row items-center">
-            <View
-              className={`mr-2 h-10 items-center justify-center rounded-r-lg ${getBgClass(index)}`}>
-              <Text className={`w-6 text-center font-saira-medium ${getTextClass(index)}`}>
-                {index + 1}
-              </Text>
-            </View>
-
             {/* Avatar or Team Crest */}
             {type === 'team' ? (
               <View className="px-2">

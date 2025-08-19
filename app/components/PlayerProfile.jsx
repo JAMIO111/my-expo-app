@@ -195,7 +195,7 @@ const PlayerProfile = ({ context, isLoading, playerProfile, error }) => {
           <View className="w-full flex-row items-center justify-between">
             <Text className="font-saira-medium text-xl text-text-2">Date of Birth</Text>
             <View className="flex-row items-center gap-3">
-              {isBirthdayToday(playerProfile?.dob) && (
+              {playerProfile?.dob && isBirthdayToday(playerProfile?.dob) && (
                 <Image
                   source={require('@assets/birthday-cake.png')}
                   className="h-6 w-6"
@@ -203,18 +203,22 @@ const PlayerProfile = ({ context, isLoading, playerProfile, error }) => {
                 />
               )}
               <Text className="font-saira-semibold text-lg text-text-1">
-                {new Date(playerProfile?.dob).toLocaleDateString('en-GB', {
-                  year: 'numeric',
-                  month: '2-digit',
-                  day: '2-digit',
-                })}
+                {playerProfile?.dob
+                  ? new Date(playerProfile.dob).toLocaleDateString('en-GB', {
+                      year: 'numeric',
+                      month: '2-digit',
+                      day: '2-digit',
+                    })
+                  : 'Birthday Unavailable'}
               </Text>
             </View>
           </View>
           <View className="border-t border-theme-gray-5"></View>
           <View className="w-full flex-row items-center justify-between ">
             <Text className="font-saira-medium text-xl text-text-2">Age</Text>
-            <Text className="font-saira-semibold text-lg text-text-1">{`${years} Years ${days} days`}</Text>
+            <Text className="font-saira-semibold text-lg text-text-1">
+              {playerProfile?.dob ? `${years} Years ${days} days` : 'Age Unavailable'}
+            </Text>
           </View>
           <View className="border-t border-theme-gray-5"></View>
           <View className="w-full flex-row items-center justify-between">

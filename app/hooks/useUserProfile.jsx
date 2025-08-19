@@ -13,7 +13,7 @@ export default function useUserProfile(userId) {
         .select(
           `
           *,
-          TeamPlayers (
+          TeamPlayers!TeamPlayers_player_id_fkey (
             team_id,
             Teams (
               name,

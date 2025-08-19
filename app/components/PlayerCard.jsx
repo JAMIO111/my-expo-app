@@ -6,7 +6,6 @@ import { useLocalSearchParams, usePathname } from 'expo-router';
 import { isBirthdayToday } from '@lib/helperFunctions';
 import { useColorScheme } from 'react-native';
 import colors from '@lib/colors';
-import CachedImage from './CachedImage';
 import Avatar from './Avatar';
 
 const PlayerCard = ({ player, team, context }) => {

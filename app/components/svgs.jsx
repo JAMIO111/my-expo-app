@@ -101,7 +101,7 @@ export const DiamondIcon = (props) => (
     viewBox="0 0 24 24"
     fill="none"
     stroke="currentColor"
-    strokeWidth={2}
+    strokeWidth="1"
     strokeLinecap="round"
     strokeLinejoin="round"
     {...props}>
@@ -123,7 +123,7 @@ export const SearchIcon = (props) => (
     viewBox="0 0 24 24"
     fill="none"
     stroke="currentColor"
-    strokeWidth="2"
+    strokeWidth="1.5"
     strokeLinecap="round"
     strokeLinejoin="round"
     className="feather feather-search">

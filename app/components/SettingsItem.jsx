@@ -4,6 +4,7 @@ import IonIcons from 'react-native-vector-icons/Ionicons';
 import { useRouter } from 'expo-router';
 import { useColorScheme } from 'react-native';
 import colors from '@lib/colors';
+import Avatar from './Avatar';
 
 const SettingsItem = ({
   title,
@@ -15,6 +16,7 @@ const SettingsItem = ({
   lastItem = false,
   disabled = false,
   callbackFn,
+  player,
   value,
   setValue,
 }) => {
@@ -45,13 +47,15 @@ const SettingsItem = ({
             className={`flex-row items-center gap-3 px-4 py-3 ${
               pressed ? 'bg-theme-gray-5' : 'bg-bg-grouped-2'
             }`}>
-            {icon && (
+            {icon ? (
               <View
                 className="h-9 w-9 items-center justify-center rounded-[10px]"
                 style={{ backgroundColor: iconBGColor }}>
                 <IonIcons name={icon} size={22} color={iconColor} />
               </View>
-            )}
+            ) : player ? (
+              <Avatar size={40} player={player} />
+            ) : null}
 
             <Text
               numberOfLines={1}

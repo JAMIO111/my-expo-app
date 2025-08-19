@@ -64,7 +64,7 @@ const Team = () => {
               />
               <SettingsItem
                 routerPath="settings/PlayerManagement"
-                iconBGColor="gray"
+                iconBGColor="green"
                 title="Player Management"
                 icon="people-outline"
                 lastItem={true}

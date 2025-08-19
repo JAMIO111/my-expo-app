@@ -16,8 +16,11 @@ const _layout = () => {
         <Stack
           screenOptions={{
             header: (props) => <CustomHeader {...props} />,
-          }}
-        />
+          }}>
+          <Stack.Screen name="upgrade" options={{ headerShown: false }} />
+          <Stack.Screen name="profile" options={{ headerShown: false }} />
+          <Stack.Screen name="explore" options={{ headerShown: false }} />
+        </Stack>
       </View>
     </SafeViewWrapper>
   );

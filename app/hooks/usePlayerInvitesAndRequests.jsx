@@ -1,10 +1,10 @@
 import { useQuery } from '@tanstack/react-query';
 import { useSupabaseClient } from '@contexts/SupabaseClientContext';
 
-export function useTeamPlayers(teamId) {
+export function usePlayerInvitesAndRequests(teamId) {
   const { client: supabase } = useSupabaseClient();
   return useQuery({
-    queryKey: ['TeamPlayers', teamId],
+    queryKey: ['PlayerInvitesAndRequests', teamId],
     queryFn: async () => {
       if (!teamId) throw new Error('teamId is required');
 
@@ -26,7 +26,7 @@ export function useTeamPlayers(teamId) {
         `
         )
         .eq('team_id', teamId)
-        .eq('status', 'active');
+        .or('status.eq.invited,status.eq.requested');
 
       if (error) throw error;
 

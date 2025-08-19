@@ -72,9 +72,6 @@ const ImageUploader = forwardRef(
               width: imageWidth,
               height: imageHeight,
               borderRadius,
-              borderWidth: 2,
-              borderColor: '#ccc',
-              marginBottom: 16,
             }}
             resizeMode="cover"
           />
@@ -84,12 +81,9 @@ const ImageUploader = forwardRef(
               width: imageWidth,
               height: imageHeight,
               borderRadius,
-              borderWidth: 2,
-              borderColor: '#ccc',
               backgroundColor: '#f0f0f0',
               alignItems: 'center',
               justifyContent: 'center',
-              marginBottom: 16,
             }}>
             <IonIcon name="camera-outline" size={40} color="#888" />
             <Text

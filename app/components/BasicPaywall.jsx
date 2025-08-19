@@ -1,19 +1,60 @@
-import { Pressable, StyleSheet, Text, View, Image, Modal } from 'react-native';
-import React from 'react';
+import { Pressable, StyleSheet, Text, View, Image, Modal, Animated, Easing } from 'react-native';
+import React, { useEffect, useRef, useState } from 'react';
 import IonIcons from 'react-native-vector-icons/Ionicons';
 import CTAButton from '@components/CTAButton';
 import { ScrollView } from 'react-native-gesture-handler';
 
 const BasicPaywall = () => {
-  const [paymentType, setPaymentType] = React.useState('monthly');
-  const [fullscreenImage, setFullscreenImage] = React.useState(null);
+  const [paymentType, setPaymentType] = useState('monthly');
+  const [fullscreenImage, setFullscreenImage] = useState(null);
+  const scaleAnim = useRef(new Animated.Value(0.8)).current;
+  const opacityAnim = useRef(new Animated.Value(0)).current;
 
   const screenshots = [
     require('@assets/league-table-light.png'),
     require('@assets/trophy-cabinet-light.png'),
     require('@assets/live-fixtures-light.png'),
+    require('@assets/stats-light.png'),
     require('@assets/home-dashboard-light.png'),
   ];
+
+  // Animate in
+  useEffect(() => {
+    if (fullscreenImage) {
+      Animated.parallel([
+        Animated.timing(scaleAnim, {
+          toValue: 1,
+          duration: 250,
+          useNativeDriver: true,
+          easing: Easing.out(Easing.ease),
+        }),
+        Animated.timing(opacityAnim, {
+          toValue: 1,
+          duration: 250,
+          useNativeDriver: true,
+          easing: Easing.out(Easing.ease),
+        }),
+      ]).start();
+    }
+  }, [fullscreenImage]);
+
+  const handleCloseModal = () => {
+    // Animate out
+    Animated.parallel([
+      Animated.timing(scaleAnim, {
+        toValue: 0.8,
+        duration: 200,
+        useNativeDriver: true,
+        easing: Easing.in(Easing.ease),
+      }),
+      Animated.timing(opacityAnim, {
+        toValue: 0,
+        duration: 200,
+        useNativeDriver: true,
+        easing: Easing.in(Easing.ease),
+      }),
+    ]).start(() => setFullscreenImage(null));
+  };
 
   return (
     <View className="w-full flex-1 items-center justify-start bg-brand-dark py-6">
@@ -41,7 +82,7 @@ const BasicPaywall = () => {
         ))}
       </View>
 
-      {/* Horizontal ScrollView with tap-to-fullscreen */}
+      {/* Horizontal ScrollView */}
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
@@ -61,14 +102,25 @@ const BasicPaywall = () => {
         ))}
       </ScrollView>
 
-      {/* Fullscreen Modal */}
-      <Modal visible={!!fullscreenImage} transparent={true}>
+      {/* Fullscreen Modal with animation */}
+      <Modal visible={!!fullscreenImage} transparent>
         <Pressable
-          className="flex-1 items-center justify-center bg-black"
-          onPress={() => setFullscreenImage(null)}>
-          <Image
+          style={{
+            flex: 1,
+            backgroundColor: 'rgba(0,0,0,0.8)',
+            justifyContent: 'center',
+            alignItems: 'center',
+          }}
+          onPress={handleCloseModal}>
+          <Animated.Image
             source={fullscreenImage}
-            style={{ width: '100%', height: '100%', resizeMode: 'contain' }}
+            style={{
+              width: '100%',
+              height: '100%',
+              resizeMode: 'contain',
+              transform: [{ scale: scaleAnim }],
+              opacity: opacityAnim,
+            }}
           />
         </Pressable>
       </Modal>
@@ -99,9 +151,7 @@ const BasicPaywall = () => {
         <View className="relative w-full overflow-visible">
           <Pressable
             onPress={() => setPaymentType('yearly')}
-            className={`w-full flex-row items-center justify-start gap-4 rounded-2xl border bg-white/10 px-5 py-5 ${
-              paymentType === 'yearly' ? 'border-theme-yellow' : 'border-white/20'
-            }`}>
+            className={`w-full flex-row items-center justify-start gap-4 rounded-2xl border bg-white/10 px-5 py-5 ${paymentType === 'yearly' ? 'border-theme-yellow' : 'border-white/20'}`}>
             <View
               className={`${paymentType === 'yearly' ? 'border-theme-yellow' : 'border-white/50'} rounded-full border-2 border-theme-yellow p-1`}>
               <IonIcons
@@ -127,9 +177,10 @@ const BasicPaywall = () => {
             </View>
           </View>
         </View>
+
         {/* Upgrade Button */}
         <View className="mt-4 w-full">
-          <CTAButton type="success" text="Upgrade Now!" onPress={() => {}} />
+          <CTAButton type="yellow" textColor="black" text="Upgrade Now!" onPress={() => {}} />
         </View>
       </View>
     </View>

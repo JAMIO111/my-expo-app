@@ -154,7 +154,7 @@ const Account = () => {
           {/* Profile section */}
           <View>
             <View className="mb-8 mt-5 items-center">
-              <View className="relative">
+              <View className="relative mb-5 overflow-hidden rounded-2xl border-2 border-text-1">
                 <ImageUploader
                   ref={uploaderRef}
                   initialUri={imageUri || player?.avatar_url}
@@ -173,7 +173,7 @@ const Account = () => {
                 />
               </View>
               <Pressable onPress={() => uploaderRef.current?.openPicker()}>
-                <Text className="rounded-lg border border-brand-light bg-brand px-7 py-1 font-saira-semibold text-lg text-white">
+                <Text className="rounded-lg border border-brand-light bg-brand px-8 py-1 font-saira-semibold text-lg text-white">
                   Change Avatar
                 </Text>
               </Pressable>

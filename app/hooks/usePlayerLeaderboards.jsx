@@ -18,7 +18,7 @@ export const usePlayerLeaderboards = (districtId) => {
           district
         )
       ),
-      player:Players (
+      player:Players!TeamPlayers_player_id_fkey (
         id,
         first_name,
         surname,

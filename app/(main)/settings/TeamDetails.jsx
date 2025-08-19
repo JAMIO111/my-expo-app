@@ -44,6 +44,14 @@ const TeamDetails = () => {
         contentContainerStyle={{ alignItems: 'center', justifyContent: 'center' }}
         className="mt-16 flex-1 bg-bg-grouped-1 p-5">
         <MenuContainer>
+          <SettingsItem routerPath="/settings/TeamCrest" title="Team Crest" />
+          <SettingsItem
+            routerPath="/settings/TeamCoverImage"
+            title="Team Cover Image"
+            lastItem={true}
+          />
+        </MenuContainer>
+        <MenuContainer>
           <SettingsItem routerPath="/settings/team-name" title="Team Name" text={teamName} />
           <SettingsItem
             routerPath="/settings/DisplayName"
@@ -65,11 +73,6 @@ const TeamDetails = () => {
             }
             lastItem={true}
           />
-        </MenuContainer>
-
-        <MenuContainer>
-          <SettingsItem routerPath="/settings/TeamCrest" title="Team Crest" />
-          <SettingsItem routerPath="/settings/TeamCoverImage" title="Cover Image" lastItem={true} />
         </MenuContainer>
       </ScrollView>
     </SafeViewWrapper>
