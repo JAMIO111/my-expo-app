@@ -8,6 +8,7 @@ import CTAButton from '@components/CTAButton';
 import useUserProfile from '@/hooks/useUserProfile';
 import Avatar from '@components/Avatar';
 import { isBirthdayToday, getAgeInYearsAndDays } from '@lib/helperFunctions';
+import Ionicons from 'react-native-vector-icons/Ionicons';
 
 const PlayerId = () => {
   const { currentRole, player } = useUser();
@@ -139,6 +140,13 @@ const PlayerId = () => {
           <View className="mt-8 w-full gap-5">
             {status !== 'invited' && (
               <CTAButton
+                icon={
+                  <Ionicons
+                    name={status === 'active' ? 'star' : 'checkmark'}
+                    size={26}
+                    color="white"
+                  />
+                }
                 text={status === 'active' ? 'Promote to Captain' : 'Accept Request'}
                 type="success"
                 onPress={
@@ -157,6 +165,13 @@ const PlayerId = () => {
                   : status === 'requested'
                     ? 'Deny Request'
                     : 'Revoke Invite'
+              }
+              icon={
+                <Ionicons
+                  name={status === 'active' ? 'exit-outline' : 'close-outline'}
+                  size={26}
+                  color="white"
+                />
               }
               type="error"
               onPress={

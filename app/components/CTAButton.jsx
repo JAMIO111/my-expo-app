@@ -3,7 +3,7 @@ import { useRef } from 'react';
 import colors from '@lib/colors';
 
 const CTAButton = ({
-  type = 'brand',
+  type = 'default',
   text,
   textColor = 'text-white',
   icon,

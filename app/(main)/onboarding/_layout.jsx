@@ -20,6 +20,7 @@ const _layout = () => {
           <Stack.Screen name="upgrade" options={{ headerShown: false }} />
           <Stack.Screen name="profile" options={{ headerShown: false }} />
           <Stack.Screen name="explore" options={{ headerShown: false }} />
+          <Stack.Screen name="season" options={{ headerShown: false }} />
         </Stack>
       </View>
     </SafeViewWrapper>

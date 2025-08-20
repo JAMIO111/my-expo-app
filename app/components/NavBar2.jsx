@@ -31,7 +31,7 @@ const NavBar = ({ type = 'main' }) => {
 
   const ONBOARDING_NAV_ITEMS = [
     { name: 'Upgrade', href: '/onboarding/upgrade', icon: DiamondIcon },
-    { name: 'Setup', href: '/onboarding/setup', icon: UserIcon },
+    { name: 'Season', href: '/onboarding/season', icon: TrophyIcon },
     { name: 'Explore', href: '/onboarding/explore', icon: SearchIcon },
     { name: 'Profile', href: '/onboarding/profile', icon: UserIcon },
   ];

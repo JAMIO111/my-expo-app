@@ -248,9 +248,9 @@ const PlayerProfile = ({ context, isLoading, playerProfile, error }) => {
         </View>
       </View>
       <View className="my-8 w-full gap-5 pb-16">
-        <CTAButton callbackFn={handleViewStats} text="View Player Stats" type="success"></CTAButton>
+        <CTAButton callbackFn={handleViewStats} text="View Player Stats" type="brown"></CTAButton>
         <CTAButton
-          type="info"
+          type="brown"
           callbackFn={() => {
             Toast.show({
               type: 'success',
@@ -265,7 +265,7 @@ const PlayerProfile = ({ context, isLoading, playerProfile, error }) => {
         {currentRole?.team.captain === player?.id && playerProfile?.id !== player?.id && (
           <>
             <CTAButton
-              type="brand"
+              type="brown"
               callbackFn={() => setCaptainModalVisible(true)}
               text="Make Team Captain"></CTAButton>
             <ConfirmModal
@@ -280,7 +280,7 @@ const PlayerProfile = ({ context, isLoading, playerProfile, error }) => {
         {currentRole?.team.vice_captain === player?.id && playerProfile?.id !== player?.id && (
           <>
             <CTAButton
-              type="brand"
+              type="brown"
               callbackFn={() => setViceCaptainModalVisible(true)}
               text="Make Vice Captain"></CTAButton>
             <ConfirmModal

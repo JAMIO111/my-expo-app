@@ -3,13 +3,14 @@ import TeamLogo from './TeamLogo';
 import { useRouter } from 'expo-router';
 import { useRef } from 'react';
 
-const UpcomingFixtureCard = ({ fixture }) => {
+const UpcomingFixtureCard = ({ fixture, inactive = false }) => {
   const router = useRouter();
   const hasNavigated = useRef(false);
 
   return (
     <Pressable
       onPress={() => {
+        if (inactive) return;
         if (hasNavigated.current) return;
         hasNavigated.current = true;
         setTimeout(() => {
@@ -27,11 +28,15 @@ const UpcomingFixtureCard = ({ fixture }) => {
             color2={fixture?.homeTeam?.crest?.color2}
             size={20}
           />
+          <Text className="pt-1 font-saira-semibold text-xl text-text-1">
+            {fixture?.homeTeam?.abbreviation || ''}
+          </Text>
           <Text
             numberOfLines={1}
             ellipsizeMode="tail"
-            className="pt-1 font-saira-semibold text-xl text-text-1">
-            {fixture?.homeTeam?.display_name || 'Home Team'} {'(H)'}
+            style={{ flexShrink: 1 }}
+            className="pt-1 font-saira-medium text-xl text-text-1">
+            {fixture?.homeTeam?.display_name || 'Home Team'}
           </Text>
         </View>
         <Text className="font-saira text-text-2">vs</Text>
@@ -43,11 +48,15 @@ const UpcomingFixtureCard = ({ fixture }) => {
             color2={fixture?.awayTeam?.crest?.color2}
             size={20}
           />
+          <Text className="pt-1 font-saira-semibold text-xl text-text-1">
+            {fixture?.awayTeam?.abbreviation || ''}
+          </Text>
           <Text
             numberOfLines={1}
             ellipsizeMode="tail"
-            className="pt-1 font-saira-semibold text-xl text-text-1">
-            {fixture?.awayTeam?.display_name || 'Away Team'} {'(A)'}
+            style={{ flexShrink: 1 }}
+            className="pt-1 font-saira-medium text-xl text-text-1">
+            {fixture?.awayTeam?.display_name || 'Away Team'}
           </Text>
         </View>
       </View>

@@ -10,6 +10,7 @@ import Toast from 'react-native-toast-message';
 import SafeViewWrapper from '@components/SafeViewWrapper';
 import CustomHeader from '@components/CustomHeader';
 import TeamLogo from '@components/TeamLogo';
+import Ionicons from 'react-native-vector-icons/Ionicons';
 
 const Team = () => {
   const { client: supabase } = useSupabaseClient();
@@ -75,6 +76,7 @@ const Team = () => {
           {/* Bottom CTA */}
           <View className="my-10">
             <CTAButton
+              icon={<Ionicons name="exit-outline" size={26} color="white" />}
               type="error"
               text={isLeavingTeam ? 'Leaving Team...' : 'Leave Team'}
               callbackFn={async () => {

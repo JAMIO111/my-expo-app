@@ -14,31 +14,30 @@ const PremiumPaywall = () => {
       </Text>
       <View className="my-5 w-full items-start justify-start gap-4 rounded-2xl p-3">
         <View className="flex-row items-center justify-start gap-3">
-          <View className="rounded-full border-2 border-theme-yellow bg-theme-yellow/70 p-1">
-            <IonIcons name="checkmark" size={24} color="black" />
+          <View className="rounded-full border-2 border-theme-yellow bg-theme-yellow/70 p-2">
+            <IonIcons name="stats-chart-outline" size={24} color="black" />
           </View>
           <Text className="font-saira-medium text-xl text-text-on-brand">
             In-depth match analysis
           </Text>
         </View>
         <View className="flex-row items-center justify-start gap-3">
-          <View className="rounded-full border-2 border-theme-yellow bg-theme-yellow/70 p-1">
-            <IonIcons name="checkmark" size={24} color="black" />
+          <View className="rounded-full border-2 border-theme-yellow bg-theme-yellow/70 p-2">
+            <IonIcons name="receipt-outline" size={24} color="black" />
           </View>
           <Text className="font-saira-medium text-xl text-text-on-brand">Full match history</Text>
         </View>
         <View className="flex-row items-center justify-start gap-3">
-          <View className="rounded-full border-2 border-theme-yellow bg-theme-yellow/70 p-1">
-            <IonIcons name="checkmark" size={24} color="black" />
+          <View className="rounded-full border-2 border-theme-yellow bg-theme-yellow/70 p-2">
+            <IonIcons name="ribbon-outline" size={24} color="black" />
           </View>
           <Text className="font-saira-medium text-xl text-text-on-brand">
             Access to exclusive badges
           </Text>
         </View>
         <View className="flex-row items-center justify-start gap-3">
-          <View className="rounded-full border-2 border-theme-yellow bg-theme-yellow/70 p-1">
-            <IonIcons name="checkmark" size={24} color="black" />
-          </View>
+          <IonIcons name="ban-outline" size={46} color="red" />
+
           <Text className="font-saira-medium text-xl text-text-on-brand">No annoying ads</Text>
         </View>
       </View>

@@ -109,8 +109,8 @@ const colors = {
       transparent: 'rgba(243, 244, 246, 0.15)', // from #f3f4f6
     },
     brown: {
-      primary: '#1D1000',
-      secondary: '#190C00',
+      primary: '#381E00',
+      secondary: '#461700',
       transparent: 'rgba(67, 20, 7, 0.15)', // from #6B4F4F
     },
     yellow: {

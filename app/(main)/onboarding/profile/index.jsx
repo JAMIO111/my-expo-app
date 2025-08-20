@@ -1,4 +1,5 @@
 import { Text, View, ScrollView } from 'react-native';
+import { StatusBar } from 'expo-status-bar';
 import { Stack } from 'expo-router';
 import SafeViewWrapper from '@components/SafeViewWrapper';
 import NavBar from '@components/NavBar2';
@@ -8,6 +9,7 @@ import { getAgeInYearsAndDays } from '@lib/helperFunctions';
 import CachedImage from '@components/CachedImage';
 import Heading from '@components/Heading';
 import { isBirthdayToday } from '@lib/helperFunctions';
+import CustomHeader from '@components/CustomHeader';
 
 const ProfilePage = () => {
   const router = useRouter();
@@ -23,20 +25,32 @@ const ProfilePage = () => {
 
   return (
     <SafeViewWrapper topColor="bg-brand" bottomColor="bg-brand">
-      <ScrollView className="mt-16 flex-1 bg-bg-grouped-1 p-5">
-        <View className="flex-1 bg-bg-grouped-1 pt-5">
-          <View className="mb-4 items-center p-2 ">
+      <StatusBar style="light" backgroundColor="#000" />
+      <Stack.Screen
+        options={{
+          header: () => (
+            <SafeViewWrapper useTopInset={false} useBottomInset={false}>
+              <CustomHeader title="My Profile" showBack={false} />
+            </SafeViewWrapper>
+          ),
+        }}
+      />
+      <ScrollView className="flex-1 bg-bg-grouped-1 p-5">
+        <View className="flex-1 bg-bg-grouped-1">
+          <View className="mb-2 items-center p-2 ">
             {player?.avatar_url ? (
-              <CachedImage
-                avatarUrl={player?.avatar_url}
-                userId={player?.id}
-                width={140}
-                height={140}
-                borderRadius={16}
-              />
+              <View className="overflow-hidden rounded-3xl bg-text-2 p-1">
+                <CachedImage
+                  avatarUrl={player?.avatar_url}
+                  userId={player?.id}
+                  width={150}
+                  height={150}
+                  borderRadius={16}
+                />
+              </View>
             ) : (
               <View
-                style={{ width: 140, height: 140 }}
+                style={{ width: 150, height: 150 }}
                 className="items-center justify-center rounded-2xl border border-brand-light bg-brand-light">
                 <Text style={{ lineHeight: 130 }} className="font-saira-medium text-6xl text-white">
                   {getInitials(player?.first_name, player?.surname)}

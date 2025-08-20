@@ -14,6 +14,7 @@ const LeagueTable = ({ context, season, division }) => {
   console.log('LeagueTable standings:', standings);
 
   const handlePress = (team) => {
+    if (!context) return;
     if (hasNavigated.current) return;
     hasNavigated.current = true;
     setTimeout(() => {

@@ -1,13 +1,14 @@
 // hooks/useUpcomingFixtures.js
 import { useQuery } from '@tanstack/react-query';
 import { useSupabaseClient } from '@contexts/SupabaseClientContext';
-export const useUpcomingFixtures = (teamId) => {
+
+export const useUpcomingFixtures = (teamId, options = { nextOnly: false }) => {
   const { client: supabase } = useSupabaseClient();
 
-  const fetchUpcomingFixtures = async (teamId) => {
+  const fetchUpcomingFixtures = async (teamId, nextOnly) => {
     if (!teamId) throw new Error('Team ID is required');
 
-    const { data, error } = await supabase
+    let query = supabase
       .from('Fixtures')
       .select(
         `
@@ -20,27 +21,33 @@ export const useUpcomingFixtures = (teamId) => {
       .gte('date_time', new Date().toISOString())
       .order('date_time', { ascending: true });
 
+    if (nextOnly) {
+      query = query.limit(1); // only fetch the next upcoming match
+    }
+
+    const { data, error } = await query;
+
     if (error) throw new Error(error.message || 'Failed to fetch upcoming fixtures');
 
     return data.map((fixture) => ({
       ...fixture,
-      date: new Date(fixture.date),
+      date: new Date(fixture.date_time),
       homeTeam: {
         ...fixture.homeTeam,
-        abbreviation: fixture.homeTeam.abbreviation || 'N/A',
+        abbreviation: fixture.homeTeam?.abbreviation || 'N/A',
       },
       awayTeam: {
         ...fixture.awayTeam,
-        abbreviation: fixture.awayTeam.abbreviation || 'N/A',
+        abbreviation: fixture.awayTeam?.abbreviation || 'N/A',
       },
     }));
   };
 
   return useQuery({
-    queryKey: ['upcoming-fixtures', teamId],
-    queryFn: () => fetchUpcomingFixtures(teamId),
-    enabled: !!teamId, // Only run query if teamId is defined
-    staleTime: 1000 * 60 * 5, // 5 minutes
+    queryKey: ['upcoming-fixtures', teamId, options.nextOnly],
+    queryFn: () => fetchUpcomingFixtures(teamId, options.nextOnly),
+    enabled: !!teamId,
+    staleTime: 1000 * 60 * 5,
     retry: false,
   });
 };

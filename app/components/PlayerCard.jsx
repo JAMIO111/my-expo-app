@@ -20,10 +20,10 @@ const PlayerCard = ({ player, team, context }) => {
 
   const handlePressIn = () => {
     Animated.spring(scale, {
-      toValue: 0.95,
+      toValue: 0.97,
       useNativeDriver: true,
-      speed: 30,
-      bounciness: 10,
+      speed: 20,
+      bounciness: 5,
     }).start();
   };
 

@@ -8,6 +8,7 @@ import StatCard from '@components/StatCard';
 import CachedImage from '@components/CachedImage';
 import { Dimensions } from 'react-native';
 import TrophyCabinet from '@components/TrophyCabinet';
+import Ionicons from 'react-native-vector-icons/Ionicons';
 
 const trophies = [
   { id: 3, name: 'Top Scorer', image: require('../assets/trophies/trophy-3-gold.png') },
@@ -82,16 +83,16 @@ const TeamProfile = ({ context, profile, isLoading }) => {
             <Text className="mt-2 max-w-xs font-saira text-3xl font-bold text-text-1">
               {profile?.name}
             </Text>
-            <Text className="mb-3 max-w-xs font-saira text-lg font-semibold text-text-2">
+            <Text className="mb-3 max-w-xs font-saira text-xl font-medium text-text-2">
               {profile?.division?.district?.name} - {profile?.division?.name}
             </Text>
           </View>
           <View className="gap-1">
-            <Text style={{ lineHeight: 20 }} className="max-w-xs font-saira text-lg text-text-3">
-              {line_1} {line_2}
+            <Text style={{ lineHeight: 20 }} className="max-w-xs font-saira text-lg text-text-2">
+              {[line_1, line_2].filter(Boolean).join(', ')}
             </Text>
-            <Text style={{ lineHeight: 20 }} className="max-w-xs font-saira text-lg text-text-3">
-              {city} {postcode}
+            <Text style={{ lineHeight: 20 }} className="max-w-xs font-saira text-lg text-text-2">
+              {[city, postcode].filter(Boolean).join(', ')}
             </Text>
           </View>
         </View>
@@ -109,8 +110,14 @@ const TeamProfile = ({ context, profile, isLoading }) => {
               <StatCard title="Losses" value="34" />
             </View>
           </View>
-          <CTAButton type="brand" text="View All Stats" callbackFn={() => {}} />
+          <CTAButton
+            icon={<Ionicons name="podium-outline" size={22} color="white" />}
+            type="brand"
+            text="View All Stats"
+            callbackFn={() => {}}
+          />
         </View>
+        <Heading text="Team Awards" />
         <TrophyCabinet trophies={trophies} />
         <View className="mb-8">
           <Heading text="Team Roster" />

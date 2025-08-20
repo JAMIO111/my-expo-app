@@ -13,7 +13,7 @@ const MyTeamCard = ({ role }) => {
               {role?.team?.display_name}
             </Text>
           </View>
-          <View className="flex-row items-center gap-5 pl-1">
+          <View className="flex-row items-center gap-5">
             <Ionicons name="location-outline" size={26} color="#6B7280" />
             <Text className="font-saira-medium text-lg text-text-1">
               {role?.team?.division?.district?.name} - {role?.team?.division?.name}

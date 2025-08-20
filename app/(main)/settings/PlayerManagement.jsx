@@ -54,34 +54,44 @@ const PlayerManagement = () => {
                 />
               ))}
             </MenuContainer>
-            <Text className="pb-1 pl-2 font-saira-medium text-2xl text-text-1">
-              Invited Players
-            </Text>
-            <MenuContainer>
-              {invitedPlayers?.map((player, index) => (
-                <SettingsItem
-                  key={player.id}
-                  player={player}
-                  routerPath={`/settings/${player.id}?status=${player.status}`}
-                  iconBGColor="gray"
-                  title={`${player.first_name} ${player.surname}`}
-                  lastItem={invitedPlayers.length - 1 === index}
-                />
-              ))}
-            </MenuContainer>
-            <Text className="pb-1 pl-2 font-saira-medium text-2xl text-text-1">Join Requests</Text>
-            <MenuContainer>
-              {requestedPlayers?.map((player, index) => (
-                <SettingsItem
-                  key={player.id}
-                  player={player}
-                  routerPath={`/settings/${player.id}?status=${player.status}`}
-                  iconBGColor="gray"
-                  title={`${player.first_name} ${player.surname}`}
-                  lastItem={invitedPlayers.length - 1 === index}
-                />
-              ))}
-            </MenuContainer>
+            {invitedPlayers && (
+              <>
+                <Text className="pb-1 pl-2 font-saira-medium text-2xl text-text-1">
+                  Invited Players
+                </Text>
+                <MenuContainer>
+                  {invitedPlayers?.map((player, index) => (
+                    <SettingsItem
+                      key={player.id}
+                      player={player}
+                      routerPath={`/settings/${player.id}?status=${player.status}`}
+                      iconBGColor="gray"
+                      title={`${player.first_name} ${player.surname}`}
+                      lastItem={invitedPlayers.length - 1 === index}
+                    />
+                  ))}
+                </MenuContainer>
+              </>
+            )}
+            {requestedPlayers && (
+              <>
+                <Text className="pb-1 pl-2 font-saira-medium text-2xl text-text-1">
+                  Join Requests
+                </Text>
+                <MenuContainer>
+                  {requestedPlayers?.map((player, index) => (
+                    <SettingsItem
+                      key={player.id}
+                      player={player}
+                      routerPath={`/settings/${player.id}?status=${player.status}`}
+                      iconBGColor="gray"
+                      title={`${player.first_name} ${player.surname}`}
+                      lastItem={invitedPlayers.length - 1 === index}
+                    />
+                  ))}
+                </MenuContainer>
+              </>
+            )}
           </View>
         </View>
       </ScrollView>

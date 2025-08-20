@@ -109,18 +109,18 @@ const LeaderboardCard = ({
             )}
 
             {/* Name */}
-            <View className="min-w-0 flex-1">
+            <View className="min-w-0 flex-1 pl-2">
               <Text
                 numberOfLines={1}
                 ellipsizeMode="tail"
-                className="font-saira-semibold text-lg text-text-1">
+                className="font-saira-medium text-xl text-text-1">
                 {type === 'team' ? item.display_name : `${item.first_name} ${item.surname}`}
               </Text>
             </View>
           </View>
 
           {/* Stat Value */}
-          <Text className="ml-3 font-saira-bold text-2xl text-text-1">{getValue(item)}</Text>
+          <Text className="ml-3 font-saira-semibold text-2xl text-text-1">{getValue(item)}</Text>
         </View>
       ))}
     </Pressable>
