@@ -55,13 +55,15 @@ const TeamProfile = ({ context, profile, isLoading }) => {
   return (
     <ScrollView className="flex-1 bg-bg-1" contentContainerStyle={{ flexGrow: 1 }}>
       <View className="border-b border-theme-gray-3">
-        <CachedImage
-          avatarUrl={profile.cover_image_url}
-          userId={profile?.id}
-          width={Dimensions.get('window').width}
-          height={(Dimensions.get('window').width * 9) / 16}
-          borderRadius={0}
-        />
+        {profile.cover_image_url && (
+          <CachedImage
+            avatarUrl={profile.cover_image_url}
+            userId={profile?.id}
+            width={Dimensions.get('window').width}
+            height={(Dimensions.get('window').width * 9) / 16}
+            borderRadius={0}
+          />
+        )}
       </View>
       <View className=" items-items-start w-full flex-row justify-start gap-8 border-b border-theme-gray-5 bg-bg-grouped-2 py-5 pl-5">
         <View className="items-center justify-start gap-4">

@@ -27,7 +27,7 @@ const TeamInviteCard = ({ invite, onAccept, onDecline }) => {
         </View>
         <View className="items-center gap-3">
           <TeamLogo {...invite?.team?.crest} size={60} />
-          <Text className="rounded-lg border bg-theme-gray-4 px-2 font-saira-medium text-lg text-black">
+          <Text className="rounded-lg border border-theme-purple bg-theme-purple/50 px-2 font-saira-medium text-lg text-white">
             {invite?.team?.abbreviation}
           </Text>
         </View>

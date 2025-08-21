@@ -33,7 +33,7 @@ const Team = () => {
       <ScrollView
         contentContainerStyle={{ flexGrow: 1 }}
         className="mt-16 flex-1 bg-bg-grouped-1 p-5">
-        <View className="flex-1 justify-between">
+        <View className="justify-between">
           {/* Top Content */}
           <View>
             <View className="mb-8 mt-5 items-center">
@@ -74,7 +74,7 @@ const Team = () => {
           </View>
 
           {/* Bottom CTA */}
-          <View className="my-10">
+          <View className="">
             <CTAButton
               icon={<Ionicons name="exit-outline" size={26} color="white" />}
               type="error"

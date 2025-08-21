@@ -8,7 +8,7 @@ const Upgrade = () => {
   return (
     <SafeViewWrapper bottomColor="bg-brand" useTopInset={false} topColor="bg-brand-dark">
       <CustomHeader title="Get Full Access" showBack={false} />
-      <ScrollView className="flex-1 bg-brand-dark">
+      <ScrollView className="flex-1 bg-bg-grouped-1">
         <BasicPaywall />
       </ScrollView>
       <NavBar type="onboarding" />

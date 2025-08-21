@@ -68,7 +68,8 @@ export const fetchAuthUserProfile = async (supabase) => {
             )
       `
       )
-      .eq('player_id', player.id);
+      .eq('player_id', player.id)
+      .eq('status', 'active');
 
     if (teamPlayerError) {
       throw new Error(teamPlayerError.message);

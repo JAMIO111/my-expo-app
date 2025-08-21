@@ -4,7 +4,7 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 
 const MyTeamCard = ({ role }) => {
   return (
-    <View className="w-full rounded-3xl border border-theme-gray-4 bg-bg-1 p-5">
+    <View className="w-full rounded-3xl border border-theme-gray-4 bg-bg-grouped-2 p-5">
       <View className="flex-row items-center justify-between">
         <View className="flex-1 gap-2">
           <View className="flex-row items-center gap-5">

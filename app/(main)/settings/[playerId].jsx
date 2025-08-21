@@ -5,12 +5,15 @@ import CustomHeader from '@components/CustomHeader';
 import { useUser } from '@contexts/UserProvider';
 import { useLocalSearchParams } from 'expo-router';
 import CTAButton from '@components/CTAButton';
+import { useRouter } from 'expo-router';
 import useUserProfile from '@/hooks/useUserProfile';
 import Avatar from '@components/Avatar';
 import { isBirthdayToday, getAgeInYearsAndDays } from '@lib/helperFunctions';
 import Ionicons from 'react-native-vector-icons/Ionicons';
+import { useTeamPlayerActions } from '@hooks/useTeamPlayerActions';
 
 const PlayerId = () => {
+  const router = useRouter();
   const { currentRole, player } = useUser();
   const { playerId, status } = useLocalSearchParams();
   console.log('Player ID:', playerId);
@@ -21,25 +24,34 @@ const PlayerId = () => {
 
   const relevantDate = status === 'active' ? playerProfile?.joined_at : playerProfile?.requested_at;
 
-  const promoteToCaptain = () => {
-    // Logic to promote the player to captain
-  };
-
-  const acceptRequest = () => {
-    // Logic to accept the player request
-  };
-
-  const denyRequest = () => {
-    // Logic to deny the player request
-  };
-
-  const revokeInvite = () => {
-    // Logic to revoke the player invite
-  };
-
-  const removePlayer = () => {
-    // Logic to remove the player from the team
-  };
+  const { removePlayer, promoteToCaptain, acceptRequest, denyRequest, revokeInvite } =
+    useTeamPlayerActions(currentRole?.team?.id, {
+      removePlayer: {
+        onSuccess: () => {
+          router.back();
+        },
+      },
+      promoteToCaptain: {
+        onSuccess: () => {
+          router.replace('/home');
+        },
+      },
+      acceptRequest: {
+        onSuccess: () => {
+          router.back();
+        },
+      },
+      denyRequest: {
+        onSuccess: () => {
+          router.back();
+        },
+      },
+      revokeInvite: {
+        onSuccess: () => {
+          router.back();
+        },
+      },
+    });
 
   return (
     <SafeViewWrapper topColor="bg-brand" useBottomInset={false}>
@@ -54,7 +66,7 @@ const PlayerId = () => {
       />
       <View className="mt-16 flex-1 bg-bg-grouped-1">
         <Text
-          className={`${status === 'active' ? 'border-theme-green bg-theme-green/30 text-black' : status === 'invited' ? 'border-theme-teal bg-theme-teal/30 text-black' : status === 'requested' ? 'border-theme-purple bg-theme-purple/30 text-black' : ''} border-b-2 p-3 text-center font-saira-medium text-2xl`}>
+          className={`${status === 'active' ? 'border-theme-green bg-theme-green/30 text-text-1' : status === 'invited' ? 'border-theme-teal bg-theme-teal/30 text-text-1' : status === 'requested' ? 'border-theme-purple bg-theme-purple/30 text-text-1' : ''} border-b-2 p-3 text-center font-saira-medium text-2xl`}>
           {status === 'active' && 'Active Player'}
           {status === 'requested' && 'Awaiting Approval'}
           {status === 'invited' && 'Invite Sent'}
@@ -149,11 +161,17 @@ const PlayerId = () => {
                 }
                 text={status === 'active' ? 'Promote to Captain' : 'Accept Request'}
                 type="success"
-                onPress={
+                callbackFn={
                   status === 'active'
-                    ? promoteToCaptain
+                    ? () => {
+                        console.log('promoting captain');
+                        promoteToCaptain.mutate(playerId);
+                      }
                     : status === 'requested'
-                      ? acceptRequest
+                      ? () => {
+                          console.log('accepting request');
+                          acceptRequest.mutate(playerId);
+                        }
                       : null
                 }
               />
@@ -174,13 +192,13 @@ const PlayerId = () => {
                 />
               }
               type="error"
-              onPress={
+              callbackFn={
                 status === 'active'
-                  ? removePlayer
+                  ? () => removePlayer.mutate(playerId)
                   : status === 'requested'
-                    ? denyRequest
+                    ? () => denyRequest.mutate(playerId)
                     : status === 'invited'
-                      ? revokeInvite
+                      ? () => revokeInvite.mutate(playerId)
                       : null
               }
             />

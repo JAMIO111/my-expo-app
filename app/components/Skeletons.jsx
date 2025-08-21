@@ -108,3 +108,16 @@ export const LeaderboardSkeleton = () => {
     </View>
   );
 };
+
+export const UpcomingFixtureSkeleton = () => {
+  return (
+    <View className="w-full flex-1 items-center justify-center gap-3 rounded-2xl bg-bg-grouped-2 p-5">
+      <View className="h-4 w-full rounded-full bg-theme-gray-4" />
+      <View className="h-4 w-8 rounded-full bg-theme-gray-4" />
+      <View className="h-4 w-full rounded-full bg-theme-gray-4" />
+      <View className="w-full px-6">
+        <View className="mt-2 h-3 w-full rounded-full bg-theme-gray-4" />
+      </View>
+    </View>
+  );
+};

@@ -1,0 +1,136 @@
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useSupabaseClient } from '@contexts/SupabaseClientContext';
+import Toast from 'react-native-toast-message';
+import { useUser } from '../contexts/UserProvider';
+
+export function useTeamPlayerActions(teamId, callbacks = {}) {
+  const queryClient = useQueryClient();
+  const { client: supabase } = useSupabaseClient();
+  const { player } = useUser();
+
+  // Helper to merge default + custom callbacks
+  const handleCallbacks = (defaultFn, customFn) => (arg) => {
+    defaultFn?.(arg);
+    customFn?.(arg);
+  };
+
+  // 🚀 Remove player
+  const removePlayer = useMutation({
+    mutationFn: async (playerId) => {
+      const { error } = await supabase
+        .from('TeamPlayers')
+        .update({ status: 'left', left_at: new Date() })
+        .eq('team_id', teamId)
+        .eq('player_id', playerId)
+        .eq('status', 'active');
+
+      if (error) throw error;
+      return playerId;
+    },
+    onSuccess: handleCallbacks((playerId) => {
+      queryClient.invalidateQueries({ queryKey: ['TeamPlayers', teamId] });
+      Toast.show({ type: 'success', text1: 'Player removed successfully' });
+      console.log('Removed:', playerId);
+    }, callbacks.removePlayer?.onSuccess),
+    onError: handleCallbacks((error) => {
+      Toast.show({ type: 'error', text1: 'Failed to remove player' });
+      console.log('Failed to remove player:', error);
+    }, callbacks.removePlayer?.onError),
+  });
+
+  // 🚀 Promote player to captain
+  const promoteToCaptain = useMutation({
+    mutationFn: async (playerId) => {
+      const { error } = await supabase.from('Teams').update({ captain: playerId }).eq('id', teamId);
+      if (error) throw error;
+      return playerId;
+    },
+    onSuccess: handleCallbacks((playerId) => {
+      queryClient.invalidateQueries({ queryKey: ['authUserProfile'] });
+      Toast.show({ type: 'success', text1: 'Player promoted to captain' });
+      console.log('Promoted:', playerId);
+    }, callbacks.promoteToCaptain?.onSuccess),
+    onError: handleCallbacks((error) => {
+      Toast.show({ type: 'error', text1: 'Failed to promote player' });
+      console.log('Failed to promote player:', error);
+    }, callbacks.promoteToCaptain?.onError),
+  });
+
+  const acceptRequest = useMutation({
+    mutationFn: async (playerId) => {
+      const { error } = await supabase
+        .from('TeamPlayers')
+        .update({ status: 'active', joined_at: new Date(), accepted_by: player.id })
+        .eq('team_id', teamId)
+        .eq('player_id', playerId)
+        .eq('status', 'requested');
+
+      if (error) throw error;
+      return playerId;
+    },
+    onSuccess: handleCallbacks((playerId) => {
+      queryClient.invalidateQueries({ queryKey: ['TeamPlayers', teamId] });
+      queryClient.invalidateQueries({ queryKey: ['PlayerInvitesAndRequests', { teamId }] });
+      Toast.show({ type: 'success', text1: 'Player join request accepted' });
+      console.log('Accepted:', playerId);
+    }, callbacks.acceptRequest?.onSuccess),
+    onError: handleCallbacks((error) => {
+      Toast.show({ type: 'error', text1: 'Failed to accept player join request' });
+      console.log('Failed to accept player join request:', error);
+    }, callbacks.acceptRequest?.onError),
+  });
+
+  const denyRequest = useMutation({
+    mutationFn: async (playerId) => {
+      const { error } = await supabase
+        .from('TeamPlayers')
+        .delete()
+        .eq('team_id', teamId)
+        .eq('player_id', playerId)
+        .eq('status', 'requested');
+
+      if (error) throw error;
+      return playerId;
+    },
+    onSuccess: handleCallbacks((playerId) => {
+      queryClient.invalidateQueries({ queryKey: ['PlayerInvitesAndRequests', { teamId }] });
+      Toast.show({ type: 'success', text1: 'Player join request denied' });
+      console.log('Denied:', playerId);
+    }, callbacks.denyRequest?.onSuccess),
+    onError: handleCallbacks((error) => {
+      Toast.show({ type: 'error', text1: 'Failed to deny player join request' });
+      console.log('Failed to deny player join request:', error);
+    }, callbacks.denyRequest?.onError),
+  });
+
+  const revokeInvite = useMutation({
+    mutationFn: async (playerId) => {
+      const { error } = await supabase
+        .from('TeamPlayers')
+        .delete()
+        .eq('team_id', teamId)
+        .eq('player_id', playerId)
+        .eq('status', 'invited');
+
+      if (error) throw error;
+      return playerId;
+    },
+    onSuccess: handleCallbacks((playerId) => {
+      queryClient.invalidateQueries({ queryKey: ['PlayerInvitesAndRequests', { teamId }] });
+      Toast.show({ type: 'success', text1: 'Player invite revoked' });
+      console.log('Revoked:', playerId);
+    }, callbacks.revokeInvite?.onSuccess),
+    onError: handleCallbacks((error) => {
+      Toast.show({ type: 'error', text1: 'Failed to revoke player invite' });
+      console.log('Failed to revoke player invite:', error);
+    }, callbacks.revokeInvite?.onError),
+  });
+
+  return {
+    removePlayer,
+    promoteToCaptain,
+    acceptRequest,
+    denyRequest,
+    revokeInvite,
+  };
+}

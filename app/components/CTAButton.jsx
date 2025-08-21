@@ -5,7 +5,6 @@ import colors from '@lib/colors';
 const CTAButton = ({
   type = 'default',
   text,
-  textColor = 'text-white',
   icon,
   iconColor = 'white',
   callbackFn,
@@ -47,7 +46,7 @@ const CTAButton = ({
         onPressOut={handlePressOut}
         onPress={callbackFn}
         disabled={disabled || loading}
-        className="h-16 w-full items-center justify-center rounded-2xl border border-border-color"
+        className="w-full items-center justify-center rounded-3xl border border-border-color p-4"
         style={{
           backgroundColor: buttonTheme.primary,
           borderColor: buttonTheme.secondary,
@@ -56,12 +55,16 @@ const CTAButton = ({
         {loading ? (
           <View className="flex-row items-center justify-center gap-3">
             <ActivityIndicator size="small" color={iconColor} />
-            <Text className={`pt-1 font-saira text-2xl ${textColor}`}>{text}</Text>
+            <Text style={{ color: buttonTheme.text }} className={`pt-1 font-saira text-2xl`}>
+              {text}
+            </Text>
           </View>
         ) : (
           <View className="flex-row items-center justify-center gap-3">
             {icon && icon}
-            <Text className={`pt-1 font-saira text-2xl ${textColor}`}>{text}</Text>
+            <Text style={{ color: buttonTheme.text }} className={`pt-1 font-saira text-2xl`}>
+              {text}
+            </Text>
           </View>
         )}
       </Pressable>

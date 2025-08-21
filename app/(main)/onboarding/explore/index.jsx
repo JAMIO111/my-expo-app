@@ -13,6 +13,7 @@ import FloatingBottomSheet from '@components/FloatingBottomSheet';
 import { useSupabaseClient } from '@contexts/SupabaseClientContext';
 import Toast from 'react-native-toast-message';
 import { useQueryClient } from '@tanstack/react-query';
+import Heading from '@components/Heading';
 
 const Home = () => {
   const { client: supabase } = useSupabaseClient();
@@ -24,6 +25,7 @@ const Home = () => {
   const [refreshing, setRefreshing] = useState(false);
 
   const { data: playerInvitesAndRequests } = usePlayerInvitesAndRequests({ playerId: player.id });
+  console.log('Player Invites and Requests:', playerInvitesAndRequests);
 
   const joinTeam = async (invite) => {
     const { error } = await supabase
@@ -164,13 +166,11 @@ const Home = () => {
               tintColor="#fff" // iOS spinner color
             />
           }
-          className="flex-1 bg-brand p-5"
+          className="flex-1 bg-bg-grouped-1 p-4"
           contentContainerStyle={{ alignItems: 'center', justifyContent: 'flex-start' }}>
           {playerInvitesAndRequests?.length > 0 && (
-            <View className="mb-6 w-full">
-              <Text className="pb-2 pl-2 font-saira-medium text-3xl text-text-on-brand">
-                Invites
-              </Text>
+            <View className="mb-2 w-full">
+              <Heading text="Invites" />
               {playerInvitesAndRequests.map((invite) => (
                 <TeamInviteCard
                   key={invite.id}
@@ -182,10 +182,8 @@ const Home = () => {
             </View>
           )}
 
-          <View className="w-full">
-            <Text className="w-full pb-2 pl-2 font-saira-medium text-3xl text-text-on-brand">
-              My Teams
-            </Text>
+          <View className="w-full pb-16">
+            <Heading text="My Teams" />
             <View className="w-full gap-5">
               {roles
                 .filter((role) => role.type !== 'admin')

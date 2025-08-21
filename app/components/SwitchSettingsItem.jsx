@@ -1,5 +1,4 @@
 import { Pressable, Text, View } from 'react-native';
-import IonIcons from 'react-native-vector-icons/Ionicons';
 import { useColorScheme } from 'react-native';
 import colors from '@lib/colors';
 import { useState } from 'react';
