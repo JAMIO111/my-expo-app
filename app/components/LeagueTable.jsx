@@ -37,11 +37,11 @@ const LeagueTable = ({ context, season, division }) => {
   if (!isLoading && !isFetching && hasNoStandings) {
     return (
       <View className="mt-4 w-full flex-1 items-center justify-center px-3">
-        <View className="w-full gap-5 rounded-2xl border border-theme-gray-5 bg-bg-grouped-2 px-6 py-16">
-          <Text className="w-full text-center text-lg text-text-1">
+        <View className="w-full gap-5 rounded-3xl border border-theme-gray-5 bg-bg-grouped-2 px-10 py-16">
+          <Text className="w-full text-center font-saira-medium text-lg text-text-1">
             No standings available yet for this season.
           </Text>
-          <Text className="w-full text-center text-lg text-text-1">
+          <Text className="w-full text-center font-saira text-lg text-text-1">
             Try changing the filters to view another season or division.
           </Text>
         </View>
@@ -49,11 +49,11 @@ const LeagueTable = ({ context, season, division }) => {
     );
   }
   return (
-    <View className="w-full flex-1 items-center bg-bg-grouped-1 p-2">
+    <View className="w-full flex-1 items-center bg-bg-grouped-1 p-3">
       <Text className="mb-1 mt-2 w-full pl-2 text-left font-saira-medium text-xl text-text-2">
         {standings?.division?.name} Standings
       </Text>
-      <View className="mb-16 w-full rounded-2xl border border-separator-faint bg-bg-grouped-2 p-3">
+      <View className="mb-16 w-full rounded-3xl border border-theme-gray-5 bg-bg-grouped-2 p-3">
         <View className="h-8 flex-row items-center justify-around border-b-[0.5px] border-separator">
           <Text className="w-18 text-center font-saira font-bold text-text-2">Pos</Text>
           <Text className="flex-1 pl-3 text-left font-saira font-bold text-text-2">Team</Text>

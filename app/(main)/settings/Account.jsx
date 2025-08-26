@@ -15,7 +15,7 @@ import BottomSheetWrapper from '@components/BottomSheetWrapper';
 import { BottomSheetView, BottomSheetScrollView, BottomSheetFooter } from '@gorhom/bottom-sheet';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import colors from '@lib/colors';
-import TeamLogo from '../../components/TeamLogo';
+import TeamLogo from '@components/TeamLogo';
 
 const Account = () => {
   const { client: supabase, sessionRestored } = useSupabaseClient();

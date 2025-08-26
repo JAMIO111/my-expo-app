@@ -232,9 +232,9 @@ const BasicPaywall = () => {
           />
         </View>
         <View className="flex-row items-center justify-between gap-3 px-3 pt-6">
-          <Text className="text-text-2">Restore Purchases</Text>
-          <Text className="text-text-2">Privacy Policy</Text>
-          <Text className="text-text-2">Terms of Use</Text>
+          <Text className="text-text-2 underline">Restore Purchases</Text>
+          <Text className="text-text-2 underline">Privacy Policy</Text>
+          <Text className="text-text-2 underline">Terms of Use</Text>
         </View>
       </View>
     </View>

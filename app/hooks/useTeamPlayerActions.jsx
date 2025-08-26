@@ -16,7 +16,7 @@ export function useTeamPlayerActions(teamId, callbacks = {}) {
 
   // 🚀 Remove player
   const removePlayer = useMutation({
-    mutationFn: async (playerId) => {
+    mutationFn: async ({ teamId, playerId }) => {
       const { error } = await supabase
         .from('TeamPlayers')
         .update({ status: 'left', left_at: new Date() })
@@ -126,11 +126,40 @@ export function useTeamPlayerActions(teamId, callbacks = {}) {
     }, callbacks.revokeInvite?.onError),
   });
 
+  const leaveTeam = useMutation({
+    mutationFn: async ({ team, player }) => {
+      const { error } = await supabase
+        .from('TeamPlayers')
+        .update({ status: 'left', left_at: new Date() })
+        .eq('team_id', team.id)
+        .eq('player_id', player.id)
+        .eq('status', 'active');
+
+      if (error) throw error;
+    },
+    onSuccess: (data, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['TeamPlayers', variables.team.id] });
+      Toast.show({
+        type: 'success',
+        text1: 'Left team',
+        text2: `You have left ${variables.team.display_name}`,
+      });
+      console.log('Left team');
+      callbacks.leaveTeam?.onSuccess?.(data, variables);
+    },
+    onError: (error) => {
+      Toast.show({ type: 'error', text1: 'Failed to leave team' });
+      console.log('Failed to leave team:', error);
+      callbacks.leaveTeam?.onError?.(error);
+    },
+  });
+
   return {
     removePlayer,
     promoteToCaptain,
     acceptRequest,
     denyRequest,
     revokeInvite,
+    leaveTeam,
   };
 }

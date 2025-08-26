@@ -18,7 +18,7 @@ const UpcomingFixtureCard = ({ fixture, inactive = false }) => {
         }, 750); // Reset navigation state after 750ms
         router.push(`/home/${fixture.id}`);
       }}
-      className="h-36 w-72 items-center justify-center gap-2 rounded-xl border border-theme-gray-5 bg-bg-grouped-2 shadow">
+      className="h-36 w-72 items-center justify-center gap-2 rounded-2xl border border-theme-gray-5 bg-bg-grouped-2 shadow">
       <View className="w-full items-center justify-between px-4">
         <View className="w-full flex-row items-center justify-center gap-2">
           <TeamLogo
@@ -62,7 +62,7 @@ const UpcomingFixtureCard = ({ fixture, inactive = false }) => {
       </View>
       <View className="flex-row items-center justify-center gap-2">
         <Text className="font-saira text-text-2">
-          {new Date(fixture?.date_time).toLocaleString('en-GB', {
+          {new Date(fixture?.date_time)?.toLocaleString('en-GB', {
             timeZone: 'Europe/London',
             weekday: 'short',
             day: 'numeric',
@@ -73,7 +73,7 @@ const UpcomingFixtureCard = ({ fixture, inactive = false }) => {
             hour12: false, // optional: set to false for 24h, true for 12h
           })}
         </Text>
-        {new Date(fixture.date_time) < new Date() && !fixture?.is_complete && (
+        {new Date(fixture?.date_time) < new Date() && !fixture?.is_complete && (
           <View className="flex-row items-center gap-1">
             <View className="h-3 w-3 rounded-full bg-theme-red"></View>
             <Text className="font-saira text-theme-red">Live</Text>

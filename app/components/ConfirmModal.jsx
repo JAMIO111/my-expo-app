@@ -33,6 +33,7 @@ const ConfirmModal = ({
       <View className="relative rounded-3xl border border-theme-gray-3 bg-background-light p-6 pt-6">
         {/* Close button inside modal box */}
         <TouchableOpacity
+          className="bg-white"
           onPress={onCancel}
           style={{
             position: 'absolute',

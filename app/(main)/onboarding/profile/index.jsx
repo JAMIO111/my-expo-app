@@ -30,7 +30,12 @@ const ProfilePage = () => {
         options={{
           header: () => (
             <SafeViewWrapper useTopInset={false} useBottomInset={false}>
-              <CustomHeader title="My Profile" showBack={false} />
+              <CustomHeader
+                title="My Profile"
+                showBack={false}
+                rightIcon="settings-outline"
+                onRightPress={() => router.push('/(main)/onboarding/profile/edit-profile')}
+              />
             </SafeViewWrapper>
           ),
         }}

@@ -1,10 +1,10 @@
-import { StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 import TeamLogo from './TeamLogo';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 
-const MyTeamCard = ({ role }) => {
+const MyTeamCard = ({ role, onPress }) => {
   return (
-    <View className="w-full rounded-3xl border border-theme-gray-4 bg-bg-grouped-2 p-5">
+    <View className={`relative w-full rounded-3xl border border-theme-gray-4 bg-bg-grouped-2 p-5`}>
       <View className="flex-row items-center justify-between">
         <View className="flex-1 gap-2">
           <View className="flex-row items-center gap-5">
@@ -29,6 +29,11 @@ const MyTeamCard = ({ role }) => {
           </View>
         </View>
       </View>
+      <Pressable
+        onPress={onPress}
+        className="absolute right-3 top-3 h-12 w-12 items-center justify-center rounded-2xl border border-theme-red bg-theme-red/70">
+        <Ionicons name="log-out-outline" size={24} color="#fff" />
+      </Pressable>
     </View>
   );
 };
