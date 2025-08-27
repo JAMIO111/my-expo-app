@@ -1,12 +1,12 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useSupabaseClient } from '@contexts/SupabaseClientContext';
 import Toast from 'react-native-toast-message';
-import { useUser } from '../contexts/UserProvider';
+import { useUser } from '@contexts/UserProvider';
 
 export function useTeamPlayerActions(teamId, callbacks = {}) {
   const queryClient = useQueryClient();
   const { client: supabase } = useSupabaseClient();
-  const { player } = useUser();
+  const { player, refetch } = useUser();
 
   // Helper to merge default + custom callbacks
   const handleCallbacks = (defaultFn, customFn) => (arg) => {
@@ -126,6 +126,28 @@ export function useTeamPlayerActions(teamId, callbacks = {}) {
     }, callbacks.revokeInvite?.onError),
   });
 
+  const revokeRequest = useMutation({
+    mutationFn: async (requestId) => {
+      const { error } = await supabase
+        .from('TeamPlayers')
+        .delete()
+        .eq('id', requestId)
+        .eq('status', 'requested');
+
+      if (error) throw error;
+      return requestId;
+    },
+    onSuccess: handleCallbacks((requestId) => {
+      queryClient.invalidateQueries({ queryKey: ['PlayerInvitesAndRequests', { teamId }] });
+      Toast.show({ type: 'info', text1: 'Request successfully revoked' });
+      console.log('Revoked:', requestId);
+    }, callbacks.revokeRequest?.onSuccess),
+    onError: handleCallbacks((error) => {
+      Toast.show({ type: 'error', text1: 'Failed to revoke join team request' });
+      console.log('Failed to revoke join team request:', error);
+    }, callbacks.revokeRequest?.onError),
+  });
+
   const leaveTeam = useMutation({
     mutationFn: async ({ team, player }) => {
       const { error } = await supabase
@@ -139,6 +161,7 @@ export function useTeamPlayerActions(teamId, callbacks = {}) {
     },
     onSuccess: (data, variables) => {
       queryClient.invalidateQueries({ queryKey: ['TeamPlayers', variables.team.id] });
+      refetch();
       Toast.show({
         type: 'success',
         text1: 'Left team',
@@ -154,6 +177,30 @@ export function useTeamPlayerActions(teamId, callbacks = {}) {
     },
   });
 
+  const sendJoinRequest = useMutation({
+    mutationFn: async (teamId) => {
+      const { error } = await supabase.from('TeamPlayers').insert({
+        team_id: teamId,
+        player_id: player.id,
+        status: 'requested',
+        requested_at: new Date(),
+        requested_by: player.id,
+      });
+
+      if (error) throw error;
+      return teamId;
+    },
+    onSuccess: handleCallbacks((teamId) => {
+      queryClient.invalidateQueries({ queryKey: ['PlayerInvitesAndRequests', { teamId }] });
+      Toast.show({ type: 'success', text1: 'Join request sent' });
+      console.log('Join request sent for team:', teamId);
+    }, callbacks.sendJoinRequest?.onSuccess),
+    onError: handleCallbacks((error) => {
+      Toast.show({ type: 'error', text1: 'Failed to send join request' });
+      console.log('Failed to send join request:', error);
+    }, callbacks.sendJoinRequest?.onError),
+  });
+
   return {
     removePlayer,
     promoteToCaptain,
@@ -161,5 +208,7 @@ export function useTeamPlayerActions(teamId, callbacks = {}) {
     denyRequest,
     revokeInvite,
     leaveTeam,
+    sendJoinRequest,
+    revokeRequest,
   };
 }

@@ -4,6 +4,8 @@ const StatCardCompare = ({ stat, homeTeam, awayTeam }) => {
   const total = stat.homeValue + stat.awayValue;
   const homeRatio = total === 0 ? 0.5 : stat.homeValue / total;
   const awayRatio = total === 0 ? 0.5 : stat.awayValue / total;
+  const homeLeagueRatio = total === 0 ? 0.5 : total / stat.homeValue; // Inverted for league position
+  const awayLeagueRatio = total === 0 ? 0.5 : total / stat.awayValue; // Inverted for league position
 
   return (
     <View className=" bg-bg-grouped-2 px-4 pb-3 pt-2">
@@ -24,13 +26,16 @@ const StatCardCompare = ({ stat, homeTeam, awayTeam }) => {
         <View
           className="h-full rounded-full"
           style={{
-            flex: homeRatio,
+            flex: stat.statName === 'League Position' ? homeLeagueRatio : homeRatio,
             backgroundColor: homeTeam?.crest?.color1,
           }}
         />
         <View
           className="h-full rounded-full"
-          style={{ flex: awayRatio, backgroundColor: awayTeam?.crest?.color1 }}
+          style={{
+            flex: stat.statName === 'League Position' ? awayLeagueRatio : awayRatio,
+            backgroundColor: awayTeam?.crest?.color1,
+          }}
         />
       </View>
     </View>

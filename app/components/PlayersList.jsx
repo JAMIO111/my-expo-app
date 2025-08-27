@@ -15,7 +15,7 @@ const PlayersList = ({ team, context, fixtureId }) => {
         <Text>Error: {error.message}</Text>
       ) : sortedPlayers?.length === 0 ? (
         <View className="items-center justify-center rounded-xl border border-theme-gray-5 bg-bg-grouped-2 px-4 py-7">
-          <Text className="font-saira-medium text-xl text-text-1">
+          <Text className="font-saira text-xl text-text-2">
             No players registered to this team.
           </Text>
         </View>

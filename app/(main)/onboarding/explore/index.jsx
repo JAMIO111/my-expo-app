@@ -32,7 +32,7 @@ const Home = () => {
   const { data: playerInvitesAndRequests } = usePlayerInvitesAndRequests({ playerId: player.id });
   console.log('Player Invites and Requests:', playerInvitesAndRequests);
 
-  const { leaveTeam } = useTeamPlayerActions();
+  const { leaveTeam, sendJoinRequest, revokeRequest } = useTeamPlayerActions();
 
   const joinTeam = async (invite) => {
     const { error } = await supabase
@@ -152,6 +152,23 @@ const Home = () => {
     });
   };
 
+  const handleRevoke = (request) => {
+    openConfirm({
+      invite: request,
+      title: 'Revoke Request?',
+      message: `Are you sure you want to revoke the request to join ${request.team.display_name}?`,
+      topButtonText: 'Revoke Request',
+      bottomButtonText: 'Cancel',
+      topButtonType: 'error',
+      bottomButtonType: 'default',
+      bottomButtonFn: () => setModalVisible(false),
+      topButtonFn: () => {
+        revokeRequest.mutate(request.id);
+        setModalVisible(false);
+      },
+    });
+  };
+
   const onRefresh = useCallback(() => {
     setRefreshing(true);
 
@@ -192,12 +209,7 @@ const Home = () => {
           <View className="flex-1 items-center justify-center p-4">
             <SearchResultsOverlay
               searchQuery={searchQuery}
-              onSelectTeam={(team) => {
-                console.log('Selected team:', team);
-                setSearchActive(false);
-                setSearchQuery('');
-                searchInputRef.current?.blur();
-              }}
+              sendJoinRequest={sendJoinRequest}
               onClose={() => {
                 setSearchActive(false);
                 setSearchQuery('');
@@ -219,35 +231,66 @@ const Home = () => {
               style={{ marginTop: 67 }}
               className="flex-1 bg-bg-grouped-1 p-3 pt-5"
               contentContainerStyle={{ alignItems: 'center', justifyContent: 'flex-start' }}>
-              {playerInvitesAndRequests?.length > 0 && (
+              {playerInvitesAndRequests?.filter((invite) => invite.status === 'invited').length >
+                0 && (
                 <View className="mb-2 w-full">
                   <Heading text="Invites" />
-                  {playerInvitesAndRequests.map((invite) => (
-                    <TeamInviteCard
-                      key={invite.id}
-                      invite={invite}
-                      onAccept={() => handleAccept(invite)}
-                      onDecline={() => handleDecline(invite)}
-                    />
-                  ))}
-                </View>
-              )}
-
-              <View className="w-full pb-16">
-                <Heading text="My Teams" />
-                <View className="w-full gap-5">
-                  {roles
-                    .filter((role) => role.type !== 'admin')
-                    .map((role) => (
-                      <MyTeamCard
-                        key={role.id}
-                        active={currentRole?.team?.id === role?.team?.id}
-                        onPress={() => handleLeaveTeam(role)}
-                        role={role}
+                  {playerInvitesAndRequests
+                    .filter((invite) => invite.status === 'invited')
+                    .map((invite) => (
+                      <TeamInviteCard
+                        type="invite"
+                        key={invite.id}
+                        invite={invite}
+                        onAccept={() => handleAccept(invite)}
+                        onDecline={() => handleDecline(invite)}
                       />
                     ))}
                 </View>
-              </View>
+              )}
+
+              {playerInvitesAndRequests?.filter((invite) => invite.status === 'requested').length >
+                0 && (
+                <View className="mb-2 w-full">
+                  <Heading text="Requests" />
+                  {playerInvitesAndRequests
+                    .filter((invite) => invite.status === 'requested')
+                    .map((invite) => (
+                      <TeamInviteCard
+                        type="request"
+                        key={invite.id}
+                        invite={invite}
+                        onDecline={() => handleRevoke(invite)}
+                      />
+                    ))}
+                </View>
+              )}
+              {roles?.filter((role) => role.type !== 'admin').length > 0 ? (
+                <View className="w-full pb-16">
+                  <Heading text="My Teams" />
+                  <View className="w-full gap-3">
+                    {roles
+                      .filter((role) => role.type !== 'admin')
+                      .map((role) => (
+                        <MyTeamCard
+                          key={role.id}
+                          active={currentRole?.team?.id === role?.team?.id}
+                          onPress={() => handleLeaveTeam(role)}
+                          role={role}
+                        />
+                      ))}
+                  </View>
+                </View>
+              ) : (
+                <View
+                  className="w-full items-center justify-center rounded-2xl border border-theme-gray-4
+                 bg-bg-grouped-2 p-6">
+                  <Text className="font-saira text-lg text-text-2">
+                    You are not currently a member of any teams. Use the search bar above to find
+                    and join teams.
+                  </Text>
+                </View>
+              )}
             </ScrollView>
             <NavBar type="onboarding" />
           </>

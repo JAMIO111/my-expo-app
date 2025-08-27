@@ -54,8 +54,18 @@ export const fetchAuthUserProfile = async (supabase) => {
           display_name,
           crest,
           abbreviation,
-          captain,
-          vice_captain,
+          captain:Players!Teams_captain_fkey (
+            id,
+            first_name,
+            surname,
+            nickname
+          ),
+          vice_captain:Players!Teams_vice_captain_fkey (
+            id,
+            first_name,
+            surname,
+            nickname
+          ),
           display_name,
           cover_image_url,
           address:Addresses(*),

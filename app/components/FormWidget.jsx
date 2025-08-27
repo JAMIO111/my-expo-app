@@ -36,9 +36,25 @@ const FormCircle = ({ result }) => {
   );
 };
 
+const normalizeForm = (form) => {
+  const maxLength = 5;
+  if (!form || form.length === 0) return Array(maxLength).fill('-');
+
+  // ensure length is exactly 5
+  const filled = [...form];
+  while (filled.length < maxLength) {
+    filled.push('-');
+  }
+  return filled.slice(0, maxLength);
+};
+
 const FormWidget = ({ homeTeamId, awayTeamId }) => {
-  const { data: homeForm, isLoading: loadingHome } = useLast5Results(homeTeamId);
-  const { data: awayForm, isLoading: loadingAway } = useLast5Results(awayTeamId);
+  const { data: homeFormRaw, isLoading: loadingHome } = useLast5Results(homeTeamId);
+  const { data: awayFormRaw, isLoading: loadingAway } = useLast5Results(awayTeamId);
+
+  const homeForm = normalizeForm(homeFormRaw);
+  const awayForm = normalizeForm(awayFormRaw);
+
   console.log('Home Form:', homeForm);
   console.log('Away Form:', awayForm);
 

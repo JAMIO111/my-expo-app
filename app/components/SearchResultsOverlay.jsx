@@ -6,7 +6,7 @@ import TeamLogo from '@components/TeamLogo';
 import FloatingBottomSheet from '@components/FloatingBottomSheet';
 import Ionicons from '@expo/vector-icons/Ionicons';
 
-const SearchResultsOverlay = ({ searchQuery, onSelectTeam }) => {
+const SearchResultsOverlay = ({ searchQuery, sendJoinRequest }) => {
   const { client: supabase } = useSupabaseClient();
   const [results, setResults] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -34,14 +34,15 @@ const SearchResultsOverlay = ({ searchQuery, onSelectTeam }) => {
         .from('Teams')
         .select(
           `
-    id,
-    display_name,
-    abbreviation,
-    crest,
-    division:Divisions(
-      district:Districts(name)
-    )
-  `
+            id,
+            display_name,
+            abbreviation,
+            crest,
+            division:Divisions(
+            name,
+            district:Districts(name)
+            )
+          `
         )
         .or(`display_name.ilike.%${searchQuery}%,abbreviation.ilike.%${searchQuery}%`)
         .limit(50);
@@ -72,7 +73,7 @@ const SearchResultsOverlay = ({ searchQuery, onSelectTeam }) => {
       topButtonType: 'success',
       bottomButtonType: 'default',
       topButtonFn: () => {
-        onSelectTeam(team);
+        sendJoinRequest.mutate(team.id);
         setModalVisible(false);
       },
       bottomButtonFn: () => setModalVisible(false),
@@ -87,18 +88,15 @@ const SearchResultsOverlay = ({ searchQuery, onSelectTeam }) => {
         <View className="flex-1">
           <View className="">
             <Text className="font-saira-semibold text-xl text-text-1">{item.display_name}</Text>
-            <Text className="font-saira text-xl text-text-2">{item.division.district.name}</Text>
+            <Text className="font-saira text-xl text-text-2">
+              {item.division.district.name} - {item.division.name}
+            </Text>
           </View>
         </View>
         <TouchableOpacity
           onPress={() => handleSelectTeam(item)}
-          className="items-center justify-center rounded-2xl border border-theme-purple bg-theme-purple/70 p-3">
-          <Ionicons name="mail-outline" size={20} color="#fff" />
-        </TouchableOpacity>
-        <TouchableOpacity
-          onPress={() => handleSelectTeam(item)}
-          className="items-center justify-center rounded-2xl border border-theme-indigo bg-theme-indigo/70 p-3">
-          <Ionicons name="person-add-outline" size={20} color="#fff" />
+          className="items-center justify-center rounded-2xl border border-brand-light bg-brand p-3">
+          <Ionicons name="send-sharp" size={20} color="#fff" />
         </TouchableOpacity>
       </View>
     </TouchableOpacity>
@@ -130,8 +128,8 @@ const SearchResultsOverlay = ({ searchQuery, onSelectTeam }) => {
             </>
           ) : (
             <View className="flex-1 items-center justify-start p-5">
-              <Text className="w-full rounded-2xl border border-theme-gray-5 bg-bg-grouped-2 p-8 py-16 text-center font-saira text-lg text-text-2">
-                No results found
+              <Text className="w-full rounded-2xl border border-theme-gray-5 bg-bg-grouped-2 p-8 py-12 text-center font-saira text-lg text-text-2">
+                {searchQuery === '' ? 'Start typing to search for results' : 'No results found'}
               </Text>
             </View>
           )}

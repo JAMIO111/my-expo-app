@@ -21,7 +21,7 @@ const FixturesHomeCard = ({ fixture, isLoading }) => {
         }, 750); // Reset navigation state after 750ms
         router.push('/home/fixtures');
       }}
-      className="h-28 w-full rounded-xl border border-theme-gray-5 bg-bg-grouped-2 shadow">
+      className="h-28 w-full rounded-2xl border border-theme-gray-5 bg-bg-grouped-2 shadow">
       <View className="mx-3 flex-row items-center justify-between border-b border-theme-gray-5 px-1 pb-1 pt-2">
         <Text className="font-saira-medium text-2xl text-text-1">Fixtures</Text>
         <Ioconicons name="chevron-forward" size={20} color={themeColors?.icon} />

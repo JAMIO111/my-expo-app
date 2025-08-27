@@ -3,7 +3,7 @@ import TeamLogo from './TeamLogo';
 import { useRouter } from 'expo-router';
 import { useRef } from 'react';
 
-const UpcomingFixtureCard = ({ fixture, inactive = false }) => {
+const UpcomingFixtureCard = ({ fixture, inactive = false, cardShadow }) => {
   const router = useRouter();
   const hasNavigated = useRef(false);
 
@@ -18,7 +18,7 @@ const UpcomingFixtureCard = ({ fixture, inactive = false }) => {
         }, 750); // Reset navigation state after 750ms
         router.push(`/home/${fixture.id}`);
       }}
-      className="h-36 w-72 items-center justify-center gap-2 rounded-2xl border border-theme-gray-5 bg-bg-grouped-2 shadow">
+      className={`h-36 w-72 items-center justify-center gap-2 rounded-2xl border border-theme-gray-5 bg-bg-grouped-2 shadow ${cardShadow}`}>
       <View className="w-full items-center justify-between px-4">
         <View className="w-full flex-row items-center justify-center gap-2">
           <TeamLogo

@@ -21,7 +21,7 @@ const MyTeamCard = ({ role, onPress }) => {
           </View>
           <View className="flex-row items-center gap-5">
             <Ionicons name="star-outline" size={26} color="#6B7280" />
-            <Text className="font-saira text-lg text-text-2">Captain: John Dryden</Text>
+            <Text className="font-saira text-lg text-text-2">{`Captain: ${role.team?.captain?.first_name ?? ''} ${role.team?.captain?.surname ?? ''} `}</Text>
           </View>
           <View className="flex-row items-center gap-5">
             <Ionicons name="person-outline" size={26} color="#6B7280" />

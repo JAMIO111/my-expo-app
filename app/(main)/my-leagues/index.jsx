@@ -1,4 +1,4 @@
-import { StyleSheet, View } from 'react-native';
+import { StyleSheet } from 'react-native';
 import { Stack, useRouter } from 'expo-router';
 import { useUser } from '@contexts/UserProvider';
 import CustomHeader from '@components/CustomHeader';

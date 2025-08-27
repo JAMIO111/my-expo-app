@@ -48,7 +48,7 @@ const HorizontalScrollUpcomingFixtures = ({ fixtures, isLoading }) => {
       snapToInterval={cardWidth + gap}
       decelerationRate="fast"
       snapToAlignment="start"
-      className="w-full pb-2">
+      className="w-full py-2">
       {isEmpty ? (
         <View
           className="h-32 items-center justify-center rounded-2xl bg-bg-grouped-2"
@@ -64,7 +64,7 @@ const HorizontalScrollUpcomingFixtures = ({ fixtures, isLoading }) => {
               width: cardWidth,
               marginRight: index === fixtures.length - 1 ? 0 : gap,
             }}>
-            <UpcomingFixtureCard fixture={fixture} />
+            <UpcomingFixtureCard cardShadow="shadow-gray" fixture={fixture} />
           </View>
         ))
       )}

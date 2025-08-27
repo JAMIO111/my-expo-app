@@ -12,8 +12,8 @@ const ResultsHomeCard = ({ result }) => {
   return (
     <Pressable
       onPress={() => router.push('/home/results')}
-      className="w-full rounded-xl border border-theme-gray-5 bg-bg-grouped-2 shadow"
-      style={{ minHeight: 110 }} // prevents vertical collapse
+      className="w-full rounded-2xl border border-theme-gray-5 bg-bg-grouped-2 shadow"
+      style={{ minHeight: 100 }} // prevents vertical collapse
     >
       <View className="mx-3 flex-row items-center justify-between border-b border-theme-gray-5 px-1 pb-1 pt-2">
         <Text className="font-saira-medium text-2xl text-text-1">Results</Text>
@@ -27,7 +27,7 @@ const ResultsHomeCard = ({ result }) => {
           </Text>
         </View>
       ) : (
-        <View className="py-2">
+        <View className="gap-1 py-3">
           {/* Home */}
           <View className="flex-row justify-between px-5">
             <View className="flex-shrink flex-row items-center">

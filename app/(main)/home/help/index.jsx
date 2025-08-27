@@ -5,12 +5,12 @@ import { ScrollView } from 'react-native-gesture-handler';
 
 const index = () => {
   return (
-    <SafeViewWrapper useTopInsets={false} useBottomInsets={false} topColor="bg-brand">
+    <SafeViewWrapper useBottomInset={false} topColor="bg-brand">
       <CustomHeader title="Help Centre" />
       <ScrollView
         contentContainerStyle={{ justifyContent: 'flex-start', alignItems: 'center' }}
-        className="flex-1 bg-bg-grouped-1">
-        <View className="mb-4 w-full items-start justify-start rounded-2xl bg-bg-grouped-2 p-3">
+        className="flex-1 bg-bg-grouped-1 p-5">
+        <View className="mb-6 w-full items-start justify-start rounded-2xl bg-bg-grouped-2 p-4">
           <Text className="mb-3 text-left font-saira-bold text-2xl text-text-1">
             Submitting Results
           </Text>
@@ -31,7 +31,7 @@ const index = () => {
             league administrators to resolve the issue.
           </Text>
         </View>
-        <View className="mb-4 w-full items-start justify-start rounded-2xl bg-bg-grouped-2 p-3">
+        <View className="mb-6 w-full items-start justify-start rounded-2xl bg-bg-grouped-2 p-4">
           <Text className="mb-3 text-left font-saira-bold text-2xl text-text-1">
             Progression System
           </Text>
@@ -54,7 +54,7 @@ const index = () => {
           </Text>
         </View>
         <View>
-          <Text className="text-center text-text-3">
+          <Text className="mb-10 text-center font-saira text-text-3">
             Have a request for a new feature? Let us know! We're always looking to improve the app.
           </Text>
         </View>

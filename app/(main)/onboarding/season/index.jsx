@@ -73,7 +73,7 @@ const Season = () => {
           </View>
           <View className="w-full items-center justify-center bg-bg-grouped-1 p-5">
             {!isLoading ? (
-              <UpcomingFixtureCard fixture={nextMatch?.[0]} inactive />
+              <UpcomingFixtureCard fixture={nextMatch?.[0]} inactive cardShadow="shadow-gray" />
             ) : (
               <View className="w-72 rounded-2xl border border-theme-gray-5">
                 <UpcomingFixtureSkeleton />
