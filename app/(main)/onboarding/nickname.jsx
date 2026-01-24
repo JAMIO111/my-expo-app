@@ -40,6 +40,7 @@ const Nickname = () => {
               value={nickname}
               onChangeText={setNickname}
               returnKeyType="done"
+              autoCapitalize="words"
             />
           </View>
           <View className="mt-8">

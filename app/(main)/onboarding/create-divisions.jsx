@@ -134,6 +134,7 @@ export default function CreateDivisions() {
   const [drawsEnabled, setDrawsEnabled] = useState(false);
   const [specialMatchesEnabled, setSpecialMatchesEnabled] = useState(false);
   const [specialMatchName, setSpecialMatchName] = useState('');
+  const [midSeasonTransfersEnabled, setMidSeasonTransfersEnabled] = useState(false);
   const [specialMatchAbbreviation, setSpecialMatchAbbreviation] = useState('');
   const [selectedDivision, setSelectedDivision] = useState(null);
   const bottomSheetRef = useRef(null);
@@ -158,6 +159,7 @@ export default function CreateDivisions() {
     setSpecialMatchName('');
     setSpecialMatchAbbreviation('');
     setSelectedDivision(null);
+    setMidSeasonTransfersEnabled(false);
   };
 
   const handleSave = () => {
@@ -266,6 +268,7 @@ export default function CreateDivisions() {
       promotionSpots: isTopTier ? 0 : Number(promotionSpots) || 0,
       relegationSpots: Number(relegationSpots) || 0,
       drawsEnabled,
+      midSeasonTransfersEnabled,
       specialMatchesEnabled,
       specialMatchName: specialMatchesEnabled ? specialMatchName : '',
       specialMatchAbbreviation: specialMatchesEnabled ? specialMatchAbbreviation : '',
@@ -396,6 +399,7 @@ export default function CreateDivisions() {
     setSpecialMatchesEnabled(division.specialMatchesEnabled);
     setSpecialMatchName(division.specialMatchName);
     setSpecialMatchAbbreviation(division.specialMatchAbbreviation);
+    setMidSeasonTransfersEnabled(division.midSeasonTransfersEnabled);
     openSheet();
   };
 
@@ -512,6 +516,7 @@ export default function CreateDivisions() {
                   leftIconName="trophy-outline"
                   iconColor="#A259FF"
                   titleColor="text-text-1"
+                  autoCapitalize="words"
                 />
               </View>
 
@@ -583,6 +588,29 @@ export default function CreateDivisions() {
                   <Text className="mt-2 text-text-2">
                     This setting controls whether ties are permitted upon match submission and shown
                     in the league table.{' '}
+                  </Text>
+                </View>
+                <View>
+                  <View className="h-16 flex-row items-center gap-5 rounded-xl border border-theme-gray-4 bg-bg-grouped-2 pr-5">
+                    <View className="h-full justify-center rounded-l-xl border-r border-theme-gray-3 bg-bg-grouped-1 pl-3 pr-4">
+                      <Ionicons name="swap-horizontal-outline" size={26} color="#A259FF" />
+                    </View>
+                    <Text className="flex-1 font-saira-medium text-xl text-text-1">
+                      Mid-Season Transfers
+                    </Text>
+                    <Switch
+                      value={midSeasonTransfersEnabled}
+                      onValueChange={setMidSeasonTransfersEnabled}
+                      thumbColor="white"
+                      trackColor={{
+                        false: 'gray',
+                        true: '#4CAF50',
+                      }}
+                    />
+                  </View>
+                  <Text className="mt-2 text-text-2">
+                    If disabled, players can still transfer out, but new players cannot transfer in
+                    until the next season.
                   </Text>
                 </View>
                 <View>

@@ -42,6 +42,7 @@ const Name = () => {
               value={firstName}
               onChangeText={setFirstName}
               autoComplete="given-name"
+              autoCapitalize="words"
               returnKeyType="next"
               onSubmitEditing={() => inputRef2.current?.focus()}
             />
@@ -53,6 +54,7 @@ const Name = () => {
               titleColor="text-text-on-brand"
               leftIconName="person"
               iconColor="green"
+              autoCapitalize="words"
               value={surname}
               onChangeText={setSurname}
               autoComplete="family-name"

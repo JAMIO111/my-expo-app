@@ -3,7 +3,7 @@ import 'dotenv/config';
 
 export default () => ({
   expo: {
-    scheme: 'Break-Room',
+    scheme: 'breakroom',
     name: 'Break Room',
     owner: 'jdigital',
     slug: 'break-room',
@@ -14,7 +14,7 @@ export default () => ({
     experiments: {
       tsconfigPaths: true,
     },
-    plugins: ['expo-router', 'expo-font'],
+    plugins: ['expo-router', 'expo-font', 'expo-web-browser'],
     orientation: 'portrait',
     icon: './app/assets/Break-Room-Logo-1024-Background.png',
     userInterfaceStyle: 'automatic',

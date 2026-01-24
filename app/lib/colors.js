@@ -65,6 +65,12 @@ const colors = {
       transparent: 'rgba(224, 172, 0, 0.15)', // from #E0AC00
       text: '#000000',
     },
+    white: {
+      primary: '#FFFFFF',
+      secondary: '#F3F4F6',
+      transparent: 'rgba(255, 255, 255, 0.15)', // from #FFFFFF
+      text: '#000000',
+    },
   },
 
   dark: {
@@ -131,6 +137,12 @@ const colors = {
       primary: '#E1B521',
       secondary: '#CDAA00',
       transparent: 'rgba(225, 181, 33, 0.15)', // from #E1B521
+      text: '#000000',
+    },
+    white: {
+      primary: '#FFFFFF',
+      secondary: '#F3F4F6',
+      transparent: 'rgba(255, 255, 255, 0.15)', // from #FFFFFF
       text: '#000000',
     },
   },

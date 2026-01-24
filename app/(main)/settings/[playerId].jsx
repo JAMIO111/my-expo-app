@@ -24,7 +24,7 @@ const PlayerId = () => {
 
   const relevantDate = status === 'active' ? playerProfile?.joined_at : playerProfile?.requested_at;
 
-  const { removePlayer, promoteToCaptain, acceptRequest, denyRequest, revokeInvite } =
+  const { removePlayer, promoteToCaptain, acceptJoin, denyRequest, revokeInvite } =
     useTeamPlayerActions(currentRole?.team?.id, {
       removePlayer: {
         onSuccess: () => {
@@ -36,7 +36,7 @@ const PlayerId = () => {
           router.replace('/home');
         },
       },
-      acceptRequest: {
+      acceptJoin: {
         onSuccess: () => {
           router.back();
         },
@@ -170,7 +170,7 @@ const PlayerId = () => {
                     : status === 'requested'
                       ? () => {
                           console.log('accepting request');
-                          acceptRequest.mutate(playerId);
+                          acceptJoin.mutate(playerId);
                         }
                       : null
                 }

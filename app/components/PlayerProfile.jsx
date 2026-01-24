@@ -176,54 +176,50 @@ const PlayerProfile = ({ context, isLoading, playerProfile, error }) => {
       </View>
       <View className="w-full pt-8">
         <Heading text="Personal Details" />
-        <View className="gap-2.5 rounded-2xl border border-theme-gray-5 bg-bg-grouped-2 p-3 shadow-[0_2px_4px_rgba(0,0,0,0.1)]">
-          <View className="w-full flex-row items-center justify-between">
-            <Text className="font-saira-medium text-xl text-text-2">Team</Text>
-            <Text className="font-saira-semibold text-lg text-text-1">
+      </View>
+      <View className="flex w-full flex-row px-2 pt-3">
+        <View className="flex flex-1 flex-col gap-4">
+          <View className="flex- w-full flex-col gap-1">
+            <Text className="font-saira text-xl text-text-2">Team</Text>
+            <Text className="font-saira-semibold text-xl text-text-1">
               {playerProfile?.team_name}
             </Text>
           </View>
-          <View className="border-t border-theme-gray-5"></View>
-          <View className="w-full flex-row items-center justify-between">
-            <Text className="font-saira-medium text-xl text-text-2">League</Text>
-            <Text className="font-saira-semibold text-lg text-text-1">
-              {playerProfile?.district_name} - {playerProfile?.division_name}
+          <View className="flex- w-full flex-col gap-1">
+            <Text className="font-saira text-xl text-text-2">Date of Birth</Text>
+            <Text className="font-saira-semibold text-xl text-text-1">
+              {playerProfile?.dob
+                ? new Date(playerProfile.dob).toLocaleDateString('en-GB', {
+                    year: 'numeric',
+                    month: '2-digit',
+                    day: '2-digit',
+                  })
+                : 'Birthday Unavailable'}
             </Text>
           </View>
-
-          <View className="border-t border-theme-gray-5"></View>
-          <View className="w-full flex-row items-center justify-between">
-            <Text className="font-saira-medium text-xl text-text-2">Date of Birth</Text>
-            <View className="flex-row items-center gap-3">
-              {playerProfile?.dob && isBirthdayToday(playerProfile?.dob) && (
-                <Image
-                  source={require('@assets/birthday-cake.png')}
-                  className="h-6 w-6"
-                  resizeMode="contain"
-                />
-              )}
-              <Text className="font-saira-semibold text-lg text-text-1">
-                {playerProfile?.dob
-                  ? new Date(playerProfile.dob).toLocaleDateString('en-GB', {
-                      year: 'numeric',
-                      month: '2-digit',
-                      day: '2-digit',
-                    })
-                  : 'Birthday Unavailable'}
-              </Text>
-            </View>
+          <View className="flex- w-full flex-col gap-1">
+            <Text className="font-saira text-xl text-text-2">Team</Text>
+            <Text className="font-saira-semibold text-xl text-text-1">
+              {playerProfile?.team_name}
+            </Text>
           </View>
-          <View className="border-t border-theme-gray-5"></View>
-          <View className="w-full flex-row items-center justify-between ">
-            <Text className="font-saira-medium text-xl text-text-2">Age</Text>
-            <Text className="font-saira-semibold text-lg text-text-1">
+        </View>
+        <View className="flex flex-1 flex-col gap-4">
+          <View className="flex- w-full flex-col gap-1">
+            <Text className="font-saira text-xl text-text-2">Team</Text>
+            <Text className="font-saira-semibold text-xl text-text-1">
+              {playerProfile?.team_name}
+            </Text>
+          </View>
+          <View className="flex- w-full flex-col gap-1">
+            <Text className="font-saira text-xl text-text-2">Age</Text>
+            <Text className="font-saira-semibold text-xl text-text-1">
               {playerProfile?.dob ? `${years} Years ${days} days` : 'Age Unavailable'}
             </Text>
           </View>
-          <View className="border-t border-theme-gray-5"></View>
-          <View className="w-full flex-row items-center justify-between">
-            <Text className="font-saira-medium text-xl text-text-2">Member Since</Text>
-            <Text className="font-saira-semibold text-lg text-text-1">
+          <View className="flex- w-full flex-col gap-1">
+            <Text className="font-saira text-xl text-text-2">Member Since</Text>
+            <Text className="font-saira-semibold text-xl text-text-1">
               {new Date(playerProfile?.created_at).toLocaleDateString('en-GB', {
                 year: 'numeric',
                 month: 'short',

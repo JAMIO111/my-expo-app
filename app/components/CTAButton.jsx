@@ -46,23 +46,24 @@ const CTAButton = ({
         onPressOut={handlePressOut}
         onPress={callbackFn}
         disabled={disabled || loading}
-        className="w-full items-center justify-center rounded-3xl border border-border-color p-4"
+        className="w-full items-center justify-center border border-border-color p-3"
         style={{
           backgroundColor: buttonTheme.primary,
           borderColor: buttonTheme.secondary,
           opacity: disabled || loading ? 0.6 : 1,
+          borderRadius: 16,
         }}>
         {loading ? (
           <View className="flex-row items-center justify-center gap-3">
             <ActivityIndicator size="small" color={iconColor} />
-            <Text style={{ color: buttonTheme.text }} className={`pt-1 font-saira text-2xl`}>
+            <Text style={{ color: buttonTheme.text }} className={`pt-1 font-saira text-xl`}>
               {text}
             </Text>
           </View>
         ) : (
           <View className="flex-row items-center justify-center gap-3">
             {icon && icon}
-            <Text style={{ color: buttonTheme.text }} className={`pt-1 font-saira text-2xl`}>
+            <Text style={{ color: buttonTheme.text }} className={`pt-1 font-saira text-xl`}>
               {text}
             </Text>
           </View>

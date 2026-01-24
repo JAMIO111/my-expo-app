@@ -2,7 +2,7 @@ import { StyleSheet, Text, View, Image } from 'react-native';
 import { useRouter, Stack } from 'expo-router';
 import CTAButton from '@components/CTAButton';
 
-const CreateJoinTeam = () => {
+const AdminOrPlayer = () => {
   const router = useRouter();
 
   return (
@@ -15,10 +15,10 @@ const CreateJoinTeam = () => {
       <View className="flex-1 bg-brand">
         <View className="p-5">
           <Text className="mb-4 font-delagothic text-6xl font-bold text-text-on-brand">
-            Let's get you affiliated.
+            Select your role.
           </Text>
           <Text className="font-saira text-2xl text-text-on-brand-2">
-            Would you like to create a new team or join an existing one?
+            Would you like proceed as a league admin or a player?
           </Text>
         </View>
         <View className="flex-1 items-center justify-center p-5">
@@ -34,7 +34,7 @@ const CreateJoinTeam = () => {
         <View className="justify-end gap-5 rounded-t-3xl bg-brand-dark p-6 pb-16 pt-10">
           <CTAButton
             type="white"
-            text="Create a new team"
+            text="I'm a league admin"
             callbackFn={() =>
               router.push({
                 pathname: '/(main)/onboarding/unique-code',
@@ -45,10 +45,10 @@ const CreateJoinTeam = () => {
           <View>
             <CTAButton
               type="yellow"
-              text="Join existing team"
+              text="I'm a player"
               callbackFn={() =>
                 router.push({
-                  pathname: '/(main)/onboarding/unique-code',
+                  pathname: '/(main)/onboarding/create-join-team',
                   params: { isNewTeam: false },
                 })
               }
@@ -60,6 +60,6 @@ const CreateJoinTeam = () => {
   );
 };
 
-export default CreateJoinTeam;
+export default AdminOrPlayer;
 
 const styles = StyleSheet.create({});

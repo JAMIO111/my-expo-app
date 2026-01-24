@@ -12,7 +12,8 @@ import {
 } from 'react-native';
 import { useSupabaseClient } from '@contexts/SupabaseClientContext';
 import { useRouter, Link } from 'expo-router';
-import * as AuthSession from 'expo-auth-session';
+import { makeRedirectUri } from 'expo-auth-session';
+import * as WebBrowser from 'expo-web-browser';
 import SafeViewWrapper from '@components/SafeViewWrapper';
 
 const SignUpPage = () => {
@@ -49,7 +50,7 @@ const SignUpPage = () => {
     setLoading(true);
     setError(null);
 
-    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+    const { data, error } = await supabase.auth.signUp({ email, password });
 
     setLoading(false);
 
@@ -60,25 +61,30 @@ const SignUpPage = () => {
     }
   };
 
-  const signInWithProvider = async (provider) => {
+  const signInWithGoogle = async () => {
     try {
-      const redirectUri = AuthSession.makeRedirectUri({ useProxy: true });
+      // Use proxy for dev (Expo Go), scheme for production
+      const redirectTo = makeRedirectUri({
+        scheme: 'breakroom',
+        path: 'auth',
+        useProxy: true, // true in Expo Go
+      });
 
       const { data, error } = await supabase.auth.signInWithOAuth({
-        provider,
-        options: { redirectTo: redirectUri },
+        provider: 'google',
+        options: { redirectTo },
       });
 
       if (error) throw error;
 
-      const result = await AuthSession.startAsync({ authUrl: data.url });
-
-      if (result.type !== 'success') {
-        Alert.alert('Login cancelled');
+      // Open the system browser
+      if (data?.url) {
+        const result = await WebBrowser.openAuthSessionAsync(data.url, redirectTo);
+        console.log('OAuth result', result);
       }
     } catch (err) {
-      console.error('OAuth error:', err);
-      Alert.alert('Login Error', err.message || 'Something went wrong.');
+      console.error('Google login error', err);
+      Alert.alert('Login Error', err.message || 'Something went wrong');
     }
   };
 
@@ -178,7 +184,7 @@ const SignUpPage = () => {
 
             <Pressable
               className="mt-4 h-16 flex-row items-center justify-center gap-5 rounded-xl border border-border-color bg-input-background"
-              onPress={() => signInWithProvider('google')}>
+              onPress={() => signInWithGoogle()}>
               <Image
                 source={require('@assets/google-logo.png')}
                 className="absolute left-3 h-11 w-11"

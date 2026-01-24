@@ -58,14 +58,48 @@ export function useTeamPlayerActions(teamId, callbacks = {}) {
 
   const acceptRequest = useMutation({
     mutationFn: async (playerId) => {
+      console.log('Accepting join request for player ID:', playerId);
+      console.log('Team ID:', teamId);
+      // Get district ID for the team
+      const { data: teamData, error: teamError } = await supabase
+        .from('Teams')
+        .select('division:Divisions(district)')
+        .eq('id', teamId)
+        .maybeSingle();
+      if (teamError) throw teamError;
+
+      const districtId = teamData?.division?.district;
+      if (!districtId) throw new Error('Team district not found');
+      console.log('District ID:', districtId);
+
+      // 2 Get active season for the team's district
+      const { data: seasonData, error: seasonError } = await supabase
+        .from('Seasons')
+        .select('id')
+        .eq('district', districtId)
+        .eq('is_active', true)
+        .maybeSingle();
+
+      if (seasonError) throw seasonError;
+
+      const activeSeasonId = seasonData?.id || null;
+      console.log('Active Season ID:', activeSeasonId);
+
+      // 3 Update TeamPlayers with status + active season
       const { error } = await supabase
         .from('TeamPlayers')
-        .update({ status: 'active', joined_at: new Date(), accepted_by: player.id })
+        .update({
+          status: 'active',
+          joined_at: new Date(),
+          accepted_by: player.id,
+          season_id: activeSeasonId,
+        })
         .eq('team_id', teamId)
         .eq('player_id', playerId)
         .eq('status', 'requested');
 
       if (error) throw error;
+
       return playerId;
     },
     onSuccess: handleCallbacks((playerId) => {
@@ -78,6 +112,68 @@ export function useTeamPlayerActions(teamId, callbacks = {}) {
       Toast.show({ type: 'error', text1: 'Failed to accept player join request' });
       console.log('Failed to accept player join request:', error);
     }, callbacks.acceptRequest?.onError),
+  });
+
+  const acceptInvite = useMutation({
+    mutationFn: async (invite) => {
+      console.log('Accepting join request for player ID:', invite?.player_id);
+      console.log('Team ID:', invite?.team_id);
+
+      // 1. Get district ID for the team
+      const { data: teamData, error: teamError } = await supabase
+        .from('Teams')
+        .select('division:Divisions(district)')
+        .eq('id', invite?.team_id)
+        .maybeSingle();
+      if (teamError) throw teamError;
+
+      const districtId = teamData?.division?.district;
+      if (!districtId) throw new Error('Team district not found');
+      console.log('District ID:', districtId);
+
+      // 2. Get active season for the team's district
+      const { data: seasonData, error: seasonError } = await supabase
+        .from('Seasons')
+        .select('id')
+        .eq('district', districtId)
+        .eq('is_active', true)
+        .maybeSingle();
+
+      if (seasonError) throw seasonError;
+
+      const activeSeasonId = seasonData?.id || null;
+      console.log('Active Season ID:', activeSeasonId);
+
+      // 3. Update TeamPlayers with status + active season
+      const { error } = await supabase
+        .from('TeamPlayers')
+        .update({
+          status: 'active',
+          joined_at: new Date(),
+          accepted_by: player.id, // current logged-in user
+          season_id: activeSeasonId,
+        })
+        .eq('id', invite.id);
+
+      if (error) throw error;
+
+      return invite; // return the full invite object
+    },
+
+    // ✅ Fix: the callback parameter is invite, not playerId
+    onSuccess: handleCallbacks((invite) => {
+      queryClient.invalidateQueries({ queryKey: ['TeamPlayers', invite.team_id] });
+      queryClient.invalidateQueries({
+        queryKey: ['PlayerInvitesAndRequests', { playerId: invite.player_id }],
+      });
+      Toast.show({ type: 'success', text1: 'Player join request accepted' });
+      console.log('Accepted invite:', invite);
+    }, callbacks.acceptInvite?.onSuccess),
+
+    onError: handleCallbacks((error) => {
+      Toast.show({ type: 'error', text1: 'Failed to accept player join request' });
+      console.log('Failed to accept player join request:', error);
+    }, callbacks.acceptInvite?.onError),
   });
 
   const denyRequest = useMutation({
@@ -94,6 +190,7 @@ export function useTeamPlayerActions(teamId, callbacks = {}) {
     },
     onSuccess: handleCallbacks((playerId) => {
       queryClient.invalidateQueries({ queryKey: ['PlayerInvitesAndRequests', { teamId }] });
+      refetch();
       Toast.show({ type: 'success', text1: 'Player join request denied' });
       console.log('Denied:', playerId);
     }, callbacks.denyRequest?.onSuccess),
@@ -205,6 +302,7 @@ export function useTeamPlayerActions(teamId, callbacks = {}) {
     removePlayer,
     promoteToCaptain,
     acceptRequest,
+    acceptInvite,
     denyRequest,
     revokeInvite,
     leaveTeam,

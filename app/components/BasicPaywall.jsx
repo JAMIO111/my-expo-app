@@ -9,11 +9,12 @@ import {
   Easing,
   useColorScheme,
 } from 'react-native';
-import React, { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import IonIcons from 'react-native-vector-icons/Ionicons';
 import CTAButton from '@components/CTAButton';
 import { ScrollView, Switch } from 'react-native-gesture-handler';
 import colors from '../lib/colors';
+import { useRouter } from 'expo-router';
 
 const BasicPaywall = () => {
   const [paymentType, setPaymentType] = useState('monthly');
@@ -23,6 +24,7 @@ const BasicPaywall = () => {
   const opacityAnim = useRef(new Animated.Value(0)).current;
   const colorScheme = useColorScheme();
   const themeColors = colors[colorScheme];
+  const router = useRouter();
 
   const screenshots = [
     require('@assets/league-table-light.png'),
@@ -143,24 +145,56 @@ const BasicPaywall = () => {
 
       {/* Payment options */}
       <View className="w-full px-4 pt-8">
-        <View className="mb-8 w-full rounded-3xl border border-theme-gray-3 bg-bg-grouped-2 px-6 py-4">
-          <View className="mb-4 flex-row items-center justify-between">
-            <Image
-              contentFit="contain"
-              className="h-12 w-12 rounded-full border"
-              source={require('@assets/avatar.jpg')}
-            />
-            <View className="ml-2 flex-row">
-              {Array.from({ length: 5 }, (_, i) => (
-                <IonIcons key={i} name="star" size={24} color="gold" />
-              ))}
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={{
+            flexDirection: 'row',
+            gap: 20,
+            paddingHorizontal: 16,
+          }}>
+          <View
+            style={{ width: 300, flexShrink: 0 }}
+            className="mb-8 rounded-3xl border border-theme-gray-3 bg-bg-grouped-2 px-6 py-4">
+            <View className="mb-4 flex-row items-center justify-between">
+              <Image
+                contentFit="contain"
+                className="h-12 w-12 rounded-full border"
+                source={require('@assets/avatar.jpg')}
+              />
+              <View className="ml-2 flex-row">
+                {Array.from({ length: 5 }, (_, i) => (
+                  <IonIcons key={i} name="star" size={24} color="gold" />
+                ))}
+              </View>
             </View>
+            <Text className="font-saira-medium text-xl text-text-1">"I love this app!"</Text>
+            <Text className="mt-2 font-saira text-lg text-text-2">
+              "Its great seeing the scores come in live as they happen!"
+            </Text>
           </View>
-          <Text className="font-saira-medium text-xl text-text-1">"I love this app!"</Text>
-          <Text className="mt-2 font-saira text-lg text-text-2">
-            "Its great seeing the scores come in live as they happen!"
-          </Text>
-        </View>
+          <View
+            style={{ width: 300, flexShrink: 0 }}
+            className="mb-8 rounded-3xl border border-theme-gray-3 bg-bg-grouped-2 px-6 py-4">
+            <View className="mb-4 flex-row items-center justify-between">
+              <Image
+                contentFit="contain"
+                className="h-12 w-12 rounded-full border"
+                source={require('@assets/avatar.jpg')}
+              />
+              <View className="ml-2 flex-row">
+                {Array.from({ length: 5 }, (_, i) => (
+                  <IonIcons key={i} name="star" size={24} color="gold" />
+                ))}
+              </View>
+            </View>
+            <Text className="font-saira-medium text-xl text-text-1">"Stats galore"</Text>
+            <Text className="mt-2 font-saira text-lg text-text-2">
+              "I love being able to look at all of my stats in one place and compare them to
+              others."
+            </Text>
+          </View>
+        </ScrollView>
         <View className="my-4 w-full flex-row items-center justify-between px-2">
           <Text className="font-saira-medium text-xl text-text-1">Enable 7-day free trial</Text>
           <Switch
@@ -228,7 +262,9 @@ const BasicPaywall = () => {
             type="yellow"
             textColor="black"
             text={isTrialEnabled ? 'Start Free Trial' : 'Upgrade Now!'}
-            onPress={() => {}}
+            callbackFn={() => {
+              router.replace('/(main)/home');
+            }}
           />
         </View>
         <View className="flex-row items-center justify-between gap-3 px-3 pt-6">

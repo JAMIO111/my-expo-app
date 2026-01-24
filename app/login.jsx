@@ -12,10 +12,14 @@ import {
 } from 'react-native';
 import SafeViewWrapper from '@components/SafeViewWrapper';
 import { useRouter, Link } from 'expo-router';
-import * as AuthSession from 'expo-auth-session';
+import * as WebBrowser from 'expo-web-browser';
+import { makeRedirectUri } from 'expo-auth-session';
 import { useFonts } from 'expo-font';
 import { Michroma_400Regular } from '@expo-google-fonts/michroma';
 import { useSupabaseClient } from '@contexts/SupabaseClientContext';
+import * as Linking from 'expo-linking';
+
+WebBrowser.maybeCompleteAuthSession();
 
 const LoginPage = () => {
   const { client: supabase } = useSupabaseClient();
@@ -48,6 +52,53 @@ const LoginPage = () => {
     ]).start();
   }, []);
 
+  useEffect(() => {
+    const handleUrl = async (event) => {
+      try {
+        const { url } = event;
+        const { data, error } = await supabase.auth.getSessionFromUrl({ url });
+
+        if (error) throw error;
+
+        const user = data.session?.user;
+        if (!user) return;
+
+        // fetch onboarding
+        const { data: profile, error: profileError } = await supabase
+          .from('Players')
+          .select('onboarding')
+          .eq('auth_id', user.id)
+          .single();
+
+        if (profileError) throw profileError;
+
+        if (profile.onboarding === 0) {
+          router.replace('/(main)/onboarding/name');
+        } else if (profile.onboarding === 1) {
+          router.replace('/(main)/onboarding/profile-creation5');
+        } else {
+          router.replace('/(main)/home');
+        }
+      } catch (err) {
+        console.error('OAuth redirect error:', err);
+        Alert.alert('Login Error', err.message || 'Something went wrong.');
+      }
+    };
+
+    const subscription = Linking.addEventListener('url', handleUrl);
+
+    // handle cold start
+    (async () => {
+      const initialUrl = await Linking.getInitialURL();
+      if (initialUrl) handleUrl({ url: initialUrl });
+    })();
+
+    return () => subscription.remove();
+  }, []);
+
+  // ---------------------
+  // Email/password login
+  // ---------------------
   const handleLogin = async () => {
     setLoading(true);
     setError(null);
@@ -57,8 +108,9 @@ const LoginPage = () => {
       password,
     });
 
+    setLoading(false);
+
     if (authError) {
-      setLoading(false);
       setError(authError.message);
       return;
     }
@@ -66,12 +118,10 @@ const LoginPage = () => {
     const userId = authData.user.id;
 
     const { data: profile, error: profileError } = await supabase
-      .from('Players') // replace with your actual table name
+      .from('Players')
       .select('onboarding')
       .eq('auth_id', userId)
       .single();
-
-    setLoading(false);
 
     if (profileError) {
       setError('Failed to load profile');
@@ -79,17 +129,23 @@ const LoginPage = () => {
     }
 
     if (profile.onboarding === 0) {
-      router.replace('/(main)/onboarding/profile-creation');
+      router.replace('/(main)/onboarding/name');
     } else if (profile.onboarding === 1) {
-      router.replace('/(main)/onboarding/profile-creation5');
+      router.replace('/(main)/onboarding/create-join-team');
     } else {
       router.replace('/(main)/home');
     }
   };
 
+  // ---------------------
+  // OAuth login
+  // ---------------------
   const signInWithProvider = async (provider) => {
     try {
-      const redirectUri = AuthSession.makeRedirectUri({ useProxy: true });
+      const redirectUri = makeRedirectUri({
+        scheme: 'breakroom', // your app scheme
+        useProxy: false, // false for standalone builds
+      });
 
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider,
@@ -97,12 +153,12 @@ const LoginPage = () => {
       });
 
       if (error) throw error;
+      if (!data?.url) throw new Error('No URL returned from Supabase OAuth');
 
-      const result = await AuthSession.startAsync({ authUrl: data.url });
+      // open system browser
+      await WebBrowser.openAuthSessionAsync(data.url, redirectUri);
 
-      if (result.type !== 'success') {
-        Alert.alert('Login cancelled');
-      }
+      // do NOT call getSession here — handled by deep link listener
     } catch (err) {
       console.error('OAuth error:', err);
       Alert.alert('Login Error', err.message || 'Something went wrong.');
@@ -111,6 +167,7 @@ const LoginPage = () => {
 
   return (
     <Animated.View
+      pointerEvents="box-none"
       style={{
         flex: 1,
         transform: [{ translateX: slideAnim }],
@@ -153,6 +210,8 @@ const LoginPage = () => {
                 placeholder="Email"
                 keyboardType="email-address"
                 autoCapitalize="none"
+                autoComplete="emailAddress"
+                textContentType="emailAddress"
                 value={email}
                 onChangeText={setEmail}
               />
@@ -163,6 +222,7 @@ const LoginPage = () => {
                   secureTextEntry
                   value={password}
                   onChangeText={setPassword}
+                  textContentType="password"
                 />
                 {error && <Text style={styles.errorText}>{error}</Text>}
               </View>

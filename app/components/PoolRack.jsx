@@ -91,6 +91,18 @@ const PoolRack = () => {
 
     const roles = profile.roles || [];
 
+    if (profile.playerProfile.onboarding === 0) {
+      console.log('🟠 Player onboarding incomplete, redirecting to onboarding');
+      router.replace('/(main)/onboarding/name');
+      return;
+    }
+
+    if (profile.playerProfile.onboarding === 1) {
+      console.log('🟠 Player onboarding step 1 complete, redirecting to step 2');
+      router.replace('/(main)/onboarding/admin-or-player');
+      return;
+    }
+
     if (roles.length === 1) {
       console.log('Auto-selecting role:', roles[0]);
       setCurrentRole(roles[0]);

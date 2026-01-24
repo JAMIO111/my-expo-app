@@ -83,10 +83,10 @@ const TeamProfile = ({ context, profile, isLoading }) => {
         <View className="max-w-full items-start justify-between gap-2">
           <View>
             <Text className="mt-2 max-w-xs font-saira text-3xl font-bold text-text-1">
-              {profile?.name}
+              {profile?.name || 'No Name'}
             </Text>
             <Text className="mb-3 max-w-xs font-saira text-xl font-medium text-text-2">
-              {profile?.division?.district?.name} - {profile?.division?.name}
+              {profile?.division?.district?.name} - {profile?.division?.name || 'No Division'}
             </Text>
           </View>
           <View className="gap-1">

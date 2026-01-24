@@ -13,6 +13,7 @@ const UniqueCode = () => {
   const params = useLocalSearchParams();
   const isNewTeam = params.isNewTeam === 'true'; // Convert string to boolean
   const isNewLeague = params.isNewLeague === 'true'; // Convert string to boolean
+  const [selectionIndex, setSelectionIndex] = useState(Array(6).fill({ start: 0, end: 0 }));
 
   const [digits, setDigits] = useState(['', '', '', '', '', '']);
   const [isLoading, setIsLoading] = useState(false);
@@ -26,9 +27,15 @@ const UniqueCode = () => {
       newDigits[index] = value;
       setDigits(newDigits);
 
+      // Move focus to next input
       if (value && index < inputsRef.current.length - 1) {
         inputsRef.current[index + 1].focus();
       }
+
+      // Move cursor to end
+      const newSelection = [...selectionIndex];
+      newSelection[index] = { start: value.length, end: value.length };
+      setSelectionIndex(newSelection);
     }
   };
 
@@ -179,21 +186,47 @@ const UniqueCode = () => {
                 <TextInput
                   ref={(el) => (inputsRef.current[i] = el)}
                   value={digit}
-                  onChangeText={(text) => updateDigit(i, text)}
+                  onChangeText={(text) => {
+                    // Update digit
+                    if (/^\d?$/.test(text)) {
+                      const newDigits = [...digits];
+                      newDigits[i] = text;
+                      setDigits(newDigits);
+
+                      // Move focus forward if typed
+                      if (text && i < inputsRef.current.length - 1) {
+                        inputsRef.current[i + 1].focus();
+                      }
+
+                      // Update selection to end
+                      const newSelection = [...selectionIndex];
+                      newSelection[i] = { start: text.length, end: text.length };
+                      setSelectionIndex(newSelection);
+                    }
+                  }}
                   keyboardType="number-pad"
                   maxLength={1}
                   className="border-border-color bg-white font-saira-semibold text-4xl text-black focus:border-theme-blue"
                   style={styles.input}
                   textAlign="center"
-                  returnKeyType={i === digits.length - 1 ? 'done' : 'next'}
-                  onSubmitEditing={() => {
-                    if (i < digits.length - 1) {
-                      inputsRef.current[i + 1].focus();
+                  selection={selectionIndex[i]}
+                  onFocus={() => {
+                    // Only move cursor to end if input has content
+                    if (digits[i]) {
+                      const newSelection = [...selectionIndex];
+                      newSelection[i] = { start: digits[i].length, end: digits[i].length };
+                      setSelectionIndex(newSelection);
                     }
                   }}
+                  returnKeyType={i === digits.length - 1 ? 'done' : 'next'}
                   onKeyPress={({ nativeEvent }) => {
-                    if (nativeEvent.key === 'Backspace' && i > 0) {
-                      inputsRef.current[i - 1].focus();
+                    if (nativeEvent.key === 'Backspace') {
+                      if (!digits[i] && i > 0) {
+                        // Move focus to previous box if current is empty
+                        inputsRef.current[i - 1].focus();
+                      } else {
+                        // Clear current box (already handled by onChangeText)
+                      }
                     }
                   }}
                 />
@@ -203,7 +236,7 @@ const UniqueCode = () => {
 
           <View className="mt-5">
             <CTAButton
-              type="info"
+              type="yellow"
               disabled={isLoading}
               text={
                 isLoading
@@ -232,7 +265,7 @@ const styles = StyleSheet.create({
     lineHeight: 48,
     height: 60,
     borderWidth: 1,
-    borderRadius: 8,
+    borderRadius: 14,
     paddingHorizontal: 16,
   },
 });

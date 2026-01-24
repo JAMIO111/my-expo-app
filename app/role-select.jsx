@@ -20,11 +20,11 @@ const RoleSelect = () => {
   return (
     <SafeViewWrapper topColor="bg-brand" useBottomInset={false}>
       <BrandHeader />
-      <View className="flex-1 items-stretch justify-start bg-bg-grouped-1 p-5">
+      <View className="flex-1 items-stretch justify-start border-t-2 border-brand-dark bg-bg-grouped-1 p-5">
         <Text style={{ lineHeight: 40 }} className="my-2 px-2 font-saira-bold text-4xl text-text-1">
           Select Your Role.
         </Text>
-        <Text className="mb-6 px-2  font-saira text-xl text-text-2">
+        <Text className="mb-6 px-2 font-saira text-xl text-text-2">
           This will determine what features and content you have access to and what information is
           shown.
         </Text>
@@ -36,7 +36,7 @@ const RoleSelect = () => {
                 setCurrentRole(role);
                 router.replace('/(main)/home');
               }}>
-              <View className="mb-5 flex-row items-center justify-between gap-2 rounded-2xl border border-theme-gray-4 bg-bg-grouped-2 px-4 py-3 shadow-md shadow-theme-gray-5">
+              <View className="mb-3 flex-row items-center justify-between gap-2 rounded-2xl border border-theme-gray-4 bg-bg-grouped-2 px-4 py-3 shadow-md shadow-theme-gray-5">
                 <View className="flex-1">
                   <Text
                     numberOfLines={1}

@@ -19,6 +19,8 @@ const CustomTextInput = forwardRef((props, ref) => {
     returnKeyType = 'default',
     onSubmitEditing,
     autoComplete = 'off',
+    autoCapitalize = 'none',
+    textContentType = 'none',
   } = props;
 
   return (
@@ -43,6 +45,8 @@ const CustomTextInput = forwardRef((props, ref) => {
           returnKeyType={returnKeyType}
           onSubmitEditing={onSubmitEditing}
           autoComplete={autoComplete}
+          textContentType={textContentType}
+          autoCapitalize={autoCapitalize}
         />
       </View>
     </View>

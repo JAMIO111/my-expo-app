@@ -10,6 +10,7 @@ import CachedImage from '@components/CachedImage';
 import Heading from '@components/Heading';
 import { isBirthdayToday } from '@lib/helperFunctions';
 import CustomHeader from '@components/CustomHeader';
+import CTAButton from '../../../components/CTAButton';
 
 const ProfilePage = () => {
   const router = useRouter();
@@ -66,7 +67,7 @@ const ProfilePage = () => {
         </View>
         <View className="w-full pt-8">
           <Heading text="Personal Details" />
-          <View className="gap-2.5 rounded-2xl border border-theme-gray-5 bg-bg-grouped-2 p-3 shadow-[0_2px_4px_rgba(0,0,0,0.1)]">
+          <View className="mb-8 gap-2.5 rounded-3xl border border-theme-gray-5 bg-bg-grouped-2 p-3 shadow-[0_2px_4px_rgba(0,0,0,0.1)]">
             <View className="w-full flex-row items-center justify-between">
               <Text className="font-saira-medium text-xl text-text-2">Full Name</Text>
               <View className="flex-row items-center gap-3">
@@ -119,6 +120,10 @@ const ProfilePage = () => {
               </Text>
             </View>
           </View>
+          <CTAButton
+            text="Upgrade to view all stats"
+            onPress={() => router.push('/(main)/onboarding/profile/edit-profile')}
+          />
         </View>
       </ScrollView>
 

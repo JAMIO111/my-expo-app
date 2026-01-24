@@ -2,8 +2,10 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import React from 'react';
 import IonIcons from 'react-native-vector-icons/Ionicons';
 import CTAButton from '@components/CTAButton';
+import { useRouter } from 'expo-router';
 
 const PremiumPaywall = () => {
+  const router = useRouter();
   const [paymentType, setPaymentType] = React.useState('monthly');
   return (
     <View className="w-full flex-1 items-center justify-start bg-brand-dark p-6">
@@ -96,7 +98,14 @@ const PremiumPaywall = () => {
         </View>
       </View>
       <View className="mt-10 w-full">
-        <CTAButton type="success" text="Upgrade Now!" onPress={() => {}} />
+        <CTAButton
+          type="success"
+          text="Upgrade Now!"
+          callbackFn={() => {
+            console.log('UPGRADE PRESSED');
+            router.replace('/(main)');
+          }}
+        />
       </View>
     </View>
   );
