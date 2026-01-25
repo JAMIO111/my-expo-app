@@ -121,7 +121,7 @@ export const fetchAuthUserProfile = async (supabase) => {
       district:Districts ( id, name )
       `
     )
-    .eq('user_id', user.id);
+    .eq('user_id', player.id);
 
   if (adminError) {
     throw new Error(adminError.message);

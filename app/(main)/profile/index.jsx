@@ -23,6 +23,7 @@ const ProfilePage = () => {
   const { badges } = usePlayerBadges(player?.id);
   const [view, setView] = useState('left');
   console.log('Badges:', badges);
+  console.log('current role in profile page:', currentRole);
 
   const getInitials = (firstName, lastName) => {
     const firstInitial = firstName ? firstName.charAt(0).toUpperCase() : '';

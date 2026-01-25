@@ -1,14 +1,11 @@
 import { StyleSheet, View } from 'react-native';
 import { Stack, useRouter } from 'expo-router';
 import { useUser } from '@contexts/UserProvider';
-import LoadingSplash from '@components/LoadingSplash';
 import CustomHeader from '@components/CustomHeader';
 import NavBar from '@components/NavBar2';
 import SafeViewWrapper from '@components/SafeViewWrapper';
 import TeamProfile from '@components/TeamProfile';
 import { useTeamProfile } from '@hooks/useTeamProfile';
-import CachedImage from '@components/CachedImage';
-import { Dimensions } from 'react-native';
 
 const index = () => {
   const router = useRouter();

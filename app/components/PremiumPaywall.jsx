@@ -14,7 +14,7 @@ const PremiumPaywall = () => {
         className="pl-3 text-left font-delagothic text-4xl text-text-on-brand">
         Go Pro with our Premium Membership
       </Text>
-      <View className="my-5 w-full items-start justify-start gap-4 rounded-2xl p-3">
+      <View className="my-5 w-full items-start justify-start gap-5 rounded-2xl bg-brand p-5">
         <View className="flex-row items-center justify-start gap-3">
           <View className="rounded-full border-2 border-theme-yellow bg-theme-yellow/70 p-2">
             <IonIcons name="stats-chart-outline" size={24} color="black" />
@@ -99,7 +99,7 @@ const PremiumPaywall = () => {
       </View>
       <View className="mt-10 w-full">
         <CTAButton
-          type="success"
+          type="yellow"
           text="Upgrade Now!"
           callbackFn={() => {
             console.log('UPGRADE PRESSED');

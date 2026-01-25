@@ -105,7 +105,7 @@ const UniqueCode = () => {
         });
       } else if (LeagueData) {
         router.push({
-          pathname: '/(main)/onboarding/create-divisions',
+          pathname: '/(main)/onboarding/(entity-onboarding)/league-confirm',
           params: { league: JSON.stringify(LeagueData) },
         });
       }
@@ -140,7 +140,7 @@ const UniqueCode = () => {
         });
       } else if (TeamData) {
         router.push({
-          pathname: '/(main)/onboarding/team-confirm',
+          pathname: '/(main)/onboarding/(entity-onboarding)/team-confirm',
           params: { team: JSON.stringify(TeamData) },
         });
       }

@@ -194,7 +194,7 @@ const PlayerProfile = ({ context, isLoading, playerProfile, error }) => {
                     month: '2-digit',
                     day: '2-digit',
                   })
-                : 'Birthday Unavailable'}
+                : 'N/A'}
             </Text>
           </View>
           <View className="flex- w-full flex-col gap-1">
@@ -214,7 +214,7 @@ const PlayerProfile = ({ context, isLoading, playerProfile, error }) => {
           <View className="flex- w-full flex-col gap-1">
             <Text className="font-saira text-xl text-text-2">Age</Text>
             <Text className="font-saira-semibold text-xl text-text-1">
-              {playerProfile?.dob ? `${years} Years ${days} days` : 'Age Unavailable'}
+              {playerProfile?.dob ? `${years} Years ${days} days` : 'N/A'}
             </Text>
           </View>
           <View className="flex- w-full flex-col gap-1">

@@ -34,7 +34,7 @@ export default function LoadingSpinner() {
   useEffect(() => {
     rotation.value = withRepeat(
       withTiming(20000, {
-        duration: 95000,
+        duration: 120000,
         easing: Easing.linear,
       }),
       -1,
@@ -62,8 +62,8 @@ export default function LoadingSpinner() {
   ];
 
   const ballCount = 12;
-  const ringRadius = 90;
-  const ballDiameter = 30;
+  const ringRadius = 120;
+  const ballDiameter = 40;
   const containerSize = ringRadius * 2 + ballDiameter; // enough to hold balls at edges
 
   const balls = Array.from({ length: ballCount });
@@ -104,7 +104,9 @@ export default function LoadingSpinner() {
           );
         })}
       </Animated.View>
-      <Text className=" mt-16 font-michroma text-5xl font-bold text-white">Loading...</Text>
+      <Text className=" mt-16 animate-pulse font-michroma text-5xl font-bold text-white">
+        Loading...
+      </Text>
     </View>
   );
 }

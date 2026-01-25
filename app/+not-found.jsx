@@ -31,7 +31,11 @@ const notFound = () => {
       <Text className="font-michroma text-2xl text-white">Oops! Page not found.</Text>
       <View className="mt-20 w-[70%] flex-row items-center">
         <View className="flex-1">
-          <CTAButton text="Go Home" type="info" callbackFn={() => router.replace('/(main)/home')} />
+          <CTAButton
+            text="Go Home"
+            type="yellow"
+            callbackFn={() => router.replace('/(main)/home')}
+          />
         </View>
       </View>
       <View className="absolute -left-4 -top-4 h-12 w-12 rounded-full bg-black"></View>

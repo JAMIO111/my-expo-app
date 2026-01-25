@@ -1,9 +1,7 @@
 import { StyleSheet, Text, View, ScrollView } from 'react-native';
-import CircularProgress from '@components/CircularProgress';
 import HorizontalStatBar from '@components/HorizontalStatBar';
-import ColoredStatCard from '@components/ColoredStatCard';
 import { usePlayerStats } from '../hooks/usePlayerStats';
-import MatchBreakdownBar from './MatchBreakdownBar';
+import DonutChart from './DonutChart';
 
 const PlayerStats = ({ playerId }) => {
   console.log('PlayerStats Component Rendered with playerId:', playerId);
@@ -18,87 +16,134 @@ const PlayerStats = ({ playerId }) => {
       contentContainerStyle={{ alignItems: 'center', justifyContent: 'center' }}
       className="w-full px-4 pt-4">
       <Text className="mb-2 font-saira-semibold text-3xl text-text-1">Frames</Text>
-      <View className="mb-8 w-full items-center justify-between gap-4">
-        <View className="flex-row gap-4 ">
-          <ColoredStatCard
-            label="Played"
-            value={data?.totalStats?.frames_played ?? 0}
-            color="blue"
-          />
-          <ColoredStatCard label="Wins" value={data?.totalStats?.frames_won ?? 0} color="green" />
-        </View>
-        <View className="flex-row gap-4">
-          <ColoredStatCard
-            label="Draws"
-            value={data?.totalStats?.frames_drawn ?? 0}
-            color="yellow"
-          />
-          <ColoredStatCard label="Losses" value={data?.totalStats?.frames_lost ?? 0} color="red" />
-        </View>
-      </View>
-      <View className="gap-2">
-        <MatchBreakdownBar
+      <View className="mb-8 w-full flex-row items-center justify-between">
+        <DonutChart
           wins={data?.totalStats?.frames_won ?? 0}
-          losses={data?.totalStats?.frames_lost ?? 0}
           draws={data?.totalStats?.frames_drawn ?? 0}
+          losses={data?.totalStats?.frames_lost ?? 0}
+          statTitle="Frames Played"
         />
-
-        <HorizontalStatBar
-          title="Frame Win %"
-          color="purple"
-          value={parseFloat(data?.totalStats?.frame_win_percent?.toFixed(2)) || 0}
-        />
+        <View className="flex-1 gap-3 pl-8">
+          <View className="flex flex-row items-center gap-2">
+            <View className="h-3 w-3 rounded-full bg-green-700"></View>
+            <Text className="flex-1 text-lg text-text-2">Won</Text>
+            <Text className="font-saira-semibold text-2xl text-text-1">
+              {data?.totalStats?.frames_won ?? 0}
+            </Text>
+          </View>
+          <View className="border-b border-theme-gray-5"></View>
+          <View className="flex flex-row items-center gap-2">
+            <View className="h-3 w-3 rounded-full bg-yellow-500"></View>
+            <Text className="flex-1 text-lg text-text-2">Drawn</Text>
+            <Text className="font-saira-semibold text-2xl text-text-1">
+              {data?.totalStats?.frames_drawn ?? 0}
+            </Text>
+          </View>
+          <View className="border-b border-theme-gray-5"></View>
+          <View className="flex flex-row items-center gap-2">
+            <View className="h-3 w-3 rounded-full bg-red-500"></View>
+            <Text className="flex-1 text-lg text-text-2">Lost</Text>
+            <Text className="font-saira-semibold text-2xl text-text-1">
+              {data?.totalStats?.frames_lost ?? 0}
+            </Text>
+          </View>
+        </View>
       </View>
-      <View>
-        <HorizontalStatBar
-          title="Win Streak"
-          type="number"
-          target={data?.playerMeta?.best_frame_win_streak ?? 0}
-          value={data?.playerMeta?.current_frame_win_streak ?? 0}
-          color="orange"
-          valueLabel="Current Streak"
-          targetLabel="Best Streak"
-        />
+      <View className="mt-6 flex flex-row gap-2">
+        <View className="flex-1 gap-8">
+          <View>
+            <Text className="font-saira-semibold text-3xl text-text-1">
+              {data?.totalStats?.frame_win_percent ?? 0}%
+            </Text>
+            <Text style={{ lineHeight: 18 }} className="text-lg font-semibold text-text-2">
+              Win Rate
+            </Text>
+          </View>
+        </View>
+        <View className="flex-1 gap-8">
+          <View>
+            <Text className="font-saira-semibold text-3xl text-text-1">
+              {data?.playerMeta?.best_frame_win_streak ?? 0}
+            </Text>
+            <Text style={{ lineHeight: 18 }} className="text-lg font-semibold text-text-2">
+              Best Win Streak
+            </Text>
+          </View>
+          <View>
+            <Text className="font-saira-semibold text-3xl text-text-1">
+              {data?.playerMeta?.current_frame_win_streak ?? 0}
+            </Text>
+            <Text style={{ lineHeight: 18 }} className="text-lg font-semibold text-text-2">
+              Current Win Streak
+            </Text>
+          </View>
+        </View>
       </View>
       <View className="my-8 h-[1px] w-full bg-theme-gray-5"></View>
       <Text className="mb-2 font-saira-semibold text-3xl text-text-1">Matches</Text>
-      <View className="mb-8 w-full items-center justify-between gap-4">
-        <View className="flex-row gap-4 ">
-          <ColoredStatCard
-            label="Played"
-            value={data?.totalStats?.matches_played ?? 0}
-            color="blue"
-          />
-          <ColoredStatCard label="Wins" value={data?.totalStats?.matches_won ?? 0} color="green" />
-        </View>
-        <View className="flex-row gap-4">
-          <ColoredStatCard
-            label="Draws"
-            value={data?.totalStats?.matches_drawn ?? 0}
-            color="yellow"
-          />
-          <ColoredStatCard label="Losses" value={data?.totalStats?.matches_lost ?? 0} color="red" />
-        </View>
-      </View>
-      <View className="gap-2">
-        <HorizontalStatBar
-          title="Match Win %"
-          color="purple"
-          value={parseFloat(data?.totalStats?.match_win_percent?.toFixed(2)) || 0}
+      <View className="mb-8 w-full flex-row items-center justify-between">
+        <DonutChart
+          wins={data?.totalStats?.matches_won ?? 0}
+          draws={data?.totalStats?.matches_drawn ?? 0}
+          losses={data?.totalStats?.matches_lost ?? 0}
+          statTitle="Matches Played"
         />
+        <View className="flex-1 gap-3 pl-8">
+          <View className="flex flex-row items-center gap-2">
+            <View className="h-3 w-3 rounded-full bg-green-700"></View>
+            <Text className="flex-1 text-lg text-text-2">Won</Text>
+            <Text className="font-saira-semibold text-2xl text-text-1">
+              {data?.totalStats?.matches_won ?? 0}
+            </Text>
+          </View>
+          <View className="border-b border-theme-gray-5"></View>
+          <View className="flex flex-row items-center gap-2">
+            <View className="h-3 w-3 rounded-full bg-yellow-500"></View>
+            <Text className="flex-1 text-lg text-text-2">Drawn</Text>
+            <Text className="font-saira-semibold text-2xl text-text-1">
+              {data?.totalStats?.matches_drawn ?? 0}
+            </Text>
+          </View>
+          <View className="border-b border-theme-gray-5"></View>
+          <View className="flex flex-row items-center gap-2">
+            <View className="h-3 w-3 rounded-full bg-red-500"></View>
+            <Text className="flex-1 text-lg text-text-2">Lost</Text>
+            <Text className="font-saira-semibold text-2xl text-text-1">
+              {data?.totalStats?.matches_lost ?? 0}
+            </Text>
+          </View>
+        </View>
       </View>
-      <View>
-        <HorizontalStatBar
-          title="Win Streak"
-          type="number"
-          target={data?.playerMeta?.best_match_win_streak ?? 0}
-          value={data?.playerMeta?.current_match_win_streak ?? 0}
-          color="orange"
-          valueLabel="Current Streak"
-          targetLabel="Best Streak"
-        />
+      <View className="mb-8 mt-6 flex flex-row gap-2">
+        <View className="flex-1 gap-8">
+          <View>
+            <Text className="font-saira-semibold text-3xl text-text-1">
+              {data?.totalStats?.match_win_percent ?? 0}%
+            </Text>
+            <Text style={{ lineHeight: 18 }} className="text-lg font-semibold text-text-2">
+              Win Rate
+            </Text>
+          </View>
+        </View>
+        <View className="flex-1 gap-8">
+          <View>
+            <Text className="font-saira-semibold text-3xl text-text-1">
+              {data?.playerMeta?.best_match_win_streak ?? 0}
+            </Text>
+            <Text style={{ lineHeight: 18 }} className="text-lg font-semibold text-text-2">
+              Best Win Streak
+            </Text>
+          </View>
+          <View>
+            <Text className="font-saira-semibold text-3xl text-text-1">
+              {data?.playerMeta?.current_match_win_streak ?? 0}
+            </Text>
+            <Text style={{ lineHeight: 18 }} className="text-lg font-semibold text-text-2">
+              Current Win Streak
+            </Text>
+          </View>
+        </View>
       </View>
-      <View className="h-12"></View>
     </View>
   );
 };

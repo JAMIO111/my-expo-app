@@ -3,15 +3,24 @@ import Ioconicons from 'react-native-vector-icons/Ionicons';
 import { useRouter } from 'expo-router';
 import colors from '@lib/colors';
 import TeamLogo from './TeamLogo';
+import { useRef } from 'react';
 
 const ResultsHomeCard = ({ result }) => {
+  const hasNavigated = useRef(false);
   const router = useRouter();
   const colorScheme = useColorScheme();
   const themeColors = colors[colorScheme];
   console.log('ResultsHomeCard result:', result);
   return (
     <Pressable
-      onPress={() => router.push('/home/results')}
+      onPress={() => {
+        if (hasNavigated.current) return;
+        hasNavigated.current = true;
+        setTimeout(() => {
+          hasNavigated.current = false;
+        }, 500); // Reset navigation state after 500ms
+        router.push('/home/results');
+      }}
       className="w-full rounded-2xl border border-theme-gray-5 bg-bg-grouped-2 shadow"
       style={{ minHeight: 100 }} // prevents vertical collapse
     >

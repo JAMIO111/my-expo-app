@@ -18,7 +18,7 @@ const FixturesHomeCard = ({ fixture, isLoading }) => {
         hasNavigated.current = true;
         setTimeout(() => {
           hasNavigated.current = false;
-        }, 750); // Reset navigation state after 750ms
+        }, 500); // Reset navigation state after 500ms
         router.push('/home/fixtures');
       }}
       className="h-28 w-full rounded-2xl border border-theme-gray-5 bg-bg-grouped-2 shadow">
