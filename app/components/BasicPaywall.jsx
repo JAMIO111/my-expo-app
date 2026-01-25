@@ -76,9 +76,19 @@ const BasicPaywall = () => {
     <View className="w-full flex-1 items-center justify-start bg-bg-grouped-1 py-6">
       <Text
         style={{ lineHeight: 40 }}
-        className="px-4 text-left font-delagothic text-4xl text-text-1">
+        className="px-6 text-left font-delagothic text-4xl text-text-1">
         Get Access to the Full App for just £1.49/month
       </Text>
+      <View className="my-6 mt-8 w-full px-6">
+        <CTAButton
+          type="yellow"
+          textColor="black"
+          text={isTrialEnabled ? 'Start Free Trial' : 'Upgrade Now!'}
+          callbackFn={() => {
+            router.replace('/(main)/home');
+          }}
+        />
+      </View>
 
       {/* Features List */}
       <View className="my-5 w-full items-start justify-start gap-4 rounded-2xl p-6">

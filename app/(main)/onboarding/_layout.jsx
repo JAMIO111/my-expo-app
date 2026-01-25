@@ -15,8 +15,13 @@ const _layout = () => {
         <StatusBar style={colorScheme === 'dark' ? 'light' : 'dark'} />
         <Stack
           screenOptions={{
+            headerShown: false,
             header: (props) => <CustomHeader {...props} />,
           }}>
+          <Stack.Screen name="name" options={{ headerShown: false }} />
+          <Stack.Screen name="nickname" options={{ headerShown: false }} />
+          <Stack.Screen name="dob" options={{ headerShown: false }} />
+          <Stack.Screen name="avatar" options={{ headerShown: false }} />
           <Stack.Screen name="upgrade" options={{ headerShown: false }} />
           <Stack.Screen name="profile" options={{ headerShown: false }} />
           <Stack.Screen name="explore" options={{ headerShown: false }} />

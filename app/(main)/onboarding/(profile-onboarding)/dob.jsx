@@ -1,4 +1,4 @@
-import { Pressable, StyleSheet, Text, View, useColorScheme, Platform } from 'react-native';
+import { Pressable, StyleSheet, Text, View, useColorScheme, Platform, Alert } from 'react-native';
 import { useState, useRef } from 'react';
 import ModalWrappedDatePicker from '@components/ModalWrappedDatePicker';
 import CTAButton from '@components/CTAButton';
@@ -37,6 +37,7 @@ const Dob = () => {
       <Stack.Screen
         options={{
           title: 'Step 3 of 4',
+          headerBackTitle: 'Nickname',
         }}
       />
       <View className="flex-1 gap-3 bg-brand">
@@ -71,12 +72,16 @@ const Dob = () => {
               type="yellow"
               textColor="black"
               text="Continue"
-              callbackFn={() =>
+              callbackFn={() => {
+                if (!dob) {
+                  Alert.alert('Error', 'Please select your date of birth.');
+                  return;
+                }
                 router.push({
-                  pathname: '/(main)/onboarding/avatar',
+                  pathname: '/(main)/onboarding/(profile-onboarding)/avatar',
                   params: { ...params, dob },
-                })
-              }
+                });
+              }}
             />
           </View>
         </View>

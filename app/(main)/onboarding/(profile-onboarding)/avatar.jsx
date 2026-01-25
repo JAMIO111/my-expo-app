@@ -3,11 +3,11 @@ import { useState } from 'react';
 import { useSupabaseClient } from '@contexts/SupabaseClientContext';
 import CTAButton from '@components/CTAButton';
 import { useLocalSearchParams, Stack } from 'expo-router';
-import { useNavigation } from '@react-navigation/native';
 import Toast from 'react-native-toast-message';
 import StepPillGroup from '@components/StepPillGroup';
 import useCompressAndUploadImage from '@hooks/useCompressAndUploadImage';
 import ImageUploader from '@components/ImageUploader';
+import { useRouter } from 'expo-router';
 
 const PROJECT_URL = 'https://ionhcfjampzewimsgsmr.supabase.co'; // Replace with your actual Supabase project URL
 
@@ -15,7 +15,8 @@ const Avatar = () => {
   const { client: supabase } = useSupabaseClient();
   const { colorScheme } = useColorScheme();
   const [imageUri, setImageUri] = useState(null);
-  const navigation = useNavigation();
+  const router = useRouter();
+
   const params = useLocalSearchParams();
 
   const { uploadToSupabase, uploading } = useCompressAndUploadImage();
@@ -69,16 +70,15 @@ const Avatar = () => {
             : null,
           avatar_url: avatarUrl,
           onboarding: 1,
+          claimed: true,
+          claimed_at: new Date().toISOString(),
         })
         .eq('auth_id', user.id);
 
       if (error) {
         Alert.alert('Update Failed', error.message);
       } else {
-        navigation.reset({
-          index: 0,
-          routes: [{ name: 'create-join-team' }],
-        });
+        router.replace('/(main)/onboarding/(entity-onboarding)/admin-or-player');
         Toast.show({
           type: 'success',
           text1: 'Profile Updated',

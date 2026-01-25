@@ -93,13 +93,11 @@ const PoolRack = () => {
 
     if (profile.playerProfile.onboarding === 0) {
       console.log('🟠 Player onboarding incomplete, redirecting to onboarding');
-      router.replace('/(main)/onboarding/name');
+      router.replace('/(main)/onboarding/(profile-onboarding)/name');
       return;
-    }
-
-    if (profile.playerProfile.onboarding === 1) {
+    } else if (profile.playerProfile.onboarding === 1) {
       console.log('🟠 Player onboarding step 1 complete, redirecting to step 2');
-      router.replace('/(main)/onboarding/admin-or-player');
+      router.replace('/(main)/onboarding/(entity-onboarding)/admin-or-player');
       return;
     }
 

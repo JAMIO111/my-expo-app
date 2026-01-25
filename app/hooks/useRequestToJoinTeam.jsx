@@ -1,7 +1,7 @@
 import { useMutation } from '@tanstack/react-query';
 import { useSupabaseClient } from '@contexts/SupabaseClientContext';
 
-export function useRequestToJoinTeam(team, playerId) {
+export function useRequestToJoinTeam(team, playerId, adminApproval = false) {
   const { client: supabase } = useSupabaseClient();
 
   return useMutation({
@@ -11,7 +11,7 @@ export function useRequestToJoinTeam(team, playerId) {
       }
 
       const isPrivateTeam = !!team.private;
-      const isAdminApprovalRequired = !!team.admin_approval_required;
+      const isAdminApprovalRequired = adminApproval;
 
       /**
        * Status rules:
@@ -22,11 +22,14 @@ export function useRequestToJoinTeam(team, playerId) {
       let status = 'active';
       let joinedAt = new Date().toISOString();
 
-      if (isAdminApprovalRequired) {
-        status = 'pending_admin';
+      if (isAdminApprovalRequired && isPrivateTeam) {
+        status = 'pending_both';
         joinedAt = null;
-      } else if (isPrivateTeam) {
+      } else if (isPrivateTeam && !isAdminApprovalRequired) {
         status = 'pending_captain';
+        joinedAt = null;
+      } else if (!isPrivateTeam && isAdminApprovalRequired) {
+        status = 'pending_admin';
         joinedAt = null;
       }
 

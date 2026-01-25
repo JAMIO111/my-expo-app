@@ -12,6 +12,7 @@ import Avatar from '@components/Avatar';
 import { useTeamProfile } from '@hooks/useTeamProfile';
 import { useRequestToJoinTeam } from '@hooks/useRequestToJoinTeam';
 import { useSupabaseClient } from '@contexts/SupabaseClientContext';
+import Toast from 'react-native-toast-message';
 
 const ProfileClaim = () => {
   const { client: supabase } = useSupabaseClient();
@@ -23,12 +24,16 @@ const ProfileClaim = () => {
   console.log('Onboarding Profile Claim - player:', player);
 
   const { data: teamProfile, isLoading: teamLoading } = useTeamProfile(team?.id);
+  console.log('Onboarding Profile Claim - teamProfile:', teamProfile);
 
   const [playersData, setPlayersData] = useState([]);
   const [playersLoading, setPlayersLoading] = useState(true);
   const [selectedPlayer, setSelectedPlayer] = useState(null);
 
-  const sendJoinRequest = useRequestToJoinTeam(teamProfile, player?.id);
+  const adminApproval = teamProfile?.division?.admin_approval_required || false;
+  const captainApproval = teamProfile?.private || false;
+
+  const sendJoinRequest = useRequestToJoinTeam(teamProfile, player?.id, adminApproval);
 
   useEffect(() => {
     if (!teamProfile?.id) return;
@@ -56,8 +61,21 @@ const ProfileClaim = () => {
 
   const handleJoinAsNew = async () => {
     await sendJoinRequest.mutateAsync();
+    Toast.show({
+      type: 'success',
+      text1: captainApproval || adminApproval ? 'Join Request Sent' : 'Joined Team Successfully',
+      text2:
+        captainApproval && adminApproval
+          ? 'The team captain and league admin will review your request shortly.'
+          : captainApproval && !adminApproval
+            ? 'The team captain will review your request shortly.'
+            : !captainApproval && adminApproval
+              ? 'The league admin will review your request shortly.'
+              : `You are now a member of ${teamProfile?.name || 'the team'}`,
+    });
+    await supabase.from('Players').update({ onboarding: 3 }).eq('id', player?.id);
 
-    router.replace('/(main)/onboarding');
+    router.replace('/(main)/onboarding/upgrade');
   };
 
   const handleClaimProfile = async () => {
@@ -164,7 +182,13 @@ const ProfileClaim = () => {
 
               <CTAButton
                 type="yellow"
-                text={selectedPlayer ? 'Claim Profile' : 'Join as New Player'}
+                text={
+                  selectedPlayer
+                    ? 'Claim Profile'
+                    : captainApproval || adminApproval
+                      ? 'Request To Join Team'
+                      : 'Join as New Player'
+                }
                 callbackFn={selectedPlayer ? handleClaimProfile : handleJoinAsNew}
               />
             </View>

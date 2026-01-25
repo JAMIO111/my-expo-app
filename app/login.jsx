@@ -56,38 +56,35 @@ const LoginPage = () => {
     const handleUrl = async (event) => {
       try {
         const { url } = event;
-        const { data, error } = await supabase.auth.getSessionFromUrl({ url });
 
+        // Get session from the redirect URL
+        const { data, error } = await supabase.auth.getSessionFromUrl({ url });
         if (error) throw error;
 
-        const user = data.session?.user;
-        if (!user) return;
+        const session = data.session;
+        console.log('OAuth session:', session); // <-- log session
 
-        // fetch onboarding
+        if (!session) return;
+
+        const userId = session.user.id;
+
+        // fetch onboarding info for first-time users
         const { data: profile, error: profileError } = await supabase
           .from('Players')
           .select('onboarding')
-          .eq('auth_id', user.id)
+          .eq('auth_id', userId)
           .single();
 
         if (profileError) throw profileError;
-
-        if (profile.onboarding === 0) {
-          router.replace('/(main)/onboarding/name');
-        } else if (profile.onboarding === 1) {
-          router.replace('/(main)/onboarding/profile-creation5');
-        } else {
-          router.replace('/(main)/home');
-        }
       } catch (err) {
         console.error('OAuth redirect error:', err);
-        Alert.alert('Login Error', err.message || 'Something went wrong.');
       }
     };
 
+    // Listen for incoming deep links
     const subscription = Linking.addEventListener('url', handleUrl);
 
-    // handle cold start
+    // Handle cold start (when the app opens from an OAuth link)
     (async () => {
       const initialUrl = await Linking.getInitialURL();
       if (initialUrl) handleUrl({ url: initialUrl });
@@ -127,14 +124,6 @@ const LoginPage = () => {
       setError('Failed to load profile');
       return;
     }
-
-    if (profile.onboarding === 0) {
-      router.replace('/(main)/onboarding/name');
-    } else if (profile.onboarding === 1) {
-      router.replace('/(main)/onboarding/create-join-team');
-    } else {
-      router.replace('/(main)/home');
-    }
   };
 
   // ---------------------
@@ -143,25 +132,42 @@ const LoginPage = () => {
   const signInWithProvider = async (provider) => {
     try {
       const redirectUri = makeRedirectUri({
-        scheme: 'breakroom', // your app scheme
-        useProxy: false, // false for standalone builds
+        scheme: 'breakroom',
+        useProxy: false, // dev/standalone
       });
 
+      // start OAuth
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider,
         options: { redirectTo: redirectUri },
       });
-
       if (error) throw error;
-      if (!data?.url) throw new Error('No URL returned from Supabase OAuth');
 
-      // open system browser
-      await WebBrowser.openAuthSessionAsync(data.url, redirectUri);
+      // Open system browser for login
+      const result = await WebBrowser.openAuthSessionAsync(data.url, redirectUri);
 
-      // do NOT call getSession here — handled by deep link listener
+      if (result.type === 'success' && result.url) {
+        // Parse the URL fragment into a session
+        const { data: sessionData, error: sessionError } = await supabase.auth.getSessionFromUrl({
+          url: result.url,
+        });
+
+        if (sessionError) throw sessionError;
+
+        console.log('Logged in session:', sessionData.session);
+
+        // Now navigate based on onboarding
+        const userId = sessionData.session.user.id;
+        const { data: profile } = await supabase
+          .from('Players')
+          .select('onboarding')
+          .eq('auth_id', userId)
+          .single();
+      } else {
+        console.log('OAuth cancelled or failed:', result);
+      }
     } catch (err) {
       console.error('OAuth error:', err);
-      Alert.alert('Login Error', err.message || 'Something went wrong.');
     }
   };
 

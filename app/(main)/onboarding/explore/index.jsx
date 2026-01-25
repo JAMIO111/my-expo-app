@@ -194,11 +194,23 @@ const Home = () => {
               </View>
             )}
 
-            {playerInvitesAndRequests?.filter((i) => i.status === 'requested').length > 0 && (
+            {playerInvitesAndRequests?.filter(
+              (i) =>
+                i.status === 'pending_both' ||
+                i.status === 'pending_captain' ||
+                i.status === 'pending_admin' ||
+                i.status === 'requested'
+            ).length > 0 && (
               <View className="mb-2 w-full">
                 <Heading text="Requests" />
                 {playerInvitesAndRequests
-                  .filter((i) => i.status === 'requested')
+                  .filter(
+                    (i) =>
+                      i.status === 'pending_both' ||
+                      i.status === 'pending_captain' ||
+                      i.status === 'pending_admin' ||
+                      i.status === 'requested'
+                  )
                   .map((request) => (
                     <TeamInviteCard
                       key={request.id}
@@ -210,7 +222,14 @@ const Home = () => {
               </View>
             )}
 
-            {roles?.filter((r) => r.type !== 'admin').length > 0 ? (
+            {roles?.filter((r) => r.type !== 'admin').length === 0 &&
+            playerInvitesAndRequests?.filter(
+              (i) =>
+                i.status === 'pending_both' ||
+                i.status === 'pending_captain' ||
+                i.status === 'pending_admin' ||
+                i.status === 'requested'
+            ).length > 0 ? (
               <View className="w-full pb-16">
                 <Heading text="My Teams" />
                 <View className="w-full gap-3">

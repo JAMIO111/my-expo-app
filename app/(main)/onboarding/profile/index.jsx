@@ -122,7 +122,7 @@ const ProfilePage = () => {
           </View>
           <CTAButton
             text="Upgrade to view all stats"
-            onPress={() => router.push('/(main)/onboarding/profile/edit-profile')}
+            callbackFn={() => router.push('/(main)/onboarding/upgrade')}
           />
         </View>
       </ScrollView>

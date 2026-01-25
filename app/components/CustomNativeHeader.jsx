@@ -8,9 +8,10 @@ export default function CustomNativeHeader({ navigation, options }) {
   const routes = useNavigationState((state) => state.routes);
 
   const previousRoute = routes[routes.length - 2];
-  const previousTitle =
-    previousRoute?.name?.replace(/-/g, ' ').replace(/\b\w/g, (char) => char.toUpperCase()) ??
-    'Back';
+  const previousTitle = !previousRoute
+    ? ''
+    : (previousRoute?.name?.replace(/-/g, ' ').replace(/\b\w/g, (char) => char.toUpperCase()) ??
+      'Back');
 
   return (
     <View
@@ -28,12 +29,14 @@ export default function CustomNativeHeader({ navigation, options }) {
         }}>
         {/* Left: Back button */}
         <View style={{ minWidth: 80 }}>
-          <Pressable
-            onPress={() => nav.goBack()}
-            style={{ flexDirection: 'row', alignItems: 'center' }}>
-            <Ionicons name="chevron-back-outline" size={24} color="white" />
-            <Text style={{ fontSize: 16, color: 'white' }}>{previousTitle}</Text>
-          </Pressable>
+          {previousRoute && (
+            <Pressable
+              onPress={() => nav.goBack()}
+              style={{ flexDirection: 'row', alignItems: 'center' }}>
+              <Ionicons name="chevron-back-outline" size={24} color="white" />
+              <Text style={{ fontSize: 16, color: 'white' }}>{previousTitle}</Text>
+            </Pressable>
+          )}
         </View>
 
         {/* Center: Title */}

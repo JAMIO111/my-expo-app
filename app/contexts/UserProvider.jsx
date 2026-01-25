@@ -14,15 +14,27 @@ export const UserProvider = ({ children }) => {
   useEffect(() => {
     const { data: subscription } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (event === 'SIGNED_IN' && session?.user) {
-        // Ensure latest profile data
-        await refetch();
+        const { data: profile } = await refetch();
 
-        const isNewUser = session.user.created_at === session.user.last_sign_in_at;
+        console.log('User Provider User profile:', profile.playerProfile);
+        if (!profile?.playerProfile) {
+          // no profile row yet
+          router.replace('/(main)/onboarding/(profile-onboarding)/name');
+          return;
+        }
 
-        router.replace(isNewUser ? '/(main)/onboarding/name' : '/(main)');
-      }
+        const step = profile.playerProfile.onboarding;
 
-      if (event === 'SIGNED_OUT') {
+        if (step === 0) {
+          router.replace('/(main)/onboarding/(profile-onboarding)/name');
+        } else if (step === 1) {
+          router.replace('/(main)/onboarding/(entity-onboarding)/admin-or-player');
+        } else if (step === 2) {
+          router.replace('/(main)/onboarding/(entity-onboarding)/create-or-join-team');
+        } else {
+          router.replace('/(main)');
+        }
+      } else if (event === 'SIGNED_OUT') {
         router.replace('/login');
       }
     });

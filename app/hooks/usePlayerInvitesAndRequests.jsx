@@ -35,7 +35,7 @@ export function usePlayerInvitesAndRequests({ teamId, playerId }) {
           )
         `
         )
-        .in('status', ['invited', 'requested']); // simpler than .or
+        .in('status', ['invited', 'requested', 'pending_both', 'pending_captain', 'pending_admin']); // simpler than .or
 
       if (teamId) query = query.eq('team_id', teamId);
       if (playerId) query = query.eq('player_id', playerId);

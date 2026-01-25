@@ -225,11 +225,7 @@ export function useTeamPlayerActions(teamId, callbacks = {}) {
 
   const revokeRequest = useMutation({
     mutationFn: async (requestId) => {
-      const { error } = await supabase
-        .from('TeamPlayers')
-        .delete()
-        .eq('id', requestId)
-        .eq('status', 'requested');
+      const { error } = await supabase.from('TeamPlayers').delete().eq('id', requestId);
 
       if (error) throw error;
       return requestId;

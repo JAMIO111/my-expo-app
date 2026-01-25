@@ -1,4 +1,4 @@
-import { StyleSheet, Text, View, TextInput } from 'react-native';
+import { StyleSheet, Text, View, TextInput, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useState, useRef } from 'react';
 import { Stack } from 'expo-router';
@@ -17,6 +17,7 @@ const Name = () => {
       <Stack.Screen
         options={{
           title: 'Step 1 of 4',
+          headerBackTitle: 'Name',
         }}
       />
 
@@ -68,12 +69,16 @@ const Name = () => {
               type="yellow"
               textColor="black"
               text="Continue"
-              callbackFn={() =>
+              callbackFn={() => {
+                if (firstName.trim() === '' || surname.trim() === '') {
+                  Alert.alert('Error', 'Please enter both your first name and surname.');
+                  return;
+                }
                 router.push({
-                  pathname: '/(main)/onboarding/nickname',
+                  pathname: '/(main)/onboarding/(profile-onboarding)/nickname',
                   params: { firstName, surname },
-                })
-              }
+                });
+              }}
             />
           </View>
         </View>

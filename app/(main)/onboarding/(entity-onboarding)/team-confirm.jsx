@@ -62,12 +62,12 @@ const TeamConfirm = () => {
     <>
       <Stack.Screen
         options={{
-          title: 'Step 3 of 5',
+          title: 'Step 3 of 4',
         }}
       />
       <SafeViewWrapper useTopInset={false} topColor="bg-brand" bottomColor="bg-brand-dark">
         <View className="flex-1 justify-between gap-3 bg-brand">
-          <StepPillGroup steps={5} currentStep={3} />
+          <StepPillGroup steps={4} currentStep={3} />
           <ScrollView className="flex-1 gap-3 p-5">
             <Text
               style={{ lineHeight: 50 }}

@@ -1,4 +1,4 @@
-import { StyleSheet, Text, View, TextInput } from 'react-native';
+import { StyleSheet, Text, View, Alert } from 'react-native';
 import { useState } from 'react';
 import CTAButton from '@components/CTAButton';
 import { useRouter, useLocalSearchParams, Stack } from 'expo-router';
@@ -15,6 +15,7 @@ const Nickname = () => {
       <Stack.Screen
         options={{
           title: 'Step 2 of 4',
+          headerBackTitle: 'Name',
         }}
       />
       <View className="flex-1 gap-3 bg-brand">
@@ -48,12 +49,16 @@ const Nickname = () => {
               type="yellow"
               textColor="black"
               text="Continue"
-              callbackFn={() =>
+              callbackFn={() => {
+                if (nickname.trim() === '') {
+                  Alert.alert('Error', 'Please enter a display name.');
+                  return;
+                }
                 router.push({
-                  pathname: '/(main)/onboarding/dob',
+                  pathname: '/(main)/onboarding/(profile-onboarding)/dob',
                   params: { ...params, nickname },
-                })
-              }
+                });
+              }}
             />
           </View>
         </View>

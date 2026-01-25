@@ -10,6 +10,8 @@ const AdminOrPlayer = () => {
       <Stack.Screen
         options={{
           title: '',
+          headerBackVisible: false,
+          gestureEnabled: false,
         }}
       />
       <View className="flex-1 bg-brand">
