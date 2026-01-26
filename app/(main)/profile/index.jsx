@@ -119,11 +119,13 @@ const ProfilePage = () => {
           </View>
           <View className="rounded-t-3xl bg-bg-grouped-2 pt-4">
             <SlidingTabButton option1="Badges" option2="Stats" onChange={setView} />
-            <View className="p-3">
+            <View className="">
               <View style={{ display: view === 'left' ? 'flex' : 'none' }}>
                 <BadgeList badges={badges} />
               </View>
-              <View style={{ display: view === 'right' ? 'flex' : 'none' }}>
+              <View
+                className="bg-bg-grouped-1"
+                style={{ display: view === 'right' ? 'flex' : 'none' }}>
                 <PlayerStats playerId={player?.id} />
               </View>
             </View>

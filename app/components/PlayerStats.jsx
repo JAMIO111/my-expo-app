@@ -23,7 +23,7 @@ const PlayerStats = ({ playerId }) => {
             losses={data?.totalStats?.frames_lost ?? 0}
             statTitle="Frames Played"
           />
-          <View className="flex-1 gap-3 pl-8">
+          <View className="flex-1 gap-3 pl-8 pr-2">
             <View className="flex flex-row items-center gap-2">
               <View className="h-3 w-3 rounded-full bg-green-700"></View>
               <Text className="flex-1 text-lg text-text-2">Won</Text>
@@ -89,7 +89,7 @@ const PlayerStats = ({ playerId }) => {
             losses={data?.totalStats?.matches_lost ?? 0}
             statTitle="Matches Played"
           />
-          <View className="flex-1 gap-3 pl-8">
+          <View className="flex-1 gap-3 pl-8 pr-2">
             <View className="flex flex-row items-center gap-2">
               <View className="h-3 w-3 rounded-full bg-green-700"></View>
               <Text className="flex-1 text-lg text-text-2">Won</Text>

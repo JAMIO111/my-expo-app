@@ -17,7 +17,7 @@ import { usePlayerStats } from '@hooks/usePlayerStats';
 const PlayerProfile = ({ context, isLoading, playerProfile, error }) => {
   const { client: supabase } = useSupabaseClient();
   const router = useRouter();
-  const { teamId, userId } = useLocalSearchParams();
+  const { fixtureId, teamId, userId } = useLocalSearchParams();
   const colorScheme = useColorScheme();
   const [captainModalVisible, setCaptainModalVisible] = useState(false);
   const [viceCaptainModalVisible, setViceCaptainModalVisible] = useState(false);
@@ -134,8 +134,8 @@ const PlayerProfile = ({ context, isLoading, playerProfile, error }) => {
       router.push(`home/league/${teamId}/${userId}/player-stats`);
     } else if (context === 'teams') {
       router.push(`/teams/${userId}/player-stats`);
-    } else if (context === 'home/upcoming-fixture') {
-      router.push(`home/${teamId}/player-stats`);
+    } else if (context === 'fixture') {
+      router.push(`home/${fixtureId}/${teamId}/${userId}/player-stats`);
     }
   };
   console.log('Player Profile:', playerProfile);
