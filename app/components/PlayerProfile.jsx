@@ -12,6 +12,7 @@ import LoadingSplash from '@components/LoadingSplash';
 import StatCard from '@components/StatCard';
 import { isBirthdayToday } from '@lib/helperFunctions';
 import CachedImage from '@components/CachedImage';
+import { usePlayerStats } from '@hooks/usePlayerStats';
 
 const PlayerProfile = ({ context, isLoading, playerProfile, error }) => {
   const { client: supabase } = useSupabaseClient();
@@ -22,6 +23,7 @@ const PlayerProfile = ({ context, isLoading, playerProfile, error }) => {
   const [viceCaptainModalVisible, setViceCaptainModalVisible] = useState(false);
   const [removePlayerModalVisible, setRemovePlayerModalVisible] = useState(false);
   const { refetch, loading, currentRole, player } = useUser();
+  const { data: playerStats, error: playerStatsError } = usePlayerStats(playerProfile?.id);
 
   console.log('Player Profile Data:', playerProfile);
 
@@ -34,11 +36,7 @@ const PlayerProfile = ({ context, isLoading, playerProfile, error }) => {
     );
   }
   if (loading || isLoading) {
-    return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-        <LoadingSplash />
-      </View>
-    );
+    return <LoadingSplash />;
   }
 
   const { years, days } = getAgeInYearsAndDays(playerProfile?.dob);
@@ -134,136 +132,129 @@ const PlayerProfile = ({ context, isLoading, playerProfile, error }) => {
   const handleViewStats = () => {
     if (context === 'home/league') {
       router.push(`home/league/${teamId}/${userId}/player-stats`);
-    } else {
-      router.push(`/teams/${playerProfile.team_id}/PlayerStats`);
+    } else if (context === 'teams') {
+      router.push(`/teams/${userId}/player-stats`);
+    } else if (context === 'home/upcoming-fixture') {
+      router.push(`home/${teamId}/player-stats`);
     }
   };
   console.log('Player Profile:', playerProfile);
   return (
     <ScrollView
       contentContainerStyle={{ alignItems: 'center', justifyContent: 'center' }}
-      className="w-full bg-bg-grouped-1 px-4 py-6">
-      <View className="w-full flex-row items-center justify-start gap-6 rounded-2xl border border-theme-gray-5 bg-bg-grouped-2 p-2 shadow-[0_2px_4px_rgba(0,0,0,0.1)]">
-        {playerProfile?.avatar_url ? (
-          <CachedImage
-            avatarUrl={playerProfile.avatar_url}
-            userId={playerProfile.id}
-            width={120}
-            height={120}
-            borderRadius={12}
-          />
-        ) : (
-          <View
-            className="h-32 w-32 items-center justify-center rounded-xl
+      className="w-full bg-bg-grouped-1">
+      <View className="w-full p-4 px-2">
+        <View className="w-full flex-row items-center justify-start gap-6 rounded-2xl border border-theme-gray-5 bg-bg-grouped-2 p-2 shadow-[0_2px_4px_rgba(0,0,0,0.1)]">
+          {playerProfile?.avatar_url ? (
+            <CachedImage
+              avatarUrl={playerProfile.avatar_url}
+              userId={playerProfile.id}
+              width={120}
+              height={120}
+              borderRadius={12}
+            />
+          ) : (
+            <View
+              className="h-32 w-32 items-center justify-center rounded-xl
         border-2 border-brand bg-brand-light">
-            <Text className="text-5xl font-bold text-white">
-              {playerProfile?.first_name.charAt(0)}
-              {playerProfile?.surname.charAt(0)}
+              <Text className="text-5xl font-bold text-white">
+                {playerProfile?.first_name.charAt(0)}
+                {playerProfile?.surname.charAt(0)}
+              </Text>
+            </View>
+          )}
+          <View className="h-32 justify-center gap-2">
+            <Text style={{ lineHeight: 50 }} className="font-saira-medium text-4xl text-text-1">
+              {playerProfile?.first_name} {playerProfile?.surname}
             </Text>
-          </View>
-        )}
-        <View className="h-32 justify-center">
-          <Text style={{ lineHeight: 50 }} className="font-saira-semibold text-4xl text-text-1">
-            {playerProfile?.first_name} {playerProfile?.surname}
-          </Text>
-          <Text style={{ lineHeight: 30 }} className="font-saira-medium text-3xl text-text-2">
-            {playerProfile?.nickname}
-          </Text>
-          <Text style={{ lineHeight: 30 }} className="font-saira-medium text-2xl text-text-2">
-            {playerProfile?.nickname}
-          </Text>
-        </View>
-      </View>
-      <View className="w-full pt-8">
-        <Heading text="Personal Details" />
-      </View>
-      <View className="flex w-full flex-row px-2 pt-3">
-        <View className="flex flex-1 flex-col gap-4">
-          <View className="flex- w-full flex-col gap-1">
-            <Text className="font-saira text-xl text-text-2">Team</Text>
-            <Text className="font-saira-semibold text-xl text-text-1">
-              {playerProfile?.team_name}
+            <Text style={{ lineHeight: 30 }} className="font-saira text-3xl text-text-2">
+              {playerProfile?.nickname}
             </Text>
-          </View>
-          <View className="flex- w-full flex-col gap-1">
-            <Text className="font-saira text-xl text-text-2">Date of Birth</Text>
-            <Text className="font-saira-semibold text-xl text-text-1">
-              {playerProfile?.dob
-                ? new Date(playerProfile.dob).toLocaleDateString('en-GB', {
-                    year: 'numeric',
-                    month: '2-digit',
-                    day: '2-digit',
-                  })
-                : 'N/A'}
-            </Text>
-          </View>
-          <View className="flex- w-full flex-col gap-1">
-            <Text className="font-saira text-xl text-text-2">Team</Text>
-            <Text className="font-saira-semibold text-xl text-text-1">
-              {playerProfile?.team_name}
+            <Text style={{ lineHeight: 25 }} className="font-saira text-xl text-text-2">
+              {`Since: ${
+                playerProfile?.created_at
+                  ? new Date(playerProfile.created_at).toLocaleDateString('en-GB', {
+                      year: 'numeric',
+                      month: 'short',
+                      day: 'numeric',
+                    })
+                  : 'N/A'
+              }`}
             </Text>
           </View>
         </View>
-        <View className="flex flex-1 flex-col gap-4">
-          <View className="flex- w-full flex-col gap-1">
-            <Text className="font-saira text-xl text-text-2">Team</Text>
-            <Text className="font-saira-semibold text-xl text-text-1">
-              {playerProfile?.team_name}
-            </Text>
+      </View>
+      <View className="mb-1 bg-bg-grouped-2 px-2">
+        <View className="w-full pt-6">
+          <Heading text="Personal Details" />
+        </View>
+        <View className="flex w-full flex-row px-2 py-4">
+          <View className="flex flex-1 flex-col gap-4">
+            <View className="flex- w-full flex-col gap-1">
+              <Text className="font-saira text-lg text-text-2">TEAM</Text>
+              <Text className="font-saira-semibold text-xl text-text-1">
+                {playerProfile?.team_name}
+              </Text>
+            </View>
+            <View className="flex- w-full flex-col gap-1">
+              <Text className="font-saira text-lg text-text-2">DATE OF BIRTH</Text>
+              <Text className="font-saira-semibold text-xl text-text-1">
+                {playerProfile?.dob
+                  ? new Date(playerProfile.dob).toLocaleDateString('en-GB', {
+                      year: 'numeric',
+                      month: '2-digit',
+                      day: '2-digit',
+                    })
+                  : 'N/A'}
+              </Text>
+            </View>
           </View>
-          <View className="flex- w-full flex-col gap-1">
-            <Text className="font-saira text-xl text-text-2">Age</Text>
-            <Text className="font-saira-semibold text-xl text-text-1">
-              {playerProfile?.dob ? `${years} Years ${days} days` : 'N/A'}
-            </Text>
-          </View>
-          <View className="flex- w-full flex-col gap-1">
-            <Text className="font-saira text-xl text-text-2">Member Since</Text>
-            <Text className="font-saira-semibold text-xl text-text-1">
-              {new Date(playerProfile?.created_at).toLocaleDateString('en-GB', {
-                year: 'numeric',
-                month: 'short',
-                day: 'numeric',
-              })}
-            </Text>
+          <View className="flex flex-1 flex-col gap-4">
+            <View className="flex- w-full flex-col gap-1">
+              <Text className="font-saira text-lg text-text-2">MEMBER SINCE</Text>
+              <Text className="font-saira-semibold text-xl text-text-1">
+                {playerProfile?.created_at
+                  ? new Date(playerProfile.created_at).toLocaleDateString('en-GB', {
+                      year: 'numeric',
+                      month: 'short',
+                      day: 'numeric',
+                    })
+                  : 'N/A'}
+              </Text>
+            </View>
+            <View className="flex- w-full flex-col gap-1">
+              <Text className="font-saira text-lg text-text-2">AGE</Text>
+              <Text className="font-saira-semibold text-xl text-text-1">
+                {`${playerProfile?.dob ? `${years} Years ${days} days` : 'N/A'}  ${isBirthdayToday(playerProfile?.dob) ? '🎂' : ''}`}
+              </Text>
+            </View>
           </View>
         </View>
       </View>
 
-      <View className="w-full pt-8">
+      <View className="w-full bg-bg-grouped-2 px-2 py-6">
         <Heading text="Statistics" />
-        <View className="gap-3">
-          <View className="flex-row gap-3">
+        <View className="gap-4 px-2">
+          <View className="flex-row gap-4">
             <StatCard title="Matches Played" value="86" />
             <StatCard title="MOTMs" value="12" />
           </View>
-          <View className="flex-row gap-3">
+          <View className="flex-row gap-4">
             <StatCard title="Wins" value="52" />
             <StatCard title="Losses" value="34" />
           </View>
+          <CTAButton callbackFn={handleViewStats} text="View All Stats" type="yellow" />
         </View>
       </View>
-      <View className="my-8 w-full gap-5 pb-16">
-        <CTAButton callbackFn={handleViewStats} text="View Player Stats" type="brown"></CTAButton>
-        <CTAButton
-          type="brown"
-          callbackFn={() => {
-            Toast.show({
-              type: 'success',
-              text1: 'Success',
-              text2: 'Your team captain has been changed.',
-              props: {
-                colorScheme: colorScheme,
-              },
-            });
-          }}
-          text="Compare Stats"></CTAButton>
+      <View className="mt-1 w-full gap-6 bg-bg-grouped-2 px-6 py-8">
+        <CTAButton type="yellow" callbackFn={() => {}} text="Compare Stats" />
         {currentRole?.team.captain === player?.id && playerProfile?.id !== player?.id && (
           <>
             <CTAButton
-              type="brown"
+              type="brand"
               callbackFn={() => setCaptainModalVisible(true)}
-              text="Make Team Captain"></CTAButton>
+              text="Make Team Captain"
+            />
             <ConfirmModal
               visible={captainModalVisible}
               onConfirm={handleConfirmTransferCaptaincy}
@@ -276,9 +267,10 @@ const PlayerProfile = ({ context, isLoading, playerProfile, error }) => {
         {currentRole?.team.vice_captain === player?.id && playerProfile?.id !== player?.id && (
           <>
             <CTAButton
-              type="brown"
+              type="yellow"
               callbackFn={() => setViceCaptainModalVisible(true)}
-              text="Make Vice Captain"></CTAButton>
+              text="Make Vice Captain"
+            />
             <ConfirmModal
               visible={viceCaptainModalVisible}
               onConfirm={handleConfirmTransferViceCaptaincy}

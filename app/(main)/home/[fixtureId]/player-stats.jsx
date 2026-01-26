@@ -4,7 +4,7 @@ import SafeViewWrapper from '@components/SafeViewWrapper';
 import CustomHeader from '@components/CustomHeader';
 import StatCard from '@components/StatCard';
 
-const PlayerStats = () => {
+const PlayerStatsScreen = () => {
   return (
     <SafeViewWrapper topColor="bg-brand" useBottomInset={false}>
       <Stack.Screen
@@ -50,4 +50,4 @@ const PlayerStats = () => {
   );
 };
 
-export default PlayerStats;
+export default PlayerStatsScreen;

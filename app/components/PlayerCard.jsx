@@ -13,6 +13,7 @@ const PlayerCard = ({ player, team, context }) => {
   const router = useRouter();
   const { teamId, fixtureId } = useLocalSearchParams();
   const iconColor = colors[colorScheme]?.icon || '#000';
+  const hasNavigated = useRef(false);
 
   console.log('PlayerCard Data:', player);
 
@@ -48,7 +49,13 @@ const PlayerCard = ({ player, team, context }) => {
   const params = useLocalSearchParams();
   console.log('Current Path:', pathname);
   console.log('Current Params:', params);
+
   const handlePress = () => {
+    if (hasNavigated.current) return;
+    hasNavigated.current = true;
+    setTimeout(() => {
+      hasNavigated.current = false;
+    }, 750);
     if (context === 'teams') {
       router.push(`/teams/${player.id}`);
     } else if (context === 'home/upcoming-fixture' && fixtureId) {

@@ -27,7 +27,12 @@ export default function PlayerPage() {
       <SafeViewWrapper useBottomInset={false} topColor="bg-brand">
         <View className="mt-16">
           {!isLoading ? (
-            <PlayerProfile playerProfile={playerProfile} error={error} isLoading={isLoading} />
+            <PlayerProfile
+              context="home/league"
+              playerProfile={playerProfile}
+              error={error}
+              isLoading={isLoading}
+            />
           ) : (
             <LoadingSplash />
           )}

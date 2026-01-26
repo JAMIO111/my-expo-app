@@ -14,8 +14,18 @@ const CTAButton = ({
   const colorScheme = useColorScheme();
   const themeColors = colorScheme === 'dark' ? colors.dark : colors.light;
   const buttonTheme = themeColors[type] || themeColors.default;
+  const hasNavigated = useRef(false);
 
   const scale = useRef(new Animated.Value(1)).current;
+
+  const handleCallbackFn = () => {
+    if (hasNavigated.current) return;
+    hasNavigated.current = true;
+    setTimeout(() => {
+      hasNavigated.current = false;
+    }, 750);
+    callbackFn();
+  };
 
   const handlePressIn = () => {
     if (!disabled && !loading) {
@@ -44,7 +54,7 @@ const CTAButton = ({
       <Pressable
         onPressIn={handlePressIn}
         onPressOut={handlePressOut}
-        onPress={callbackFn}
+        onPress={handleCallbackFn}
         disabled={disabled || loading}
         className="w-full items-center justify-center border border-border-color p-3"
         style={{

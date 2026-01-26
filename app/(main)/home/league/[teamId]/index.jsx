@@ -14,7 +14,10 @@ const index = () => {
         options={{
           header: () => (
             <SafeViewWrapper useBottomInset={false}>
-              <CustomHeader title={profile.display_name} rightIcon="clipboard-outline" />
+              <CustomHeader
+                title={profile.display_name || 'Team Profile'}
+                rightIcon="clipboard-outline"
+              />
             </SafeViewWrapper>
           ),
         }}

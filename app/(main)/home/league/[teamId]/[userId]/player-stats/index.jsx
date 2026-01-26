@@ -1,28 +1,9 @@
-import { StyleSheet, Text, View } from 'react-native';
-import PlayerStats from '@components/PlayerStats';
-import { Stack } from 'expo-router';
-import SafeViewWrapper from '@components/SafeViewWrapper';
-import CustomHeader from '@components/CustomHeader';
+import PlayerStatsPage from '@/components/PlayerStatsPage';
+import { useLocalSearchParams } from 'expo-router';
 
 const index = () => {
-  return (
-    <SafeViewWrapper useBottomInset={false} topColor="bg-brand">
-      <Stack.Screen
-        options={{
-          header: () => (
-            <SafeViewWrapper useBottomInset={false}>
-              <CustomHeader title="Stats" rightIcon="clipboard-outline" />
-            </SafeViewWrapper>
-          ),
-        }}
-      />
-      <View className="flex-1">
-        <PlayerStats />
-      </View>
-    </SafeViewWrapper>
-  );
+  const { userId } = useLocalSearchParams();
+  return <PlayerStatsPage userId={userId} />;
 };
 
 export default index;
-
-const styles = StyleSheet.create({});

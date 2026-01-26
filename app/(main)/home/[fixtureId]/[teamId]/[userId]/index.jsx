@@ -27,7 +27,12 @@ export default function TeammatePage() {
       <SafeViewWrapper useBottomInset={false} topColor="bg-brand">
         <View className="mt-16">
           {!isLoading ? (
-            <PlayerProfile playerProfile={playerProfile} error={error} isLoading={isLoading} />
+            <PlayerProfile
+              context="fixture"
+              playerProfile={playerProfile}
+              error={error}
+              isLoading={isLoading}
+            />
           ) : (
             <LoadingSplash />
           )}
