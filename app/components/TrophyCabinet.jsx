@@ -11,7 +11,7 @@ import {
   TouchableOpacity,
   Modal,
 } from 'react-native';
-import CTAButton from '@components/CTAButton';
+import IonIcons from 'react-native-vector-icons/Ionicons';
 
 const TrophyCabinet = ({ trophies }) => {
   const screenWidth = Dimensions.get('window').width;
@@ -66,6 +66,38 @@ const TrophyCabinet = ({ trophies }) => {
     <View style={styles.container}>
       <View style={styles.woodFrameWrapper}>
         <View style={styles.woodFrame}>
+          {trophies.length === 0 && (
+            <Image
+              source={require('@assets/cobweb.png')} // your cobweb asset
+              style={{
+                position: 'absolute',
+                top: 79,
+                left: 12,
+                width: 64,
+                height: 64,
+                zIndex: 5,
+                opacity: 0.6, // subtle effect
+              }}
+              resizeMode="contain"
+            />
+          )}
+          {trophies.length < 2 && (
+            <Image
+              source={require('@assets/cobweb.png')} // your cobweb asset
+              style={{
+                //flip horizontally
+                transform: [{ scaleX: -1 }],
+                position: 'absolute',
+                top: 242,
+                right: 12,
+                width: 64,
+                height: 64,
+                zIndex: 5,
+                opacity: 0.6, // subtle effect
+              }}
+              resizeMode="contain"
+            />
+          )}
           {/* Touchable Plaque */}
           <TouchableOpacity
             activeOpacity={0.7}
@@ -132,22 +164,85 @@ const TrophyCabinet = ({ trophies }) => {
           onRequestClose={closeModal}>
           <View style={styles.modalOverlay}>
             <View
-              className="border border-theme-gray-5 bg-bg-grouped-2"
+              className="overflow-hidden rounded-xl bg-bg-grouped-2 p-1"
               style={styles.modalContent}>
-              <View className="mb-8 w-full">
-                <Text className="w-full rounded-xl bg-theme-gray-3 p-2 text-center font-saira-semibold text-lg text-text-1">
-                  {selectedTrophy?.description || 'Super League Winners 2023'}
-                </Text>
+              {/* Close button */}
+              <TouchableOpacity
+                onPress={closeModal}
+                style={{
+                  position: 'absolute',
+                  top: 8,
+                  right: 8,
+                  zIndex: 10,
+                  backgroundColor: 'rgba(0,0,0,0.2)',
+                  borderRadius: 14,
+                  width: 40,
+                  height: 40,
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                }}>
+                <IonIcons name="close" size={30} color="#fff" />
+              </TouchableOpacity>
+
+              <View
+                style={styles.trophyBackground}
+                className="w-full items-end border-b border-theme-gray-4 bg-bg-2">
+                {selectedTrophy && (
+                  <Image
+                    source={selectedTrophy.image}
+                    style={styles.modalImage}
+                    resizeMode="contain"
+                    className="my-8"
+                  />
+                )}
               </View>
-              {selectedTrophy && (
-                <Image
-                  source={selectedTrophy.image}
-                  style={styles.modalImage}
-                  resizeMode="contain"
-                />
-              )}
-              <View className="mt-16 w-full">
-                <CTAButton text="Dismiss" type="success" callbackFn={closeModal} />
+
+              <View className="flex w-full flex-row py-4 pl-4">
+                {/* your existing content */}
+                <View className="flex flex-1 flex-col gap-4">
+                  <View className="flex w-full flex-col gap-1">
+                    <Text className="font-saira text-lg text-text-2">DISTRICT</Text>
+                    <Text className="font-saira-semibold text-xl text-text-1">
+                      {selectedTrophy?.district_name || 'N/A'}
+                    </Text>
+                  </View>
+                  <View className="flex w-full flex-col gap-1">
+                    <Text className="font-saira text-lg text-text-2">SEASON</Text>
+                    <Text className="font-saira-semibold text-xl text-text-1">
+                      {selectedTrophy?.season_name || 'N/A'}
+                    </Text>
+                  </View>
+                  <View className="flex w-full flex-col gap-1">
+                    <Text className="font-saira text-lg text-text-2">SEASON START</Text>
+                    <Text className="font-saira-semibold text-xl text-text-1">
+                      {new Date(selectedTrophy?.season_start).toLocaleDateString('en-GB') || 'N/A'}
+                    </Text>
+                  </View>
+                </View>
+                <View className="flex flex-1 flex-col gap-4">
+                  <View className="flex w-full flex-col gap-1">
+                    <Text className="font-saira text-lg text-text-2">DIVISION</Text>
+                    <Text className="font-saira-semibold text-xl text-text-1">
+                      {selectedTrophy?.division_name || 'N/A'}
+                    </Text>
+                  </View>
+                  <View className="flex w-full flex-col gap-1">
+                    <Text className="font-saira text-lg text-text-2">POSITION</Text>
+                    <Text className="font-saira-semibold text-xl text-text-1">
+                      {selectedTrophy?.result === '1'
+                        ? 'Winners'
+                        : selectedTrophy?.result === '2'
+                          ? 'Runners Up'
+                          : 'N/A'}
+                    </Text>
+                  </View>
+                  <View className="flex w-full flex-col gap-1">
+                    <Text className="font-saira text-lg text-text-2">SEASON END</Text>
+                    <Text className="font-saira-semibold text-xl text-text-1">
+                      {new Date(selectedTrophy?.season_end).toLocaleDateString('en-GB') || 'N/A'}
+                    </Text>
+                  </View>
+                </View>
               </View>
             </View>
           </View>
@@ -228,10 +323,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
   },
   modalContent: {
-    borderRadius: 16,
-    padding: 10,
+    borderRadius: 20,
     alignItems: 'center',
-    maxWidth: 320,
+    maxWidth: '90%',
     width: '100%',
     // optional shadow for iOS
     shadowColor: '#000',
@@ -245,5 +339,11 @@ const styles = StyleSheet.create({
     width: '100%',
     height: 200,
     borderRadius: 10,
+  },
+  trophyBackground: {
+    width: '100%',
+    alignItems: 'center',
+    borderTopLeftRadius: 16,
+    borderTopRightRadius: 16,
   },
 });

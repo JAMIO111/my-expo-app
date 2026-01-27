@@ -71,7 +71,7 @@ const UniqueCode = () => {
       });
     } else if (LeagueData) {
       router.push({
-        pathname: '/(main)/onboarding/district-name',
+        pathname: '/(main)/onboarding/(entity-onboarding)/district-name',
         params: { districtId: LeagueData.id },
       });
     }

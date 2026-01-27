@@ -226,7 +226,7 @@ export default function CreateDivisions() {
     // If all checks pass
     console.log('Saving divisions:', divisions);
     router.push({
-      pathname: '/(main)/onboarding/division-rewards',
+      pathname: '/(main)/onboarding/(entity-onboarding)/division-rewards',
       params: { divisions: JSON.stringify(divisions), districtId, districtName, privateDistrict },
     });
   };
@@ -353,7 +353,7 @@ export default function CreateDivisions() {
                 item.drawsEnabled
                   ? 'border-theme-green bg-theme-green/50'
                   : 'border-theme-red bg-theme-red/50'
-              } max-w-[50%] rounded-full border px-2`}>
+              } max-w-[50%] rounded-lg border px-2`}>
               <Text className="font-saira text-text-1" numberOfLines={1} ellipsizeMode="tail">
                 {item.drawsEnabled ? 'Draws Enabled' : 'Draws Disabled'}
               </Text>
@@ -364,7 +364,7 @@ export default function CreateDivisions() {
                 item.specialMatchesEnabled
                   ? 'border-theme-purple bg-theme-purple/50'
                   : 'border-theme-red bg-theme-red/50'
-              } max-w-[100%] rounded-full border px-2`}>
+              } max-w-[100%] rounded-lg border px-2`}>
               <Text className="font-saira text-text-1" numberOfLines={1} ellipsizeMode="tail">
                 {item.specialMatchesEnabled ? item.specialMatchName : 'No Special Matches'}
               </Text>
@@ -440,7 +440,12 @@ export default function CreateDivisions() {
               renderItem={renderDivisionCard}
               showsVerticalScrollIndicator={false}
             />
-            <View className="mb-16 mt-8 w-full">
+            <Text
+              style={{ lineHeight: 22 }}
+              className="mx-2 mb-4 mt-2 font-saira-medium text-lg text-text-on-brand-2">
+              Ensure divisions are in the correct order. Swipe left on a division to remove it.
+            </Text>
+            <View className="mb-16 w-full">
               <CTAButton
                 icon={<Ionicons name="checkmark" size={24} color="black" />}
                 text="Save & Continue"
@@ -653,6 +658,7 @@ export default function CreateDivisions() {
                       leftIconName="trophy-outline"
                       iconColor="#A259FF"
                       titleColor="text-text-1"
+                      autoCapitalize="words"
                     />
                     <View>
                       <CustomTextInput
@@ -664,6 +670,7 @@ export default function CreateDivisions() {
                         iconColor="#A259FF"
                         titleColor="text-text-1"
                         maxLength={3}
+                        autoCapitalize="characters"
                       />
                       <Text className="mt-2 text-text-2">Max Length: 3</Text>
                     </View>

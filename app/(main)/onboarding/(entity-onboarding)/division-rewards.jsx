@@ -184,6 +184,7 @@ const DivisionRewards = () => {
                 <Text className="flex-1 font-saira-medium text-xl text-text-2">
                   Runner-up: {divisionRewards[index]?.runnerUp?.name || 'Not selected'}
                 </Text>
+
                 {divisionRewards[index]?.runnerUp && (
                   <Pressable
                     className="rounded-xl border border-theme-red bg-theme-red/80 p-3"

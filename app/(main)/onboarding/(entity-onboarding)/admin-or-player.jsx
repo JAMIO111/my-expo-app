@@ -39,8 +39,8 @@ const AdminOrPlayer = () => {
             text="I'm a league admin"
             callbackFn={() =>
               router.push({
-                pathname: '/(main)/onboarding/unique-code',
-                params: { isNewTeam: true },
+                pathname: '/(main)/onboarding/(entity-onboarding)/unique-code',
+                params: { isNewLeague: true },
               })
             }
           />
@@ -50,7 +50,7 @@ const AdminOrPlayer = () => {
               text="I'm a player"
               callbackFn={() =>
                 router.push({
-                  pathname: '/(main)/onboarding/create-join-team',
+                  pathname: '/(main)/onboarding/(entity-onboarding)/create-join-team',
                   params: { isNewTeam: false },
                 })
               }

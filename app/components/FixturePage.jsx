@@ -1,4 +1,13 @@
-import { StyleSheet, ScrollView, Text, View, Pressable, useColorScheme } from 'react-native';
+import {
+  StyleSheet,
+  ScrollView,
+  Text,
+  View,
+  Pressable,
+  useColorScheme,
+  Linking,
+  Platform,
+} from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
 import { useState, useRef } from 'react';
 import TeamLogo from '@components/TeamLogo';
@@ -25,6 +34,26 @@ const FixturePage = ({ fixtureDetails, isLoading, context }) => {
   const hasNavigated = useRef(false);
 
   console.log('FixturePage fixtureDetails:', fixtureDetails);
+
+  const address = [
+    fixtureDetails?.homeTeam?.address?.line_1,
+    fixtureDetails?.homeTeam?.address?.line_2,
+    fixtureDetails?.homeTeam?.address?.city,
+    fixtureDetails?.homeTeam?.address?.county,
+    fixtureDetails?.homeTeam?.address?.postcode,
+  ]
+    .filter(Boolean)
+    .join(', ');
+
+  const iosMapsUrl = `maps://?address=${address}`;
+
+  const androidMapsUrl = `geo:0,0?q=${address}`;
+
+  const openNativeMaps = () => {
+    const url = Platform.OS === 'ios' ? iosMapsUrl : androidMapsUrl;
+
+    Linking.openURL(url);
+  };
 
   const handleTeamPress = (teamId) => {
     if (hasNavigated.current) return;
@@ -172,14 +201,14 @@ const FixturePage = ({ fixtureDetails, isLoading, context }) => {
               <View className="flex-row items-center justify-center gap-2 pb-2">
                 <Text
                   numberOfLines={1}
-                  ellipsizeMode="tail"
+                  ellipsizeMode="middle"
                   className="flex-1 text-right font-saira-semibold text-xl text-text-1">
                   {fixtureDetails?.homeTeam?.display_name}
                 </Text>
                 <Text className="w-6 text-text-2"> vs </Text>
                 <Text
                   numberOfLines={1}
-                  ellipsizeMode="tail"
+                  ellipsizeMode="middle"
                   className="flex-1 text-left font-saira-semibold text-xl text-text-1">
                   {fixtureDetails?.awayTeam?.display_name}
                 </Text>
@@ -196,16 +225,11 @@ const FixturePage = ({ fixtureDetails, isLoading, context }) => {
                     year: 'numeric',
                   })}
                 </Text>
-                <Text className="text-center font-saira text-lg text-text-2">
-                  {' '}
-                  {fixtureDetails?.homeTeam?.address?.line_1},{' '}
-                  {fixtureDetails?.homeTeam?.address?.line_2},{' '}
-                </Text>
-                <Text className="text-center font-saira text-lg text-text-2">
-                  {' '}
-                  {fixtureDetails?.homeTeam?.address?.city},{' '}
-                  {fixtureDetails?.homeTeam?.address?.postcode}
-                </Text>
+                <Pressable onPress={openNativeMaps} className="items-center justify-center">
+                  <Text className="px-4 text-center font-saira text-lg text-text-2 underline">
+                    {address || 'No address available'}
+                  </Text>
+                </Pressable>
               </View>
             </View>
           </View>

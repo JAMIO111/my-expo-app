@@ -55,7 +55,7 @@ export default function DistrictName() {
 
       // ✅ If unique, navigate
       router.push({
-        pathname: '/(main)/onboarding/create-divisions',
+        pathname: '/(main)/onboarding/(entity-onboarding)/district-settings',
         params: {
           districtId,
           districtName: capitaliseEachWord(districtName.trim()),
@@ -88,6 +88,8 @@ export default function DistrictName() {
             leftIconName="map-outline"
             iconColor="purple"
             placeholder="e.g. Downtown District"
+            autoCapitalize="words"
+            returnKeyType="done"
           />
         </View>
         <View className="h-16 flex-row items-center gap-5 rounded-xl border border-theme-gray-4 bg-bg-grouped-2 pr-5">
@@ -110,8 +112,8 @@ export default function DistrictName() {
         <Text
           style={{ lineHeight: 22 }}
           className="mb-6 mt-2 font-saira-medium text-lg text-text-on-brand-2">
-          Should this districts fixtures, results, standings and leaderboards be hidden to users
-          from other districts?
+          Do you want to hide fixtures, results, standings and leaderboards from users from other
+          districts?
         </Text>
         <CTAButton type="yellow" textColor="text-black" text="Continue" callbackFn={handleSubmit} />
       </View>

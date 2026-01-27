@@ -9,31 +9,8 @@ import CachedImage from '@components/CachedImage';
 import { Dimensions } from 'react-native';
 import TrophyCabinet from '@components/TrophyCabinet';
 import Ionicons from 'react-native-vector-icons/Ionicons';
-
-const trophies = [
-  { id: 3, name: 'Top Scorer', image: require('../assets/trophies/trophy-3-gold.png') },
-  { id: 12, name: 'Defensive Wall', image: require('../assets/trophies/trophy-3-silver.png') },
-  { id: 2, name: 'Perfect Season', image: require('../assets/trophies/trophy-2-gold.png') },
-  { id: 10, name: 'Sportsmanship', image: require('../assets/trophies/trophy-1-silver.png') },
-  { id: 4, name: 'Best Defense', image: require('../assets/trophies/trophy-4-gold.png') },
-  { id: 15, name: 'Ultimate Fan', image: require('../assets/trophies/trophy-6-silver.png') },
-  { id: 5, name: 'Fair Play Award', image: require('../assets/trophies/trophy-5-gold.png') },
-  { id: 1, name: 'League Champion', image: require('../assets/trophies/trophy-1-gold.png') },
-  { id: 13, name: 'Strategic Genius', image: require('../assets/trophies/trophy-4-silver.png') },
-  { id: 7, name: 'Fan Favorite', image: require('../assets/trophies/trophy-7-gold.png') },
-  { id: 9, name: 'Community Impact', image: require('../assets/trophies/trophy-9-gold.png') },
-  { id: 18, name: 'Legacy Builder', image: require('../assets/trophies/trophy-9-silver.png') },
-  { id: 6, name: 'Most Improved Team', image: require('../assets/trophies/trophy-6-gold.png') },
-  { id: 14, name: 'Team Spirit', image: require('../assets/trophies/trophy-5-silver.png') },
-  {
-    id: 16,
-    name: 'Leadership Excellence',
-    image: require('../assets/trophies/trophy-7-silver.png'),
-  },
-  { id: 11, name: 'Rising Star', image: require('../assets/trophies/trophy-2-silver.png') },
-  { id: 8, name: 'Best Coach', image: require('../assets/trophies/trophy-8-gold.png') },
-  { id: 17, name: 'Innovation in Play', image: require('../assets/trophies/trophy-8-silver.png') },
-];
+import { useTeamAwards } from '@hooks/useTeamAwards';
+import { trophyIcons } from '../lib/badgeIcons';
 
 const TeamProfile = ({ context, profile, isLoading }) => {
   if (isLoading || !profile)
@@ -48,9 +25,24 @@ const TeamProfile = ({ context, profile, isLoading }) => {
         />
       </>
     );
+  console.log('Team Profile Component - profile prop:', profile.id);
+  const { data: teamAwards } = useTeamAwards(profile?.id);
+
+  console.log('Team Awards Data:', teamAwards);
 
   const { line_1, line_2, city, postcode } = profile?.address || {};
   console.log('Debug Team Profile:', profile);
+
+  const trophyIconMap = Object.fromEntries(trophyIcons.map((t) => [t.key, t]));
+
+  const trophies = teamAwards?.map((award) => {
+    const trophyDef = trophyIconMap[award.reward];
+
+    return {
+      ...award,
+      image: trophyDef?.icon ?? null,
+    };
+  });
 
   return (
     <ScrollView className="flex-1 bg-bg-1" contentContainerStyle={{ flexGrow: 1 }}>
@@ -120,7 +112,7 @@ const TeamProfile = ({ context, profile, isLoading }) => {
           />
         </View>
         <Heading text="Team Awards" />
-        <TrophyCabinet trophies={trophies} />
+        <TrophyCabinet trophies={trophies || []} />
         <View className="mb-8">
           <Heading text="Team Roster" />
           <PlayersList team={profile} context={context} />
