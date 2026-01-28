@@ -13,6 +13,7 @@ import StatCard from '@components/StatCard';
 import { isBirthdayToday } from '@lib/helperFunctions';
 import CachedImage from '@components/CachedImage';
 import { usePlayerStats } from '@hooks/usePlayerStats';
+import TrophyCabinet from './TrophyCabinet';
 
 const PlayerProfile = ({ context, isLoading, playerProfile, error }) => {
   const { client: supabase } = useSupabaseClient();
@@ -245,6 +246,9 @@ const PlayerProfile = ({ context, isLoading, playerProfile, error }) => {
           </View>
           <CTAButton callbackFn={handleViewStats} text="View All Stats" type="yellow" />
         </View>
+      </View>
+      <View className="mt-1 w-full bg-bg-grouped-2 px-4 py-8">
+        <TrophyCabinet trophies={[]} />
       </View>
       <View className="mt-1 w-full gap-6 bg-bg-grouped-2 px-6 py-8">
         <CTAButton type="yellow" callbackFn={() => {}} text="Compare Stats" />

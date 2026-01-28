@@ -13,7 +13,8 @@ import {
 } from 'react-native';
 import IonIcons from 'react-native-vector-icons/Ionicons';
 
-const TrophyCabinet = ({ trophies }) => {
+const TrophyCabinet = ({ trophies = [] }) => {
+  const [cabinetWidth, setCabinetWidth] = useState(0);
   const screenWidth = Dimensions.get('window').width;
   const shelf1 = trophies.filter((_, i) => i % 2 === 0);
   const shelf2 = trophies.filter((_, i) => i % 2 !== 0);
@@ -23,7 +24,10 @@ const TrophyCabinet = ({ trophies }) => {
   const gap = 8;
 
   const totalTrophyWidth = maxCount * trophyWidth + (maxCount - 1) * gap;
-  const minShelfWidth = screenWidth - 62;
+  const FRAME_PADDING = 20; // breathing room inside the frame
+
+  const minShelfWidth = cabinetWidth > 0 ? cabinetWidth - FRAME_PADDING * 2 : 0;
+
   const shelfWidth = Math.max(totalTrophyWidth, minShelfWidth);
 
   const slideAnim = useRef(new Animated.Value(0)).current;
@@ -65,8 +69,12 @@ const TrophyCabinet = ({ trophies }) => {
   return (
     <View style={styles.container}>
       <View style={styles.woodFrameWrapper}>
-        <View style={styles.woodFrame}>
-          {trophies.length === 0 && (
+        <View
+          onLayout={(e) => {
+            setCabinetWidth(e.nativeEvent.layout.width);
+          }}
+          style={styles.woodFrame}>
+          {(!Array.isArray(trophies) || trophies.length === 0) && (
             <Image
               source={require('@assets/cobweb.png')} // your cobweb asset
               style={{
@@ -81,7 +89,7 @@ const TrophyCabinet = ({ trophies }) => {
               resizeMode="contain"
             />
           )}
-          {trophies.length < 2 && (
+          {(!Array.isArray(trophies) || trophies.length < 2) && (
             <Image
               source={require('@assets/cobweb.png')} // your cobweb asset
               style={{
@@ -115,12 +123,13 @@ const TrophyCabinet = ({ trophies }) => {
             </Text>
           </TouchableOpacity>
 
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={{ ...styles.scrollContainer, minWidth: screenWidth }}>
-            <View style={styles.shelfContainer}>
-              <View style={[styles.shelfBase, { width: shelfWidth }]}>
+          <View style={styles.shelfContainer}>
+            {/* Top shelf */}
+            <View style={[styles.shelfBase, { width: shelfWidth }]}>
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={{ gap }}>
                 {shelf1.map((trophy) => (
                   <TouchableOpacity
                     key={trophy.id}
@@ -129,8 +138,15 @@ const TrophyCabinet = ({ trophies }) => {
                     <Image source={trophy.image} style={styles.image} resizeMode="cover" />
                   </TouchableOpacity>
                 ))}
-              </View>
-              <View style={[styles.shelfBase, { width: shelfWidth }]}>
+              </ScrollView>
+            </View>
+
+            {/* Bottom shelf */}
+            <View style={[styles.shelfBase, { width: shelfWidth }]}>
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={{ gap }}>
                 {shelf2.map((trophy) => (
                   <TouchableOpacity
                     key={trophy.id}
@@ -139,9 +155,9 @@ const TrophyCabinet = ({ trophies }) => {
                     <Image source={trophy.image} style={styles.image} resizeMode="cover" />
                   </TouchableOpacity>
                 ))}
-              </View>
+              </ScrollView>
             </View>
-          </ScrollView>
+          </View>
         </View>
 
         {/* Glass overlay with tap to toggle */}
@@ -257,7 +273,6 @@ export default TrophyCabinet;
 const styles = StyleSheet.create({
   container: {
     width: '100%',
-    marginBottom: 32,
   },
   woodFrameWrapper: {
     position: 'relative',

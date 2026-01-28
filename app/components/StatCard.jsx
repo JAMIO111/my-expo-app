@@ -24,13 +24,13 @@ const StatCard = ({
               <Ionicons name={icon} size={24} color="#fff" />
             </View>
           )}
-          <Text className="font-saira text-xl text-text-2" numberOfLines={1} ellipsizeMode="tail">
+          <Text className="font-saira text-lg text-text-2" numberOfLines={1} ellipsizeMode="tail">
             {title}
           </Text>
         </View>
 
         {/* Large value text */}
-        <Text className="pt-4 font-saira-bold text-5xl text-text-1">{value}</Text>
+        <Text className="pt-4 font-saira-semibold text-5xl text-text-1">{value}</Text>
       </View>
     </View>
   );

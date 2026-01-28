@@ -96,7 +96,7 @@ export function usePlayerStats(playerId) {
       };
     },
     enabled: !!playerId,
-    staleTime: 30 * 60 * 1000,
-    cacheTime: 60 * 60 * 1000,
+    staleTime: 30 * 60 * 1000, // 30 minutes
+    cacheTime: 60 * 60 * 1000, // 1 hour
   });
 }

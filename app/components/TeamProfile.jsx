@@ -82,38 +82,42 @@ const TeamProfile = ({ context, profile, isLoading }) => {
             </Text>
           </View>
           <View className="gap-1">
-            <Text style={{ lineHeight: 20 }} className="max-w-xs font-saira text-lg text-text-2">
-              {[line_1, line_2].filter(Boolean).join(', ')}
-            </Text>
-            <Text style={{ lineHeight: 20 }} className="max-w-xs font-saira text-lg text-text-2">
-              {[city, postcode].filter(Boolean).join(', ')}
+            <Text style={{ lineHeight: 22 }} className="max-w-xs font-saira text-lg text-text-2">
+              {[line_1, line_2, city, postcode].filter(Boolean).join(', ') ||
+                'No Address Available'}
             </Text>
           </View>
         </View>
       </View>
-      <View className="bg-bg-grouped-1 px-3 pb-12 pt-8">
-        <Heading text="Team Stats" />
-        <View className="mb-8 gap-4">
-          <View className="gap-3">
-            <View className="flex-row gap-3">
-              <StatCard title="Matches Played" value="86" />
-              <StatCard title="Win %" value="68%" />
+      <View className="gap-1 bg-bg-grouped-1 pb-8 pt-1">
+        <View className="bg-bg-grouped-2 px-4 py-8">
+          <Heading text="Team Stats" />
+          <View className="gap-5">
+            <View className="gap-4">
+              <View className="flex-row gap-4">
+                <StatCard title="MATCHES PLAYED" value="86" />
+                <StatCard title="WIN %" value="68%" />
+              </View>
+              <View className="flex-row gap-4">
+                <StatCard title="WINS" value="52" />
+                <StatCard title="LOSSES" value="34" />
+              </View>
             </View>
-            <View className="flex-row gap-3">
-              <StatCard title="Wins" value="52" />
-              <StatCard title="Losses" value="34" />
-            </View>
+            <CTAButton
+              icon={<Ionicons name="podium-outline" size={22} color="white" />}
+              type="brand"
+              text="View All Stats"
+              callbackFn={() => {}}
+            />
           </View>
-          <CTAButton
-            icon={<Ionicons name="podium-outline" size={22} color="white" />}
-            type="brand"
-            text="View All Stats"
-            callbackFn={() => {}}
-          />
         </View>
-        <Heading text="Team Awards" />
-        <TrophyCabinet trophies={trophies || []} />
-        <View className="mb-8">
+
+        <View className="mb-8 bg-bg-grouped-2 px-4 py-8">
+          <Heading text="Team Awards" />
+          <TrophyCabinet trophies={trophies || []} />
+        </View>
+
+        <View className="mb-8 px-4">
           <Heading text="Team Roster" />
           <PlayersList team={profile} context={context} />
         </View>
