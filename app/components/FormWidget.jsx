@@ -52,8 +52,8 @@ const FormWidget = ({ homeTeamId, awayTeamId }) => {
   const { data: homeFormRaw, isLoading: loadingHome } = useLast5Results(homeTeamId);
   const { data: awayFormRaw, isLoading: loadingAway } = useLast5Results(awayTeamId);
 
-  const homeForm = normalizeForm(homeFormRaw);
-  const awayForm = normalizeForm(awayFormRaw);
+  const homeForm = normalizeForm(homeFormRaw?.results);
+  const awayForm = normalizeForm(awayFormRaw?.results);
 
   console.log('Home Form:', homeForm);
   console.log('Away Form:', awayForm);

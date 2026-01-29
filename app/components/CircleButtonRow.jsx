@@ -1,10 +1,9 @@
-import React, { useRef } from 'react';
+import { useRef } from 'react';
 import { Animated, Pressable, StyleSheet, Text, View } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
-import colors from '../lib/colors';
 
 const CircleButton = ({
-  label = 'Add New League',
+  label = 'Click Me',
   icon = 'add',
   color = 'bg-red-600',
   iconColor = 'white',
@@ -43,13 +42,24 @@ const CircleButton = ({
   );
 };
 
-const CircleButtonRow = () => {
-  const colors = ['bg-red-600', 'bg-white', 'bg-yellow-500', 'bg-black'];
-  const iconColors = ['white', 'black', 'black', 'white'];
+const CircleButtonRow = ({
+  format = [
+    { color: 'bg-brand-dark', iconColor: 'white', icon: 'add', label: 'Label' },
+    { color: 'bg-brand-dark', iconColor: 'white', icon: 'add', label: 'Label' },
+    { color: 'bg-brand-dark', iconColor: 'white', icon: 'add', label: 'Label' },
+    { color: 'bg-brand-dark', iconColor: 'white', icon: 'add', label: 'Label' },
+  ],
+}) => {
   return (
     <View className="flex-row items-center justify-between rounded-lg py-2">
-      {Array.from({ length: 4 }).map((_, index) => (
-        <CircleButton key={index} color={colors[index]} iconColor={iconColors[index]} />
+      {format.map((item, index) => (
+        <CircleButton
+          key={index}
+          color={item.color}
+          iconColor={item.iconColor}
+          icon={item.icon}
+          label={item.label}
+        />
       ))}
     </View>
   );

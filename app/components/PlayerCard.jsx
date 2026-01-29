@@ -74,8 +74,8 @@ const PlayerCard = ({ player, team, context }) => {
         onPressOut={handlePressOut}
         onPress={handlePress}
         className="w-full">
-        <View className="w-full flex-row items-center justify-between gap-4 rounded-xl border border-theme-gray-5 bg-bg-grouped-2 py-2 pl-2 pr-2 shadow shadow-theme-gray-6">
-          <Avatar player={player} size={64} borderRadius={6} />
+        <View className="w-full flex-row items-center justify-between gap-4 rounded-2xl border border-theme-gray-5 bg-bg-grouped-1 py-2 pl-2 pr-2 shadow shadow-theme-gray-6">
+          <Avatar player={player} size={64} borderRadius={9} />
           <View className="flex-1 justify-center">
             <Text numberOfLines={1} className="font-saira-semibold text-2xl text-text-1">
               {player?.first_name} {player?.surname}

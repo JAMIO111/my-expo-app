@@ -1,9 +1,10 @@
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View, Image } from 'react-native';
 import { useRef } from 'react';
 import { useDivisions } from '@hooks/useDivisions';
 import { Ionicons } from '@expo/vector-icons';
 import { useUser } from '@contexts/UserProvider';
 import { useRouter } from 'expo-router';
+import { romanNumerals } from '../lib/badgeIcons';
 
 const DivisionsList = ({ districtId }) => {
   const hasNavigated = useRef(false);
@@ -13,7 +14,7 @@ const DivisionsList = ({ districtId }) => {
   console.log('Divisions:', divisions);
 
   return (
-    <View className="items-center justify-center gap-3 p-3">
+    <View className="items-center justify-center gap-3">
       <Text className="w-full px-2 text-left font-saira-medium text-2xl text-white">
         {currentRole?.district?.name} Divisions
       </Text>
@@ -32,11 +33,17 @@ const DivisionsList = ({ districtId }) => {
               },
             });
           }}
-          className="w-full flex-row items-center justify-between rounded-xl border border-theme-gray-5 bg-bg-grouped-2 p-3"
+          className="w-full flex-row items-center justify-between rounded-xl border border-theme-gray-5 bg-bg-grouped-2 p-2"
           key={division.id}>
-          <View>
+          <View className="flex-row items-center gap-4">
+            {romanNumerals[division.tier] && (
+              <Image
+                source={romanNumerals[division.tier]}
+                style={{ width: 40, height: 48 }}
+                resizeMode="contain"
+              />
+            )}
             <Text className="font-saira-semibold text-xl text-text-1">{division.name}</Text>
-            <Text className="font-saira-medium text-lg text-text-1">Tier {division?.tier}</Text>
           </View>
           <Ionicons name="chevron-forward-outline" size={22} color="gray" />
         </Pressable>

@@ -1,5 +1,6 @@
-import { StyleSheet, Text, View, ScrollView } from 'react-native';
+import { StyleSheet, Text, View, ScrollView, Pressable } from 'react-native';
 import { Stack } from 'expo-router';
+import { useState } from 'react';
 import PlayersList from '@components/PlayersList';
 import Heading from '@components/Heading';
 import TeamLogo from '@components/TeamLogo';
@@ -11,6 +12,8 @@ import TrophyCabinet from '@components/TrophyCabinet';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { useTeamAwards } from '@hooks/useTeamAwards';
 import { trophyIcons } from '../lib/badgeIcons';
+import { useLast5Results } from '@hooks/useLast5Results';
+import Last5MatchesList from './Last5MatchesList';
 
 const TeamProfile = ({ context, profile, isLoading }) => {
   if (isLoading || !profile)
@@ -27,8 +30,13 @@ const TeamProfile = ({ context, profile, isLoading }) => {
     );
   console.log('Team Profile Component - profile prop:', profile.id);
   const { data: teamAwards } = useTeamAwards(profile?.id);
+  const { data: last5Results } = useLast5Results(profile?.id);
+  const [viewMatches, setViewMatches] = useState(true);
 
   console.log('Team Awards Data:', teamAwards);
+  console.log('Last 5 Results Data:', last5Results);
+
+  const safeMatches = (last5Results?.matches ?? []).filter(Boolean);
 
   const { line_1, line_2, city, postcode } = profile?.address || {};
   console.log('Debug Team Profile:', profile);
@@ -111,7 +119,21 @@ const TeamProfile = ({ context, profile, isLoading }) => {
             />
           </View>
         </View>
-
+        <View className="bg-bg-grouped-2 px-4 py-6">
+          <Pressable
+            className="flex-row items-center justify-between pr-12"
+            onPress={() => safeMatches.length > 0 && setViewMatches(!viewMatches)}>
+            <Heading text="Recent Results" />
+            {safeMatches.length > 0 && (
+              <Ionicons
+                className="pb-3"
+                name={viewMatches ? 'chevron-up' : 'chevron-down'}
+                size={30}
+              />
+            )}
+          </Pressable>
+          {viewMatches && <Last5MatchesList matches={last5Results?.matches || []} />}
+        </View>
         <View className="mb-8 bg-bg-grouped-2 px-4 py-8">
           <Heading text="Team Awards" />
           <TrophyCabinet trophies={trophies || []} />

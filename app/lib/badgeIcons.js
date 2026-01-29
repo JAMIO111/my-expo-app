@@ -16,6 +16,14 @@ export const badgeIcons = {
   // Add others as needed
 };
 
+export const romanNumerals = {
+  1: require('@assets/roman-numeral-1.png'),
+  2: require('@assets/roman-numeral-2.png'),
+  3: require('@assets/roman-numeral-3.png'),
+  4: require('@assets/roman-numeral-4.png'),
+  5: require('@assets/roman-numeral-5.png'),
+};
+
 export const trophyIcons = [
   {
     key: 'trophy-1-gold',

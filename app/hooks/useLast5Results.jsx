@@ -9,8 +9,9 @@ export const useLast5Results = (teamId) => {
     queryFn: async () => {
       if (!teamId) return null;
 
-      const { data, error } = await supabase.rpc('get_last_5_results', { team_id: teamId });
-
+      const { data, error } = await supabase
+        .rpc('get_last_5_results', { team_id: teamId })
+        .single();
       if (error) {
         throw new Error(error.message);
       }
