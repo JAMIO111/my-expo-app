@@ -1,8 +1,7 @@
 import { useEffect, useState } from 'react';
-import { useSupabaseClient } from '@contexts/SupabaseClientContext';
+import { supabase } from '@/lib/supabase';
 
 const usePlayerBadges = (playerId) => {
-  const { client: supabase } = useSupabaseClient();
   const [badges, setBadges] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);

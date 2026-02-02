@@ -1,13 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, FlatList, TouchableOpacity, ActivityIndicator } from 'react-native';
-import { useSupabaseClient } from '@contexts/SupabaseClientContext';
+import { supabase } from '@/lib/supabase';
 import Toast from 'react-native-toast-message';
 import TeamLogo from '@components/TeamLogo';
 import FloatingBottomSheet from '@components/FloatingBottomSheet';
 import Ionicons from '@expo/vector-icons/Ionicons';
 
 const SearchResultsOverlay = ({ searchActive, searchQuery, sendJoinRequest }) => {
-  const { client: supabase } = useSupabaseClient();
   const [results, setResults] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);

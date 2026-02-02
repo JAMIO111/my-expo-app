@@ -10,7 +10,6 @@ const SafeViewWrapper = ({
   useBottomInset = true,
 }) => {
   const insets = useSafeAreaInsets();
-
   return (
     <View className={`flex-1`}>
       {useTopInset && <View style={{ height: insets.top }} className={topColor} />}

@@ -16,13 +16,12 @@ import * as WebBrowser from 'expo-web-browser';
 import { makeRedirectUri } from 'expo-auth-session';
 import { useFonts } from 'expo-font';
 import { Michroma_400Regular } from '@expo-google-fonts/michroma';
-import { useSupabaseClient } from '@contexts/SupabaseClientContext';
+import { supabase } from '@/lib/supabase';
 import * as Linking from 'expo-linking';
 
 WebBrowser.maybeCompleteAuthSession();
 
 const LoginPage = () => {
-  const { client: supabase } = useSupabaseClient();
   const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');

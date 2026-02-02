@@ -308,7 +308,7 @@ const ResultsList = () => {
               className="mb-4 rounded-3xl border border-theme-gray-5 bg-bg-grouped-2 p-2"
               key={date}>
               <Text className="mb-2 p-2 font-saira-semibold text-2xl text-text-1">
-                {format(parseISO(date), 'EEE d MMM')}
+                {format(parseISO(date), 'EEE, d MMMM')}
               </Text>
 
               {results.map((f, index) => {
@@ -329,15 +329,14 @@ const ResultsList = () => {
                       <View className="flex-row items-center gap-3">
                         <TeamLogo {...f.home_team.crest} size={26} />
 
-                        <Text className="font-saira-semibold text-xl text-text-1">
+                        <Text className="font-saira-semibold text-lg text-text-2">
                           {f.home_team.abbreviation}
                         </Text>
-                        <Text className="font-saira text-lg text-text-1">
+                        <Text className="font-saira-medium text-lg text-text-1">
                           {f.home_team.display_name}
                         </Text>
                       </View>
-                      <Text
-                        className={`${f.home_score > f.away_score ? 'font-saira-semibold' : 'font-saira'} w-12 text-center text-2xl text-text-1`}>
+                      <Text className={'w-12 text-center font-saira-semibold text-2xl text-text-1'}>
                         {f.home_score}
                       </Text>
                     </View>
@@ -345,15 +344,14 @@ const ResultsList = () => {
                       <View className="flex-row items-center gap-3">
                         <TeamLogo {...f.away_team.crest} size={26} />
 
-                        <Text className="font-saira-semibold text-xl text-text-1">
+                        <Text className="font-saira-semibold text-lg text-text-2">
                           {f.away_team.abbreviation}
                         </Text>
-                        <Text className="font-saira text-lg text-text-1">
+                        <Text className="font-saira-medium text-lg text-text-1">
                           {f.away_team.display_name}
                         </Text>
                       </View>
-                      <Text
-                        className={`${f.away_score > f.home_score ? 'font-saira-semibold' : 'font-saira'} w-12 text-center text-2xl text-text-1`}>
+                      <Text className={'w-12 text-center font-saira-semibold text-2xl text-text-1'}>
                         {f.away_score}
                       </Text>
                     </View>

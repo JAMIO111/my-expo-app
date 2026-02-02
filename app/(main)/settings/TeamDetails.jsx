@@ -4,12 +4,11 @@ import { useEffect, useState } from 'react';
 import MenuContainer from '@components/MenuContainer';
 import { useUser } from '@contexts/UserProvider';
 import SettingsItem from '@components/SettingsItem';
-import { useSupabaseClient } from '@contexts/SupabaseClientContext';
+import { supabase } from '@/lib/supabase';
 import SafeViewWrapper from '@components/SafeViewWrapper';
 import CustomHeader from '@components/CustomHeader'; // Adjust the import path as necessary
 
 const TeamDetails = () => {
-  const { client: supabase } = useSupabaseClient();
   const { player, loading: playerLoading, refetch, currentRole } = useUser(); // Assume refreshUser reloads user data
   const [teamName, setTeamName] = useState(currentRole?.team?.name || '');
   const [teamDisplayName, setTeamDisplayName] = useState(currentRole?.team?.display_name || '');

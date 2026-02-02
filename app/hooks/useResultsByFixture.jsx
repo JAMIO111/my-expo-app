@@ -1,9 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
-import { useSupabaseClient } from '@contexts/SupabaseClientContext';
+import { supabase } from '@/lib/supabase';
 
 export function useResultsByFixture(fixtureId) {
-  const { client: supabase } = useSupabaseClient();
-
   return useQuery({
     queryKey: ['ResultsByFixture', fixtureId],
     queryFn: async () => {

@@ -6,9 +6,11 @@ import SafeViewWrapper from '@components/SafeViewWrapper';
 import BrandHeader from '@components/BrandHeader';
 import TeamLogo from '@components/TeamLogo';
 import { ScrollView } from 'react-native-gesture-handler';
+import { useColorScheme } from 'nativewind';
 
 const RoleSelect = () => {
   const router = useRouter();
+  const colorScheme = useColorScheme();
   const { roles, currentRole, setCurrentRole } = useUser();
   console.log('Available roles:', roles);
 

@@ -4,12 +4,11 @@ import { useRouter, Stack } from 'expo-router';
 import SettingsItem from '@components/SettingsItem';
 import MenuContainer from '@components/MenuContainer';
 import { useUser } from '@contexts/UserProvider';
-import { useSupabaseClient } from '@contexts/SupabaseClientContext';
+import { supabase } from '@/lib/supabase';
 import SafeViewWrapper from '@components/SafeViewWrapper';
 import CustomHeader from '@components/CustomHeader';
 
 const Privacy = () => {
-  const { client: supabase } = useSupabaseClient();
   const colorScheme = useColorScheme();
   const [isLeavingTeam, setIsLeavingTeam] = useState(false);
   const { player, currentRole, isLoading } = useUser();

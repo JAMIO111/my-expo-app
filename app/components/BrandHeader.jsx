@@ -4,7 +4,7 @@ import { useColorScheme } from 'react-native';
 const BrandHeader = ({ text1 = 'Break', text2 = 'Room', backgroundColor = 'bg-brand' }) => {
   const colorScheme = useColorScheme();
   return (
-    <View className={`h-16 flex-row items-center justify-center ${backgroundColor}`}>
+    <View className={`${colorScheme} h-16 flex-row items-center justify-center ${backgroundColor}`}>
       <Text className="flex-1 pb-2 text-right font-michroma text-2xl font-bold text-white">
         {text1}
       </Text>

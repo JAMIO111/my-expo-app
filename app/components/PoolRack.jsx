@@ -11,14 +11,13 @@ import Animated, {
 import { useRouter } from 'expo-router';
 import { useFonts } from 'expo-font';
 import { Michroma_400Regular } from '@expo-google-fonts/michroma';
-import { useSupabaseClient } from '@contexts/SupabaseClientContext';
+import { supabase } from '@/lib/supabase';
 import { useUser } from '@contexts/UserProvider';
 import { fetchAuthUserProfile } from '@hooks/useAuthUserProfile2';
 import { useColorScheme } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 
 const PoolRack = () => {
-  const { client: supabase } = useSupabaseClient();
   console.log(supabase, 'Supabase Client in PoolRack');
   const colorScheme = useColorScheme();
   const [fontsLoaded] = useFonts({

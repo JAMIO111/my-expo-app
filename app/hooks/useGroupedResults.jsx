@@ -1,10 +1,8 @@
 import { useQuery } from '@tanstack/react-query';
 import { startOfMonth, endOfMonth } from 'date-fns';
-import { useSupabaseClient } from '@contexts/SupabaseClientContext';
+import { supabase } from '@/lib/supabase';
 
 export const useMonthlyResults = ({ month, seasonId, divisionId }) => {
-  const { client: supabase } = useSupabaseClient();
-
   const fetchResultsByMonth = async ({ month, seasonId, divisionId }) => {
     const start = startOfMonth(month).toISOString();
     const end = endOfMonth(month).toISOString();

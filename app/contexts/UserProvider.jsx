@@ -1,11 +1,10 @@
 import { createContext, useContext, useState, useEffect } from 'react';
 import { useAuthUserProfile } from '@hooks/useAuthUserProfile2';
-import { useSupabaseClient } from '@contexts/SupabaseClientContext';
+import { supabase } from '@/lib/supabase';
 
 const UserContext = createContext(null);
 
 export const UserProvider = ({ children }) => {
-  const { client: supabase } = useSupabaseClient();
   const { data, isLoading, isError, refetch } = useAuthUserProfile();
   const [currentRole, setCurrentRole] = useState(null);
   const [loadingAuth, setLoadingAuth] = useState(true);

@@ -8,9 +8,9 @@ const Last5MatchesList = ({ matches = [] }) => {
     <View className="gap-2">
       {safeMatches.length > 0 ? (
         safeMatches.map((match, index) => (
-          <View className="gap-2 rounded-2xl bg-bg-2 p-4" key={index}>
+          <View className="gap-2 rounded-2xl bg-bg-2 p-4 py-2" key={index}>
             <View className="mb-1 border-b border-theme-gray-5 pb-2">
-              <Text className="font-saira-medium text-sm text-text-1">
+              <Text className="text-md font-saira-medium text-text-1">
                 {new Date(match?.date_time).toLocaleDateString('en-GB', {
                   weekday: 'long',
                   day: '2-digit',
@@ -29,9 +29,11 @@ const Last5MatchesList = ({ matches = [] }) => {
                   thickness={match?.home.crest?.thickness}
                 />
                 <Text className="font-saira-medium text-text-2">{match?.home.abbreviation}</Text>
-                <Text className="font-saira-medium text-text-2">{match?.home.name}</Text>
+                <Text className="font-saira-medium text-text-1">{match?.home.name}</Text>
               </View>
-              <Text className="font-saira-medium text-xl text-text-1">{match?.home.score}</Text>
+              <Text className="min-w-6 text-center font-saira-medium text-xl text-text-1">
+                {match?.home.score}
+              </Text>
             </View>
             <View className="flex-row items-center justify-start gap-2">
               <View className="flex-1 flex-row items-center justify-start gap-2">
@@ -43,9 +45,11 @@ const Last5MatchesList = ({ matches = [] }) => {
                   thickness={match?.away.crest?.thickness}
                 />
                 <Text className="font-saira-medium text-text-2">{match?.away.abbreviation}</Text>
-                <Text className="font-saira-medium text-text-2">{match?.away.name}</Text>
+                <Text className="font-saira-medium text-text-1">{match?.away.name}</Text>
               </View>
-              <Text className="font-saira-medium text-xl text-text-1">{match?.away.score}</Text>
+              <Text className="min-w-6 text-center font-saira-medium text-xl text-text-1">
+                {match?.away.score}
+              </Text>
             </View>
           </View>
         ))

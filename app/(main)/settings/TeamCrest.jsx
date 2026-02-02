@@ -4,12 +4,11 @@ import CustomHeader from '@components/CustomHeader';
 import SafeViewWrapper from '@components/SafeViewWrapper';
 import { Stack } from 'expo-router';
 import { useUser } from '@contexts/UserProvider';
-import { useSupabaseClient } from '@contexts/SupabaseClientContext';
+import { supabase } from '@/lib/supabase';
 import Toast from 'react-native-toast-message';
 import { useColorScheme } from 'react-native';
 
 const TeamCrest = () => {
-  const { client: supabase } = useSupabaseClient();
   const { currentRole } = useUser();
   const colorScheme = useColorScheme();
 

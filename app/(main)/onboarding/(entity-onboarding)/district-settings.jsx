@@ -5,7 +5,7 @@ import CTAButton from '@components/CTAButton';
 import StepPillGroup from '@components/StepPillGroup';
 import CustomDropdown from '@components/CustomDropdown';
 import { useRouter } from 'expo-router';
-import { useSupabaseClient } from '@contexts/SupabaseClientContext';
+import { supabase } from '@/lib/supabase';
 import CustomTextInput from '@components/CustomTextInput';
 import { ScrollView } from 'react-native-gesture-handler';
 
@@ -16,7 +16,7 @@ export default function DistrictSettings() {
   const [pointsForWin, setPointsForWin] = useState('');
   const [pointsForDraw, setPointsForDraw] = useState('');
   const [pointsForLoss, setPointsForLoss] = useState('');
-  const { client: supabase } = useSupabaseClient();
+
   const { districtId } = useLocalSearchParams();
 
   const capitaliseEachWord = (str) => {

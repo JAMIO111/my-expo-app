@@ -23,11 +23,10 @@ import { useColorScheme } from 'react-native';
 import { useTeamPlayers } from '@hooks/useTeamPlayers';
 import { useResultsByFixture } from '@hooks/useResultsByFixture';
 import { useSaveMatchResults } from '@hooks/useSaveMatchResults';
-import { useSupabaseClient } from '@contexts/SupabaseClientContext';
+import { supabase } from '@/lib/supabase';
 import { getContrastColor } from '@lib/helperFunctions';
 
 const SubmitResultsScreen = () => {
-  const { client: supabase } = useSupabaseClient();
   const [confirmDeleteModalVisible, setConfirmDeleteModalVisible] = useState(false);
   const router = useRouter();
   const colorScheme = useColorScheme();

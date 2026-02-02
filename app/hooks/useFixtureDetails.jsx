@@ -1,10 +1,8 @@
 // hooks/useUpcomingFixtures.js
 import { useQuery } from '@tanstack/react-query';
-import { useSupabaseClient } from '@contexts/SupabaseClientContext';
+import { supabase } from '@/lib/supabase';
 
 export const useFixtureDetails = (fixtureId) => {
-  const { client: supabase } = useSupabaseClient();
-
   const fetchFixtureDetails = async (fixtureId) => {
     if (!fixtureId) throw new Error('Fixture ID is required');
 

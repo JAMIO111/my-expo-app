@@ -1,11 +1,11 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { useSupabaseClient } from '@contexts/SupabaseClientContext';
+import { supabase } from '@/lib/supabase';
 import Toast from 'react-native-toast-message';
 import { useUser } from '@contexts/UserProvider';
 
 export function useTeamPlayerActions(teamId, callbacks = {}) {
   const queryClient = useQueryClient();
-  const { client: supabase } = useSupabaseClient();
+
   const { player, refetch } = useUser();
 
   // Helper to merge default + custom callbacks

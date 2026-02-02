@@ -1,11 +1,10 @@
 // app/forgot-password.tsx
 import { useState } from 'react';
 import { View, Text, TextInput, Alert } from 'react-native';
-import { useSupabaseClient } from '@contexts/SupabaseClientContext';
+import { supabase } from '@/lib/supabase';
 import CTAButton from '@components/CTAButton';
 
 const ForgotPassword = () => {
-  const { client: supabase } = useSupabaseClient();
   const [email, setEmail] = useState('');
 
   const handleReset = async () => {

@@ -1,9 +1,7 @@
 import { useMutation } from '@tanstack/react-query';
-import { useSupabaseClient } from '@contexts/SupabaseClientContext';
+import { supabase } from '@/lib/supabase';
 
 export function useRequestToJoinTeam(team, playerId, adminApproval = false) {
-  const { client: supabase } = useSupabaseClient();
-
   return useMutation({
     mutationFn: async () => {
       if (!team?.id || !playerId) {

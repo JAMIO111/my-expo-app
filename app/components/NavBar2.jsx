@@ -10,9 +10,11 @@ import {
   SearchIcon,
 } from '@components/svgs';
 import { useUser } from '@contexts/UserProvider';
+import { useColorScheme } from 'nativewind';
 
 const NavBar = ({ type = 'main' }) => {
   const { currentRole } = useUser();
+  const colorScheme = useColorScheme();
   const router = useRouter();
   const pathname = usePathname();
   console.log(pathname, 'Current Pathname');
@@ -90,7 +92,7 @@ const NavBar = ({ type = 'main' }) => {
   });
 
   return (
-    <View className="relative h-28 w-full flex-row items-center justify-around bg-brand pt-11">
+    <View className={`relative h-28 w-full flex-row items-center justify-around bg-brand pt-11`}>
       {/* Decorative top bar */}
       <View className="absolute top-0 h-6 w-full flex-row items-center justify-around bg-red-950">
         {[...Array(4)].map((_, i) => (

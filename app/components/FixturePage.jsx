@@ -22,6 +22,7 @@ import { FixtureDetailsSkeleton } from '@components/Skeletons';
 import FramesList from '@components/FramesList';
 import HeadToHead from '@components/HeadToHead';
 import SeasonStats from '@components/SeasonStats';
+import LivePulseCard from '@components/LivePulseCard';
 
 const FixturePage = ({ fixtureDetails, isLoading, context }) => {
   const router = useRouter();
@@ -128,15 +129,8 @@ const FixturePage = ({ fixtureDetails, isLoading, context }) => {
                   </Text>
                 </View>
               ) : (
-                <View className="items-center justify-around">
-                  <View className="mb-1 flex-row items-center justify-center gap-2 rounded-lg bg-theme-gray-5 px-4 py-0.5">
-                    <View className="h-4 w-4 rounded-full bg-theme-red"></View>
-                    <Text
-                      style={{ lineHeight: 32 }}
-                      className="font-saira-medium text-2xl text-text-1">
-                      Live
-                    </Text>
-                  </View>
+                <View className="flex-row items-center justify-around px-2">
+                  <LivePulseCard fontSize={20} dotSize={12} />
                 </View>
               )}
               <View className="relative mb-2 flex-row items-start justify-center p-3">

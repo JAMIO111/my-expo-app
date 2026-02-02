@@ -9,12 +9,11 @@ import { Stack } from 'expo-router';
 import { useResultsByFixture } from '@hooks/useResultsByFixture';
 import { useFixtureDetails } from '@hooks/useFixtureDetails';
 import TeamLogo from '@components/TeamLogo';
-import { useSupabaseClient } from '@contexts/SupabaseClientContext';
+import { supabase } from '@/lib/supabase';
 import { useUser } from '@contexts/UserProvider';
 import Toast from 'react-native-toast-message';
 
 const ApproveResults = () => {
-  const { client: supabase } = useSupabaseClient();
   const [disputedFrames, setDisputedFrames] = useState([]);
   const [approvingResults, setApprovingResults] = useState(false);
   const { fixtureId } = useLocalSearchParams();

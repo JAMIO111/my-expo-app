@@ -5,7 +5,7 @@ import SettingsItem from '@components/SettingsItem';
 import MenuContainer from '@components/MenuContainer';
 import { useUser } from '@contexts/UserProvider';
 import CTAButton from '@components/CTAButton';
-import { useSupabaseClient } from '@contexts/SupabaseClientContext';
+import { supabase } from '@/lib/supabase';
 import Toast from 'react-native-toast-message';
 import SafeViewWrapper from '@components/SafeViewWrapper';
 import CustomHeader from '@components/CustomHeader';
@@ -18,8 +18,6 @@ import colors from '@lib/colors';
 import TeamLogo from '@components/TeamLogo';
 
 const Account = () => {
-  const { client: supabase, sessionRestored } = useSupabaseClient();
-  console.log(supabase, 'Supabase Client in Account');
   const [isSigningOut, setIsSigningOut] = useState(false);
   const { user, player, roles, currentRole, setCurrentRole, isLoading } = useUser();
   const [tempRole, setTempRole] = useState(null);

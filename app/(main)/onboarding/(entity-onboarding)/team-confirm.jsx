@@ -8,11 +8,10 @@ import TeamLogo from '@components/TeamLogo';
 import SafeViewWrapper from '@components/SafeViewWrapper';
 import { useTeamProfile } from '@hooks/useTeamProfile';
 import Ionicons from 'react-native-vector-icons/Ionicons';
-import { useSupabaseClient } from '@contexts/SupabaseClientContext';
+import { supabase } from '@/lib/supabase';
 import { ScrollView } from 'react-native-gesture-handler';
 
 const TeamConfirm = () => {
-  const { client: supabase } = useSupabaseClient();
   const router = useRouter();
   const params = useLocalSearchParams();
   const team = JSON.parse(params.team || '{}');

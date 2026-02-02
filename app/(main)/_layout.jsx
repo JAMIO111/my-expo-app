@@ -1,6 +1,5 @@
 import { View } from 'react-native';
 import '../../global.css'; // Ensure global styles are imported
-import { useColorScheme } from 'nativewind';
 import { Slot, useRouter, useSegments } from 'expo-router';
 import { useEffect } from 'react';
 import { useUser } from '@contexts/UserProvider';
@@ -9,8 +8,7 @@ const _layout = () => {
   const router = useRouter();
   const segments = useSegments();
   const { user, player, loading } = useUser();
-  const { colorScheme } = useColorScheme();
-  console.log('Current Color Scheme:', colorScheme);
+
   console.log('player from layourt:', player);
 
   useEffect(() => {
@@ -43,7 +41,7 @@ const _layout = () => {
   }, [user, player, loading, segments]);
 
   return (
-    <View className={`${colorScheme} flex-1`}>
+    <View className={` flex-1`}>
       <Slot />
     </View>
   );

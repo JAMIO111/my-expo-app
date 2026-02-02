@@ -1,4 +1,4 @@
-import { View, Text } from 'react-native';
+import { View } from 'react-native';
 import PoolRack from '@components/PoolRack';
 
 export default function Index() {

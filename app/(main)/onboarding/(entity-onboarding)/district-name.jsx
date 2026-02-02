@@ -5,14 +5,14 @@ import CTAButton from '@components/CTAButton';
 import StepPillGroup from '@components/StepPillGroup';
 import CustomTextInput from '@components/CustomTextInput';
 import { useRouter } from 'expo-router';
-import { useSupabaseClient } from '@contexts/SupabaseClientContext';
+import { supabase } from '@/lib/supabase';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 
 export default function DistrictName() {
   const router = useRouter();
   const [districtName, setDistrictName] = useState('');
   const [privateDistrict, setPrivateDistrict] = useState(false);
-  const { client: supabase } = useSupabaseClient();
+
   const { districtId } = useLocalSearchParams();
 
   const capitaliseEachWord = (str) => {

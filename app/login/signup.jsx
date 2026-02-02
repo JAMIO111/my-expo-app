@@ -10,14 +10,13 @@ import {
   Animated,
   Easing,
 } from 'react-native';
-import { useSupabaseClient } from '@contexts/SupabaseClientContext';
+import { supabase } from '@/lib/supabase';
 import { useRouter, Link } from 'expo-router';
 import { makeRedirectUri } from 'expo-auth-session';
 import * as WebBrowser from 'expo-web-browser';
 import SafeViewWrapper from '@components/SafeViewWrapper';
 
 const SignUpPage = () => {
-  const { client: supabase } = useSupabaseClient();
   const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');

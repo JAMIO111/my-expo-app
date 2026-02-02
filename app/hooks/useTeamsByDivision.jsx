@@ -1,8 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
-import { useSupabaseClient } from '@contexts/SupabaseClientContext';
+import { supabase } from '@/lib/supabase';
 
 export const useTeamsByDivision = (divisionId) => {
-  const { client: supabase } = useSupabaseClient();
   const fetchTeamsByDivision = async (divisionId) => {
     if (!divisionId) throw new Error('Division ID is required');
 

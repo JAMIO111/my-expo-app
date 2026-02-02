@@ -4,12 +4,11 @@ import CTAButton from '@components/CTAButton';
 import { useUser } from '@contexts/UserProvider';
 import { useRouter } from 'expo-router';
 import useCompressAndUploadImage from '@hooks/useCompressAndUploadImage';
-import { useSupabaseClient } from '@contexts/SupabaseClientContext';
+import { supabase } from '@/lib/supabase';
 import Toast from 'react-native-toast-message';
 import { useState } from 'react';
 
 const TeamCoverImage = () => {
-  const { client: supabase } = useSupabaseClient();
   console.log(supabase, 'Supabase Client in TeamCoverImage');
   const router = useRouter();
   const { currentRole } = useUser();

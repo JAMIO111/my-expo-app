@@ -1,20 +1,22 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
 import { AppState } from 'react-native';
 import { useQueryClient } from '@tanstack/react-query';
-import { useUser } from '@contexts/UserProvider';
-import { useSupabaseClient } from '@contexts/SupabaseClientContext';
+import { supabase } from '@/lib/supabase';
+import { useUser } from '@/contexts/UserProvider';
 
-const AppRealtimeProvider = ({ children }) => {
-  const { client: supabase, refreshClient } = useSupabaseClient();
+export default function AppRealtimeProvider({ children }) {
   const queryClient = useQueryClient();
   const { currentRole } = useUser();
 
-  const standingsChannelRef = useRef(null);
-  const fixturesChannelRef = useRef(null);
+  const standingsRef = useRef(null);
+  const fixturesRef = useRef(null);
+  const appState = useRef(AppState.currentState);
 
-  const subscribeToStandings = () => {
-    const channel = supabase
-      .channel('public:Standings')
+  const subscribe = () => {
+    if (!currentRole?.team?.id) return;
+
+    standingsRef.current = supabase
+      .channel('standings')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'Standings' }, (payload) => {
         const divisionId = payload.new?.division ?? payload.old?.division;
         const seasonId = payload.new?.season ?? payload.old?.season;
@@ -24,66 +26,46 @@ const AppRealtimeProvider = ({ children }) => {
       })
       .subscribe();
 
-    standingsChannelRef.current = channel;
-  };
-
-  const subscribeToFixtures = () => {
-    const channel = supabase
-      .channel('public:FixturesCombined')
+    fixturesRef.current = supabase
+      .channel('fixtures')
       .on(
         'postgres_changes',
         { event: 'UPDATE', schema: 'public', table: 'Fixtures' },
         (payload) => {
-          const oldComplete = payload.old?.is_complete;
-          const newComplete = payload.new?.is_complete;
-          const affectedTeam = payload.new?.away_team;
           const month = new Date(payload.new.date_time).getMonth();
           const seasonId = payload.new?.season;
           const divisionId = payload.new?.division;
 
-          if (oldComplete !== newComplete) {
-            queryClient.invalidateQueries(['fixtures-grouped', month, seasonId, divisionId]);
-            queryClient.invalidateQueries(['results-grouped', month, seasonId, divisionId]);
-
-            if (affectedTeam === currentRole?.team?.id) {
-              queryClient.invalidateQueries(['ResultsPendingApproval', affectedTeam]);
-            }
-          } else {
-            if (newComplete === false) {
-              queryClient.invalidateQueries(['fixtures-grouped', month, seasonId, divisionId]);
-            } else if (newComplete === true) {
-              queryClient.invalidateQueries(['results-grouped', month, seasonId, divisionId]);
-            }
-          }
+          queryClient.invalidateQueries(['fixtures-grouped', month, seasonId, divisionId]);
+          queryClient.invalidateQueries(['results-grouped', month, seasonId, divisionId]);
         }
       )
       .subscribe();
-
-    fixturesChannelRef.current = channel;
   };
 
-  // Subscriptions on mount
+  const unsubscribe = () => {
+    standingsRef.current && supabase.removeChannel(standingsRef.current);
+    fixturesRef.current && supabase.removeChannel(fixturesRef.current);
+    standingsRef.current = null;
+    fixturesRef.current = null;
+  };
+
   useEffect(() => {
-    if (!currentRole?.team?.id) return;
-    subscribeToStandings();
-    subscribeToFixtures();
+    subscribe();
+
+    const sub = AppState.addEventListener('change', (next) => {
+      if (appState.current.match(/inactive|background/) && next === 'active') {
+        unsubscribe();
+        subscribe();
+      }
+      appState.current = next;
+    });
 
     return () => {
-      standingsChannelRef.current && supabase.removeChannel(standingsChannelRef.current);
-      fixturesChannelRef.current && supabase.removeChannel(fixturesChannelRef.current);
+      unsubscribe();
+      sub.remove();
     };
-  }, [supabase, currentRole?.team?.id]);
-
-  useEffect(() => {
-    const subscription = AppState.addEventListener('change', (nextState) => {
-      if (nextState === 'active') {
-        refreshClient();
-      }
-    });
-    return () => subscription.remove();
-  }, []);
+  }, [currentRole?.team?.id]);
 
   return children;
-};
-
-export default AppRealtimeProvider;
+}

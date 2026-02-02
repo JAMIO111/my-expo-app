@@ -1,9 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
-import { useSupabaseClient } from '@contexts/SupabaseClientContext';
+import { supabase } from '@/lib/supabase';
 
 export const usePlayerLeaderboards = (districtId) => {
-  const { client: supabase } = useSupabaseClient();
-
   return useQuery({
     queryKey: ['playerLeaderboards', districtId],
     queryFn: async () => {

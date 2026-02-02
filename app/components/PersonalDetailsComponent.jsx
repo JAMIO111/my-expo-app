@@ -6,7 +6,7 @@ import { Platform } from 'react-native';
 import MenuContainer from '@components/MenuContainer';
 import { useUser } from '@contexts/UserProvider';
 import EditableSettingsItem from '@components/EditableSettingsItem';
-import { useSupabaseClient } from '@contexts/SupabaseClientContext';
+import { supabase } from '@/lib/supabase';
 import IonIcons from '@expo/vector-icons/Ionicons';
 import colors from '@lib/colors'; // Adjust the import path as necessary
 import { useQueryClient } from '@tanstack/react-query';
@@ -15,7 +15,6 @@ import CustomHeader from '@components/CustomHeader'; // Adjust the import path a
 import Toast from 'react-native-toast-message';
 
 const PersonalDetailsComponent = () => {
-  const { client: supabase } = useSupabaseClient();
   const queryClient = useQueryClient();
   const { player, loading: playerLoading, refetch } = useUser(); // Assume refreshUser reloads user data
   const [firstName, setFirstName] = useState(player?.first_name || '');

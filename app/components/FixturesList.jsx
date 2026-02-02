@@ -18,6 +18,7 @@ import { useDistricts } from '@hooks/useDistricts';
 import { useDivisions } from '@hooks/useDivisions';
 import { useSeasons } from '@hooks/useSeasons';
 import { getActiveSeason } from '@lib/helperFunctions';
+import LivePulseCard from '@components/LivePulseCard';
 
 const FixtureList = () => {
   const router = useRouter();
@@ -264,7 +265,7 @@ const FixtureList = () => {
               className="mb-4 rounded-3xl border border-theme-gray-5 bg-bg-grouped-2 p-2"
               key={date}>
               <Text className="mb-2 p-2 font-saira-semibold text-2xl text-text-1">
-                {format(parseISO(date), 'EEE d MMM')}
+                {format(parseISO(date), 'EEE, d MMMM')}
               </Text>
 
               {fixtures.map((f, index) => {
@@ -287,9 +288,8 @@ const FixtureList = () => {
                           Final Score
                         </Text>
                       ) : (
-                        <View className="mb-1 flex-row items-center justify-center gap-2 rounded-lg bg-theme-gray-5 px-2 py-0.5">
-                          <View className="h-3 w-3 rounded-full bg-theme-red"></View>
-                          <Text className="font-saira-medium text-text-1">Live</Text>
+                        <View>
+                          <LivePulseCard />
                         </View>
                       )
                     ) : null}

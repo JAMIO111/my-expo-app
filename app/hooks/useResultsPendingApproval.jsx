@@ -1,9 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
-import { useSupabaseClient } from '@contexts/SupabaseClientContext';
+import { supabase } from '@/lib/supabase';
 
 export function useResultsPendingApproval({ awayTeamId, enabled = true }) {
-  const { client: supabase } = useSupabaseClient();
-
   return useQuery({
     queryKey: ['ResultsPendingApproval', awayTeamId],
     queryFn: async () => {

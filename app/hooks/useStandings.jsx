@@ -1,8 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
-import { useSupabaseClient } from '@contexts/SupabaseClientContext';
+import { supabase } from '@/lib/supabase';
 
 export function useStandings(divisionId, seasonId) {
-  const { client: supabase } = useSupabaseClient();
   const query = useQuery({
     queryKey: ['Standings', divisionId, seasonId],
     queryFn: async () => {

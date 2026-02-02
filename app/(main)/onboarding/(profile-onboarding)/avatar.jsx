@@ -1,6 +1,6 @@
 import { StyleSheet, Text, View, Alert, useColorScheme } from 'react-native';
 import { useState } from 'react';
-import { useSupabaseClient } from '@contexts/SupabaseClientContext';
+import { supabase } from '@/lib/supabase';
 import CTAButton from '@components/CTAButton';
 import { useLocalSearchParams, Stack } from 'expo-router';
 import Toast from 'react-native-toast-message';
@@ -12,7 +12,6 @@ import { useRouter } from 'expo-router';
 const PROJECT_URL = 'https://ionhcfjampzewimsgsmr.supabase.co'; // Replace with your actual Supabase project URL
 
 const Avatar = () => {
-  const { client: supabase } = useSupabaseClient();
   const { colorScheme } = useColorScheme();
   const [imageUri, setImageUri] = useState(null);
   const router = useRouter();

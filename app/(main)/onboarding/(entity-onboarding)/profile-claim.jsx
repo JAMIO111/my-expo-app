@@ -11,11 +11,10 @@ import SafeViewWrapper from '@components/SafeViewWrapper';
 import Avatar from '@components/Avatar';
 import { useTeamProfile } from '@hooks/useTeamProfile';
 import { useRequestToJoinTeam } from '@hooks/useRequestToJoinTeam';
-import { useSupabaseClient } from '@contexts/SupabaseClientContext';
+import { supabase } from '@/lib/supabase';
 import Toast from 'react-native-toast-message';
 
 const ProfileClaim = () => {
-  const { client: supabase } = useSupabaseClient();
   const router = useRouter();
   const params = useLocalSearchParams();
 

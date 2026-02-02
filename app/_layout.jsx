@@ -16,7 +16,6 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { UserProvider } from '@contexts/UserProvider';
 import { AdminProvider } from '@contexts/AdminContext';
 import AppRealtimeProvider from '@contexts/AppRealtimeProvider';
-import { SupabaseClientProvider } from '@contexts/SupabaseClientContext';
 
 export default function RootLayout() {
   const [fontsLoaded] = useFonts({
@@ -56,24 +55,22 @@ export default function RootLayout() {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <QueryClientProvider client={queryClientRef.current}>
-        <SupabaseClientProvider>
-          <UserProvider>
-            <AdminProvider>
-              <AppRealtimeProvider>
-                <View className={`flex-1 bg-brand`}>
-                  <Slot />
-                </View>
-                <Toast
-                  config={toastConfig}
-                  position="top"
-                  visibilityTime={5000}
-                  autoHide={true}
-                  topOffset={80}
-                />
-              </AppRealtimeProvider>
-            </AdminProvider>
-          </UserProvider>
-        </SupabaseClientProvider>
+        <UserProvider>
+          <AdminProvider>
+            <AppRealtimeProvider>
+              <View className={`flex-1`}>
+                <Slot />
+              </View>
+              <Toast
+                config={toastConfig}
+                position="top"
+                visibilityTime={5000}
+                autoHide={true}
+                topOffset={80}
+              />
+            </AppRealtimeProvider>
+          </AdminProvider>
+        </UserProvider>
       </QueryClientProvider>
     </GestureHandlerRootView>
   );

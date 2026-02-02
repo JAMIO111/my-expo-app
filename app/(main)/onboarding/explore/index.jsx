@@ -15,13 +15,12 @@ import AnimatedSearchBar from '@components/AnimatedSearchBar';
 import SearchResultsOverlay from '@components/SearchResultsOverlay';
 
 import { useUser } from '@contexts/UserProvider';
-import { useSupabaseClient } from '@contexts/SupabaseClientContext';
+import { supabase } from '@/lib/supabase';
 import { usePlayerInvitesAndRequests } from '@hooks/usePlayerInvitesAndRequests';
 import { useTeamPlayerActions } from '@hooks/useTeamPlayerActions';
 import Toast from 'react-native-toast-message';
 
 const Home = () => {
-  const { client: supabase } = useSupabaseClient();
   const queryClient = useQueryClient();
   const { user, player, roles, currentRole } = useUser();
   const { leaveTeam, sendJoinRequest, revokeRequest } = useTeamPlayerActions();

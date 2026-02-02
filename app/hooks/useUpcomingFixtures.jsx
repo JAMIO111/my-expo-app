@@ -1,10 +1,8 @@
 // hooks/useUpcomingFixtures.js
 import { useQuery } from '@tanstack/react-query';
-import { useSupabaseClient } from '@contexts/SupabaseClientContext';
+import { supabase } from '@/lib/supabase';
 
 export const useUpcomingFixtures = (teamId, options = { nextOnly: false }) => {
-  const { client: supabase } = useSupabaseClient();
-
   const fetchUpcomingFixtures = async (teamId, nextOnly) => {
     if (!teamId) throw new Error('Team ID is required');
 

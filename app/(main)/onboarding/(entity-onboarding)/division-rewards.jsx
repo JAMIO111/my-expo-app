@@ -10,11 +10,11 @@ import colors from '@lib/colors';
 import CTAButton from '@components/CTAButton';
 import { ScrollView } from 'react-native-gesture-handler';
 import StepPillGroup from '@components/StepPillGroup';
-import { useSupabaseClient } from '@contexts/SupabaseClientContext';
+import { supabase } from '@/lib/supabase';
 
 const DivisionRewards = () => {
   const router = useRouter();
-  const { client: supabase } = useSupabaseClient();
+
   const { divisions, districtId, districtName, privateDistrict } = useLocalSearchParams();
   const parsedDivisions = JSON.parse(divisions || '[]');
   const colorScheme = useColorScheme();

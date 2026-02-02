@@ -1,9 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
-import { useSupabaseClient } from '@contexts/SupabaseClientContext';
+import { supabase } from '@/lib/supabase';
 
 export const useLast5Results = (teamId) => {
-  const { client: supabase } = useSupabaseClient();
-
   return useQuery({
     queryKey: ['last5Results', teamId],
     queryFn: async () => {
