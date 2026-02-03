@@ -39,7 +39,7 @@ const TYPES = [
   'Quartered',
 ];
 
-const CrestEditor = ({ handleSave }) => {
+const CrestEditor = ({ handleSave, buttonText = 'Save Changes' }) => {
   const bottomSheetRef = useRef(null);
   const { currentRole } = useUser();
   const [primaryColor, setPrimaryColor] = useState(currentRole?.team?.crest?.color1 || '#FF0000');
@@ -47,7 +47,7 @@ const CrestEditor = ({ handleSave }) => {
     currentRole?.team?.crest?.color2 || '#0000FF'
   );
   const [thickness, setThickness] = useState(currentRole?.team?.crest?.thickness || 3);
-  const [type, setType] = useState(currentRole?.team?.crest?.type || 'solids'); // Assuming 'default' is a valid type
+  const [type, setType] = useState(currentRole?.team?.crest?.type || 'Solids'); // Assuming 'default' is a valid type
   const colorScheme = useColorScheme();
   const themeColors = colors[colorScheme] || colors.light; // Fallback to light theme if colorScheme is undefined
   const [activeMenu, setActiveMenu] = useState(null);
@@ -116,8 +116,8 @@ const CrestEditor = ({ handleSave }) => {
             className="h-12 w-12 rounded-full"
             style={{ backgroundColor: secondaryColor || 'black' }}></View>
         </Pressable>
-        <View className="border-b border-theme-gray-5"></View>
-        {type !== 'solids' && (
+        {type !== 'Solids' && <View className="border-b border-theme-gray-5"></View>}
+        {type !== 'Solids' && (
           <Pressable
             onPress={() => {
               setActiveMenu('Style Weight');
@@ -135,7 +135,7 @@ const CrestEditor = ({ handleSave }) => {
         <View className="w-full">
           <CTAButton
             type="success"
-            text="Save Changes"
+            text={buttonText}
             callbackFn={() => {
               console.log('Saving changes:', {
                 type,
@@ -172,7 +172,7 @@ const CrestEditor = ({ handleSave }) => {
             alignItems: 'center',
             justifyContent: 'space-between',
           }}>
-          <Text style={{ lineHeight: 40 }} className="font-saira-medium text-3xl text-text-1">
+          <Text style={{ lineHeight: 40 }} className={`font-saira-medium text-3xl text-text-1`}>
             Select {activeMenu}
           </Text>
           <Pressable className="p-2" onPress={closeSheet}>

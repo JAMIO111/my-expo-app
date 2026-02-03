@@ -92,7 +92,13 @@ const UniqueCode = () => {
     } else {
       const { data: LeagueData, error } = await supabase
         .from('Districts')
-        .select('*')
+        .select(
+          `*,
+  Divisions:Divisions!Divisions_district_fkey (
+    id,
+    name
+  )`
+        )
         .eq('code', code)
         .single();
 
@@ -104,7 +110,7 @@ const UniqueCode = () => {
         });
       } else if (LeagueData) {
         router.push({
-          pathname: '/(main)/onboarding/(entity-onboarding)/league-confirm',
+          pathname: '/(main)/onboarding/(entity-onboarding)/team-name',
           params: { league: JSON.stringify(LeagueData) },
         });
       }

@@ -3,7 +3,6 @@ import { useUser } from '@contexts/UserProvider';
 import { Stack, useRouter } from 'expo-router';
 import BrandHeader from '@components/BrandHeader';
 import RoleCard from '@components/RoleCard';
-import StepPillGroup from '../../components/StepPillGroup';
 
 const RoleSelect = () => {
   const router = useRouter();

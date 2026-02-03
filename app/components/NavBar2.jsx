@@ -10,11 +10,9 @@ import {
   SearchIcon,
 } from '@components/svgs';
 import { useUser } from '@contexts/UserProvider';
-import { useColorScheme } from 'nativewind';
 
 const NavBar = ({ type = 'main' }) => {
   const { currentRole } = useUser();
-  const colorScheme = useColorScheme();
   const router = useRouter();
   const pathname = usePathname();
   console.log(pathname, 'Current Pathname');

@@ -3,6 +3,7 @@ import '../../global.css'; // Ensure global styles are imported
 import { Slot, useRouter, useSegments } from 'expo-router';
 import { useEffect } from 'react';
 import { useUser } from '@contexts/UserProvider';
+import { colorScheme } from 'nativewind';
 
 const _layout = () => {
   const router = useRouter();
@@ -41,7 +42,7 @@ const _layout = () => {
   }, [user, player, loading, segments]);
 
   return (
-    <View className={` flex-1`}>
+    <View className={`flex-1`}>
       <Slot />
     </View>
   );
