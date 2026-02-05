@@ -1,7 +1,6 @@
 import { StyleSheet, Text, View, Pressable, useColorScheme } from 'react-native';
 import { useState, useRef } from 'react';
 import TeamLogo from '@components/TeamLogo';
-import { useUser } from '@contexts/UserProvider';
 import CTAButton from '@components/CTAButton';
 import ColorPickerGrid from '@components/ColorPickerGrid';
 import BottomSheetWrapper from '@components/BottomSheetWrapper';
@@ -39,15 +38,12 @@ const TYPES = [
   'Quartered',
 ];
 
-const CrestEditor = ({ handleSave, buttonText = 'Save Changes' }) => {
+const CrestEditor = ({ crest, handleSave, buttonText = 'Save Changes' }) => {
   const bottomSheetRef = useRef(null);
-  const { currentRole } = useUser();
-  const [primaryColor, setPrimaryColor] = useState(currentRole?.team?.crest?.color1 || '#FF0000');
-  const [secondaryColor, setSecondaryColor] = useState(
-    currentRole?.team?.crest?.color2 || '#0000FF'
-  );
-  const [thickness, setThickness] = useState(currentRole?.team?.crest?.thickness || 3);
-  const [type, setType] = useState(currentRole?.team?.crest?.type || 'Solids'); // Assuming 'default' is a valid type
+  const [primaryColor, setPrimaryColor] = useState(crest?.color1 || '#000000');
+  const [secondaryColor, setSecondaryColor] = useState(crest?.color2 || '#FFFFFF'); //Yellow
+  const [thickness, setThickness] = useState(crest?.thickness || '2.7');
+  const [type, setType] = useState(crest?.type || 'Horizontal Stripe'); // Assuming 'default' is a valid type
   const colorScheme = useColorScheme();
   const themeColors = colors[colorScheme] || colors.light; // Fallback to light theme if colorScheme is undefined
   const [activeMenu, setActiveMenu] = useState(null);
@@ -62,15 +58,15 @@ const CrestEditor = ({ handleSave, buttonText = 'Save Changes' }) => {
 
   const hasChanges = () => {
     return (
-      primaryColor !== currentRole?.team?.crest?.color1 ||
-      secondaryColor !== currentRole?.team?.crest?.color2 ||
-      thickness !== currentRole?.team?.crest?.thickness ||
-      type !== currentRole?.team?.crest?.type
+      primaryColor !== crest?.color1 ||
+      secondaryColor !== crest?.color2 ||
+      thickness !== crest?.thickness ||
+      type !== crest?.type
     );
   };
 
   return (
-    <View className="flex-1 items-center justify-start gap-12 bg-bg-grouped-1 p-5">
+    <View className="flex-1 items-center justify-start gap-8 bg-bg-grouped-1 p-5">
       <TeamLogo
         color1={primaryColor}
         color2={secondaryColor}
@@ -87,7 +83,7 @@ const CrestEditor = ({ handleSave, buttonText = 'Save Changes' }) => {
           className="flex-row items-center justify-between py-2">
           <Text className="font-saira text-2xl text-text-2">Type</Text>
           <Text className="font-saira-medium text-2xl text-text-1">
-            {TYPES.find((item) => item === type) || 'Solids'}
+            {TYPES.find((item) => item === type) || 'Horizontal Stripe'}
           </Text>
         </Pressable>
         <View className="border-b border-theme-gray-5"></View>
@@ -99,9 +95,9 @@ const CrestEditor = ({ handleSave, buttonText = 'Save Changes' }) => {
           className="flex-row items-center justify-between">
           <Text className="font-saira text-2xl text-text-2">Primary Team Color</Text>
           <View
-            className="h-12 w-12 rounded-full"
+            className="h-12 w-12 rounded-full border border-theme-gray-5"
             style={{
-              backgroundColor: primaryColor || 'white',
+              backgroundColor: primaryColor || '#000000',
             }}></View>
         </Pressable>
         <View className="border-b border-theme-gray-5"></View>
@@ -113,11 +109,13 @@ const CrestEditor = ({ handleSave, buttonText = 'Save Changes' }) => {
           className="flex-row items-center justify-between">
           <Text className="font-saira text-2xl text-text-2">Secondary Team Color</Text>
           <View
-            className="h-12 w-12 rounded-full"
-            style={{ backgroundColor: secondaryColor || 'black' }}></View>
+            className="h-12 w-12 rounded-full border border-theme-gray-5"
+            style={{ backgroundColor: secondaryColor || '#FFFFFF' }}></View>
         </Pressable>
-        {type !== 'Solids' && <View className="border-b border-theme-gray-5"></View>}
-        {type !== 'Solids' && (
+        {type !== 'Solids' && type !== 'Quartered' && (
+          <View className="border-b border-theme-gray-5"></View>
+        )}
+        {type !== 'Solids' && type !== 'Quartered' && (
           <Pressable
             onPress={() => {
               setActiveMenu('Style Weight');

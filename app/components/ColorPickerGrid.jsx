@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { View, Pressable, StyleSheet } from 'react-native';
+import { useState } from 'react';
+import { View, Text, Pressable, StyleSheet } from 'react-native';
 
 // HSL → HEX helper
 const hslToHex = (h, s, l) => {
@@ -72,8 +72,9 @@ const ColorPickerGrid = ({ onSelect }) => {
             styles.colorBox,
             { backgroundColor: color },
             selected === color && styles.selected,
-          ]}
-        />
+          ]}>
+          <Text className="text-sm"> {`${color}`} </Text>
+        </Pressable>
       ))}
     </View>
   );

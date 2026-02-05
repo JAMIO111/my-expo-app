@@ -1,4 +1,4 @@
-import { StyleSheet, Text, View, Switch } from 'react-native';
+import { StyleSheet, Text, View, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { Stack } from 'expo-router';
@@ -6,9 +6,7 @@ import CTAButton from '@components/CTAButton';
 import StepPillGroup from '@components/StepPillGroup';
 import SafeViewWrapper from '@components/SafeViewWrapper';
 import { supabase } from '@/lib/supabase';
-import { ScrollView } from 'react-native-gesture-handler';
 import CustomTextInput from '@components/CustomTextInput';
-import { Ionicons } from '@expo/vector-icons';
 
 const TeamName = () => {
   const router = useRouter();
@@ -130,53 +128,59 @@ const TeamName = () => {
       <SafeViewWrapper useTopInset={false} topColor="bg-brand" bottomColor="bg-brand-dark">
         <View className="flex-1 justify-between gap-3 bg-brand">
           <StepPillGroup steps={4} currentStep={3} />
-          <ScrollView className="flex-1 gap-3 p-5">
-            <Text
-              style={{ lineHeight: 40 }}
-              className="mb-4 font-delagothic text-4xl font-bold text-text-on-brand">
-              Create a team in the {league?.name || 'Unnamed League'} league?
-            </Text>
-            <Text className="font-saira-medium text-xl text-text-on-brand-2">
-              Please enter your team name, display name, and 3 letter abbreviation below.
-            </Text>
-            <View className="mt-8 gap-4">
-              <CustomTextInput
-                value={teamName}
-                onChangeText={setTeamName}
-                title="Team Name"
-                placeholder="e.g. Newsham Victoria A"
-                className="mb-4 h-12 rounded-lg border border-gray-300 bg-white px-3 font-saira text-xl"
-                leftIconName="create-outline"
-                iconColor="#A259FF"
-                titleColor="text-text-1"
-                autoCapitalize="words"
-              />
-              <CustomTextInput
-                value={teamDisplayName}
-                onChangeText={setTeamDisplayName}
-                title="Team Display Name"
-                placeholder="e.g. Newsham Vic A"
-                className="mb-4 h-12 rounded-lg border border-gray-300 bg-white px-3 font-saira text-xl"
-                leftIconName="create-outline"
-                iconColor="#A259FF"
-                titleColor="text-text-1"
-                autoCapitalize="words"
-              />
-              <CustomTextInput
-                value={teamAbbreviation}
-                onChangeText={setTeamAbbreviation}
-                title="Team Abbreviation"
-                placeholder="e.g. NVA"
-                className="mb-4 h-12 rounded-lg border border-gray-300 bg-white px-3 font-saira text-xl"
-                leftIconName="pricetag-outline"
-                iconColor="#A259FF"
-                titleColor="text-text-1"
-                autoCapitalize="characters"
-                autoCorrect={false}
-                maxLength={3}
-              />
-            </View>
-          </ScrollView>
+          <KeyboardAvoidingView
+            style={{ flex: 1 }}
+            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+            keyboardVerticalOffset={100} // adjust if header exists
+          >
+            <ScrollView className="flex-1 gap-3 p-5">
+              <Text
+                style={{ lineHeight: 40 }}
+                className="mb-4 font-delagothic text-4xl font-bold text-text-on-brand">
+                Create a team in the {league?.name || 'Unnamed League'} league?
+              </Text>
+              <Text className="font-saira-medium text-xl text-text-on-brand-2">
+                Please enter your team name, display name, and 3 letter abbreviation below.
+              </Text>
+              <View className="mt-4 gap-4">
+                <CustomTextInput
+                  value={teamName}
+                  onChangeText={setTeamName}
+                  title="Team Name"
+                  placeholder="e.g. Newsham Victoria A"
+                  className="mb-4 h-12 rounded-lg border border-gray-300 bg-white px-3 font-saira text-xl"
+                  leftIconName="create-outline"
+                  iconColor="#A259FF"
+                  titleColor="text-text-1"
+                  autoCapitalize="words"
+                />
+                <CustomTextInput
+                  value={teamDisplayName}
+                  onChangeText={setTeamDisplayName}
+                  title="Team Display Name"
+                  placeholder="e.g. Newsham Vic A"
+                  className="mb-4 h-12 rounded-lg border border-gray-300 bg-white px-3 font-saira text-xl"
+                  leftIconName="create-outline"
+                  iconColor="#A259FF"
+                  titleColor="text-text-1"
+                  autoCapitalize="words"
+                />
+                <CustomTextInput
+                  value={teamAbbreviation}
+                  onChangeText={setTeamAbbreviation}
+                  title="Team Abbreviation"
+                  placeholder="e.g. NVA"
+                  className="mb-4 h-12 rounded-lg border border-gray-300 bg-white px-3 font-saira text-xl"
+                  leftIconName="pricetag-outline"
+                  iconColor="#A259FF"
+                  titleColor="text-text-1"
+                  autoCapitalize="characters"
+                  autoCorrect={false}
+                  maxLength={3}
+                />
+              </View>
+            </ScrollView>
+          </KeyboardAvoidingView>
           <View className="gap-5 rounded-t-3xl bg-brand-dark px-5 pt-6">
             <CTAButton callbackFn={() => router.back()} type="error" text="Go Back" />
             <View>

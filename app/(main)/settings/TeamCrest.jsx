@@ -59,7 +59,7 @@ const TeamCrest = () => {
         }}
       />
       <View className="mt-16 flex-1 bg-bg-grouped-1">
-        <CrestEditor handleSave={handleSave} />
+        <CrestEditor crest={currentRole?.team?.crest} handleSave={handleSave} />
       </View>
     </SafeViewWrapper>
   );
