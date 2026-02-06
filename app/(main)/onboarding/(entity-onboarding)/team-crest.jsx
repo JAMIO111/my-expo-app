@@ -1,6 +1,5 @@
 import { StyleSheet, Text, View, Alert } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
-import { useEffect, useState } from 'react';
 import { Stack } from 'expo-router';
 import StepPillGroup from '@components/StepPillGroup';
 import SafeViewWrapper from '@components/SafeViewWrapper';
@@ -41,10 +40,11 @@ const TeamCrest = () => {
     };
 
     router.push({
-      pathname: '/(main)/onboarding/(entity-onboarding)/team-address-and-photo',
+      pathname: '/(main)/onboarding/(entity-onboarding)/team-address',
       params: {
         league: JSON.stringify(league),
         teamDetails: JSON.stringify(updatedTeamDetails),
+        teams: JSON.stringify(teams),
       },
     });
   };
@@ -53,7 +53,7 @@ const TeamCrest = () => {
     <>
       <Stack.Screen
         options={{
-          title: 'Step 4 of 4',
+          title: 'Step 3 of 6',
         }}
       />
       <SafeViewWrapper
@@ -62,7 +62,7 @@ const TeamCrest = () => {
         topColor="bg-brand"
         bottomColor="bg-brand-dark">
         <View className={`flex-1 justify-between gap-3 bg-brand`}>
-          <StepPillGroup steps={4} currentStep={4} />
+          <StepPillGroup steps={6} currentStep={3} />
           <View className="flex-1 gap-3">
             <Text
               style={{ lineHeight: 40 }}

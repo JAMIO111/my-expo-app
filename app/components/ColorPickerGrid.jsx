@@ -72,9 +72,7 @@ const ColorPickerGrid = ({ onSelect }) => {
             styles.colorBox,
             { backgroundColor: color },
             selected === color && styles.selected,
-          ]}>
-          <Text className="text-sm"> {`${color}`} </Text>
-        </Pressable>
+          ]}></Pressable>
       ))}
     </View>
   );

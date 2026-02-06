@@ -118,11 +118,11 @@ const DivisionRewards = () => {
     <>
       <Stack.Screen
         options={{
-          title: 'Step 3',
+          title: 'Step 5 of 5',
         }}
       />
       <View className="flex-1 items-center justify-start bg-brand">
-        <StepPillGroup steps={3} currentStep={3} />
+        <StepPillGroup steps={5} currentStep={5} />
         <Text
           style={{ fontSize: 36, lineHeight: 50 }}
           className="mb-8 px-4 font-delagothic text-text-on-brand">

@@ -6,7 +6,7 @@ const CustomTextInput = forwardRef((props, ref) => {
   const {
     value,
     onChangeText,
-    titleColor,
+    titleColor = 'text-text-on-brand',
     placeholder,
     title,
     leftIconName,
@@ -26,9 +26,7 @@ const CustomTextInput = forwardRef((props, ref) => {
 
   return (
     <View>
-      <Text className={`pb-1 pl-2 font-saira-medium text-xl text-text-on-brand ${titleColor}`}>
-        {title}
-      </Text>
+      <Text className={`pb-1 pl-2 font-saira-medium text-xl ${titleColor}`}>{title}</Text>
       <View className="h-14 flex-row items-center rounded-xl border border-theme-gray-3 bg-input-background pr-3">
         <View className="h-full justify-center rounded-l-xl border-r border-theme-gray-3 bg-bg-grouped-1 pl-3 pr-4">
           <Ionicons name={leftIconName} size={leftIconSize} color={iconColor} />

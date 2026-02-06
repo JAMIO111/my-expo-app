@@ -95,13 +95,29 @@ const toastConfig = {
             }}>
             <IonIcon name="alert-circle-outline" size={26} color={theme.error.primary} />
           </View>
-          <View style={{ flex: 1 }}>
+          <View style={{ flex: 1, gap: 4 }}>
             {text1 && (
-              <Text style={{ color: theme.primaryText, fontSize: 18, fontWeight: '600' }}>
+              <Text
+                style={{
+                  color: theme.primaryText,
+                  fontSize: 18,
+                  fontWeight: '600',
+                  fontFamily: 'Saira-SemiBold',
+                }}>
                 {text1}
               </Text>
             )}
-            {text2 && <Text style={{ color: theme.secondaryText, fontSize: 16 }}>{text2}</Text>}
+            {text2 && (
+              <Text
+                style={{
+                  color: theme.secondaryText,
+                  fontSize: 16,
+                  lineHeight: 20,
+                  fontFamily: 'Saira-Regular',
+                }}>
+                {text2}
+              </Text>
+            )}
           </View>
         </View>
 

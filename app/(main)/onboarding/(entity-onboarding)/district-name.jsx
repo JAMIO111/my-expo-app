@@ -1,4 +1,4 @@
-import { View, Text, Alert, Switch } from 'react-native';
+import { View, Text, Switch } from 'react-native';
 import { useState } from 'react';
 import { Stack, useLocalSearchParams } from 'expo-router';
 import CTAButton from '@components/CTAButton';
@@ -7,6 +7,7 @@ import CustomTextInput from '@components/CustomTextInput';
 import { useRouter } from 'expo-router';
 import { supabase } from '@/lib/supabase';
 import Ionicons from 'react-native-vector-icons/Ionicons';
+import Toast from 'react-native-toast-message';
 
 export default function DistrictName() {
   const router = useRouter();
@@ -26,7 +27,11 @@ export default function DistrictName() {
 
   const handleSubmit = async () => {
     if (!districtName.trim()) {
-      Alert.alert('Missing Info', 'Please enter a district name.');
+      Toast.show({
+        type: 'error',
+        text1: 'Invalid Name',
+        text2: 'District name cannot be empty.',
+      });
       return;
     }
 
@@ -36,7 +41,11 @@ export default function DistrictName() {
 
       if (error) {
         console.error(error);
-        Alert.alert('Error', 'Unable to check districts. Please try again.');
+        Toast.show({
+          type: 'error',
+          text1: 'Error',
+          text2: 'Failed to load data. Please try again.',
+        });
         return;
       }
 
@@ -46,10 +55,11 @@ export default function DistrictName() {
       );
 
       if (nameExists) {
-        Alert.alert(
-          'Duplicate',
-          'This district name already exists. Please enter a different name.'
-        );
+        Toast.show({
+          type: 'error',
+          text1: 'District Name Taken',
+          text2: 'This district name is already taken. Please choose another.',
+        });
         return;
       }
 
@@ -64,7 +74,11 @@ export default function DistrictName() {
       });
     } catch (err) {
       console.error(err);
-      Alert.alert('Error', 'Something went wrong. Please try again.');
+      Toast.show({
+        type: 'error',
+        text1: 'Error',
+        text2: 'An unexpected error occurred. Please try again.',
+      });
     }
   };
 
@@ -72,17 +86,17 @@ export default function DistrictName() {
     <>
       <Stack.Screen
         options={{
-          title: 'Step 1',
+          title: 'Step 2 of 5',
         }}
       />
       <View className="flex-1 bg-brand px-4">
-        <StepPillGroup steps={3} currentStep={1} />
+        <StepPillGroup steps={5} currentStep={2} />
         <Text className="my-4 pt-5 font-delagothic text-5xl text-text-on-brand">
           Please enter the name of your district.
         </Text>
         <View className="mb-6">
           <CustomTextInput
-            label="District Name"
+            title="District Name"
             value={districtName}
             onChangeText={setDistrictName}
             leftIconName="map-outline"

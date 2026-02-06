@@ -96,7 +96,11 @@ const UniqueCode = () => {
           `*,
   Divisions:Divisions!Divisions_district_fkey (
     id,
-    name
+    name,    
+    tier,
+    max_teams,
+    admin_approval_required
+
   )`
         )
         .eq('code', code)
@@ -157,12 +161,12 @@ const UniqueCode = () => {
     <>
       <Stack.Screen
         options={{
-          title: 'Step 2',
+          title: isNewTeam ? 'Step 1 of 7' : isNewLeague ? 'Step 1 of 5' : 'Step 1 of 3',
         }}
       />
 
       <View className="flex-1 gap-3 bg-brand">
-        <StepPillGroup steps={2} currentStep={2} />
+        <StepPillGroup steps={isNewTeam ? 7 : isNewLeague ? 5 : 3} currentStep={1} />
         <View className="p-5">
           <Text
             style={{ lineHeight: 50 }}
