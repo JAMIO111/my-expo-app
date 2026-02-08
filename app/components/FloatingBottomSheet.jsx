@@ -89,7 +89,7 @@ const ConfirmModal = ({
             style={{ borderRadius: 40 }}
             className="w-[90%] border border-theme-gray-4 bg-bg-grouped-2 p-8 shadow-md">
             <View className="mb-4 w-full flex-row items-start justify-between">
-              <Text className="font-saira-semibold text-3xl text-text-1">{title}</Text>
+              <Text className="flex-1 font-saira-semibold text-3xl text-text-1">{title}</Text>
               <Ionicons name="close" size={26} color="gray" onPress={onCancel} />
             </View>
             <Text className="mb-8 font-saira text-xl text-text-2">{message}</Text>

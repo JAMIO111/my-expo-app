@@ -47,7 +47,7 @@ const index = () => {
       <SafeViewWrapper bottomColor="bg-brand" topColor="bg-brand">
         <ScrollView className="mt-16 flex-1 bg-brand px-4">
           <DivisionsList districtId={currentRole?.districtId} />
-          <View className="my-4 rounded-2xl bg-bg-1 p-4">
+          <View className="my-4 rounded-3xl bg-bg-1 p-4">
             <Text className="mx-4 font-saira-semibold text-2xl text-text-1">Season</Text>
             <Text className="mx-4 mb-4 font-saira-medium text-text-2">
               {currentRole?.activeSeason

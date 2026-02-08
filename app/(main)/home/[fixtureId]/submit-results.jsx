@@ -415,7 +415,7 @@ const SubmitResultsScreen = () => {
           {!activeFrameId && (
             <CTAButton
               text="Add Frame"
-              type="info"
+              type="yellow"
               disabled={submitting || saving}
               callbackFn={addFrame}
             />

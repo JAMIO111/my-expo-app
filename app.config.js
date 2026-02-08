@@ -18,6 +18,8 @@ export default () => ({
     orientation: 'portrait',
     icon: './app/assets/Break-Room-Logo-1024-Background.png',
     userInterfaceStyle: 'automatic',
+    jsEngine: 'hermes',
+    newArchEnabled: true,
     splash: {
       image: './app/assets/splash.png',
       resizeMode: 'contain',

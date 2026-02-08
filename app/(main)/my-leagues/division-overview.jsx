@@ -1,4 +1,4 @@
-import { StyleSheet } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import { Stack, useRouter } from 'expo-router';
 import CustomHeader from '@components/CustomHeader';
 import NavBar from '@components/NavBar2';
@@ -32,6 +32,7 @@ const DivisionOverview = () => {
       <SafeViewWrapper bottomColor="bg-brand" topColor="bg-brand">
         <ScrollView className="mt-16 flex-1 bg-brand p-4">
           <DivisionAccordion divisionName={division.name} teams={teams || []} />
+          <View className="h-8 w-full"></View>
         </ScrollView>
         <NavBar />
       </SafeViewWrapper>

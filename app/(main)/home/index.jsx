@@ -165,11 +165,11 @@ const Home = () => {
           className="mt-16 flex-1 bg-brand"
           contentContainerStyle={{ allignItems: 'center', justifyContent: 'center' }}>
           <View className="">
-            <View className="w-full items-center justify-center gap-4 p-3 pb-5">
+            <View className="w-full items-center justify-center gap-4 p-0 pb-5">
               {currentRole?.team && (
                 <>
                   <View className="w-full items-center justify-between">
-                    <Text className="mb-2 w-full text-left font-saira-semibold text-xl text-white">
+                    <Text className="mb-2 w-full px-3 text-left font-saira-semibold text-xl text-white">
                       {currentRole?.team?.display_name} Fixtures
                     </Text>
                     <HorizontalScrollUpcomingFixtures
@@ -180,15 +180,17 @@ const Home = () => {
                   <View className="mb-2 h-1 w-full items-center justify-between border-b border-brand-light"></View>
                 </>
               )}
-              <FixturesHomeCard
-                fixture={upcomingFixtures?.[0]}
-                isLoading={isUpcomingFixturesLoading}
-              />
-              <ResultsHomeCard
-                result={upcomingFixtures?.filter((result) => result.approved)?.[0]}
-                isLoading={isUpcomingFixturesLoading}
-              />
-              <LeagueHomeCard standings={standings} isLoading={isStandingsLoading} />
+              <View className="w-full items-center justify-center gap-4 px-3">
+                <FixturesHomeCard
+                  fixture={upcomingFixtures?.[0]}
+                  isLoading={isUpcomingFixturesLoading}
+                />
+                <ResultsHomeCard
+                  result={upcomingFixtures?.filter((result) => result.approved)?.[0]}
+                  isLoading={isUpcomingFixturesLoading}
+                />
+                <LeagueHomeCard standings={standings} isLoading={isStandingsLoading} />
+              </View>
             </View>
             <View className="w-full bg-bg-grouped-1 pb-24">
               {(currentRole?.team?.captain === player?.id ||

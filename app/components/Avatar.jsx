@@ -31,7 +31,7 @@ const Avatar = ({ player, size = 64, borderRadius = 5 }) => {
         alignItems: 'center',
       }}>
       <Text
-        style={{ fontSize: size / 3, lineHeight: size / 2.5 }}
+        style={{ fontSize: size / 3, lineHeight: size / 4 }}
         className="pt-3 font-saira-semibold text-white">
         {getInitials()}
       </Text>

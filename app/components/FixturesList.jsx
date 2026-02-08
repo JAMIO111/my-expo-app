@@ -1,7 +1,7 @@
 import { useRef, useState, useEffect } from 'react';
 import { View, Text, Pressable, FlatList, SafeAreaView } from 'react-native';
 import { useMonthlyFixtures } from '@/hooks/useGroupedFixtures';
-import { format, addMonths, parseISO, startOfMonth, isBefore } from 'date-fns';
+import { format, addMonths, parseISO, startOfMonth, isBefore, addHours } from 'date-fns';
 import IonIcons from 'react-native-vector-icons/Ionicons';
 import TeamLogo from '@components/TeamLogo';
 import { useUser } from '@/contexts/UserProvider';
@@ -270,6 +270,8 @@ const FixtureList = () => {
 
               {fixtures.map((f, index) => {
                 const isLive = new Date() >= new Date(f.date_time);
+                const isOverdue =
+                  isBefore(addHours(parseISO(f.date_time), 24), new Date()) && !f.is_complete;
                 return (
                   <Pressable
                     onPress={() => {
@@ -282,7 +284,11 @@ const FixtureList = () => {
                     }}
                     className="mb-3 mt-2 items-center justify-center gap-2"
                     key={f.id}>
-                    {isLive ? (
+                    {isOverdue ? (
+                      <Text className="mb-1 items-center justify-center gap-2 rounded-lg bg-theme-gray-5 px-2 py-0.5 text-center font-saira-medium text-lg text-theme-red">
+                        Results Required
+                      </Text>
+                    ) : isLive ? (
                       f.is_complete ? (
                         <Text className="mb-1 items-center justify-center gap-2 rounded-lg bg-theme-gray-5 px-2 py-0.5 text-center font-saira-medium text-lg text-text-1">
                           Final Score

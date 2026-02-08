@@ -25,7 +25,7 @@ const PoolRack = () => {
   });
   const router = useRouter();
   const [loading, setLoading] = useState(false);
-  const { roles, currentRole, setCurrentRole } = useUser();
+  const { roles, setCurrentRole } = useUser();
 
   // Shared animation values
   const cueY = useSharedValue(0);
@@ -88,7 +88,7 @@ const PoolRack = () => {
       return;
     }
 
-    const roles = profile.roles || [];
+    const roles = profile?.roles || [];
 
     if (profile.playerProfile.onboarding === 0) {
       console.log('🟠 Player onboarding incomplete, redirecting to onboarding');

@@ -29,7 +29,9 @@ const FixturePage = ({ fixtureDetails, isLoading, context }) => {
   const colorScheme = useColorScheme();
   const themeColors = colors[colorScheme];
   const { fixtureId } = useLocalSearchParams();
-  const { days, hours, minutes, seconds, isPast } = useKickoffCountdown(fixtureDetails?.date_time);
+  const { days, hours, minutes, seconds, isPast, isOverdue } = useKickoffCountdown(
+    fixtureDetails?.date_time
+  );
   const [view, setView] = useState('left');
   const [team, setTeam] = useState('left');
   const hasNavigated = useRef(false);
@@ -81,8 +83,6 @@ const FixturePage = ({ fixtureDetails, isLoading, context }) => {
     fixtureDetails?.awayTeam?.crest?.color1 || themeColors.bg1
   );
 
-  const isLive = new Date() >= new Date(fixtureDetails?.date_time);
-
   return (
     <ScrollView className="mt-16 flex-1 bg-brand">
       {isLoading ? (
@@ -126,6 +126,14 @@ const FixturePage = ({ fixtureDetails, isLoading, context }) => {
                     style={{ lineHeight: 32 }}
                     className="items-center justify-center gap-2 rounded-xl bg-theme-gray-5 px-4 py-1 text-center font-saira-medium text-2xl text-text-1">
                     Final Score
+                  </Text>
+                </View>
+              ) : isOverdue ? (
+                <View className="flex-row items-center justify-around px-2">
+                  <Text
+                    style={{ lineHeight: 32 }}
+                    className="items-center justify-center gap-2 rounded-xl bg-theme-gray-5 px-4 py-1 text-center font-saira-medium text-2xl text-theme-red">
+                    Results Required
                   </Text>
                 </View>
               ) : (

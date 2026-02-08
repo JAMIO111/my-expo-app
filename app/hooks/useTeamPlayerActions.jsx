@@ -294,6 +294,29 @@ export function useTeamPlayerActions(teamId, callbacks = {}) {
     }, callbacks.sendJoinRequest?.onError),
   });
 
+  const removeFromDivision = useMutation({
+    mutationFn: async ({ teamId, divisionId }) => {
+      const { data, error } = await supabase
+        .from('Teams')
+        .update({ division: null })
+        .eq('id', teamId)
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      return { team: data, divisionId };
+    },
+    onSuccess: handleCallbacks(({ divisionId }) => {
+      queryClient.invalidateQueries({ queryKey: ['teams', divisionId] });
+      Toast.show({ type: 'success', text1: 'Team removed from division' });
+    }, callbacks.removeFromDivision?.onSuccess),
+    onError: handleCallbacks((error) => {
+      Toast.show({ type: 'error', text1: 'Failed to remove team from division' });
+      console.log('Failed to remove team from division:', error);
+    }, callbacks.removeFromDivision?.onError),
+  });
+
   return {
     removePlayer,
     promoteToCaptain,
@@ -304,5 +327,6 @@ export function useTeamPlayerActions(teamId, callbacks = {}) {
     leaveTeam,
     sendJoinRequest,
     revokeRequest,
+    removeFromDivision,
   };
 }

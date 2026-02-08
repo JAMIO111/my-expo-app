@@ -9,6 +9,7 @@ export default function CustomHeader({
   onRightPress,
   rightIcon = 'ellipsis-vertical',
   backgroundColor = 'bg-brand',
+  iconSize = 22,
 }) {
   const router = useRouter();
   const segments = useSegments();
@@ -55,12 +56,12 @@ export default function CustomHeader({
       <View style={{ width: sideWidth, alignItems: 'flex-end' }}>
         {onRightPress ? (
           <TouchableOpacity
-            className="rounded-full bg-white p-3"
+            className="h-12 w-12 items-center justify-center rounded-full bg-white"
             onPress={() => {
               onRightPress();
             }}>
-            <View className="flex h-6 w-6 items-center justify-center rounded-full bg-white">
-              <Ionicons name={rightIcon} size={22} color="black" />
+            <View className="flex items-center justify-center rounded-full bg-white">
+              <Ionicons name={rightIcon} size={iconSize} color="black" />
             </View>
           </TouchableOpacity>
         ) : (

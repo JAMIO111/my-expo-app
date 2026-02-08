@@ -16,6 +16,7 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { UserProvider } from '@contexts/UserProvider';
 import { AdminProvider } from '@contexts/AdminContext';
 import AppRealtimeProvider from '@contexts/AppRealtimeProvider';
+import * as RNIap from 'react-native-iap';
 
 export default function RootLayout() {
   const [fontsLoaded] = useFonts({
@@ -28,6 +29,14 @@ export default function RootLayout() {
   });
 
   const [isReady, setIsReady] = useState(false);
+
+  useEffect(() => {
+    RNIap.initConnection();
+
+    return () => {
+      RNIap.endConnection();
+    };
+  }, []);
 
   useEffect(() => {
     // Slight delay to ensure navigation context is initialized

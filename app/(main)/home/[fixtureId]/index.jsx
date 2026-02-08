@@ -12,6 +12,9 @@ const index = () => {
   const { currentRole, player, loading } = useUser();
   const { fixtureId } = useLocalSearchParams();
   const { data: fixtureDetails, isLoading } = useFixtureDetails(fixtureId);
+
+  console.log('Fixture Details:', fixtureDetails);
+  console.log('Current Role in Fixture Page:', currentRole);
   return (
     <SafeViewWrapper useBottomInset={false} topColor="bg-brand">
       <Stack.Screen
@@ -21,8 +24,7 @@ const index = () => {
               <CustomHeader
                 title={`${fixtureDetails?.homeTeam?.abbreviation} vs ${fixtureDetails?.awayTeam?.abbreviation}`}
                 onRightPress={
-                  (player?.id !== currentRole?.team?.captain ||
-                    player?.id === currentRole?.team?.vice_captain) &&
+                  player?.id === currentRole?.team?.captain.id &&
                   currentRole?.team?.id === fixtureDetails?.homeTeam?.id &&
                   fixtureDetails?.is_complete === false
                     ? () => router.push(`home/${fixtureId}/submit-results`)

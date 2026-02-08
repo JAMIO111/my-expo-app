@@ -33,7 +33,7 @@ const DivisionsList = ({ districtId }) => {
               },
             });
           }}
-          className="w-full flex-row items-center justify-between rounded-xl border border-theme-gray-5 bg-bg-grouped-2 p-2"
+          className="w-full flex-row items-center justify-between rounded-3xl border border-theme-gray-5 bg-bg-grouped-2 p-2"
           key={division.id}>
           <View className="flex-row items-center gap-4">
             {romanNumerals[division.tier] && (

@@ -45,7 +45,9 @@
     "react-native-appearance": "^0.3.4",
     "react-native-color-picker": "^0.6.0",
     "react-native-gesture-handler": "~2.24.0",
+    "react-native-iap": "^14.7.8",
     "react-native-modal": "^14.0.0-rc.1",
+    "react-native-nitro-modules": "^0.31.10",
     "react-native-reanimated": "~3.17.4",
     "react-native-safe-area-context": "5.4.0",
     "react-native-screens": "~4.11.1",
@@ -56,6 +58,7 @@
   },
   "devDependencies": {
     "@babel/core": "^7.20.0",
+    "@react-native-community/cli": "^20.1.1",
     "@types/react": "~19.0.10",
     "babel-plugin-module-resolver": "^5.0.2",
     "eslint": "^9.25.1",

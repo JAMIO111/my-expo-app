@@ -1,9 +1,8 @@
 import { View, ScrollView, RefreshControl, Text } from 'react-native';
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback } from 'react';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useQueryClient } from '@tanstack/react-query';
-
 import SafeViewWrapper from '@components/SafeViewWrapper';
 import CustomHeader from '@components/CustomHeader';
 import NavBar from '@components/NavBar2';
@@ -13,7 +12,6 @@ import MyTeamCard from '@components/MyTeamCard';
 import FloatingBottomSheet from '@components/FloatingBottomSheet';
 import AnimatedSearchBar from '@components/AnimatedSearchBar';
 import SearchResultsOverlay from '@components/SearchResultsOverlay';
-
 import { useUser } from '@contexts/UserProvider';
 import { supabase } from '@/lib/supabase';
 import { usePlayerInvitesAndRequests } from '@hooks/usePlayerInvitesAndRequests';
