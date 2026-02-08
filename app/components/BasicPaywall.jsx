@@ -15,9 +15,12 @@ import CTAButton from '@components/CTAButton';
 import { ScrollView, Switch } from 'react-native-gesture-handler';
 import colors from '../lib/colors';
 import { useRouter } from 'expo-router';
+import { useIAPSubscriptions } from '@hooks/useIAPSubscriptions';
 
 const BasicPaywall = () => {
-  const [paymentType, setPaymentType] = useState('monthly');
+  const { plans, loading: subscriptionsLoading, error: subscriptionsError } = useIAPSubscriptions();
+  const [selectedBilling, setSelectedBilling] = useState('monthly');
+  const [selectedTier, setSelectedTier] = useState(null);
   const [fullscreenImage, setFullscreenImage] = useState(null);
   const [isTrialEnabled, setIsTrialEnabled] = useState(false);
   const scaleAnim = useRef(new Animated.Value(0.8)).current;
@@ -25,6 +28,21 @@ const BasicPaywall = () => {
   const colorScheme = useColorScheme();
   const themeColors = colors[colorScheme];
   const router = useRouter();
+
+  const planImages = {
+    pro: {
+      monthly: require('@assets/pro-monthly.jpg'),
+      annual: require('@assets/pro-annual.jpg'),
+    },
+    core: {
+      monthly: require('@assets/core-monthly.jpg'),
+      annual: require('@assets/core-annual.jpg'),
+    },
+  };
+
+  console.log('App Store Subscriptions:', plans);
+  console.log('Subscriptions Loading:', subscriptionsLoading);
+  console.log('Subscriptions Error:', subscriptionsError);
 
   const screenshots = [
     require('@assets/league-table-light.png'),
@@ -77,7 +95,7 @@ const BasicPaywall = () => {
       <Text
         style={{ lineHeight: 40 }}
         className="px-6 text-left font-delagothic text-4xl text-text-1">
-        Get Access to the Full App for just £1.49/month
+        Get Access to the Full App for just £1.99/month
       </Text>
       <View className="my-6 mt-8 w-full px-6">
         <CTAButton
@@ -114,7 +132,7 @@ const BasicPaywall = () => {
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
-        className="w-full border-y border-theme-gray-4 bg-bg-grouped-2 px-4 py-8">
+        className="w-full border-y border-theme-gray-5 bg-bg-grouped-2 px-6 py-8">
         {screenshots.map((src, idx) => (
           <View key={idx} className="pr-8">
             <Pressable onPress={() => setFullscreenImage(src)}>
@@ -154,18 +172,18 @@ const BasicPaywall = () => {
       </Modal>
 
       {/* Payment options */}
-      <View className="w-full px-4 pt-8">
+      <View className="w-full pt-8">
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={{
             flexDirection: 'row',
             gap: 20,
-            paddingHorizontal: 16,
+            paddingHorizontal: 20,
           }}>
           <View
             style={{ width: 300, flexShrink: 0 }}
-            className="mb-8 rounded-3xl border border-theme-gray-3 bg-bg-grouped-2 px-6 py-4">
+            className="mb-8 rounded-3xl border border-theme-gray-5 bg-bg-grouped-2 px-6 py-4">
             <View className="mb-4 flex-row items-center justify-between">
               <Image
                 contentFit="contain"
@@ -185,7 +203,7 @@ const BasicPaywall = () => {
           </View>
           <View
             style={{ width: 300, flexShrink: 0 }}
-            className="mb-8 rounded-3xl border border-theme-gray-3 bg-bg-grouped-2 px-6 py-4">
+            className="mb-8 rounded-3xl border border-theme-gray-5 bg-bg-grouped-2 px-6 py-4">
             <View className="mb-4 flex-row items-center justify-between">
               <Image
                 contentFit="contain"
@@ -205,7 +223,7 @@ const BasicPaywall = () => {
             </Text>
           </View>
         </ScrollView>
-        <View className="my-4 w-full flex-row items-center justify-between px-2">
+        <View className="my-4 w-full flex-row items-center justify-between px-6">
           <Text className="font-saira-medium text-xl text-text-1">Enable 7-day free trial</Text>
           <Switch
             value={isTrialEnabled}
@@ -217,57 +235,66 @@ const BasicPaywall = () => {
             }}
           />
         </View>
-        {/* Monthly Option */}
-        <Pressable
-          onPress={() => setPaymentType('monthly')}
-          className={`mb-8 w-full flex-row items-center justify-start gap-4 rounded-2xl border bg-black/5 px-5 py-5 ${paymentType === 'monthly' ? 'border-theme-purple' : 'border-theme-gray-3'}`}>
-          <View
-            className={`${paymentType === 'monthly' ? 'border-theme-purple' : 'border-theme-gray-3'} rounded-full border-2 p-1`}>
-            <IonIcons
-              name="checkmark"
-              size={24}
-              color={paymentType === 'monthly' ? themeColors.primaryText : 'transparent'}
-            />
-          </View>
-          <View>
-            <Text className="font-saira-semibold text-2xl text-text-1">Monthly</Text>
-            <Text className="font-saira text-lg text-text-1">£1.49/month (1 year membership)</Text>
-          </View>
-        </Pressable>
 
-        {/* Yearly Option */}
-        <View className="relative w-full overflow-visible">
-          <Pressable
-            onPress={() => setPaymentType('yearly')}
-            className={`mb-4 w-full flex-row items-center justify-start gap-4 rounded-2xl border bg-black/5 px-5 py-5 ${paymentType === 'yearly' ? 'border-theme-purple' : 'border-theme-gray-3'}`}>
-            <View
-              className={`${paymentType === 'yearly' ? 'border-theme-purple' : 'border-theme-gray-3'} rounded-full border-2 p-1`}>
-              <IonIcons
-                name="checkmark"
-                size={24}
-                color={paymentType === 'yearly' ? themeColors.primaryText : 'transparent'}
-              />
-            </View>
-            <View>
-              <Text className="font-saira-semibold text-2xl text-text-1">Yearly</Text>
-              <Text className="font-saira text-lg text-text-1">£14.99 (1 off payment)</Text>
-            </View>
-          </Pressable>
-
-          {/* Discount Badge */}
-          <View className="absolute -top-4 right-10 z-10 rounded-full border border-theme-purple bg-brand-dark">
-            <View className="rounded-full bg-theme-purple/70">
-              <Text
-                style={{ lineHeight: 28 }}
-                className="px-2 font-saira-medium text-xl text-white">
-                16% Off
-              </Text>
-            </View>
+        <View className="mt-4 w-full gap-4 overflow-visible px-4">
+          {plans && plans.length > 0 ? (
+            plans.map((plan) => (
+              <Pressable
+                onPress={() => {
+                  setSelectedBilling(plan.interval);
+                  setSelectedTier(plan.tier);
+                }}
+                className={`w-full flex-row items-center justify-start gap-4 rounded-3xl border bg-bg-1 p-2 pr-5 ${selectedBilling === plan.interval && selectedTier === plan.tier ? 'border-theme-purple' : 'border-theme-gray-3'}`}>
+                <Image
+                  contentFit="contain"
+                  className="h-20 w-20 rounded-2xl"
+                  source={planImages[plan.tier]?.[plan.interval]}
+                />
+                <View className="flex-1">
+                  <Text className="font-saira-semibold text-2xl text-text-1">
+                    {plan.tier.charAt(0).toUpperCase() + plan.tier.slice(1)} -{' '}
+                    {plan.interval.charAt(0).toUpperCase() + plan.interval.slice(1)}
+                  </Text>
+                  <Text className="font-saira text-lg text-text-1">
+                    {plan.displayPrice}/
+                    {plan.interval === 'monthly'
+                      ? 'month'
+                      : plan.interval === 'annual'
+                        ? 'year'
+                        : 'period'}
+                  </Text>
+                </View>
+                <View
+                  className={`${selectedBilling === plan.interval && selectedTier === plan.tier ? 'border-theme-purple' : 'border-theme-gray-3'} rounded-full border-2 p-1`}>
+                  <IonIcons
+                    name="checkmark"
+                    size={24}
+                    color={
+                      selectedBilling === plan.interval && selectedTier === plan.tier
+                        ? themeColors.primaryText
+                        : 'transparent'
+                    }
+                  />
+                </View>
+              </Pressable>
+            ))
+          ) : (
+            <Text className="text-center font-saira text-lg text-text-2">
+              No subscription plans available at the moment. Please check back later.
+            </Text>
+          )}
+        </View>
+        {/* Discount Badge */}
+        <View className="absolute -top-4 right-10 z-10 rounded-full border border-theme-purple bg-black">
+          <View className="rounded-full bg-theme-purple/70">
+            <Text style={{ lineHeight: 28 }} className="px-2 font-saira-medium text-xl text-white">
+              16% Off
+            </Text>
           </View>
         </View>
 
         {/* Upgrade Button */}
-        <View className="mt-4 w-full">
+        <View className="mt-4 w-full px-4">
           <CTAButton
             type="yellow"
             textColor="black"
@@ -277,7 +304,7 @@ const BasicPaywall = () => {
             }}
           />
         </View>
-        <View className="flex-row items-center justify-between gap-3 px-3 pt-6">
+        <View className="flex-row items-center justify-between gap-3 px-4 pt-6">
           <Text className="text-text-2 underline">Restore Purchases</Text>
           <Text className="text-text-2 underline">Privacy Policy</Text>
           <Text className="text-text-2 underline">Terms of Use</Text>

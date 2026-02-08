@@ -34,7 +34,9 @@ export default function RootLayout() {
     RNIap.initConnection();
 
     return () => {
-      RNIap.endConnection();
+      if (RNIap?.endConnection) {
+        RNIap.endConnection();
+      }
     };
   }, []);
 

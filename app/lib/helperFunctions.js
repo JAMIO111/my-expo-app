@@ -716,3 +716,44 @@ export const getTextClass = (index) => {
       return 'text-white';
   }
 };
+
+export const getSubscriptionAction = (current, target) => {
+  if (!current) return 'buy';
+
+  if (current.sku === target.sku) return 'current';
+
+  if (current.tier === target.tier) {
+    return current.interval === 'monthly' ? 'upgrade_interval' : 'downgrade_interval';
+  }
+
+  return current.tier === 'core' ? 'upgrade_tier' : 'downgrade_tier';
+};
+
+export const normalizeSubscription = (p) => {
+  // SKU example:
+  // com.jdigital.breakroom.pro.annual
+  const sku = p.id ?? p.productId;
+  const parts = sku.split('.');
+  const tier = parts.at(-2);
+  const intervalFromSku = parts.at(-1);
+
+  let interval = intervalFromSku;
+
+  // Prefer Apple’s subscription metadata when available
+  if (p.subscriptionPeriodUnitIOS) {
+    interval = p.subscriptionPeriodUnitIOS === 'year' ? 'annual' : 'monthly';
+  }
+
+  return {
+    sku,
+    tier,
+    interval,
+    price: p.price,
+    displayPrice: p.displayPrice,
+    currency: p.currency,
+    title: p.title ?? p.displayName,
+    description: p.description,
+    platform: p.platform,
+    raw: p,
+  };
+};
