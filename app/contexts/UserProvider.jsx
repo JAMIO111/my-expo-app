@@ -1,4 +1,10 @@
 import { createContext, useContext, useState, useEffect } from 'react';
+import RNIap, {
+  initConnection,
+  purchaseUpdatedListener,
+  purchaseErrorListener,
+  finishTransaction,
+} from 'react-native-iap';
 import { useAuthUserProfile } from '@hooks/useAuthUserProfile2';
 import { supabase } from '@/lib/supabase';
 
@@ -8,6 +14,37 @@ export const UserProvider = ({ children }) => {
   const { data, isLoading, isError, refetch } = useAuthUserProfile();
   const [currentRole, setCurrentRole] = useState(null);
   const [loadingAuth, setLoadingAuth] = useState(true);
+
+  useEffect(() => {
+    let purchaseUpdateListener;
+    let purchaseErrorListener;
+
+    const initIAP = async () => {
+      await initConnection();
+
+      purchaseUpdateListener = purchaseUpdatedListener(async (purchase) => {
+        try {
+          console.log('Purchase update', purchase);
+
+          // optional: send receipt to server for validation
+          await finishTransaction(purchase, false); // false for subscriptions
+        } catch (err) {
+          console.warn(err);
+        }
+      });
+
+      purchaseErrorListener = purchaseErrorListener((error) => {
+        console.warn('Purchase error', error);
+      });
+    };
+
+    initIAP();
+
+    return () => {
+      purchaseUpdateListener?.remove();
+      purchaseErrorListener?.remove();
+    };
+  }, []);
 
   useEffect(() => {
     const { data: subscription } = supabase.auth.onAuthStateChange(async (_event, session) => {

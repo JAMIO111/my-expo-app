@@ -3,19 +3,11 @@ import React from 'react';
 import IonIcons from 'react-native-vector-icons/Ionicons';
 import CTAButton from '@components/CTAButton';
 import { useRouter } from 'expo-router';
-import { useIAPSubscriptions } from '@hooks/useIAPSubscriptions';
 
 const PremiumPaywall = () => {
   const router = useRouter();
   const [paymentType, setPaymentType] = React.useState('monthly');
-  const {
-    subscriptions,
-    loading: subscriptionsLoading,
-    error: subscriptionsError,
-  } = useIAPSubscriptions();
-  console.log('Subscriptions from useIAPSubscriptions:', subscriptions);
-  console.log('Subscriptions Loading:', subscriptionsLoading);
-  console.log('Subscriptions Error:', subscriptionsError);
+
   return (
     <View className="w-full flex-1 items-center justify-start bg-brand-dark p-6">
       <Text

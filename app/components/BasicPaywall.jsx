@@ -14,20 +14,80 @@ import IonIcons from 'react-native-vector-icons/Ionicons';
 import CTAButton from '@components/CTAButton';
 import { ScrollView, Switch } from 'react-native-gesture-handler';
 import colors from '../lib/colors';
-import { useRouter } from 'expo-router';
-import { useIAPSubscriptions } from '@hooks/useIAPSubscriptions';
+import { useCurrentSubscriptions } from '@hooks/useCurrentSubscriptions';
+import { useIAP } from '@hooks/useIAP';
 
 const BasicPaywall = () => {
-  const { plans, loading: subscriptionsLoading, error: subscriptionsError } = useIAPSubscriptions();
   const [selectedBilling, setSelectedBilling] = useState('monthly');
   const [selectedTier, setSelectedTier] = useState(null);
+  const [selectedPlan, setSelectedPlan] = useState(null);
   const [fullscreenImage, setFullscreenImage] = useState(null);
   const [isTrialEnabled, setIsTrialEnabled] = useState(false);
   const scaleAnim = useRef(new Animated.Value(0.8)).current;
   const opacityAnim = useRef(new Animated.Value(0)).current;
   const colorScheme = useColorScheme();
   const themeColors = colors[colorScheme];
-  const router = useRouter();
+  const scrollRef = useRef(null);
+  const {
+    connected,
+    products,
+    subscriptions,
+    getProducts,
+    purchase,
+    completeTransaction,
+    restorePurchases,
+    loading,
+  } = useIAP();
+
+  const {
+    currentSubscription,
+    loading: currentSubscriptionLoading,
+    error: currentSubscriptionError,
+    restorePurchases: restoreCurrentPurchases,
+  } = useCurrentSubscriptions();
+
+  useEffect(() => {
+    getProducts({
+      skus: [
+        'com.jdigital.breakroom.pro.monthly',
+        'com.jdigital.breakroom.pro.annual',
+        'com.jdigital.breakroom.core.monthly',
+        'com.jdigital.breakroom.core.annual',
+      ],
+      type: 'subs',
+    });
+  }, []);
+
+  console.log('Available subscription plans from useIAP:', subscriptions);
+  console.log('Current subscription:', currentSubscription);
+
+  const handleSubscribe = async (plan) => {
+    console.log('Selected plan:', plan);
+    if (!plan) return;
+    try {
+      await purchase({ sku: plan.sku, type: 'subs' });
+    } catch (err) {
+      console.warn('Purchase error', err);
+    }
+  };
+
+  const proPercentageOff = subscriptions
+    ? Math.round(
+        ((subscriptions.find((p) => p.tier === 'pro' && p.interval === 'monthly')?.price * 12 -
+          subscriptions.find((p) => p.tier === 'pro' && p.interval === 'annual')?.price) /
+          (subscriptions.find((p) => p.tier === 'pro' && p.interval === 'monthly')?.price * 12)) *
+          100
+      )
+    : 0;
+
+  const corePercentageOff = subscriptions
+    ? Math.round(
+        ((subscriptions.find((p) => p.tier === 'core' && p.interval === 'monthly')?.price * 12 -
+          subscriptions.find((p) => p.tier === 'core' && p.interval === 'annual')?.price) /
+          (subscriptions.find((p) => p.tier === 'core' && p.interval === 'monthly')?.price * 12)) *
+          100
+      )
+    : 0;
 
   const planImages = {
     pro: {
@@ -39,10 +99,6 @@ const BasicPaywall = () => {
       annual: require('@assets/core-annual.jpg'),
     },
   };
-
-  console.log('App Store Subscriptions:', plans);
-  console.log('Subscriptions Loading:', subscriptionsLoading);
-  console.log('Subscriptions Error:', subscriptionsError);
 
   const screenshots = [
     require('@assets/league-table-light.png'),
@@ -91,7 +147,7 @@ const BasicPaywall = () => {
   };
 
   return (
-    <View className="w-full flex-1 items-center justify-start bg-bg-grouped-1 py-6">
+    <ScrollView ref={scrollRef} className="w-full flex-1 bg-bg-grouped-1 py-6">
       <Text
         style={{ lineHeight: 40 }}
         className="px-6 text-left font-delagothic text-4xl text-text-1">
@@ -103,13 +159,12 @@ const BasicPaywall = () => {
           textColor="black"
           text={isTrialEnabled ? 'Start Free Trial' : 'Upgrade Now!'}
           callbackFn={() => {
-            router.replace('/(main)/home');
+            scrollRef.current?.scrollToEnd({ animated: true });
           }}
         />
       </View>
 
-      {/* Features List */}
-      <View className="my-5 w-full items-start justify-start gap-4 rounded-2xl p-6">
+      <View className="mb-5 w-full items-start justify-start gap-4 rounded-2xl p-6">
         {[
           { text: 'Access to Live Results', icon: 'play-outline' },
           { text: 'View the League Tables', icon: 'list-outline' },
@@ -128,7 +183,6 @@ const BasicPaywall = () => {
         ))}
       </View>
 
-      {/* Horizontal ScrollView */}
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
@@ -148,7 +202,6 @@ const BasicPaywall = () => {
         ))}
       </ScrollView>
 
-      {/* Fullscreen Modal with animation */}
       <Modal visible={!!fullscreenImage} transparent>
         <Pressable
           style={{
@@ -171,7 +224,6 @@ const BasicPaywall = () => {
         </Pressable>
       </Modal>
 
-      {/* Payment options */}
       <View className="w-full pt-8">
         <ScrollView
           horizontal
@@ -223,7 +275,124 @@ const BasicPaywall = () => {
             </Text>
           </View>
         </ScrollView>
-        <View className="my-4 w-full flex-row items-center justify-between px-6">
+
+        <View className="mt-4 w-full gap-4 overflow-visible px-4">
+          {subscriptions && subscriptions.length > 0 ? (
+            subscriptions.map((plan) => {
+              const isCurrentPlan =
+                currentSubscription &&
+                plan.sku ===
+                  currentSubscription.productId; /* Adjust this condition based on your subscription data structure */
+
+              const isUpgrade =
+                currentSubscription && plan.tier === 'pro' && currentSubscription.tier === 'core';
+
+              const isDowngrade =
+                currentSubscription && plan.tier === 'core' && currentSubscription.tier === 'pro';
+
+              return (
+                <Pressable
+                  key={plan.id}
+                  disabled={isCurrentPlan || loading}
+                  onPress={() => {
+                    if (isCurrentPlan) return;
+                    setSelectedBilling(plan.interval);
+                    setSelectedTier(plan.tier);
+                    setSelectedPlan(plan);
+                  }}
+                  className={`relative w-full flex-row items-center justify-start gap-4 rounded-3xl border bg-bg-1 p-2 pr-5 ${
+                    isCurrentPlan
+                      ? 'opacity-50'
+                      : selectedBilling === plan.interval && selectedTier === plan.tier
+                        ? 'border-theme-purple'
+                        : 'border-theme-gray-3'
+                  }`}>
+                  <Image
+                    contentFit="contain"
+                    className="h-20 w-20 rounded-2xl"
+                    source={planImages[plan.tier]?.[plan.interval]}
+                  />
+
+                  <View className="flex-1">
+                    <Text className="font-saira-semibold text-2xl text-text-1">
+                      {plan.tier.charAt(0).toUpperCase() + plan.tier.slice(1)} –{' '}
+                      {plan.interval.charAt(0).toUpperCase() + plan.interval.slice(1)}
+                    </Text>
+
+                    <Text className="font-saira text-xl text-text-1">
+                      {plan.displayPrice}/
+                      {plan.interval === 'monthly'
+                        ? 'month'
+                        : plan.interval === 'annual'
+                          ? 'year'
+                          : 'period'}
+                    </Text>
+
+                    {isCurrentPlan && <Text className="text-sm text-green-500">Current plan</Text>}
+
+                    {isUpgrade && <Text className="text-sm text-blue-500">Upgrade</Text>}
+
+                    {isDowngrade && (
+                      <Text
+                        numberOfLines={1}
+                        ellipsizeMode="tail"
+                        className="text-sm text-theme-blue">
+                        Downgrades next billing period
+                      </Text>
+                    )}
+                  </View>
+
+                  {isCurrentPlan ? (
+                    <View className="bg-theme-yellow-100 rounded-full border border-brand">
+                      <View className="rounded-full bg-brand-light">
+                        <Text
+                          style={{ lineHeight: 28 }}
+                          className="px-2 font-saira-medium text-xl text-white">
+                          Current Plan
+                        </Text>
+                      </View>
+                    </View>
+                  ) : (
+                    plan.interval === 'annual' && (
+                      <View className="rounded-full border border-theme-purple bg-black">
+                        <View className="rounded-full bg-theme-purple/70">
+                          <Text
+                            style={{ lineHeight: 28 }}
+                            className="px-2 font-saira-medium text-xl text-white">
+                            {plan.tier === 'pro' ? proPercentageOff : corePercentageOff}% Off
+                          </Text>
+                        </View>
+                      </View>
+                    )
+                  )}
+                  {!isCurrentPlan && (
+                    <View
+                      className={`rounded-full border-2 p-1 ${
+                        selectedBilling === plan.interval && selectedTier === plan.tier
+                          ? 'border-theme-purple'
+                          : 'border-theme-gray-3'
+                      }`}>
+                      <IonIcons
+                        name="checkmark"
+                        size={24}
+                        color={
+                          selectedBilling === plan.interval && selectedTier === plan.tier
+                            ? themeColors.primaryText
+                            : 'transparent'
+                        }
+                      />
+                    </View>
+                  )}
+                </Pressable>
+              );
+            })
+          ) : (
+            <Text className="text-center font-saira text-lg text-text-2">
+              No subscription plans available at the moment. Please check back later.
+            </Text>
+          )}
+        </View>
+        <View className="mb-2 mt-8 w-full flex-row items-center justify-between px-6">
           <Text className="font-saira-medium text-xl text-text-1">Enable 7-day free trial</Text>
           <Switch
             value={isTrialEnabled}
@@ -235,82 +404,34 @@ const BasicPaywall = () => {
             }}
           />
         </View>
-
-        <View className="mt-4 w-full gap-4 overflow-visible px-4">
-          {plans && plans.length > 0 ? (
-            plans.map((plan) => (
-              <Pressable
-                onPress={() => {
-                  setSelectedBilling(plan.interval);
-                  setSelectedTier(plan.tier);
-                }}
-                className={`w-full flex-row items-center justify-start gap-4 rounded-3xl border bg-bg-1 p-2 pr-5 ${selectedBilling === plan.interval && selectedTier === plan.tier ? 'border-theme-purple' : 'border-theme-gray-3'}`}>
-                <Image
-                  contentFit="contain"
-                  className="h-20 w-20 rounded-2xl"
-                  source={planImages[plan.tier]?.[plan.interval]}
-                />
-                <View className="flex-1">
-                  <Text className="font-saira-semibold text-2xl text-text-1">
-                    {plan.tier.charAt(0).toUpperCase() + plan.tier.slice(1)} -{' '}
-                    {plan.interval.charAt(0).toUpperCase() + plan.interval.slice(1)}
-                  </Text>
-                  <Text className="font-saira text-lg text-text-1">
-                    {plan.displayPrice}/
-                    {plan.interval === 'monthly'
-                      ? 'month'
-                      : plan.interval === 'annual'
-                        ? 'year'
-                        : 'period'}
-                  </Text>
-                </View>
-                <View
-                  className={`${selectedBilling === plan.interval && selectedTier === plan.tier ? 'border-theme-purple' : 'border-theme-gray-3'} rounded-full border-2 p-1`}>
-                  <IonIcons
-                    name="checkmark"
-                    size={24}
-                    color={
-                      selectedBilling === plan.interval && selectedTier === plan.tier
-                        ? themeColors.primaryText
-                        : 'transparent'
-                    }
-                  />
-                </View>
-              </Pressable>
-            ))
-          ) : (
-            <Text className="text-center font-saira text-lg text-text-2">
-              No subscription plans available at the moment. Please check back later.
-            </Text>
-          )}
-        </View>
-        {/* Discount Badge */}
-        <View className="absolute -top-4 right-10 z-10 rounded-full border border-theme-purple bg-black">
-          <View className="rounded-full bg-theme-purple/70">
-            <Text style={{ lineHeight: 28 }} className="px-2 font-saira-medium text-xl text-white">
-              16% Off
-            </Text>
-          </View>
-        </View>
-
-        {/* Upgrade Button */}
         <View className="mt-4 w-full px-4">
           <CTAButton
             type="yellow"
             textColor="black"
-            text={isTrialEnabled ? 'Start Free Trial' : 'Upgrade Now!'}
-            callbackFn={() => {
-              router.replace('/(main)/home');
-            }}
+            text={
+              loading
+                ? 'Processing...'
+                : !selectedPlan
+                  ? 'Select a Plan'
+                  : isTrialEnabled
+                    ? 'Start Free Trial'
+                    : 'Upgrade Now!'
+            }
+            callbackFn={() => handleSubscribe(selectedPlan)}
+            disabled={!selectedPlan || loading}
           />
         </View>
-        <View className="flex-row items-center justify-between gap-3 px-4 pt-6">
-          <Text className="text-text-2 underline">Restore Purchases</Text>
-          <Text className="text-text-2 underline">Privacy Policy</Text>
-          <Text className="text-text-2 underline">Terms of Use</Text>
+        <View className="mb-4 flex-row items-center justify-between gap-3 px-4 pt-6">
+          <Pressable
+            onPress={() => restorePurchases()}
+            className="flex-1 text-left text-text-2 underline">
+            Restore Purchases
+          </Pressable>
+          <Pressable className="flex-1 text-center text-text-2 underline">Privacy Policy</Pressable>
+          <Pressable className="flex-1 text-right text-text-2 underline">Terms of Use</Pressable>
         </View>
       </View>
-    </View>
+    </ScrollView>
   );
 };
 
