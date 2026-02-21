@@ -1,8 +1,13 @@
 // app.config.js
 import 'dotenv/config';
 
-export default () => ({
-  expo: {
+export default ({ config }) => {
+  const env = process.env.APP_ENV || 'development';
+  const isDev = env === 'development';
+
+  return {
+    ...config,
+
     scheme: 'breakroom',
     name: 'Break Room',
     owner: 'jdigital',
@@ -14,7 +19,15 @@ export default () => ({
     experiments: {
       tsconfigPaths: true,
     },
-    plugins: ['expo-router', 'expo-font', 'expo-web-browser'],
+    plugins: [
+      'expo-router',
+      'expo-font',
+      'expo-web-browser',
+      '@react-native-google-signin/google-signin',
+      {
+        iosURLScheme: 'com.googleusercontent.apps.415242977318-ngh1diqg41aki3dbp70vd5h7qatdne66',
+      },
+    ],
     orientation: 'portrait',
     icon: './app/assets/Break-Room-Logo-1024-Background.png',
     userInterfaceStyle: 'automatic',
@@ -28,6 +41,7 @@ export default () => ({
     assetBundlePatterns: ['**/*'],
     ios: {
       bundleIdentifier: 'com.jdigital.breakroom',
+      googleServicesFile: './GoogleService-Info.plist',
       supportsTablet: true,
       infoPlist: {
         ITSAppUsesNonExemptEncryption: false,
@@ -36,6 +50,7 @@ export default () => ({
     },
     android: {
       package: 'com.jdigital.breakroom',
+      googleServicesFile: isDev ? './google-services-dev.json' : './google-services-prod.json',
       adaptiveIcon: {
         foregroundImage: './app/assets/adaptive-icon.png',
         backgroundColor: '#ffffff',
@@ -48,5 +63,5 @@ export default () => ({
         projectId: '3e7c3732-0ff2-449b-a27e-89d2cb14ada2',
       },
     },
-  },
-});
+  };
+};

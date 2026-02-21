@@ -18,6 +18,7 @@ import { useFonts } from 'expo-font';
 import { Michroma_400Regular } from '@expo-google-fonts/michroma';
 import { supabase } from '@/lib/supabase';
 import * as Linking from 'expo-linking';
+import { GoogleSignin, statusCodes } from '@react-native-google-signin/google-signin';
 
 WebBrowser.maybeCompleteAuthSession();
 
@@ -132,41 +133,74 @@ const LoginPage = () => {
     try {
       const redirectUri = makeRedirectUri({
         scheme: 'breakroom',
-        useProxy: false, // dev/standalone
+        path: 'auth',
       });
 
-      // start OAuth
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider,
-        options: { redirectTo: redirectUri },
+        options: {
+          redirectTo: redirectUri,
+          skipBrowserRedirect: true, // IMPORTANT for mobile
+        },
       });
+
       if (error) throw error;
 
-      // Open system browser for login
       const result = await WebBrowser.openAuthSessionAsync(data.url, redirectUri);
 
       if (result.type === 'success' && result.url) {
-        // Parse the URL fragment into a session
-        const { data: sessionData, error: sessionError } = await supabase.auth.getSessionFromUrl({
-          url: result.url,
-        });
+        // 🔥 THIS replaces getSessionFromUrl
+        const { data: sessionData, error: exchangeError } =
+          await supabase.auth.exchangeCodeForSession(result.url);
 
-        if (sessionError) throw sessionError;
+        if (exchangeError) throw exchangeError;
 
-        console.log('Logged in session:', sessionData.session);
-
-        // Now navigate based on onboarding
-        const userId = sessionData.session.user.id;
-        const { data: profile } = await supabase
-          .from('Players')
-          .select('onboarding')
-          .eq('auth_id', userId)
-          .single();
+        console.log('Session established');
+        // do nothing else here — let onAuthStateChange handle routing
       } else {
-        console.log('OAuth cancelled or failed:', result);
+        console.log('OAuth cancelled', result);
       }
     } catch (err) {
       console.error('OAuth error:', err);
+    }
+  };
+
+  const signInWithGoogle = async () => {
+    try {
+      // Check if Google Play Services are available (Android)
+      await GoogleSignin.hasPlayServices();
+
+      // Trigger Google Sign-In flow
+      const signInResult = await GoogleSignin.signIn();
+
+      // Extract the ID token
+      const idToken = signInResult?.data?.idToken;
+
+      if (!idToken) {
+        throw new Error('No ID token received from Google Sign-In');
+      }
+
+      // Send ID token to Supabase for verification
+      const { data, error } = await supabase.auth.signInWithIdToken({
+        provider: 'google',
+        token: idToken,
+      });
+
+      if (error) throw error;
+
+      console.log('Successfully signed in:', data.user.email);
+      return data;
+    } catch (error) {
+      if (error.code === statusCodes.SIGN_IN_CANCELLED) {
+        console.log('User cancelled the sign-in flow');
+      } else if (error.code === statusCodes.IN_PROGRESS) {
+        console.log('Sign-in already in progress');
+      } else if (error.code === statusCodes.PLAY_SERVICES_NOT_AVAILABLE) {
+        console.log('Google Play Services not available');
+      } else {
+        console.error('Google Sign-In error:', error);
+      }
+      throw error;
     }
   };
 
@@ -266,7 +300,7 @@ const LoginPage = () => {
 
             <Pressable
               className="mt-4 h-16 flex-row items-center justify-center gap-5 rounded-xl border border-border-color bg-input-background"
-              onPress={() => signInWithProvider('google')}>
+              onPress={() => signInWithGoogle()}>
               <Image
                 source={require('@assets/google-logo.png')}
                 className="absolute left-3 h-11 w-11"
