@@ -23,10 +23,12 @@ export default ({ config }) => {
       'expo-router',
       'expo-font',
       'expo-web-browser',
-      '@react-native-google-signin/google-signin',
-      {
-        iosURLScheme: 'com.googleusercontent.apps.415242977318-ngh1diqg41aki3dbp70vd5h7qatdne66',
-      },
+      [
+        '@react-native-google-signin/google-signin',
+        {
+          iosURLScheme: 'com.googleusercontent.apps.415242977318-ngh1diqg41aki3dbp70vd5h7qatdne66',
+        },
+      ],
     ],
     orientation: 'portrait',
     icon: './app/assets/Break-Room-Logo-1024-Background.png',
