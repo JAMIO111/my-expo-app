@@ -45,6 +45,7 @@ export default ({ config }) => {
       bundleIdentifier: 'com.jdigital.breakroom',
       googleServicesFile: './GoogleService-Info.plist',
       supportsTablet: true,
+      googleServicesFile: './GoogleService-Info.plist',
       infoPlist: {
         ITSAppUsesNonExemptEncryption: false,
         NSPhotoLibraryUsageDescription: 'This app needs access to your photo library.',
