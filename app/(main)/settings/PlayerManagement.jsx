@@ -1,5 +1,4 @@
-import { StyleSheet, Text, View, ScrollView, Image, useColorScheme } from 'react-native';
-import { useState } from 'react';
+import { StyleSheet, Text, View, ScrollView, useColorScheme } from 'react-native';
 import { useRouter, Stack } from 'expo-router';
 import SettingsItem from '@components/SettingsItem';
 import MenuContainer from '@components/MenuContainer';

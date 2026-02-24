@@ -1,8 +1,7 @@
 import { Slot, useRouter } from 'expo-router';
 import { useEffect } from 'react';
 import { useUser } from '@contexts/UserProvider';
-import { View, Text } from 'react-native';
-import LoadingSpinner from '../components/LoadingSplash';
+import LoadingScreen from '@components/LoadingScreen';
 
 export default function LoginLayout() {
   const { user, loading, roles, setCurrentRole } = useUser();
@@ -19,13 +18,13 @@ export default function LoginLayout() {
         router.replace('/role-select');
       } else {
         console.warn('User has no assigned roles');
-        router.replace('/login');
       }
     }
   }, [user, loading]);
 
   if (loading) {
-    return <LoadingSpinner />; // or splash screen
+    console.log('Loading auth state...');
+    return <LoadingScreen />; // or splash screen
   }
 
   return <Slot />; // login page

@@ -1,4 +1,4 @@
-import { StyleSheet, Text, View, Alert, useColorScheme } from 'react-native';
+import { StyleSheet, Text, View, Alert, useColorScheme, Image } from 'react-native';
 import { useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import CTAButton from '@components/CTAButton';
@@ -8,10 +8,14 @@ import StepPillGroup from '@components/StepPillGroup';
 import useCompressAndUploadImage from '@hooks/useCompressAndUploadImage';
 import ImageUploader from '@components/ImageUploader';
 import { useRouter } from 'expo-router';
+import { useUser } from '@contexts/UserProvider';
 
 const PROJECT_URL = 'https://ionhcfjampzewimsgsmr.supabase.co'; // Replace with your actual Supabase project URL
 
 const Avatar = () => {
+  const { user } = useUser();
+  const isGoogleUser = user?.app_metadata?.provider === 'google';
+  const [useGooglePhoto, setUseGooglePhoto] = useState(isGoogleUser);
   const { colorScheme } = useColorScheme();
   const [imageUri, setImageUri] = useState(null);
   const router = useRouter();
@@ -34,7 +38,10 @@ const Avatar = () => {
     const folderPath = `${user.id}/`;
 
     try {
-      if (imageUri) {
+      if (useGooglePhoto && isGoogleUser) {
+        // Use Google profile photo
+        avatarUrl = user?.user_metadata?.avatar_url || user?.user_metadata?.picture;
+      } else if (imageUri) {
         // Delete old files
         const { data: existingFiles, error: listError } = await supabase.storage
           .from('avatars')
@@ -113,13 +120,33 @@ const Avatar = () => {
           </Text>
         </View>
         <View className="w-full flex-1 items-center justify-around p-5">
-          <ImageUploader
-            initialUri={imageUri}
-            onImageChange={setImageUri}
-            size={250}
-            aspectRatio={[1, 1]}
-          />
-          <View className="mt-5 w-full">
+          {isGoogleUser && useGooglePhoto ? (
+            <View className="overflow-hidden rounded-2xl bg-bg-grouped-2 p-1">
+              <Image
+                style={{ height: 248, width: 248 }}
+                source={{ uri: user?.user_metadata?.avatar_url }}
+                className="rounded-2xl"
+                resizeMode="cover"
+              />
+            </View>
+          ) : (
+            <ImageUploader
+              initialUri={imageUri}
+              onImageChange={setImageUri}
+              size={250}
+              aspectRatio={[1, 1]}
+            />
+          )}
+          <View className="mt-5 w-full gap-5">
+            {isGoogleUser && (
+              <CTAButton
+                type="white"
+                textColor="black"
+                text={useGooglePhoto ? 'Use Custom Photo' : 'Use Google Photo'}
+                callbackFn={() => setUseGooglePhoto(!useGooglePhoto)}
+                disabled={uploading}
+              />
+            )}
             <CTAButton
               type="yellow"
               textColor="black"

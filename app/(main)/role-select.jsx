@@ -10,7 +10,6 @@ import { useColorScheme } from 'nativewind';
 
 const RoleSelect = () => {
   const router = useRouter();
-  const colorScheme = useColorScheme();
   const { roles, currentRole, setCurrentRole } = useUser();
   console.log('Available roles:', roles);
 

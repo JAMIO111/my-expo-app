@@ -40,7 +40,7 @@ const ResetPassword = () => {
       Alert.alert('Error', error.message);
     } else {
       Alert.alert('Success', 'Password updated! Please log in.');
-      router.push('/login'); // redirect to login or home screen
+      router.push('/auth/login'); // redirect to login or home screen
     }
   };
 

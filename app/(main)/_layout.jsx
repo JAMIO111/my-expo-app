@@ -3,43 +3,45 @@ import '../../global.css'; // Ensure global styles are imported
 import { Slot, useRouter, useSegments } from 'expo-router';
 import { useEffect } from 'react';
 import { useUser } from '@contexts/UserProvider';
-import { colorScheme } from 'nativewind';
+import LoadingScreen from '../components/LoadingScreen';
 
 const _layout = () => {
   const router = useRouter();
   const segments = useSegments();
-  const { user, player, loading } = useUser();
-
-  console.log('player from layourt:', player);
+  const { user, player, loading, roles, setCurrentRole } = useUser();
 
   useEffect(() => {
     if (loading) return;
 
-    const inAuth = segments[0] === 'login';
     const inOnboarding = segments.includes('onboarding');
+    const inAuth = segments.includes('auth');
 
     if (!user && !inAuth) {
-      router.replace('/login/login');
+      router.replace('/auth');
       return;
     }
 
     if (user && !player && !inOnboarding) {
-      router.replace('/(main)/onboarding/(profile-onboarding)/name');
+      router.replace('/(main)/onboarding');
       return;
     }
 
-    if (player && player.onboarding === 0 && !inOnboarding) {
-      router.replace('/(main)/onboarding/(profile-onboarding)/name');
-    }
-
-    if (player && player.onboarding === 1 && !inOnboarding) {
-      router.replace('/(main)/onboarding/(entity-onboarding)/admin-or-player');
-    }
-
-    if (player && player.onboarding === 3 && inAuth) {
-      router.replace('/(main)/home');
+    if (player && player.onboarding !== 9 && !inOnboarding) {
+      router.replace('/(main)/onboarding');
+      return;
     }
   }, [user, player, loading, segments]);
+
+  useEffect(() => {
+    if (roles.length === 1) {
+      setCurrentRole(roles[0]);
+      router.replace('/(main)/home');
+    }
+  }, [roles]);
+
+  if (loading) {
+    return <LoadingScreen />;
+  }
 
   return (
     <View className={`flex-1`}>

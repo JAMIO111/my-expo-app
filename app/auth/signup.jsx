@@ -9,29 +9,23 @@ import {
   Alert,
   Animated,
   Easing,
+  ScrollView,
 } from 'react-native';
-import SafeViewWrapper from '@components/SafeViewWrapper';
-import { useRouter, Link } from 'expo-router';
-import * as WebBrowser from 'expo-web-browser';
-import { makeRedirectUri } from 'expo-auth-session';
-import { useFonts } from 'expo-font';
-import { Michroma_400Regular } from '@expo-google-fonts/michroma';
 import { supabase } from '@/lib/supabase';
-import * as Linking from 'expo-linking';
-import { GoogleSignin, statusCodes } from '@react-native-google-signin/google-signin';
+import { useRouter, Link } from 'expo-router';
+import { makeRedirectUri } from 'expo-auth-session';
+import * as WebBrowser from 'expo-web-browser';
+import SafeViewWrapper from '@components/SafeViewWrapper';
 
-WebBrowser.maybeCompleteAuthSession();
-
-const LoginPage = () => {
+const SignUpPage = () => {
   const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [fontsLoaded] = useFonts({
-    Michroma: Michroma_400Regular,
-  });
-  const slideAnim = useRef(new Animated.Value(-1000)).current; // Start 300px left offscreen
+
+  const slideAnim = useRef(new Animated.Value(1000)).current; // Start 300px left offscreen
   const fadeAnim = useRef(new Animated.Value(0)).current; // start fully transparent
 
   useEffect(() => {
@@ -52,167 +46,59 @@ const LoginPage = () => {
     ]).start();
   }, []);
 
-  useEffect(() => {
-    const handleUrl = async (event) => {
-      try {
-        const { url } = event;
-
-        // Get session from the redirect URL
-        const { data, error } = await supabase.auth.getSessionFromUrl({ url });
-        if (error) throw error;
-
-        const session = data.session;
-        console.log('OAuth session:', session); // <-- log session
-
-        if (!session) return;
-
-        const userId = session.user.id;
-
-        // fetch onboarding info for first-time users
-        const { data: profile, error: profileError } = await supabase
-          .from('Players')
-          .select('onboarding')
-          .eq('auth_id', userId)
-          .single();
-
-        if (profileError) throw profileError;
-      } catch (err) {
-        console.error('OAuth redirect error:', err);
-      }
-    };
-
-    // Listen for incoming deep links
-    const subscription = Linking.addEventListener('url', handleUrl);
-
-    // Handle cold start (when the app opens from an OAuth link)
-    (async () => {
-      const initialUrl = await Linking.getInitialURL();
-      if (initialUrl) handleUrl({ url: initialUrl });
-    })();
-
-    return () => subscription.remove();
-  }, []);
-
-  // ---------------------
-  // Email/password login
-  // ---------------------
-  const handleLogin = async () => {
+  const handleSignUp = async () => {
     setLoading(true);
     setError(null);
 
-    const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
+    const { data, error } = await supabase.auth.signUp({ email, password });
 
     setLoading(false);
 
-    if (authError) {
-      setError(authError.message);
-      return;
-    }
-
-    const userId = authData.user.id;
-
-    const { data: profile, error: profileError } = await supabase
-      .from('Players')
-      .select('onboarding')
-      .eq('auth_id', userId)
-      .single();
-
-    if (profileError) {
-      setError('Failed to load profile');
-      return;
-    }
-  };
-
-  // ---------------------
-  // OAuth login
-  // ---------------------
-  const signInWithProvider = async (provider) => {
-    try {
-      const redirectUri = makeRedirectUri({
-        scheme: 'breakroom',
-        path: 'auth',
+    if (error) {
+      setError(error.message);
+    } else if (data.user) {
+      router.replace({
+        pathname: '/(main)/onboarding/(profile-onboarding)/name',
+        params: { user: data.user },
       });
-
-      const { data, error } = await supabase.auth.signInWithOAuth({
-        provider,
-        options: {
-          redirectTo: redirectUri,
-          skipBrowserRedirect: true, // IMPORTANT for mobile
-        },
-      });
-
-      if (error) throw error;
-
-      const result = await WebBrowser.openAuthSessionAsync(data.url, redirectUri);
-
-      if (result.type === 'success' && result.url) {
-        // 🔥 THIS replaces getSessionFromUrl
-        const { data: sessionData, error: exchangeError } =
-          await supabase.auth.exchangeCodeForSession(result.url);
-
-        if (exchangeError) throw exchangeError;
-
-        console.log('Session established');
-        // do nothing else here — let onAuthStateChange handle routing
-      } else {
-        console.log('OAuth cancelled', result);
-      }
-    } catch (err) {
-      console.error('OAuth error:', err);
     }
   };
 
   const signInWithGoogle = async () => {
     try {
-      // Check if Google Play Services are available (Android)
-      await GoogleSignin.hasPlayServices();
+      // Use proxy for dev (Expo Go), scheme for production
+      const redirectTo = makeRedirectUri({
+        scheme: 'breakroom',
+        path: 'auth',
+        useProxy: true, // true in Expo Go
+      });
 
-      // Trigger Google Sign-In flow
-      const signInResult = await GoogleSignin.signIn();
-
-      // Extract the ID token
-      const idToken = signInResult?.data?.idToken;
-
-      if (!idToken) {
-        throw new Error('No ID token received from Google Sign-In');
-      }
-
-      // Send ID token to Supabase for verification
-      const { data, error } = await supabase.auth.signInWithIdToken({
+      const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
-        token: idToken,
+        options: { redirectTo },
       });
 
       if (error) throw error;
 
-      console.log('Successfully signed in:', data.user.email);
-      return data;
-    } catch (error) {
-      if (error.code === statusCodes.SIGN_IN_CANCELLED) {
-        console.log('User cancelled the sign-in flow');
-      } else if (error.code === statusCodes.IN_PROGRESS) {
-        console.log('Sign-in already in progress');
-      } else if (error.code === statusCodes.PLAY_SERVICES_NOT_AVAILABLE) {
-        console.log('Google Play Services not available');
-      } else {
-        console.error('Google Sign-In error:', error);
+      // Open the system browser
+      if (data?.url) {
+        const result = await WebBrowser.openAuthSessionAsync(data.url, redirectTo);
+        console.log('OAuth result', result);
       }
-      throw error;
+    } catch (err) {
+      console.error('Google login error', err);
+      Alert.alert('Login Error', err.message || 'Something went wrong');
     }
   };
 
   return (
     <Animated.View
-      pointerEvents="box-none"
       style={{
         flex: 1,
         transform: [{ translateX: slideAnim }],
         opacity: fadeAnim,
       }}>
-      <SafeViewWrapper bottomColor="bg-bg-grouped-1" topColor="bg-brand">
+      <SafeViewWrapper topColor="bg-brand" useBottomInset={false}>
         <View className="flex-1">
           <View className="w-full justify-center bg-brand">
             <View className="flex-row items-center justify-center gap-2">
@@ -238,19 +124,21 @@ const LoginPage = () => {
               </View>
             </View>
           </View>
-          <View className="bg-bg-grouped-1" style={styles.container}>
+          <ScrollView
+            className="bg-bg-grouped-1"
+            contentContainerStyle={{ padding: 32, paddingBottom: 60 }}
+            keyboardShouldPersistTaps="handled"
+            showsVerticalScrollIndicator={false}>
             <View className="flex-1 justify-center gap-5">
-              <View class>
-                <Text className="text-3xl font-bold text-text-1">Welcome back!</Text>
-                <Text className="text-lg text-text-2">Enter your details to sign in.</Text>
+              <View className="">
+                <Text className="text-3xl font-bold text-text-1">Get Started!</Text>
+                <Text className="text-lg text-text-2">Enter your details to create an account</Text>
               </View>
               <TextInput
                 className="h-16 rounded-xl border border-border-color bg-input-background px-4 pb-1 text-xl text-text-1 placeholder:text-text-3"
                 placeholder="Email"
                 keyboardType="email-address"
                 autoCapitalize="none"
-                autoComplete="emailAddress"
-                textContentType="emailAddress"
                 value={email}
                 onChangeText={setEmail}
               />
@@ -261,25 +149,28 @@ const LoginPage = () => {
                   secureTextEntry
                   value={password}
                   onChangeText={setPassword}
-                  textContentType="password"
+                />
+                {error && <Text style={styles.errorText}>{error}</Text>}
+              </View>
+              <View className="gap-2">
+                <TextInput
+                  className="h-16 rounded-xl border border-border-color bg-input-background px-4 pb-1 text-xl text-text-1 placeholder:text-text-3"
+                  placeholder="Confirm Password"
+                  secureTextEntry
+                  value={confirmPassword}
+                  onChangeText={setConfirmPassword}
                 />
                 {error && <Text style={styles.errorText}>{error}</Text>}
               </View>
 
               <Pressable
                 className="h-16 items-center justify-center rounded-xl bg-brand"
-                onPress={handleLogin}
+                onPress={handleSignUp}
                 disabled={loading}>
                 <Text className="text-center text-xl font-semibold text-white">
-                  {loading ? 'Logging in...' : 'Log In'}
+                  {loading ? 'Signing Up...' : 'Sign Up'}
                 </Text>
               </Pressable>
-              <Text className="text-center text-lg text-text-2">
-                Forgotten Password?{' '}
-                <Link className="text-theme-blue underline" href="/reset-password">
-                  Reset
-                </Link>
-              </Text>
             </View>
 
             <View className="h-16 flex-row items-center gap-5">
@@ -309,19 +200,19 @@ const LoginPage = () => {
             </Pressable>
 
             <Text className="mt-4 text-center text-lg text-text-2">
-              Don't have an account?{' '}
-              <Link className="text-theme-blue underline" href="/signup">
-                Sign Up
+              Already have an account?{' '}
+              <Link className="text-theme-blue underline" href="/auth/login">
+                Login
               </Link>
             </Text>
-          </View>
+          </ScrollView>
         </View>
       </SafeViewWrapper>
     </Animated.View>
   );
 };
 
-export default LoginPage;
+export default SignUpPage;
 
 const styles = StyleSheet.create({
   container: { flex: 1, justifyContent: 'center', padding: 32 },

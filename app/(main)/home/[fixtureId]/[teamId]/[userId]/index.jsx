@@ -4,7 +4,7 @@ import CustomHeader from '@/components/CustomHeader';
 import SafeViewWrapper from '@/components/SafeViewWrapper';
 import { View } from 'react-native';
 import useUserProfile from '@/hooks/useUserProfile';
-import LoadingSplash from '@/components/LoadingSplash';
+import LoadingScreen from '@components/LoadingScreen';
 
 export default function TeammatePage() {
   const { userId } = useLocalSearchParams();
@@ -34,7 +34,7 @@ export default function TeammatePage() {
               isLoading={isLoading}
             />
           ) : (
-            <LoadingSplash />
+            <LoadingScreen />
           )}
         </View>
       </SafeViewWrapper>

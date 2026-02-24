@@ -8,7 +8,7 @@ import CTAButton from '@components/CTAButton';
 import Heading from '@components/Heading';
 import { supabase } from '@/lib/supabase';
 import Toast from 'react-native-toast-message';
-import LoadingSplash from '@components/LoadingSplash';
+import LoadingScreen from '@components/LoadingScreen';
 import StatCard from '@components/StatCard';
 import { isBirthdayToday } from '@lib/helperFunctions';
 import CachedImage from '@components/CachedImage';
@@ -36,7 +36,7 @@ const PlayerProfile = ({ context, isLoading, playerProfile, error }) => {
     );
   }
   if (loading || isLoading) {
-    return <LoadingSplash />;
+    return <LoadingScreen />;
   }
 
   const { years, days } = getAgeInYearsAndDays(playerProfile?.dob);

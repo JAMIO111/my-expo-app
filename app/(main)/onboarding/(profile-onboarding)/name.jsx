@@ -5,10 +5,25 @@ import { Stack } from 'expo-router';
 import CTAButton from '@components/CTAButton';
 import StepPillGroup from '@components/StepPillGroup';
 import CustomTextInput from '@components/CustomTextInput';
+import { useUser } from '@contexts/UserProvider';
 
 const Name = () => {
-  const [firstName, setFirstName] = useState('');
-  const [surname, setSurname] = useState('');
+  const { user } = useUser();
+
+  console.log('User in Name component:', user); // Debugging line
+
+  const isGoogleUser = user?.app_metadata?.provider === 'google';
+
+  const fullName = user?.user_metadata?.full_name || '';
+  const nameParts = fullName.trim().split(' ');
+
+  const [firstName, setFirstName] = useState(
+    isGoogleUser ? (nameParts.length ? nameParts[0] : '') : ''
+  );
+
+  const [surname, setSurname] = useState(
+    isGoogleUser ? (nameParts.length > 1 ? nameParts[nameParts.length - 1] : '') : ''
+  );
   const router = useRouter();
   const inputRef2 = useRef(null);
 

@@ -13,7 +13,6 @@ import { useFonts } from 'expo-font';
 import { Michroma_400Regular } from '@expo-google-fonts/michroma';
 import { supabase } from '@/lib/supabase';
 import { useUser } from '@contexts/UserProvider';
-import { fetchAuthUserProfile } from '@hooks/useAuthUserProfile2';
 import { useColorScheme } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 
@@ -25,7 +24,12 @@ const PoolRack = () => {
   });
   const router = useRouter();
   const [loading, setLoading] = useState(false);
-  const { roles, setCurrentRole } = useUser();
+  const { player, user, isError, roles, setCurrentRole } = useUser();
+
+  useEffect(() => {
+    console.log('PoolRack useEffect - user:', user);
+    console.log('PoolRack useEffect - player:', player);
+  }, [user, player]);
 
   // Shared animation values
   const cueY = useSharedValue(0);
@@ -60,56 +64,13 @@ const PoolRack = () => {
   }, [fontsLoaded, loading]);
 
   const onAnimationEnd = async () => {
-    console.log('🔵 onAnimationEnd starting...');
-
-    const {
-      data: { user },
-      error,
-    } = await supabase.auth.getUser();
-
-    console.log('👤 User result:', user);
-    console.log('⚠️ Error result:', error);
-
-    if (error || !user) {
-      console.warn('🔴 No user or error getting user:', error);
-      router.replace('/login');
+    if (isError || !user) {
+      console.warn('🔴 No user or error getting user:', isError);
+      router.replace('/auth');
       return;
-    }
-
-    console.log('🟢 Authenticated user:', user);
-
-    let profile;
-    try {
-      profile = await fetchAuthUserProfile(supabase);
-      console.log('🟣 Profile fetched:', profile);
-    } catch (e) {
-      console.error('🔴 Failed to fetch profile:', e);
-      router.replace('/login');
+    } else if (user) {
+      router.replace('/(main)/role-select');
       return;
-    }
-
-    const roles = profile?.roles || [];
-
-    if (profile.playerProfile.onboarding === 0) {
-      console.log('🟠 Player onboarding incomplete, redirecting to onboarding');
-      router.replace('/(main)/onboarding/(profile-onboarding)/name');
-      return;
-    } else if (profile.playerProfile.onboarding === 1) {
-      console.log('🟠 Player onboarding step 1 complete, redirecting to step 2');
-      router.replace('/(main)/onboarding/(entity-onboarding)/admin-or-player');
-      return;
-    }
-
-    if (roles.length === 1) {
-      console.log('Auto-selecting role:', roles[0]);
-      setCurrentRole(roles[0]);
-      router.replace('/(main)/home');
-    } else if (roles.length > 1) {
-      console.log('Multiple roles found:', roles);
-      router.replace('/role-select');
-    } else {
-      console.warn('User has no assigned roles');
-      router.replace('/login');
     }
   };
 

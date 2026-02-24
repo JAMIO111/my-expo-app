@@ -83,9 +83,11 @@ const DivisionRewards = () => {
               // Build your payload
               const payload = parsedDivisions.map((division, idx) => ({
                 ...division,
-                winnerReward: divisionRewards[idx].winner,
-                runnerUpReward: divisionRewards[idx].runnerUp,
+                winner_reward: divisionRewards[idx].winner,
+                runner_up_reward: divisionRewards[idx].runnerUp,
               }));
+
+              console.log('Payload to be saved:', payload);
 
               // Example Supabase insert/update
               const { error: districtError } = await supabase
@@ -93,12 +95,33 @@ const DivisionRewards = () => {
                 .update({
                   name: districtName,
                   private: privateDistrict,
+                  initiated_at: new Date(),
+                  active: true,
                 })
                 .eq('id', districtId);
 
-              const { error: divisionsError } = await supabase.from('Divisions').upsert(payload);
+              if (districtError) throw districtError;
 
-              if (districtError || divisionsError) throw error;
+              const { error: divisionsError } = await supabase.from('Divisions').upsert(
+                payload.map((division) => ({
+                  created_at: new Date(),
+                  name: division.name,
+                  tier: division.tier,
+                  district: districtId,
+                  winner_reward: division.winner_reward.key,
+                  runner_up_reward: division.runner_up_reward.key,
+                  default_promotion_spots: division.promotionSpots,
+                  default_relegation_spots: division.relegationSpots,
+                  special_match: division.specialMatchesEnabled,
+
+                  special_match_name: division.specialMatchName,
+                  special_match_abbreviation: division.specialMatchAbbreviation,
+                  mid_season_transfers: division.midSeasonTransfersEnabled,
+                  draws_allowed: division.drawsEnabled,
+                }))
+              );
+
+              if (divisionsError) throw divisionsError;
 
               // Navigate or show success
               router.push({
@@ -275,7 +298,7 @@ const DivisionRewards = () => {
               </Pressable>
             ))}
             <Pressable
-              onPress={() => selectReward({ name: 'No Reward' })}
+              onPress={() => selectReward({ key: 'no_reward', name: 'No Reward' })}
               className={`${
                 selectedDivisionIndex !== null &&
                 selectedRewardType &&

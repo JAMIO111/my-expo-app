@@ -19,7 +19,8 @@ import TeamLogo from '@components/TeamLogo';
 
 const Account = () => {
   const [isSigningOut, setIsSigningOut] = useState(false);
-  const { user, player, roles, currentRole, setCurrentRole, isLoading } = useUser();
+  const { session, user, player, roles, currentRole, setCurrentRole, isLoading, refetch } =
+    useUser();
   const [tempRole, setTempRole] = useState(null);
   const router = useRouter();
   const [imageUri, setImageUri] = useState(player?.avatar_url || null);
@@ -33,24 +34,27 @@ const Account = () => {
     : '';
 
   const handleSignOut = async () => {
-    setIsSigningOut(true);
-    const { error } = await supabase.auth.signOut();
-    setIsSigningOut(false);
+    if (isSigningOut) return;
 
-    if (error) {
-      console.error('Error signing out:', error.message);
-      Toast.show({
-        type: 'error',
-        text1: 'Sign Out Failed',
-        text2: error.message,
-      });
-    } else {
-      Toast.show({
-        type: 'success',
-        text1: 'Signed Out',
-        text2: 'You have successfully signed out.',
-      });
-      router.replace('/login');
+    console.log('User Logging out:', user);
+    console.log('Current session:', session);
+
+    try {
+      setIsSigningOut(true);
+
+      const { error: sessionError, data: sessionData } = await supabase.auth.getSession();
+      if (sessionError) throw sessionError;
+      console.log('Session before logout:', sessionData?.session?.user?.email);
+
+      const { error } = await supabase.auth.signOut();
+
+      if (error) throw error;
+
+      console.log('Sign out successful');
+    } catch (err) {
+      console.error('Logout error:', err);
+    } finally {
+      setIsSigningOut(false);
     }
   };
 
@@ -152,7 +156,7 @@ const Account = () => {
           {/* Profile section */}
           <View>
             <View className="mb-8 mt-5 items-center">
-              <View className="relative mb-5 overflow-hidden rounded-2xl border-2 border-text-1">
+              <View className="relative mb-5 overflow-hidden rounded-2xl border-2 border-theme-gray-4">
                 <ImageUploader
                   ref={uploaderRef}
                   initialUri={imageUri || player?.avatar_url}
@@ -171,17 +175,17 @@ const Account = () => {
                 />
               </View>
               <Pressable onPress={() => uploaderRef.current?.openPicker()}>
-                <Text className="rounded-lg border border-brand-light bg-brand px-8 py-1 font-saira-semibold text-lg text-white">
+                <Text className="rounded-xl border border-brand-light bg-brand px-8 py-2 font-saira text-lg text-white">
                   Change Avatar
                 </Text>
               </Pressable>
               <View className="mt-8 items-center gap-2">
-                <Text
-                  style={{ lineHeight: 40 }}
-                  className="font-saira-semibold text-4xl text-text-1">
+                <Text style={{ lineHeight: 40 }} className="font-saira-medium text-4xl text-text-1">
                   {player?.first_name} {player?.surname}
                 </Text>
-                <Text className="font-saira-medium text-3xl text-text-2">{player?.nickname}</Text>
+                <Text className="flex items-center justify-center rounded-lg bg-theme-gray-4 px-4 pt-2 text-center font-saira-medium text-3xl text-text-2">
+                  {player?.nickname.toUpperCase() || initials.toUpperCase()}
+                </Text>
               </View>
             </View>
 
@@ -197,16 +201,19 @@ const Account = () => {
                 iconBGColor="gray"
                 title="Sign-In & Security"
                 icon="key-outline"
+                lastItem={player?.roles?.length > 1 ? false : true}
               />
-              <Pressable className="w-full" onPress={() => console.log('Switch Role')}>
-                <SettingsItem
-                  callbackFn={openSwitchRoleBottomSheet}
-                  iconBGColor="gray"
-                  title="Switch Role"
-                  icon="shield-checkmark-outline"
-                  lastItem
-                />
-              </Pressable>
+              {player?.roles?.length > 1 && (
+                <Pressable className="w-full" onPress={() => console.log('Switch Role')}>
+                  <SettingsItem
+                    callbackFn={openSwitchRoleBottomSheet}
+                    iconBGColor="gray"
+                    title="Switch Role"
+                    icon="shield-checkmark-outline"
+                    lastItem
+                  />
+                </Pressable>
+              )}
             </MenuContainer>
           </View>
 

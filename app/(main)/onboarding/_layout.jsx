@@ -1,13 +1,26 @@
-import { Stack } from 'expo-router';
+import { router, Stack } from 'expo-router';
 import { View, useColorScheme } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
-import colors from '@lib/colors';
 import CustomHeader from '@components/CustomNativeHeader';
 import SafeViewWrapper from '@components/SafeViewWrapper';
+import { useUser } from '@contexts/UserProvider';
+import { useEffect } from 'react';
 
 const _layout = () => {
-  const { colorScheme } = useColorScheme();
-  const themeColors = colors[colorScheme] || colors.light;
+  const { player, user, loading } = useUser();
+  const colorScheme = useColorScheme();
+
+  useEffect(() => {
+    if (loading) return;
+
+    if (player && player.onboarding === 0) {
+      router.replace('/(main)/onboarding/(profile-onboarding)/name');
+    } else if (player && player.onboarding === 1) {
+      router.replace('/(main)/onboarding/(entity-onboarding)/admin-or-player');
+    } else if (player && player.onboarding === 9) {
+      router.replace('/(main)/home');
+    }
+  }, [loading, player]);
 
   return (
     <SafeViewWrapper useBottomInset={false} topColor="bg-brand">

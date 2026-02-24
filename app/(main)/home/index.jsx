@@ -2,7 +2,7 @@ import { router, Stack } from 'expo-router';
 import { StyleSheet, Text, View, ScrollView, Platform, RefreshControl } from 'react-native';
 import { useState, useCallback } from 'react';
 import { useUser } from '@contexts/UserProvider';
-import LoadingSplash from '@components/LoadingSplash';
+import LoadingScreen from '@components/LoadingScreen';
 import HorizontalScrollUpcomingFixtures from '@components/HorizontalScrollUpcomingFixtures';
 import CTAButton from '@components/CTAButton';
 import ResultsHomeCard from '@components/ResultsHomeCard';
@@ -124,7 +124,7 @@ const Home = () => {
             ),
           }}
         />
-        <LoadingSplash />
+        <LoadingScreen />
       </>
     );
   }
