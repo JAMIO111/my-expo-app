@@ -65,7 +65,7 @@ const TeamProfile = ({ context, profile, isLoading }) => {
           />
         )}
       </View>
-      <View className=" items-items-start w-full flex-row justify-start gap-8 border-b border-theme-gray-5 bg-bg-grouped-2 py-5 pl-5">
+      <View className="items-items-start w-full flex-row justify-start gap-8 border-b border-theme-gray-5 bg-bg-grouped-2 py-5 pl-5">
         <View className="items-center justify-start gap-4">
           <View className="rounded-full border border-separator">
             <TeamLogo
@@ -97,8 +97,8 @@ const TeamProfile = ({ context, profile, isLoading }) => {
           </View>
         </View>
       </View>
-      <View className="gap-1 bg-bg-grouped-1 pb-8 pt-1">
-        <View className="bg-bg-grouped-2 px-4 py-8">
+      <View className="gap-1 bg-bg-grouped-1">
+        <View className="mt-1 bg-bg-grouped-2 px-4 py-6">
           <Heading text="Team Stats" />
           <View className="gap-5">
             <View className="gap-4">
@@ -112,21 +112,21 @@ const TeamProfile = ({ context, profile, isLoading }) => {
               </View>
             </View>
             <CTAButton
-              icon={<Ionicons name="podium-outline" size={22} color="white" />}
-              type="brand"
+              icon={<Ionicons name="stats-chart" size={20} color="black" />}
+              type="yellow"
               text="View All Stats"
               callbackFn={() => {}}
             />
           </View>
         </View>
-        <View className="bg-bg-grouped-2 px-4 py-6">
+        <View className={`bg-bg-grouped-2 px-4 ${viewMatches ? 'pb-6' : 'pb-0'} pt-4`}>
           <Pressable
-            className="flex-row items-center justify-between pr-12"
+            className="flex-row items-center justify-between pr-6"
             onPress={() => safeMatches.length > 0 && setViewMatches(!viewMatches)}>
             <Heading text="Recent Results" />
             {safeMatches.length > 0 && (
               <Ionicons
-                className="pb-3"
+                className="pb-4"
                 name={viewMatches ? 'chevron-up' : 'chevron-down'}
                 size={30}
               />
@@ -134,13 +134,16 @@ const TeamProfile = ({ context, profile, isLoading }) => {
           </Pressable>
           {viewMatches && <Last5MatchesList matches={last5Results?.matches || []} />}
         </View>
-        <View className="mb-8 bg-bg-grouped-2 px-4 py-8">
+        <View className="bg-bg-grouped-2 px-4 py-6">
           <Heading text="Team Awards" />
           <TrophyCabinet trophies={trophies || []} />
         </View>
 
-        <View className="mb-8 px-4">
-          <Heading text="Team Roster" />
+        <View className="mb-8 bg-bg-grouped-2 px-4 py-6">
+          <View className="flex flex-row items-center justify-between pr-2">
+            <Heading text="Team Roster" />
+            <Text className="mb-2 font-saira text-xl text-text-2">4 Players</Text>
+          </View>
           <PlayersList team={profile} context={context} />
         </View>
       </View>

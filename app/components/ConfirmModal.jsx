@@ -10,10 +10,12 @@ const ConfirmModal = ({
   title = 'Are you sure?',
   message = 'This action cannot be undone.',
   type = 'default',
+  confirmText = 'Confirm',
+  cancelText = 'Cancel',
 }) => {
   let backgroundColor;
   switch (type) {
-    case 'confirm':
+    case 'success':
       backgroundColor = 'bg-theme-green';
       break;
     case 'cancel':
@@ -33,7 +35,6 @@ const ConfirmModal = ({
       <View className="relative rounded-3xl border border-theme-gray-3 bg-background-light p-6 pt-6">
         {/* Close button inside modal box */}
         <TouchableOpacity
-          className="bg-white"
           onPress={onCancel}
           style={{
             position: 'absolute',
@@ -44,7 +45,7 @@ const ConfirmModal = ({
           <IonIcons name="close" size={24} color="#9CA3AF" />
         </TouchableOpacity>
 
-        <View className="items-center">
+        <View className="items-center gap-3">
           <Text className="mb-3 w-full pl-2 text-left font-saira-semibold text-3xl text-text-1">
             {title}
           </Text>
@@ -54,10 +55,10 @@ const ConfirmModal = ({
 
           <View className="flex-row gap-5">
             <View className="flex-1">
-              <CTAButton text="Cancel" type="default" callbackFn={onCancel} />
+              <CTAButton text={cancelText} type="default" callbackFn={onCancel} />
             </View>
             <View className="flex-1">
-              <CTAButton text="Confirm" type={type} callbackFn={onConfirm} />
+              <CTAButton text={confirmText} type={type} callbackFn={onConfirm} />
             </View>
           </View>
         </View>

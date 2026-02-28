@@ -117,12 +117,28 @@ export const UserProvider = ({ children }) => {
     };
   }, []);
 
-  // ----------------------
-  // Auto select role
-  // ----------------------
+  // 1️⃣ Auto-select if only one role on first load
   useEffect(() => {
-    if (data?.roles?.length === 1 && !currentRole) {
+    if (!currentRole && data?.roles?.length === 1) {
       setCurrentRole(data.roles[0]);
+    }
+  }, [data?.roles, currentRole]);
+
+  // 2️⃣ Update currentRole if the role object changed or disappeared
+  useEffect(() => {
+    if (!currentRole || !data?.roles) return;
+
+    // Try to find the updated version of the current role
+    const updatedRole = data.roles.find((r) => r.id === currentRole.id);
+
+    if (updatedRole) {
+      // Replace currentRole with the updated object if it changed
+      if (updatedRole !== currentRole) {
+        setCurrentRole(updatedRole);
+      }
+    } else {
+      // currentRole no longer exists, pick the first available role or null
+      setCurrentRole(data.roles[0] || null);
     }
   }, [data?.roles, currentRole]);
 

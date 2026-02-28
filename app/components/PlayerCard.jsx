@@ -67,6 +67,9 @@ const PlayerCard = ({ player, team, context }) => {
     }
   };
 
+  const isCaptain = player.role === 'captain';
+  const isViceCaptain = player.role === 'vice_captain';
+
   return (
     <Animated.View style={{ transform: [{ scale }] }}>
       <Pressable
@@ -74,7 +77,7 @@ const PlayerCard = ({ player, team, context }) => {
         onPressOut={handlePressOut}
         onPress={handlePress}
         className="w-full">
-        <View className="w-full flex-row items-center justify-between gap-4 rounded-2xl border border-theme-gray-5 bg-bg-grouped-1 py-2 pl-2 pr-2 shadow shadow-theme-gray-6">
+        <View className="w-full flex-row items-center justify-between gap-4 rounded-2xl border border-theme-gray-6 bg-bg-grouped-1 py-2 pl-2 pr-2">
           <Avatar player={player} size={64} borderRadius={9} />
           <View className="flex-1 justify-center">
             <Text numberOfLines={1} className="font-saira-semibold text-2xl text-text-1">
@@ -95,7 +98,7 @@ const PlayerCard = ({ player, team, context }) => {
               resizeMode="contain"
             />
           )}
-          {team?.captain === player?.id && (
+          {isCaptain && (
             <View className="h-12 justify-center rounded border bg-yellow-500 shadow-[0_2px_4px_rgba(0,0,0,0.2)]">
               <View className="w-full items-center justify-center bg-white px-1">
                 <Text style={{ lineHeight: 20 }} className="font-saira">
@@ -104,7 +107,7 @@ const PlayerCard = ({ player, team, context }) => {
               </View>
             </View>
           )}
-          {team?.vice_captain === player?.id && (
+          {isViceCaptain && (
             <View className="h-12 justify-center rounded border bg-brand-light shadow-[0_2px_4px_rgba(0,0,0,0.2)]">
               <View className="w-full items-center justify-center bg-white px-4">
                 <Text style={{ lineHeight: 20 }} className="font-saira">

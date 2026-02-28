@@ -23,16 +23,7 @@ import HomeScreenCardLarge from '@components/HomeScreenCardLarge';
 
 const Home = () => {
   const [refreshing, setRefreshing] = useState(false);
-  const {
-    user,
-    player,
-    roles,
-    currentRole,
-    setCurrentRole,
-    loading: isUserLoading,
-    isError,
-    refetch,
-  } = useUser();
+  const { user, player, roles, currentRole, loading: isUserLoading, isError, refetch } = useUser();
   console.log('User:', user);
   console.log('Player:', player);
   console.log('Current Role:', currentRole);

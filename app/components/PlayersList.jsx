@@ -7,6 +7,8 @@ const PlayersList = ({ team, context, fixtureId }) => {
 
   const sortedPlayers = players?.slice().sort((a, b) => a.surname.localeCompare(b.surname));
 
+  console.log('PlayersList - Sorted Players:', sortedPlayers);
+
   return (
     <View className="gap-2">
       {isLoading ? (

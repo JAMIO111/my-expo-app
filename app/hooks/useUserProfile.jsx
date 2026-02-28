@@ -13,6 +13,10 @@ export default function useUserProfile(userId) {
           `
           *,
           TeamPlayers!TeamPlayers_player_id_fkey (
+            role,
+            status,
+            joined_at,
+            left_at,
             team_id,
             Teams (
               name,
@@ -32,15 +36,28 @@ export default function useUserProfile(userId) {
 
       if (error) throw error;
 
-      const teamEntry = data?.TeamPlayers?.[0];
-      const team = teamEntry?.Teams;
+      const teams =
+        data?.TeamPlayers?.map((entry) => {
+          const team = entry?.Teams;
+
+          return {
+            team_id: entry?.team_id ?? null,
+            team_name: team?.name ?? null,
+            team_display_name: team?.display_name ?? null,
+            division_name: team?.Divisions?.name ?? null,
+            district_name: team?.Divisions?.Districts?.name ?? null,
+            role: entry?.role ?? null,
+            status: entry?.status ?? null,
+            joined_at: entry?.joined_at ?? null,
+            left_at: entry?.left_at ?? null,
+          };
+        }) ?? [];
+
+      const { TeamPlayers, ...playerData } = data;
 
       return {
-        ...data,
-        team_name: team?.name ?? null,
-        team_display_name: team?.display_name ?? null,
-        division_name: team?.Divisions?.name ?? null,
-        district_name: team?.Divisions?.Districts?.name ?? null,
+        ...playerData,
+        teams,
       };
     },
     enabled: !!userId,
