@@ -84,7 +84,7 @@ const FixturePage = ({ fixtureDetails, isLoading, context }) => {
   );
 
   return (
-    <ScrollView className="mt-16 flex-1 bg-brand">
+    <ScrollView className="flex-1 bg-brand">
       {isLoading ? (
         <FixtureDetailsSkeleton fixtureDetails={fixtureDetails} />
       ) : (
@@ -132,7 +132,7 @@ const FixturePage = ({ fixtureDetails, isLoading, context }) => {
                 <View className="flex-row items-center justify-around px-2">
                   <Text
                     style={{ lineHeight: 32 }}
-                    className="items-center justify-center gap-2 rounded-xl bg-theme-gray-5 px-4 py-1 text-center font-saira-medium text-2xl text-theme-red">
+                    className="items-center justify-center gap-2 rounded-xl border border-theme-red bg-theme-red/20 px-3 py-1 text-center font-saira-medium text-xl text-theme-red">
                     Results Required
                   </Text>
                 </View>

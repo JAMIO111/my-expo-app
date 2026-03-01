@@ -1,9 +1,12 @@
 import { StyleSheet, Text, View } from 'react-native';
 
 const StatCardCompare = ({ stat, homeTeam, awayTeam }) => {
-  const total = stat.homeValue + stat.awayValue;
-  const homeRatio = total === 0 ? 0.5 : stat.homeValue / total;
-  const awayRatio = total === 0 ? 0.5 : stat.awayValue / total;
+  const absHome = Math.abs(stat.homeValue);
+  const absAway = Math.abs(stat.awayValue);
+  const total = absHome + absAway;
+
+  const homeRatio = total === 0 ? 0.5 : absHome / total;
+  const awayRatio = total === 0 ? 0.5 : absAway / total;
   const homeLeagueRatio = total === 0 ? 0.5 : total / stat.homeValue; // Inverted for league position
   const awayLeagueRatio = total === 0 ? 0.5 : total / stat.awayValue; // Inverted for league position
 
@@ -11,12 +14,14 @@ const StatCardCompare = ({ stat, homeTeam, awayTeam }) => {
     <View className=" bg-bg-grouped-2 px-4 pb-3 pt-2">
       <View className="flex-row items-start justify-between">
         <Text className="w-32 text-left font-saira text-2xl font-bold text-text-1">
+          {stat.differential ? (stat.homeValue > 0 ? '+' : stat.homeValue < 0 ? '-' : '') : ''}{' '}
           {stat.homeValue} {stat.isPercentage && '%'}
         </Text>
         <Text className="flex-1 text-center font-saira text-lg font-medium text-text-2">
           {stat.statName}
         </Text>
         <Text className="w-32 text-right font-saira text-2xl font-bold text-text-1">
+          {stat.differential ? (stat.awayValue > 0 ? '+' : stat.awayValue < 0 ? '-' : '') : ''}{' '}
           {stat.awayValue} {stat.isPercentage && '%'}
         </Text>
       </View>

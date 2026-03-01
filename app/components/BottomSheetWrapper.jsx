@@ -6,7 +6,15 @@ import { Keyboard } from 'react-native';
 
 const BottomSheetWrapper = forwardRef(
   (
-    { children, footerComponent = null, snapPoints = ['75%'], initialIndex = -1, marginTop = 50 },
+    {
+      children,
+      footerComponent = null,
+      snapPoints = ['75%'],
+      initialIndex = -1,
+      marginTop = 50,
+      backgroundColor,
+      indicatorColor = 'themeGray3',
+    },
     ref
   ) => {
     const memoizedSnapPoints = useMemo(() => snapPoints, [snapPoints]);
@@ -41,11 +49,11 @@ const BottomSheetWrapper = forwardRef(
         }}
         enablePanDownToClose
         backgroundStyle={{
-          backgroundColor: themeColors.bgGrouped2,
+          backgroundColor: backgroundColor ? backgroundColor : themeColors.bgGrouped2,
           borderTopLeftRadius: 26,
           borderTopRightRadius: 26,
         }}
-        handleIndicatorStyle={{ backgroundColor: themeColors.themeGray4 }}
+        handleIndicatorStyle={{ backgroundColor: themeColors[indicatorColor] }}
         backdropComponent={renderBackdrop}
         footerComponent={footerComponent}>
         {children}
