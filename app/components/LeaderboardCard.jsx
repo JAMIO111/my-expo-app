@@ -102,7 +102,7 @@ const LeaderboardCard = ({
               />
             ) : (
               <View className="mx-2 h-10 w-10 items-center justify-center rounded-md bg-brand-light">
-                <Text className="pt-1 font-saira-medium text-xl text-white">
+                <Text className="pt-1 font-michroma text-xs text-white">
                   {getInitials(item.first_name, item.surname)}
                 </Text>
               </View>

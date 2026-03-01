@@ -20,7 +20,7 @@ export default function LoginLayout() {
         console.warn('User has no assigned roles');
       }
     }
-  }, [user, loading]);
+  }, [user, roles, loading]);
 
   if (loading) {
     console.log('Loading auth state...');

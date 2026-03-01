@@ -10,10 +10,22 @@ const SafeViewWrapper = ({
   useBottomInset = true,
 }) => {
   const insets = useSafeAreaInsets();
+
   return (
-    <View className={`flex-1`}>
+    <View
+      style={{
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        zIndex: 9999,
+        elevation: 9999, // Android
+      }}>
       {useTopInset && <View style={{ height: insets.top }} className={topColor} />}
+
       <View className={`flex-1 ${contentClassName}`}>{children}</View>
+
       {useBottomInset && <View style={{ height: insets.bottom }} className={bottomColor} />}
     </View>
   );

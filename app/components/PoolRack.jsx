@@ -23,8 +23,7 @@ const PoolRack = () => {
     Michroma: Michroma_400Regular,
   });
   const router = useRouter();
-  const [loading, setLoading] = useState(false);
-  const { player, user, isError, roles, setCurrentRole } = useUser();
+  const { player, user, isError, roles, setCurrentRole, loading } = useUser();
 
   useEffect(() => {
     console.log('PoolRack useEffect - user:', user);
@@ -64,19 +63,11 @@ const PoolRack = () => {
   }, [fontsLoaded, loading]);
 
   const onAnimationEnd = async () => {
-    if (isError || !user) {
-      console.warn('🔴 No user or error getting user:', isError);
-      router.replace('/auth');
-      return;
-    } else if (user) {
-      router.replace('/(main)/role-select');
-      return;
-    }
+    router.replace('/auth');
   };
 
   const handleNavigation = () => {
     console.log('🟢 handleNavigation triggered');
-    setLoading(true);
     logoOpacity.value = withTiming(0, { duration: 500 });
     cueY.value = withTiming(500, { duration: 2500, easing: Easing.out(Easing.exp) }, () => {
       console.log('🟡 Animation completed, running onAnimationEnd');

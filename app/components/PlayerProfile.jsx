@@ -231,7 +231,7 @@ const PlayerProfile = ({ context, isLoading, playerProfile, error }) => {
             <View
               className="h-32 w-32 items-center justify-center rounded-xl
         border-2 border-brand bg-brand-light">
-              <Text className="text-5xl font-bold text-white">
+              <Text className="font-michroma text-4xl text-white">
                 {playerProfile?.first_name.charAt(0)}
                 {playerProfile?.surname.charAt(0)}
               </Text>
@@ -241,9 +241,11 @@ const PlayerProfile = ({ context, isLoading, playerProfile, error }) => {
             <Text style={{ lineHeight: 50 }} className="font-saira-medium text-4xl text-text-1">
               {playerProfile?.first_name} {playerProfile?.surname}
             </Text>
-            <Text style={{ lineHeight: 30 }} className="font-saira text-3xl text-text-2">
-              {playerProfile?.nickname}
-            </Text>
+            {playerProfile?.nickname && (
+              <Text style={{ lineHeight: 30 }} className="font-saira text-3xl text-text-2">
+                {playerProfile?.nickname}
+              </Text>
+            )}
             <Text style={{ lineHeight: 25 }} className="font-saira text-xl text-text-2">
               {`Since: ${
                 playerProfile?.created_at
@@ -408,6 +410,7 @@ const PlayerProfile = ({ context, isLoading, playerProfile, error }) => {
             />
           </>
         )}
+        <Text className="text-center font-saira text-xs text-text-2">{`Player ID: ${playerProfile?.id}`}</Text>
       </View>
     </ScrollView>
   );

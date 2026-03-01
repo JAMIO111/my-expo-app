@@ -40,6 +40,7 @@ const _layout = () => {
   }, [roles]);
 
   if (loading) {
+    console.log('Loading user data...');
     return <LoadingScreen />;
   }
 

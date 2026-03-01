@@ -149,6 +149,6 @@ export const useAuthUserProfile = () => {
     enabled: !!session && !loading,
     staleTime: 1000 * 60 * 30,
     cacheTime: 1000 * 60 * 60,
-    retry: false,
+    retry: true,
   });
 };

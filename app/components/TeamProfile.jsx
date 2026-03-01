@@ -1,6 +1,6 @@
-import { StyleSheet, Text, View, ScrollView, Pressable } from 'react-native';
-import { Stack } from 'expo-router';
-import { useState } from 'react';
+import { StyleSheet, Text, View, ScrollView, Pressable, Animated, Easing } from 'react-native';
+import { router, Stack } from 'expo-router';
+import { useRef, useEffect, useState } from 'react';
 import PlayersList from '@components/PlayersList';
 import Heading from '@components/Heading';
 import TeamLogo from '@components/TeamLogo';
@@ -50,6 +50,22 @@ const TeamProfile = ({ context, profile, isLoading }) => {
       ...award,
       image: trophyDef?.icon ?? null,
     };
+  });
+
+  const rotateAnim = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    Animated.timing(rotateAnim, {
+      toValue: viewMatches ? 1 : 0,
+      duration: 250,
+      easing: Easing.out(Easing.cubic),
+      useNativeDriver: true,
+    }).start();
+  }, [viewMatches]);
+
+  const rotate = rotateAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: ['0deg', '180deg'],
   });
 
   return (
@@ -117,6 +133,17 @@ const TeamProfile = ({ context, profile, isLoading }) => {
               text="View All Stats"
               callbackFn={() => {}}
             />
+            <CTAButton
+              icon={<Ionicons name="git-compare-outline" size={24} color="white" />}
+              type="brand"
+              callbackFn={() => {
+                router.push({
+                  pathname: `/teams/${profile.id}/compare-stats`,
+                  params: { defaultTeam: JSON.stringify(profile) },
+                });
+              }}
+              text="Compare Stats"
+            />
           </View>
         </View>
         <View className={`bg-bg-grouped-2 px-4 ${viewMatches ? 'pb-6' : 'pb-0'} pt-4`}>
@@ -124,12 +151,13 @@ const TeamProfile = ({ context, profile, isLoading }) => {
             className="flex-row items-center justify-between pr-6"
             onPress={() => safeMatches.length > 0 && setViewMatches(!viewMatches)}>
             <Heading text="Recent Results" />
+
             {safeMatches.length > 0 && (
-              <Ionicons
-                className="pb-4"
-                name={viewMatches ? 'chevron-up' : 'chevron-down'}
-                size={30}
-              />
+              <View className="pb-4">
+                <Animated.View style={{ transform: [{ rotate }] }}>
+                  <Ionicons className="" name="chevron-down" size={30} />
+                </Animated.View>
+              </View>
             )}
           </Pressable>
           {viewMatches && <Last5MatchesList matches={last5Results?.matches || []} />}
@@ -139,7 +167,7 @@ const TeamProfile = ({ context, profile, isLoading }) => {
           <TrophyCabinet trophies={trophies || []} />
         </View>
 
-        <View className="mb-8 bg-bg-grouped-2 px-4 py-6">
+        <View className="bg-bg-grouped-2 px-4 pb-8 pt-6">
           <View className="flex flex-row items-center justify-between pr-2">
             <Heading text="Team Roster" />
             <Text className="mb-2 font-saira text-xl text-text-2">4 Players</Text>
