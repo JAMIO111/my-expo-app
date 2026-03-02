@@ -36,7 +36,10 @@ const index = () => {
             <SafeViewWrapper useBottomInset={false}>
               <CustomHeader
                 rightIcon="settings-outline"
-                onRightPress={() => router.push(`/settings`)}
+                onRightPress={() => {
+                  router.push(`/settings`);
+                  console.log('Settings button pressed');
+                }}
                 showBack={false}
                 title={currentRole?.district?.name || 'My League'}
               />

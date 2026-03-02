@@ -140,17 +140,17 @@ const TeamProfile = ({ context, profile, isLoading }) => {
                 context === 'teams'
                   ? router.push({
                       pathname: `/teams/${profile.id}/compare-stats`,
-                      params: { defaultTeam: JSON.stringify(profile) },
+                      params: { defaultEntity: JSON.stringify(profile), entityType: 'team' },
                     })
                   : context === 'home/upcoming-fixture'
                     ? router.push({
                         pathname: `/home/upcoming-fixture/${profile.id}/compare-stats`,
-                        params: { defaultTeam: JSON.stringify(profile) },
+                        params: { defaultEntity: JSON.stringify(profile), entityType: 'team' },
                       })
                     : context === 'home/league/team'
                       ? router.push({
                           pathname: `/home/league/${profile.id}/compare-stats`,
-                          params: { defaultTeam: JSON.stringify(profile) },
+                          params: { defaultEntity: JSON.stringify(profile), entityType: 'team' },
                         })
                       : null;
               }}

@@ -15,26 +15,36 @@ import { BottomSheetScrollView } from '@gorhom/bottom-sheet';
 import TeamLogo from '@components/TeamLogo';
 import { useUser } from '@contexts/UserProvider';
 import { useTeamsByDivision } from '@hooks/useTeamsByDivision';
+import { usePlayersByDistrict } from '@hooks/usePlayersByDistrict';
 import { useLocalSearchParams } from 'expo-router';
 import { useTeamStats } from '@hooks/useTeamStats';
+import { usePlayerStats } from '@hooks/usePlayerStats';
 import AnimatedSearchBar from './AnimatedSearchBar';
 import CompareTeamStatsRows from './CompareTeamStatsRows';
+import Avatar from './Avatar';
+import MultiOptionSlidingToggle from './MultiOptionSlidingToggle';
 
 export default function CompareTeamStats() {
   const { currentRole } = useUser();
-  const { defaultTeam } = useLocalSearchParams();
-  const [changingTeam, setChangingTeam] = useState(null);
-  const [team1, setTeam1] = useState(defaultTeam ? JSON.parse(defaultTeam) : null);
-  const [team2, setTeam2] = useState(null);
+  const { defaultEntity, entityType } = useLocalSearchParams();
+  const [changingEntity, setChangingEntity] = useState(null);
+  const [entity1, setEntity1] = useState(defaultEntity ? JSON.parse(defaultEntity) : null);
+  const [entity2, setEntity2] = useState(null);
+  const [view, setView] = useState('all');
   const [searchActive, setSearchActive] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const scrollY = useRef(new Animated.Value(0)).current;
   const bottomSheetRef = useRef(null);
-  const { data: team1Stats, isLoading: isTeamStats1Loading } = useTeamStats(team1?.id);
-  const { data: team2Stats, isLoading: isTeamStats2Loading } = useTeamStats(team2?.id);
+  const teamStats1 = useTeamStats(entityType === 'team' ? entity1?.id : null);
+  const teamStats2 = useTeamStats(entityType === 'team' ? entity2?.id : null);
+  const playerStats1 = usePlayerStats(entityType === 'player' ? entity1?.id : null);
+  const playerStats2 = usePlayerStats(entityType === 'player' ? entity2?.id : null);
 
-  console.log('Team 1 Stats:', team1Stats);
-  console.log('Team 2 Stats:', team2Stats);
+  const stats1 = entityType === 'team' ? teamStats1.data : playerStats1.data;
+  const stats2 = entityType === 'team' ? teamStats2.data : playerStats2.data;
+
+  console.log('Entity 1 Stats:', stats1);
+  console.log('Entity 2 Stats:', stats2);
 
   const defaultDistrict =
     currentRole?.role === 'admin'
@@ -46,7 +56,13 @@ export default function CompareTeamStats() {
   const [district, setDistrict] = useState(defaultDistrict);
   const [division, setDivision] = useState(defaultDivision);
 
-  const { data: teams } = useTeamsByDivision(division?.id);
+  const { data: teams } = useTeamsByDivision(entityType === 'team' ? division?.id : null);
+  const { data: players } = usePlayersByDistrict(entityType === 'player' ? district?.id : null);
+
+  console.log('Teams in Division:', teams);
+  console.log('Players in District:', players);
+
+  const entities = entityType === 'team' ? teams : players;
 
   const HEADER_HEIGHT = 200;
   const maxScroll = 150;
@@ -69,8 +85,8 @@ export default function CompareTeamStats() {
     extrapolate: 'clamp',
   });
 
-  const openSheet = (team) => {
-    setChangingTeam(team);
+  const openSheet = (entity) => {
+    setChangingEntity(entity);
     bottomSheetRef.current?.expand();
   };
 
@@ -82,7 +98,7 @@ export default function CompareTeamStats() {
     <>
       <View style={styles.container}>
         <StatusBar barStyle="light-content" />
-        {team1Stats && team2Stats ? (
+        {stats1 && stats2 ? (
           <Animated.ScrollView
             className="bg-brand-dark p-3"
             contentContainerStyle={{ paddingTop: HEADER_HEIGHT, paddingBottom: 40 }}
@@ -90,15 +106,27 @@ export default function CompareTeamStats() {
             onScroll={Animated.event([{ nativeEvent: { contentOffset: { y: scrollY } } }], {
               useNativeDriver: true,
             })}>
-            <View className="overflow-hidden rounded-2xl">
-              <CompareTeamStatsRows team1Stats={team1Stats} team2Stats={team2Stats} />
+            <View className="flex gap-3 overflow-hidden">
+              <MultiOptionSlidingToggle
+                value={view}
+                onChange={setView}
+                options={[
+                  { label: 'All', value: 'all' },
+                  { label: 'Home', value: 'home' },
+                  { label: 'Away', value: 'away' },
+                ]}
+              />
+              <View className="overflow-hidden rounded-2xl">
+                <CompareTeamStatsRows team1Stats={stats1} team2Stats={stats2} context={view} />
+              </View>
             </View>
           </Animated.ScrollView>
         ) : (
           <View className="flex-1 items-center justify-center bg-brand-dark pt-24">
             <Image source={require('@assets/pool_table.png')} className="mb-4 h-40 w-64" />
             <Text className="text-center font-saira text-xl text-text-on-brand">
-              Please select two teams{'\n'}
+              Please select two {entityType === 'team' ? 'teams' : 'players'}
+              {'\n'}
               to compare their stats.
             </Text>
           </View>
@@ -118,53 +146,77 @@ export default function CompareTeamStats() {
           <View style={styles.headerContent}>
             <TouchableOpacity
               className="relative flex flex-1 items-center justify-center gap-3 rounded-2xl bg-brand-light p-5 shadow-md"
-              onPress={() => openSheet('team1')}>
+              onPress={() => openSheet('entity1')}>
               <View className="absolute right-2 top-2">
-                {team1 ? (
+                {entity1 ? (
                   <Ionicons name="sync" size={24} color="#fff" />
                 ) : (
                   <Ionicons name="add" size={28} color="#fff" />
                 )}
               </View>
-              {team1 ? (
-                <TeamLogo
-                  type={team1.crest.type}
-                  color1={team1.crest.color1}
-                  color2={team1.crest.color2}
-                  thickness={team1.crest.thickness}
-                  size={80}
-                />
+              {entity1 ? (
+                entityType === 'team' ? (
+                  <TeamLogo
+                    type={entity1.crest.type}
+                    color1={entity1.crest.color1}
+                    color2={entity1.crest.color2}
+                    thickness={entity1.crest.thickness}
+                    size={80}
+                  />
+                ) : (
+                  <Avatar player={entity1} size={80} borderRadius={40} backgroundColor="bg-brand" />
+                )
               ) : (
-                <Ionicons name="shield" size={80} color="#fff" />
+                <Ionicons
+                  name={entityType === 'team' ? 'shield' : 'person-circle-outline'}
+                  size={80}
+                  color="#fff"
+                />
               )}
               <Text className="text-center font-saira-medium text-xl text-text-on-brand">
-                {team1?.display_name || 'Select a team'}
+                {entity1
+                  ? entityType === 'team'
+                    ? entity1?.display_name
+                    : `${entity1?.first_name} ${entity1?.surname}`
+                  : `Select a ${entityType}`}
               </Text>
             </TouchableOpacity>
 
             <TouchableOpacity
               className="flex flex-1 items-center justify-center gap-3 rounded-2xl bg-brand-light p-5 shadow-md"
-              onPress={() => openSheet('team2')}>
+              onPress={() => openSheet('entity2')}>
               <View className="absolute right-2 top-2">
-                {team2 ? (
+                {entity2 ? (
                   <Ionicons name="sync" size={24} color="#fff" />
                 ) : (
                   <Ionicons name="add" size={28} color="#fff" />
                 )}
               </View>
-              {team2 ? (
-                <TeamLogo
-                  type={team2.crest.type}
-                  color1={team2.crest.color1}
-                  color2={team2.crest.color2}
-                  thickness={team2.crest.thickness}
-                  size={80}
-                />
+              {entity2 ? (
+                entityType === 'team' ? (
+                  <TeamLogo
+                    type={entity2.crest.type}
+                    color1={entity2.crest.color1}
+                    color2={entity2.crest.color2}
+                    thickness={entity2.crest.thickness}
+                    size={80}
+                  />
+                ) : (
+                  <Avatar player={entity2} size={80} borderRadius={40} backgroundColor="bg-brand" />
+                )
               ) : (
-                <Ionicons name="shield" size={80} color="#fff" />
+                <Ionicons
+                  name={entityType === 'team' ? 'shield' : 'person-circle-outline'}
+                  size={80}
+                  color="#fff"
+                />
               )}
               <Text className="text-center font-saira-medium text-xl text-text-on-brand">
-                {team2?.display_name || 'Select a team'}
+                {entity2
+                  ? entityType === 'team'
+                    ? entity2?.display_name
+                    : `${entity2?.first_name} ${entity2?.surname}`
+                  : `Select a ${entityType}`}
               </Text>
             </TouchableOpacity>
           </View>
@@ -176,21 +228,33 @@ export default function CompareTeamStats() {
           pointerEvents="none"
           style={[styles.smallHeader, { opacity: smallHeaderOpacity }]}>
           <View className="flex flex-1 flex-row items-center justify-start gap-3">
-            {team1 ? (
-              <TeamLogo
-                type={team1.crest.type}
-                color1={team1.crest.color1}
-                color2={team1.crest.color2}
-                thickness={team1.crest.thickness}
-                size={38}
-              />
+            {entity1 ? (
+              entityType === 'team' ? (
+                <TeamLogo
+                  type={entity1.crest.type}
+                  color1={entity1.crest.color1}
+                  color2={entity1.crest.color2}
+                  thickness={entity1.crest.thickness}
+                  size={38}
+                />
+              ) : (
+                <Avatar player={entity1} size={38} borderRadius={19} />
+              )
             ) : (
-              <Ionicons name="shield" size={38} color="#fff" />
+              <Ionicons
+                name={entityType === 'team' ? 'shield' : 'person-circle-outline'}
+                size={38}
+                color="#fff"
+              />
             )}
 
             <View className="flex items-start justify-center">
               <Text className="text-md font-saira-medium text-text-on-brand">
-                {team1?.display_name || 'Select Team'}
+                {entity1
+                  ? entityType === 'team'
+                    ? entity1?.display_name
+                    : `${entity1?.first_name} ${entity1?.surname}`
+                  : `Select a ${entityType}`}
               </Text>
               <Text className="text-sm text-text-on-brand-2">Division 1</Text>
             </View>
@@ -198,20 +262,32 @@ export default function CompareTeamStats() {
           <View className="flex flex-1 flex-row items-center justify-end gap-3">
             <View className="flex items-end justify-center">
               <Text className="text-md font-saira-medium text-text-on-brand">
-                {team2?.display_name || 'Select Team'}
+                {entity2
+                  ? entityType === 'team'
+                    ? entity2?.display_name
+                    : `${entity2?.first_name} ${entity2?.surname}`
+                  : `Select a ${entityType}`}
               </Text>
               <Text className="text-sm text-text-on-brand-2">Division 1</Text>
             </View>
-            {team2 ? (
-              <TeamLogo
-                type={team2.crest.type}
-                color1={team2.crest.color1}
-                color2={team2.crest.color2}
-                thickness={team2.crest.thickness}
-                size={38}
-              />
+            {entity2 ? (
+              entityType === 'team' ? (
+                <TeamLogo
+                  type={entity2.crest.type}
+                  color1={entity2.crest.color1}
+                  color2={entity2.crest.color2}
+                  thickness={entity2.crest.thickness}
+                  size={38}
+                />
+              ) : (
+                <Avatar player={entity2} size={38} borderRadius={19} />
+              )
             ) : (
-              <Ionicons name="shield" size={38} color="#fff" />
+              <Ionicons
+                name={entityType === 'team' ? 'shield' : 'person-circle-outline'}
+                size={38}
+                color="#fff"
+              />
             )}
           </View>
         </Animated.View>
@@ -226,23 +302,26 @@ export default function CompareTeamStats() {
           searchActive={searchActive}
           setSearchActive={setSearchActive}
           onDebouncedChange={setSearchQuery}
+          placeholder={`Search for ${entityType === 'team' ? 'teams' : 'players'}...`}
         />
-
+        <Text style={{ fontSize: 24, paddingBottom: 6, paddingLeft: 12 }}>
+          {defaultDistrict.name} {entityType === 'team' ? 'Teams' : 'Players'}
+        </Text>
         <BottomSheetScrollView contentContainerStyle={{ padding: 10, paddingBottom: 100 }}>
-          <Text style={{ fontSize: 24 }}>
-            {defaultDistrict.name} {defaultDivision.name}
-          </Text>
-          <View style={{ flexDirection: 'row', flexWrap: 'wrap', marginTop: 16 }}>
-            {teams
-              ?.filter(
-                (team) =>
-                  team.display_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                  team.name.toLowerCase().includes(searchQuery.toLowerCase())
+          <View style={{ flexDirection: 'row', flexWrap: 'wrap', marginTop: 0 }}>
+            {entities
+              ?.filter((entity) =>
+                entityType === 'team'
+                  ? entity.display_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                    entity.name?.toLowerCase().includes(searchQuery.toLowerCase())
+                  : entity.first_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                    entity.surname?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                    entity.nickname?.toLowerCase().includes(searchQuery.toLowerCase())
               )
-              ?.map((team, index) => (
+              ?.map((entity, index) => (
                 <Pressable
-                  className={`relative rounded-xl bg-bg-2 py-6 ${changingTeam === 'team1' && team.id === team1?.id ? 'border-2 border-brand' : ''} ${changingTeam === 'team2' && team.id === team2?.id ? 'border-2 border-brand' : ''}`}
-                  key={team.id}
+                  className={`relative rounded-xl bg-bg-2 py-4 ${changingEntity === 'entity1' && entity.id === entity1?.id ? 'border-2 border-brand' : ''} ${changingEntity === 'entity2' && entity.id === entity2?.id ? 'border-2 border-brand' : ''}`}
+                  key={entity.id}
                   style={{
                     gap: 2,
                     width: '32%', // roughly 3 columns
@@ -252,21 +331,25 @@ export default function CompareTeamStats() {
                     alignItems: 'center',
                   }}
                   onPress={() => {
-                    if (changingTeam === 'team1') {
-                      setTeam1(team);
+                    if (changingEntity === 'entity1') {
+                      setEntity1(entity);
                     } else {
-                      setTeam2(team);
+                      setEntity2(entity);
                     }
                     closeSheet();
                   }}>
                   {/* Logo stays at the top */}
-                  <TeamLogo
-                    type={team.crest.type}
-                    color1={team.crest.color1}
-                    color2={team.crest.color2}
-                    thickness={team.crest.thickness}
-                    size={44}
-                  />
+                  {entityType === 'team' ? (
+                    <TeamLogo
+                      type={entity.crest.type}
+                      color1={entity.crest.color1}
+                      color2={entity.crest.color2}
+                      thickness={entity.crest.thickness}
+                      size={44}
+                    />
+                  ) : (
+                    <Avatar player={entity} size={60} borderRadius={30} />
+                  )}
 
                   <View
                     style={{
@@ -284,11 +367,13 @@ export default function CompareTeamStats() {
                       }}
                       numberOfLines={2} // optional max 2 lines
                       ellipsizeMode="tail">
-                      {team.display_name}
+                      {entityType === 'team'
+                        ? entity.display_name
+                        : `${entity.first_name} ${entity.surname}`}
                     </Text>
                   </View>
-                  {(changingTeam === 'team1' && team.id === team1?.id) ||
-                  (changingTeam === 'team2' && team.id === team2?.id) ? (
+                  {(changingEntity === 'entity1' && entity.id === entity1?.id) ||
+                  (changingEntity === 'entity2' && entity.id === entity2?.id) ? (
                     <View
                       style={{
                         borderTopRightRadius: 6,

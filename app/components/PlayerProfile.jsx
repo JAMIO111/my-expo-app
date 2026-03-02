@@ -328,7 +328,32 @@ const PlayerProfile = ({ context, isLoading, playerProfile, error }) => {
           <CTAButton
             icon={<Ionicons name="git-compare-outline" size={24} color="white" />}
             type="brand"
-            callbackFn={() => {}}
+            callbackFn={() => {
+              context === 'home/league'
+                ? router.push({
+                    pathname: `home/league/${teamId}/compare-stats`,
+                    params: {
+                      defaultEntity: JSON.stringify(playerProfile),
+                      entityType: 'player',
+                    },
+                  })
+                : context === 'teams'
+                  ? router.push({
+                      pathname: `/teams/${userId}/compare-stats`,
+                      params: {
+                        defaultEntity: JSON.stringify(playerProfile),
+                        entityType: 'player',
+                      },
+                    })
+                  : context === 'fixture' &&
+                    router.push({
+                      pathname: `home/upcoming-fixture/${teamId}/compare-stats`,
+                      params: {
+                        defaultEntity: JSON.stringify(playerProfile),
+                        entityType: 'player',
+                      },
+                    });
+            }}
             text="Compare Stats"
           />
         </View>

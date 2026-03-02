@@ -1,7 +1,7 @@
 import { Text, View } from 'react-native';
 import CachedImage from '@components/CachedImage';
 
-const Avatar = ({ player, size = 64, borderRadius = 5 }) => {
+const Avatar = ({ player, size = 64, borderRadius = 5, backgroundColor = 'bg-brand-light' }) => {
   const getInitials = () => {
     const firstInitial = player?.first_name?.[0] || '';
     const lastInitial = player?.surname?.[0] || '';
@@ -22,7 +22,7 @@ const Avatar = ({ player, size = 64, borderRadius = 5 }) => {
 
   return (
     <View
-      className="h-14 w-14 rounded-md bg-brand-light"
+      className={`h-14 w-14 rounded-md ${backgroundColor}`}
       style={{
         width: size,
         height: size,

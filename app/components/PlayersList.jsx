@@ -5,7 +5,23 @@ import PlayerCard from './PlayerCard';
 const PlayersList = ({ team, context, fixtureId }) => {
   const { data: players, isLoading, error } = useTeamPlayers(team?.id);
 
-  const sortedPlayers = players?.slice().sort((a, b) => a.surname.localeCompare(b.surname));
+  const rolePriority = {
+    captain: 0,
+    vice_captain: 1,
+  };
+
+  const sortedPlayers = players?.slice().sort((a, b) => {
+    const roleA = rolePriority[a.role?.toLowerCase()] ?? 2;
+    const roleB = rolePriority[b.role?.toLowerCase()] ?? 2;
+
+    // First sort by role priority
+    if (roleA !== roleB) {
+      return roleA - roleB;
+    }
+
+    // Then alphabetically by surname
+    return a.surname.localeCompare(b.surname);
+  });
 
   console.log('PlayersList - Sorted Players:', sortedPlayers);
 

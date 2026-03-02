@@ -5,13 +5,34 @@ const StatCardCompare = ({ stat, homeTeam, awayTeam }) => {
   const absAway = Math.abs(stat.awayValue);
   const total = absHome + absAway;
 
-  const homeRatio = total === 0 ? 0.5 : absHome / total;
-  const awayRatio = total === 0 ? 0.5 : absAway / total;
-  const homeLeagueRatio = total === 0 ? 0.5 : total / stat.homeValue; // Inverted for league position
-  const awayLeagueRatio = total === 0 ? 0.5 : total / stat.awayValue; // Inverted for league position
+  const isDifferential = stat.differential;
+
+  let homeRatio;
+  let awayRatio;
+
+  if (isDifferential) {
+    // Compare performance (higher is better)
+    const min = Math.min(stat.homeValue, stat.awayValue);
+    const max = Math.max(stat.homeValue, stat.awayValue);
+    const range = max - min || 1;
+
+    homeRatio = 2;
+    awayRatio = 4;
+  } else {
+    // Simple share-of-total ratio
+    const total = stat.homeValue + stat.awayValue;
+
+    if (total === 0) {
+      homeRatio = 0.5;
+      awayRatio = 0.5;
+    } else {
+      homeRatio = stat.homeValue / total;
+      awayRatio = stat.awayValue / total;
+    }
+  }
 
   return (
-    <View className=" bg-bg-grouped-2 px-4 pb-3 pt-2">
+    <View className="px-4 pb-3 pt-2">
       <View className="flex-row items-start justify-between">
         <Text className="w-32 text-left font-saira text-2xl font-bold text-text-1">
           {stat.differential ? (stat.homeValue > 0 ? '+' : stat.homeValue < 0 ? '-' : '') : ''}{' '}
@@ -29,17 +50,19 @@ const StatCardCompare = ({ stat, homeTeam, awayTeam }) => {
       {/* Combined Bar */}
       <View className="mt-1 h-2 w-full flex-row gap-1 overflow-hidden rounded-full">
         <View
-          className="h-full rounded-full"
+          className="rounded-full"
           style={{
-            flex: stat.statName === 'League Position' ? homeLeagueRatio : homeRatio,
-            backgroundColor: homeTeam?.crest?.color1,
+            width: `${homeRatio * 100}%`,
+            backgroundColor: homeTeam?.crest?.color1 || '#f2ca02',
+            height: '100%',
           }}
         />
         <View
-          className="h-full rounded-full"
+          className="rounded-full"
           style={{
-            flex: stat.statName === 'League Position' ? awayLeagueRatio : awayRatio,
-            backgroundColor: awayTeam?.crest?.color1,
+            width: `${awayRatio * 100}%`,
+            backgroundColor: awayTeam?.crest?.color1 || '#FF0000',
+            height: '100%',
           }}
         />
       </View>

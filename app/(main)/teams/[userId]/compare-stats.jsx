@@ -2,7 +2,7 @@ import { Stack } from 'expo-router';
 import { View } from 'react-native';
 import SafeViewWrapper from '@components/SafeViewWrapper';
 import CustomHeader from '@components/CustomHeader';
-import CompareTeamStats from '@components/CompareTeamStats';
+import CompareEntityStats from '@components/CompareEntityStats';
 
 const CompareStats = () => {
   return (
@@ -23,7 +23,7 @@ const CompareStats = () => {
       />
 
       <View style={{ marginTop: 115, flex: 1 }}>
-        <CompareTeamStats />
+        <CompareEntityStats />
       </View>
     </>
   );

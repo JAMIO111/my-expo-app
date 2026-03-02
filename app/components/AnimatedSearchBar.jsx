@@ -7,6 +7,7 @@ const AnimatedSearchBar = memo(
     searchActive,
     setSearchActive,
     onDebouncedChange,
+    placeholder = 'Search for teams...',
     backColor = 'bg-brand',
     searchBarColor = 'bg-bg-grouped-2',
     cancelColor = 'text-white',
@@ -66,7 +67,7 @@ const AnimatedSearchBar = memo(
           <Ionicons name="search" size={20} color="#ccc" />
           <TextInput
             ref={searchInputRef}
-            placeholder="Search for teams..."
+            placeholder={placeholder}
             value={localQuery}
             onChangeText={handleChangeText}
             clearButtonMode="while-editing"
