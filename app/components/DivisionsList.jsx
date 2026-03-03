@@ -14,8 +14,8 @@ const DivisionsList = ({ districtId }) => {
   console.log('Divisions:', divisions);
 
   return (
-    <View className="items-center justify-center gap-3">
-      <Text className="w-full px-2 text-left font-saira-medium text-2xl text-white">
+    <View className="items-center justify-center gap-3 py-4">
+      <Text className="w-full px-2 text-left font-saira-medium text-2xl text-text-1">
         {currentRole?.district?.name} Divisions
       </Text>
       {divisions?.map((division) => (
@@ -33,7 +33,7 @@ const DivisionsList = ({ districtId }) => {
               },
             });
           }}
-          className="w-full flex-row items-center justify-between rounded-3xl border border-theme-gray-5 bg-bg-grouped-2 p-2"
+          className="w-full flex-row items-center justify-between rounded-2xl border border-theme-gray-5 bg-bg-grouped-2 p-2"
           key={division.id}>
           <View className="flex-row items-center gap-4">
             {romanNumerals[division.tier] && (

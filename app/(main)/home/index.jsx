@@ -20,10 +20,26 @@ import { useFixturesAwaitingResults } from '@hooks/useFixturesAwaitingResults';
 import { supabase } from '@/lib/supabase';
 import BrandHeader from '@components/BrandHeader';
 import HomeScreenCardLarge from '@components/HomeScreenCardLarge';
+import TransferWindowCard from '@components/TransferWindowCard';
+import ToggleTransferWindowCard from '@components/ToggleTransferWindowCard';
+import { useQueryClient } from '@tanstack/react-query';
 
 const Home = () => {
+  const [windowLoading, setWindowLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
-  const { user, player, roles, currentRole, loading: isUserLoading, isError, refetch } = useUser();
+  const [windowOpen, setWindowOpen] = useState(false);
+  const {
+    user,
+    player,
+    roles,
+    currentRole,
+    loading: isUserLoading,
+    fetching,
+    isError,
+    refetch,
+  } = useUser();
+  const queryClient = useQueryClient();
+
   console.log('User:', user);
   console.log('Player:', player);
   console.log('Current Role:', currentRole);
@@ -183,7 +199,7 @@ const Home = () => {
                 <LeagueHomeCard standings={standings} isLoading={isStandingsLoading} />
               </View>
             </View>
-            <View className="w-full bg-bg-grouped-1 pb-24">
+            <View className="w-full bg-bg-grouped-2 pb-24">
               {(currentRole?.team?.captain === player?.id ||
                 currentRole?.team?.vice_captain === player?.id) && (
                 <View className="w-full bg-bg-grouped-1">
@@ -210,6 +226,36 @@ const Home = () => {
                 </View>
               )}
               <View className="w-full gap-5 p-3 pb-20 pt-5">
+                {currentRole.type === 'player' ? (
+                  <TransferWindowCard />
+                ) : currentRole.type === 'admin' ? (
+                  <ToggleTransferWindowCard
+                    loading={fetching}
+                    isOpen={currentRole.district?.transfer_window_open}
+                    onToggle={async () => {
+                      setWindowLoading(true);
+                      try {
+                        const { data, error } = await supabase
+                          .from('Districts')
+                          .update({
+                            transfer_window_open: !currentRole.district?.transfer_window_open,
+                          })
+                          .eq('id', currentRole.district.id);
+                        // Invalidate related queries to ensure UI updates with latest data
+                        queryClient.invalidateQueries(['authUserProfile']);
+                        if (error) {
+                          console.error('Error updating transfer window:', error);
+                        } else {
+                          console.log('Transfer window updated successfully:', data);
+                        }
+                      } catch (err) {
+                        console.error('Unexpected error updating transfer window:', err);
+                      } finally {
+                        setWindowLoading(false);
+                      }
+                    }}
+                  />
+                ) : null}
                 <HomeScreenCardLarge
                   title="Welcome to Break Room!"
                   body="We're so glad you can join us in this community of pool enthusiasts. Click to learn about all the features we have to offer."

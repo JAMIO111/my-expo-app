@@ -23,7 +23,7 @@ const DivisionAccordion = ({ divisionName, teams = [] }) => {
   };
 
   return (
-    <View className="w-full overflow-hidden rounded-3xl border border-theme-gray-5 bg-bg-grouped-2">
+    <View className="w-full overflow-hidden rounded-2xl border border-theme-gray-5 bg-bg-grouped-2">
       {/* Header */}
       <Pressable onPress={toggle} className="flex-row items-center justify-between p-4">
         <View>
@@ -81,7 +81,7 @@ const DivisionAccordion = ({ divisionName, teams = [] }) => {
                     {isLoading ? (
                       <Text className="text-text-2">Loading players...</Text>
                     ) : !teamPlayers || teamPlayers?.length === 0 ? (
-                      <Text className="text-text-2">No players found.</Text>
+                      <Text className="text-text-2">No players assigned.</Text>
                     ) : (
                       teamPlayers?.map((player) => (
                         <View key={player.id} className="flex-row items-center gap-3">
@@ -113,6 +113,12 @@ const DivisionAccordion = ({ divisionName, teams = [] }) => {
                       ))
                     )}
                   </View>
+                  <CTAButton
+                    type="brand"
+                    text="View Team Profile"
+                    callbackFn={() => router.push(`/my-leagues/${team.id}/team-profile`)}
+                    className="mt-3"
+                  />
                   <CTAButton
                     type="yellow"
                     text="Manage Team"

@@ -4,11 +4,10 @@ const HomeScreenCardLarge = ({ title, body, category, image, onPress }) => {
   return (
     <Pressable
       onPress={onPress}
-      className="w-full items-center justify-between overflow-hidden rounded-2xl border border-theme-gray-6 bg-bg-grouped-2 shadow">
+      className="w-full items-center justify-between overflow-hidden rounded-3xl border border-theme-gray-3 bg-bg-grouped-1">
       <Image
         source={image}
-        style={{ resizeMode: 'cover', height: 220, width: '100%' }}
-        className="rounded-2xl"
+        style={{ resizeMode: 'cover', height: 220, width: '100%', borderRadius: 20 }}
       />
       <View className="w-full items-center justify-center gap-1 p-4">
         <Text className="mb-2 w-full text-left font-saira-semibold text-2xl text-text-1">

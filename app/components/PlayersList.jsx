@@ -2,9 +2,7 @@ import { StyleSheet, Text, View } from 'react-native';
 import { useTeamPlayers } from '@hooks/useTeamPlayers';
 import PlayerCard from './PlayerCard';
 
-const PlayersList = ({ team, context, fixtureId }) => {
-  const { data: players, isLoading, error } = useTeamPlayers(team?.id);
-
+const PlayersList = ({ team, context, fixtureId, players, isLoading, error }) => {
   const rolePriority = {
     captain: 0,
     vice_captain: 1,

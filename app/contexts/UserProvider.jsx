@@ -15,7 +15,7 @@ WebBrowser.maybeCompleteAuthSession();
 const UserContext = createContext(null);
 
 export const UserProvider = ({ children }) => {
-  const { data, isLoading, isError, refetch } = useAuthUserProfile();
+  const { data, isLoading, isFetching, isError, refetch } = useAuthUserProfile();
 
   const [currentRole, setCurrentRole] = useState(null);
   const [loadingAuth, setLoadingAuth] = useState(true);
@@ -186,6 +186,7 @@ export const UserProvider = ({ children }) => {
         currentRole,
         setCurrentRole,
         loading: loadingAuth || (hasUser && isLoading),
+        fetching: isFetching,
         isError,
         refetch,
         signInWithProvider,

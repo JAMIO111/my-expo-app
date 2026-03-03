@@ -14,6 +14,7 @@ import { useTeamAwards } from '@hooks/useTeamAwards';
 import { trophyIcons } from '../lib/badgeIcons';
 import { useLast5Results } from '@hooks/useLast5Results';
 import Last5MatchesList from './Last5MatchesList';
+import { useTeamPlayers } from '@hooks/useTeamPlayers';
 
 const TeamProfile = ({ context, profile, isLoading }) => {
   if (isLoading || !profile)
@@ -32,6 +33,11 @@ const TeamProfile = ({ context, profile, isLoading }) => {
   const { data: teamAwards } = useTeamAwards(profile?.id);
   const { data: last5Results } = useLast5Results(profile?.id);
   const [viewMatches, setViewMatches] = useState(true);
+  const {
+    data: players,
+    isLoading: isLoadingPlayers,
+    error: playersError,
+  } = useTeamPlayers(profile?.id);
 
   console.log('Team Awards Data:', teamAwards);
   console.log('Last 5 Results Data:', last5Results);
@@ -182,9 +188,25 @@ const TeamProfile = ({ context, profile, isLoading }) => {
         <View className="bg-bg-grouped-2 px-4 pb-8 pt-6">
           <View className="flex flex-row items-center justify-between pr-2">
             <Heading text="Team Roster" />
-            <Text className="mb-2 font-saira text-xl text-text-2">4 Players</Text>
+            <Text className="mb-2 font-saira text-xl text-text-2">
+              {`${players?.length || 0} Player${players?.length === 1 ? '' : 's'}`}
+            </Text>
           </View>
-          <PlayersList team={profile} context={context} />
+          <PlayersList
+            team={profile}
+            context={context}
+            players={players}
+            isLoading={isLoadingPlayers}
+            error={playersError}
+          />
+        </View>
+        <View className="flex gap-5 bg-bg-grouped-2 px-4 pb-8 pt-6">
+          <CTAButton
+            type="error"
+            text="Disband Team"
+            callbackFn={() => router.push(`/teams/${profile.id}/full-profile`)}
+          />
+          <Text className="text-center font-saira text-xs text-text-2">{`Team ID: ${profile.id}`}</Text>
         </View>
       </View>
     </ScrollView>

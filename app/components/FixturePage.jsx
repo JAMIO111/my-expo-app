@@ -84,7 +84,7 @@ const FixturePage = ({ fixtureDetails, isLoading, context }) => {
   );
 
   return (
-    <ScrollView className="flex-1 bg-brand">
+    <ScrollView className="mt-16 flex-1 bg-brand">
       {isLoading ? (
         <FixtureDetailsSkeleton fixtureDetails={fixtureDetails} />
       ) : (

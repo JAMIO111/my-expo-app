@@ -58,18 +58,50 @@ const CompareTeamStatsRows = ({ team1Stats, team2Stats, context }) => {
           : Math.round(
               (team1Stats.totalStats.matches_won / team1Stats.totalStats.matches_played) * 10000
             ) / 100,
+      homeValueH:
+        team1Stats.totalStats.home_matches_played < 1
+          ? 0
+          : Math.round(
+              (team1Stats.totalStats.home_matches_won / team1Stats.totalStats.home_matches_played) *
+                10000
+            ) / 100,
+      homeValueA:
+        team1Stats.totalStats.away_matches_played < 1
+          ? 0
+          : Math.round(
+              (team1Stats.totalStats.away_matches_won / team1Stats.totalStats.away_matches_played) *
+                10000
+            ) / 100,
       awayValue:
         team2Stats.totalStats.matches_played < 1
           ? 0
           : Math.round(
               (team2Stats.totalStats.matches_won / team2Stats.totalStats.matches_played) * 10000
             ) / 100,
+      awayValueH:
+        team2Stats.totalStats.home_matches_played < 1
+          ? 0
+          : Math.round(
+              (team2Stats.totalStats.home_matches_won / team2Stats.totalStats.home_matches_played) *
+                10000
+            ) / 100,
+      awayValueA:
+        team2Stats.totalStats.away_matches_played < 1
+          ? 0
+          : Math.round(
+              (team2Stats.totalStats.away_matches_won / team2Stats.totalStats.away_matches_played) *
+                10000
+            ) / 100,
       isPercentage: true,
     },
     {
       statName: 'Match Differential',
       homeValue: team1Stats.totalStats.matches_won - team1Stats.totalStats.matches_lost,
+      homeValueH: team1Stats.totalStats.home_matches_won - team1Stats.totalStats.home_matches_lost,
+      homeValueA: team1Stats.totalStats.away_matches_won - team1Stats.totalStats.away_matches_lost,
       awayValue: team2Stats.totalStats.matches_won - team2Stats.totalStats.matches_lost,
+      awayValueH: team2Stats.totalStats.home_matches_won - team2Stats.totalStats.home_matches_lost,
+      awayValueA: team2Stats.totalStats.away_matches_won - team2Stats.totalStats.away_matches_lost,
       differential: true,
     },
     {
@@ -115,15 +147,43 @@ const CompareTeamStatsRows = ({ team1Stats, team2Stats, context }) => {
         Math.round(
           (team1Stats.totalStats.frames_won / (team1Stats.totalStats.matches_played || 1)) * 100
         ) / 100,
+      homeValueH:
+        Math.round(
+          (team1Stats.totalStats.home_frames_won /
+            (team1Stats.totalStats.home_matches_played || 1)) *
+            100
+        ) / 100,
+      homeValueA:
+        Math.round(
+          (team1Stats.totalStats.away_frames_won /
+            (team1Stats.totalStats.away_matches_played || 1)) *
+            100
+        ) / 100,
       awayValue:
         Math.round(
           (team2Stats.totalStats.frames_won / (team2Stats.totalStats.matches_played || 1)) * 100
+        ) / 100,
+      awayValueH:
+        Math.round(
+          (team2Stats.totalStats.home_frames_won /
+            (team2Stats.totalStats.home_matches_played || 1)) *
+            100
+        ) / 100,
+      awayValueA:
+        Math.round(
+          (team2Stats.totalStats.away_frames_won /
+            (team2Stats.totalStats.away_matches_played || 1)) *
+            100
         ) / 100,
     },
     {
       statName: 'Frame Differential',
       homeValue: team1Stats.totalStats.frames_won - team1Stats.totalStats.frames_lost,
+      homeValueH: team1Stats.totalStats.home_frames_won - team1Stats.totalStats.home_frames_lost,
+      homeValueA: team1Stats.totalStats.away_frames_won - team1Stats.totalStats.away_frames_lost,
       awayValue: team2Stats.totalStats.frames_won - team2Stats.totalStats.frames_lost,
+      awayValueH: team2Stats.totalStats.home_frames_won - team2Stats.totalStats.home_frames_lost,
+      awayValueA: team2Stats.totalStats.away_frames_won - team2Stats.totalStats.away_frames_lost,
       differential: true,
     },
   ];

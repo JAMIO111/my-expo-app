@@ -101,7 +101,7 @@ export const fetchAuthUserProfile = async () => {
       id,
       district_id,
       role,
-      district:Districts ( id, name )
+      district:Districts ( id, name, mid_season_transfers, transfer_window_open )
       `
     )
     .eq('user_id', player?.id);

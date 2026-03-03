@@ -38,6 +38,7 @@ const Account = () => {
 
     console.log('User Logging out:', user);
     console.log('Current session:', session);
+    console.log('Current role:', roles);
 
     try {
       setIsSigningOut(true);
@@ -201,9 +202,9 @@ const Account = () => {
                 iconBGColor="gray"
                 title="Sign-In & Security"
                 icon="key-outline"
-                lastItem={player?.roles?.length > 1 ? false : true}
+                lastItem={roles.length > 1 ? false : true}
               />
-              {player?.roles?.length > 1 && (
+              {roles.length > 1 && (
                 <Pressable className="w-full" onPress={() => console.log('Switch Role')}>
                   <SettingsItem
                     callbackFn={openSwitchRoleBottomSheet}

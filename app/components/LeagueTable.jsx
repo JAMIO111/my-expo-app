@@ -80,8 +80,8 @@ const LeagueTable = ({ context, season, division }) => {
                 />
               )}
             <View className="flex-row items-center justify-around">
-              <Text className="w-8 text-center font-saira text-lg text-text-1">
-                {team.position}.
+              <Text className="w-8 text-center font-saira-medium text-lg text-text-1">
+                {team.position}
               </Text>
               <Pressable
                 onPress={() => handlePress(team)}

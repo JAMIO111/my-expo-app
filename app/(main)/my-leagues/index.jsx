@@ -9,6 +9,7 @@ import DivisionsList from '@components/DivisionsList';
 import { ScrollView } from 'react-native-gesture-handler';
 import CircleButtonRow from '@components/CircleButtonRow';
 import CTAButton from '@components/CTAButton';
+import SeasonControlCard from '../../components/SeasonControlCard';
 
 const index = () => {
   const router = useRouter();
@@ -48,24 +49,19 @@ const index = () => {
         }}
       />
       <SafeViewWrapper bottomColor="bg-brand" topColor="bg-brand">
-        <ScrollView className="mt-16 flex-1 bg-brand px-4">
-          <DivisionsList districtId={currentRole?.districtId} />
-          <View className="my-4 rounded-3xl bg-bg-1 p-4">
-            <Text className="mx-4 font-saira-semibold text-2xl text-text-1">Season</Text>
-            <Text className="mx-4 mb-4 font-saira-medium text-text-2">
-              {currentRole?.activeSeason
-                ? `Current Season: ${currentRole.activeSeason.name}`
-                : 'No active season. Start a new season to manage schedules and standings.'}
-            </Text>
-            <CTAButton
-              callbackFn={() =>
-                currentRole?.activeSeason
-                  ? handleEndSeason(currentRole.activeSeason.id)
-                  : handleStartSeason()
-              }
-              type={currentRole?.activeSeason ? 'error' : 'yellow'}
-              text={currentRole?.activeSeason ? 'End Current Season' : 'Start New Season'}
+        <ScrollView
+          contentContainerStyle={{ display: 'flex', flexGrow: 1, gap: 16 }}
+          className="mt-16 flex-1 bg-brand pt-6">
+          <View className="px-4">
+            <SeasonControlCard
+              activeSeason={currentRole?.activeSeason}
+              onStart={handleStartSeason}
+              onEnd={handleEndSeason}
+              loading={isLoading || loading}
             />
+          </View>
+          <View className="bg-bg-2 p-3">
+            <DivisionsList districtId={currentRole?.districtId} />
           </View>
           <CircleButtonRow
             format={[
