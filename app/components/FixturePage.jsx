@@ -23,6 +23,7 @@ import FramesList from '@components/FramesList';
 import HeadToHead from '@components/HeadToHead';
 import SeasonStats from '@components/SeasonStats';
 import LivePulseCard from '@components/LivePulseCard';
+import { useTeamPlayers } from '@hooks/useTeamPlayers';
 
 const FixturePage = ({ fixtureDetails, isLoading, context }) => {
   const router = useRouter();
@@ -35,6 +36,12 @@ const FixturePage = ({ fixtureDetails, isLoading, context }) => {
   const [view, setView] = useState('left');
   const [team, setTeam] = useState('left');
   const hasNavigated = useRef(false);
+
+  const {
+    data: players,
+    isLoading: isLoadingPlayers,
+    error: playersError,
+  } = useTeamPlayers(team === 'left' ? fixtureDetails?.homeTeam?.id : fixtureDetails?.awayTeam?.id);
 
   console.log('FixturePage fixtureDetails:', fixtureDetails);
 
@@ -222,7 +229,7 @@ const FixturePage = ({ fixtureDetails, isLoading, context }) => {
                     timeZone: 'Europe/London',
 
                     weekday: 'long',
-                    day: '2-digit',
+                    day: 'numeric',
                     month: 'long',
                     year: 'numeric',
                   })}
@@ -252,16 +259,19 @@ const FixturePage = ({ fixtureDetails, isLoading, context }) => {
             </View>
           ) : (
             <View>
-              <SlidingTabButton
-                option1={fixtureDetails?.homeTeam?.display_name}
-                option2={fixtureDetails?.awayTeam?.display_name}
-                onChange={setTeam}
-              />
-              <View className="h-full p-3">
+              <View className="flex h-full gap-3 bg-bg-1 p-3">
+                <SlidingTabButton
+                  option1={fixtureDetails?.homeTeam?.display_name}
+                  option2={fixtureDetails?.awayTeam?.display_name}
+                  onChange={setTeam}
+                />
                 <PlayersList
                   team={team === 'left' ? fixtureDetails?.homeTeam : fixtureDetails?.awayTeam}
                   context={context}
                   fixtureId={fixtureId}
+                  players={players}
+                  isLoading={isLoadingPlayers}
+                  error={playersError}
                 />
               </View>
             </View>

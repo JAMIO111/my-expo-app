@@ -1,5 +1,4 @@
 import { StyleSheet, Text, View } from 'react-native';
-import { useTeamPlayers } from '@hooks/useTeamPlayers';
 import PlayerCard from './PlayerCard';
 
 const PlayersList = ({ team, context, fixtureId, players, isLoading, error }) => {
@@ -26,7 +25,9 @@ const PlayersList = ({ team, context, fixtureId, players, isLoading, error }) =>
   return (
     <View className="gap-2">
       {isLoading ? (
-        <Text>Loading...</Text>
+        <View className="items-center justify-center rounded-3xl border border-theme-gray-5 bg-bg-grouped-2 px-4 py-7">
+          <Text className="font-saira text-xl text-text-2">Loading Players...</Text>
+        </View>
       ) : error ? (
         <Text>Error: {error.message}</Text>
       ) : sortedPlayers?.length === 0 ? (

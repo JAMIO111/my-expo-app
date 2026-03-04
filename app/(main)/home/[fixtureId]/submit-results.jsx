@@ -54,6 +54,9 @@ const SubmitResultsScreen = () => {
       homePlayer: '',
       awayPlayer: '',
       winner: null,
+      lag_won: null,
+      break_dish: null,
+      reverse_dish: null,
     };
     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
     setFrames((prev) => [...prev, newFrame]);
@@ -61,7 +64,46 @@ const SubmitResultsScreen = () => {
   };
 
   const updateFrame = (tempId, key, value) => {
-    setFrames((prev) => prev.map((f) => (f.tempId === tempId ? { ...f, [key]: value } : f)));
+    setFrames((prev) =>
+      prev.map((f) => {
+        if (f.tempId !== tempId) return f;
+
+        const updated = { ...f };
+        const previousValue = f[key];
+        updated[key] = value;
+
+        // 1. If players change → validate dependent fields
+        if (key === 'homePlayer' || key === 'awayPlayer') {
+          const validPlayers = [
+            key === 'homePlayer' ? value : f.homePlayer,
+            key === 'awayPlayer' ? value : f.awayPlayer,
+          ];
+
+          ['winner', 'lag_won', 'break_dish', 'reverse_dish'].forEach((field) => {
+            if (!validPlayers.includes(updated[field])) {
+              updated[field] = null;
+            }
+          });
+        }
+
+        // 2. If winner changes → clear dish stats
+        if (key === 'winner' && previousValue !== value) {
+          updated.break_dish = null;
+          updated.reverse_dish = null;
+        }
+
+        // 3. Make break and reverse mutually exclusive
+        if (key === 'break_dish' && previousValue !== value) {
+          updated.reverse_dish = null;
+        }
+
+        if (key === 'reverse_dish' && previousValue !== value) {
+          updated.break_dish = null;
+        }
+
+        return updated;
+      })
+    );
   };
 
   const markComplete = (tempId) => {
@@ -93,6 +135,9 @@ const SubmitResultsScreen = () => {
         homePlayer: result.home_player.id,
         awayPlayer: result.away_player.id,
         winner: result.winner_id,
+        lag_won: result.lag_winner_id,
+        break_dish: result.break_dish_winner_id,
+        reverse_dish: result.reverse_dish_winner_id,
       }));
 
       setFrames(mappedFrames); // Reverse to show latest first
@@ -237,29 +282,36 @@ const SubmitResultsScreen = () => {
                   }}
                   className="mb-3 overflow-hidden rounded-2xl bg-bg-grouped-2"
                   style={styles.cardContainer}>
-                  <Text className="text-md mt-2 w-full text-center text-text-2">
+                  <Text
+                    className={`mt-3 w-full px-5 ${isActive ? 'text-left' : 'text-center'} font-saira-medium text-xl text-text-2`}>
                     {index}
                     {getOrdinalSuffix(index)} Frame
                   </Text>
 
                   {/* Editable view */}
                   <View
+                    className="flex flex-col gap-5"
                     style={[
                       styles.editableContainer,
                       {
                         height: isActive ? 'auto' : 0,
                         opacity: isActive ? 1 : 0,
-                        paddingVertical: isActive ? 12 : 0,
+                        paddingVertical: isActive ? 6 : 0,
+                        paddingHorizontal: isActive ? 16 : 0,
                       },
                     ]}>
-                    <View className="flex-row space-x-2 px-3">
+                    <View className="flex-row gap-3">
                       <View className="flex-1">
                         <Picker
                           selectedValue={frame.homePlayer}
                           onValueChange={(val) => updateFrame(frame.tempId, 'homePlayer', val)}
-                          style={{ fontSize: Platform.OS === 'android' ? 14 : undefined }}
-                          itemStyle={{ fontSize: 14 }}
-                          className="h-8 bg-white">
+                          style={{
+                            fontSize: Platform.OS === 'android' ? 14 : undefined,
+                            borderRadius: 16,
+                            backgroundColor: '#00000009',
+                          }}
+                          itemStyle={{ fontSize: 14, fontFamily: 'Saira-medium' }}
+                          className="h-8">
                           <Picker.Item label="Select" value="" />
                           {Array.isArray(homePlayers?.data) &&
                             homePlayers.data.map((p) => (
@@ -275,9 +327,14 @@ const SubmitResultsScreen = () => {
                         <Picker
                           selectedValue={frame.awayPlayer}
                           onValueChange={(val) => updateFrame(frame.tempId, 'awayPlayer', val)}
-                          style={{ fontSize: Platform.OS === 'android' ? 14 : undefined }}
-                          itemStyle={{ fontSize: 14 }}
-                          className="h-8 bg-white">
+                          style={{
+                            fontSize: Platform.OS === 'android' ? 14 : undefined,
+                            borderRadius: 16,
+                            backgroundColor: '#00000009',
+                            borderColor: 'gray',
+                          }}
+                          itemStyle={{ fontSize: 14, fontFamily: 'Saira-medium' }}
+                          className="h-8">
                           <Picker.Item label="Select" value="" />
                           {Array.isArray(awayPlayers?.data) &&
                             awayPlayers.data.map((p) => (
@@ -292,40 +349,234 @@ const SubmitResultsScreen = () => {
                     </View>
 
                     {frame.homePlayer && frame.awayPlayer && (
-                      <View className="mb-5 mt-3 flex-row items-center justify-evenly px-5">
-                        <Pressable
-                          onPress={() => updateFrame(frame.tempId, 'winner', frame.homePlayer)}
-                          className={`h-9 w-9 items-center justify-center rounded-md border ${
-                            frame.winner === frame.homePlayer
-                              ? 'border-brand bg-brand-light'
-                              : 'border-border-color bg-bg-grouped-2'
-                          }`}>
-                          {frame.winner === frame.homePlayer && (
-                            <Ionicons name="checkmark" size={28} color="white" />
-                          )}
-                        </Pressable>
-                        <Text className="text-lg text-text-1">Select Winner</Text>
-                        <Pressable
-                          onPress={() => updateFrame(frame.tempId, 'winner', frame.awayPlayer)}
-                          className={`h-9 w-9 items-center justify-center rounded-md border ${
-                            frame.winner === frame.awayPlayer
-                              ? 'border-brand bg-brand-light'
-                              : 'border-border-color bg-bg-grouped-2'
-                          }`}>
-                          {frame.winner === frame.awayPlayer && (
-                            <Ionicons name="checkmark" size={28} color="white" />
-                          )}
-                        </Pressable>
+                      <View className="flex-col items-center justify-center gap-3">
+                        <View className="flex-row items-center justify-evenly">
+                          <Pressable
+                            style={{
+                              height: 50,
+                              width: 50,
+                            }}
+                            onPress={() =>
+                              updateFrame(
+                                frame.tempId,
+                                'winner',
+                                frame.winner === frame.homePlayer ? null : frame.homePlayer
+                              )
+                            }
+                            className={`h-15 w-15 items-center justify-center rounded-2xl border ${
+                              frame.winner === frame.homePlayer
+                                ? 'border-brand bg-brand-light'
+                                : 'border-border-color bg-bg-grouped-2'
+                            }`}>
+                            {frame.winner === frame.homePlayer && (
+                              <Ionicons name="trophy-outline" size={36} color="white" />
+                            )}
+                          </Pressable>
+                          <Text className="flex-1 text-center font-saira-medium text-xl text-text-1">
+                            Select Winner
+                          </Text>
+                          <Pressable
+                            style={{
+                              height: 50,
+                              width: 50,
+                            }}
+                            onPress={() =>
+                              updateFrame(
+                                frame.tempId,
+                                'winner',
+                                frame.winner === frame.awayPlayer ? null : frame.awayPlayer
+                              )
+                            }
+                            className={`items-center justify-center rounded-2xl border ${
+                              frame.winner === frame.awayPlayer
+                                ? 'border-brand bg-brand-light'
+                                : 'border-border-color bg-bg-grouped-2'
+                            }`}>
+                            {frame.winner === frame.awayPlayer && (
+                              <Ionicons name="trophy-outline" size={36} color="white" />
+                            )}
+                          </Pressable>
+                        </View>
+                        <View className="flex-row items-center justify-evenly">
+                          <Pressable
+                            style={{
+                              height: 50,
+                              width: 50,
+                            }}
+                            onPress={() =>
+                              updateFrame(
+                                frame.tempId,
+                                'lag_won',
+                                frame.lag_won === frame.homePlayer ? null : frame.homePlayer
+                              )
+                            }
+                            className={`h-15 w-15 items-center justify-center rounded-2xl border ${
+                              frame.lag_won === frame.homePlayer
+                                ? 'border-brand bg-brand-light'
+                                : 'border-border-color bg-bg-grouped-2'
+                            }`}>
+                            {frame.lag_won === frame.homePlayer && (
+                              <Ionicons name="radio-button-off-outline" size={36} color="white" />
+                            )}
+                          </Pressable>
+                          <Text className="flex-1 text-center font-saira-medium text-xl text-text-1">
+                            Lag Won
+                          </Text>
+                          <Pressable
+                            style={{
+                              height: 50,
+                              width: 50,
+                            }}
+                            onPress={() =>
+                              updateFrame(
+                                frame.tempId,
+                                'lag_won',
+                                frame.lag_won === frame.awayPlayer ? null : frame.awayPlayer
+                              )
+                            }
+                            className={`items-center justify-center rounded-2xl border ${
+                              frame.lag_won === frame.awayPlayer
+                                ? 'border-brand bg-brand-light'
+                                : 'border-border-color bg-bg-grouped-2'
+                            }`}>
+                            {frame.lag_won === frame.awayPlayer && (
+                              <Ionicons name="radio-button-off-outline" size={36} color="white" />
+                            )}
+                          </Pressable>
+                        </View>
+                        {frame.winner !== null && (
+                          <View className="flex-row items-center justify-evenly">
+                            {frame.winner === frame.homePlayer ? (
+                              <Pressable
+                                style={{
+                                  height: 50,
+                                  width: 50,
+                                }}
+                                onPress={() =>
+                                  updateFrame(
+                                    frame.tempId,
+                                    'break_dish',
+                                    frame.break_dish === frame.homePlayer ? null : frame.homePlayer
+                                  )
+                                }
+                                className={`h-15 w-15 items-center justify-center rounded-2xl border ${
+                                  frame.break_dish === frame.homePlayer
+                                    ? 'border-brand bg-brand-light'
+                                    : 'border-border-color bg-bg-grouped-2'
+                                }`}>
+                                {frame.break_dish === frame.homePlayer && (
+                                  <Ionicons name="triangle-outline" size={36} color="white" />
+                                )}
+                              </Pressable>
+                            ) : (
+                              <View style={{ width: 50 }} />
+                            )}
+                            <Text className="flex-1 text-center font-saira-medium text-xl text-text-1">
+                              Break Dish
+                            </Text>
+                            {frame.winner === frame.awayPlayer ? (
+                              <Pressable
+                                style={{
+                                  height: 50,
+                                  width: 50,
+                                }}
+                                onPress={() =>
+                                  updateFrame(
+                                    frame.tempId,
+                                    'break_dish',
+                                    frame.break_dish === frame.awayPlayer ? null : frame.awayPlayer
+                                  )
+                                }
+                                className={`items-center justify-center rounded-2xl border ${
+                                  frame.break_dish === frame.awayPlayer
+                                    ? 'border-brand bg-brand-light'
+                                    : 'border-border-color bg-bg-grouped-2'
+                                }`}>
+                                {frame.break_dish === frame.awayPlayer && (
+                                  <Ionicons name="triangle-outline" size={36} color="white" />
+                                )}
+                              </Pressable>
+                            ) : (
+                              <View style={{ width: 50 }} />
+                            )}
+                          </View>
+                        )}
+                        {frame.winner !== null && (
+                          <View className="flex-row items-center justify-evenly">
+                            {frame.winner === frame.homePlayer ? (
+                              <Pressable
+                                style={{
+                                  height: 50,
+                                  width: 50,
+                                }}
+                                onPress={() =>
+                                  updateFrame(
+                                    frame.tempId,
+                                    'reverse_dish',
+                                    frame.reverse_dish === frame.homePlayer
+                                      ? null
+                                      : frame.homePlayer
+                                  )
+                                }
+                                className={`h-15 w-15 items-center justify-center rounded-2xl border ${
+                                  frame.reverse_dish === frame.homePlayer
+                                    ? 'border-brand bg-brand-light'
+                                    : 'border-border-color bg-bg-grouped-2'
+                                }`}>
+                                {frame.reverse_dish === frame.homePlayer && (
+                                  <Ionicons name="triangle-outline" size={36} color="white" />
+                                )}
+                              </Pressable>
+                            ) : (
+                              <View style={{ width: 50 }} />
+                            )}
+                            <Text className="flex-1 text-center font-saira-medium text-xl text-text-1">
+                              Reverse Dish
+                            </Text>
+                            {frame.winner === frame.awayPlayer ? (
+                              <Pressable
+                                style={{
+                                  height: 50,
+                                  width: 50,
+                                }}
+                                onPress={() =>
+                                  updateFrame(
+                                    frame.tempId,
+                                    'reverse_dish',
+                                    frame.reverse_dish === frame.awayPlayer
+                                      ? null
+                                      : frame.awayPlayer
+                                  )
+                                }
+                                className={`items-center justify-center rounded-2xl border ${
+                                  frame.reverse_dish === frame.awayPlayer
+                                    ? 'border-brand bg-brand-light'
+                                    : 'border-border-color bg-bg-grouped-2'
+                                }`}>
+                                {frame.reverse_dish === frame.awayPlayer && (
+                                  <Ionicons
+                                    style={{ transform: [{ rotate: '180deg' }] }}
+                                    name="triangle-outline"
+                                    size={36}
+                                    color="white"
+                                  />
+                                )}
+                              </Pressable>
+                            ) : (
+                              <View style={{ width: 50 }} />
+                            )}
+                          </View>
+                        )}
                       </View>
                     )}
-                    <View className="flex-row items-center justify-between px-6">
+                    <View className="mb-2 flex-row items-center justify-between gap-3">
                       {isActive && (
                         <>
                           <Pressable
                             onPress={() => setConfirmDeleteModalVisible(true)}
                             className="rounded-2xl border border-theme-red-hc bg-theme-red/85 p-3"
                             hitSlop={10}>
-                            <Ionicons name="trash-outline" size={34} color="white" />
+                            <Ionicons name="trash-outline" size={30} color="white" />
                           </Pressable>
                           <ConfirmModal
                             visible={confirmDeleteModalVisible}
@@ -337,10 +588,10 @@ const SubmitResultsScreen = () => {
                           />
                         </>
                       )}
-                      <View className="flex-1 p-4">
+                      <View className="flex-1">
                         <CTAButton
                           text="Confirm Frame"
-                          type="success"
+                          type="yellow"
                           callbackFn={() => {
                             if (
                               frame.homePlayer &&
@@ -375,34 +626,98 @@ const SubmitResultsScreen = () => {
                         paddingVertical: isActive ? 0 : 12,
                       },
                     ]}
-                    pointerEvents={isActive ? 'none' : 'auto'}
-                    className="flex-row items-center justify-between px-3 py-2">
-                    <View className="w-6 items-center justify-center">
-                      {frame.winner === frame.homePlayer && (
-                        <Ionicons name="trophy" size={20} color={trophyColor} />
-                      )}
+                    className="flex">
+                    <View
+                      pointerEvents={isActive ? 'none' : 'auto'}
+                      className="flex-row items-center justify-between px-3 py-2">
+                      <Text
+                        className={`${
+                          frame.homePlayer ? 'text-text-1' : 'text-theme-red'
+                        } flex-1 text-right text-lg font-medium`}>
+                        {homePlayer
+                          ? `${homePlayer.first_name} ${homePlayer.surname}`
+                          : 'Select Player'}
+                      </Text>
+                      <Text className="mx-2 text-center text-sm text-text-2">vs</Text>
+                      <Text
+                        className={`${
+                          frame.awayPlayer ? 'text-text-1' : 'text-theme-red'
+                        } flex-1 text-left text-lg font-medium`}>
+                        {awayPlayer
+                          ? `${awayPlayer.first_name} ${awayPlayer.surname}`
+                          : 'Select Player'}
+                      </Text>
                     </View>
-                    <Text
-                      className={`${
-                        frame.homePlayer ? 'text-text-1' : 'text-theme-red'
-                      } flex-1 text-right font-medium`}>
-                      {homePlayer
-                        ? `${homePlayer.first_name} ${homePlayer.surname}`
-                        : 'Select Player'}
-                    </Text>
-                    <Text className="mx-2 text-xs text-text-2">vs</Text>
-                    <Text
-                      className={`${
-                        frame.awayPlayer ? 'text-text-1' : 'text-theme-red'
-                      } flex-1 text-left font-medium`}>
-                      {awayPlayer
-                        ? `${awayPlayer.first_name} ${awayPlayer.surname}`
-                        : 'Select Player'}
-                    </Text>
-                    <View className="w-6 items-center justify-center">
-                      {frame.winner === frame.awayPlayer && (
-                        <Ionicons name="trophy" size={20} color={trophyColor} />
-                      )}
+                    <View className="flex flex-1 flex-row items-center gap-5">
+                      <View className="flex flex-1 flex-row items-center justify-end gap-2">
+                        {frame.lag_won === frame.homePlayer && (
+                          <View className="items-center justify-center rounded-lg bg-bg-2 p-2">
+                            <Ionicons
+                              name="radio-button-off-outline"
+                              size={20}
+                              color={trophyColor}
+                            />
+                          </View>
+                        )}
+                        {frame.reverse_dish === frame.homePlayer && (
+                          <View className="items-center justify-center rounded-lg bg-bg-2 p-2">
+                            <Ionicons
+                              style={{ transform: [{ rotate: '180deg' }] }}
+                              name="triangle-outline"
+                              size={20}
+                              color={trophyColor}
+                            />
+                          </View>
+                        )}
+                        {frame.break_dish === frame.homePlayer && (
+                          <View className="items-center justify-center rounded-lg bg-bg-2 p-2">
+                            <Ionicons name="triangle-outline" size={20} color={trophyColor} />
+                          </View>
+                        )}
+                        {frame.winner === frame.homePlayer && (
+                          <View className="items-center justify-center rounded-lg bg-bg-2 p-2">
+                            <Ionicons name="trophy" size={20} color={trophyColor} />
+                          </View>
+                        )}
+                      </View>
+                      <View
+                        style={{
+                          width: 1,
+                          height: 30,
+                          backgroundColor: '#999',
+                        }}
+                      />
+                      <View className="flex flex-1 flex-row items-center justify-start gap-2">
+                        {frame.winner === frame.awayPlayer && (
+                          <View className="items-center justify-center rounded-lg bg-bg-2 p-2">
+                            <Ionicons name="trophy" size={20} color={trophyColor} />
+                          </View>
+                        )}
+                        {frame.break_dish === frame.awayPlayer && (
+                          <View className="items-center justify-center rounded-lg bg-bg-2 p-2">
+                            <Ionicons name="triangle-outline" size={20} color={trophyColor} />
+                          </View>
+                        )}
+                        {frame.reverse_dish === frame.awayPlayer && (
+                          <View className="items-center justify-center rounded-lg bg-bg-2 p-2">
+                            <Ionicons
+                              style={{ transform: [{ rotate: '180deg' }] }}
+                              name="triangle-outline"
+                              size={20}
+                              color={trophyColor}
+                            />
+                          </View>
+                        )}
+                        {frame.lag_won === frame.awayPlayer && (
+                          <View className="items-center justify-center rounded-lg bg-bg-2 p-2">
+                            <Ionicons
+                              name="radio-button-off-outline"
+                              size={20}
+                              color={trophyColor}
+                            />
+                          </View>
+                        )}
+                      </View>
                     </View>
                   </View>
                 </Pressable>
