@@ -19,6 +19,7 @@ import { useDivisions } from '@hooks/useDivisions';
 import { useSeasons } from '@hooks/useSeasons';
 import { getActiveSeason } from '@lib/helperFunctions';
 import LivePulseCard from '@components/LivePulseCard';
+import Avatar from '@components/Avatar';
 
 const FixtureList = () => {
   const router = useRouter();
@@ -301,9 +302,13 @@ const FixtureList = () => {
                     ) : null}
                     <View className="flex-row items-center justify-center gap-2 rounded-lg">
                       <Text className="flex-1 text-right font-saira-semibold text-lg text-text-1">
-                        {f.home_team.abbreviation}
+                        {f.home_competitor.abbreviation}
                       </Text>
-                      <TeamLogo {...f.home_team.crest} size={20} />
+                      {f.home_competitor.type === 'team' ? (
+                        <TeamLogo {...f.home_competitor.crest} size={20} />
+                      ) : (
+                        <Avatar player={f.home_competitor} size={30} />
+                      )}
                       {isLive ? (
                         <Text className="pt-1 text-right font-saira-semibold text-xl text-text-1">
                           {f.home_score ?? '0'} - {f.away_score ?? '0'}
@@ -313,14 +318,18 @@ const FixtureList = () => {
                           {format(new Date(f.date_time), 'HH:mm')}
                         </Text>
                       )}
-                      <TeamLogo {...f.away_team.crest} size={20} />
+                      {f.away_competitor.type === 'team' ? (
+                        <TeamLogo {...f.away_competitor.crest} size={20} />
+                      ) : (
+                        <Avatar player={f.away_competitor} size={30} />
+                      )}
                       <Text className="flex-1 text-left font-saira-semibold text-lg text-text-1">
-                        {f.away_team.abbreviation}
+                        {f.away_competitor.abbreviation}
                       </Text>
                     </View>
                     <View className="w-full flex-row items-center justify-center">
                       <Text className="flex-1 text-right font-saira text-text-1">
-                        {f.home_team.display_name}
+                        {f.home_competitor.display_name}
                       </Text>
                       <Text
                         className="mx-2 w-8 text-center font-saira text-lg text-text-2
@@ -328,7 +337,7 @@ const FixtureList = () => {
                         vs
                       </Text>
                       <Text className="flex-1 text-left font-saira text-text-1">
-                        {f.away_team.display_name}
+                        {f.away_competitor.display_name}
                       </Text>
                     </View>
                     {index !== fixtures.length - 1 && (
@@ -345,7 +354,7 @@ const FixtureList = () => {
       <BottomSheetWrapper
         ref={bottomSheetRef}
         initialIndex={-1}
-        snapPoints={['90%']}
+        snapPoints={['50%', '90%']}
         footerComponent={(props) => (
           <BottomSheetFooter {...props}>
             <View

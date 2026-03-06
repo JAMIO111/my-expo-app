@@ -40,19 +40,34 @@ export default function AppRealtimeProvider({ children }) {
       )
       .subscribe((status) => console.log('TeamPlayers subscription status:', status));
 
-    // --- Standings listener ---
+    // --- Results listener ---
     if (standingsRef.current) supabase.removeChannel(standingsRef.current);
+
     standingsRef.current = supabase
-      .channel('standings-channel')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'Standings' }, (payload) => {
-        console.log('Standings update payload:', payload);
-        const divisionId = payload.new?.division ?? payload.old?.division;
-        const seasonId = payload.new?.season ?? payload.old?.season;
-        if (divisionId && seasonId) {
-          queryClient.invalidateQueries(['Standings', divisionId, seasonId]);
-        }
+      .channel('results-channel')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'Results' }, (payload) => {
+        console.log('Results update payload:', payload);
+
+        // Collect all player IDs from new and old rows
+        const playerIds = new Set(
+          [
+            payload.new?.home_player_1,
+            payload.new?.home_player_2,
+            payload.new?.away_player_1,
+            payload.new?.away_player_2,
+            payload.old?.home_player_1,
+            payload.old?.home_player_2,
+            payload.old?.away_player_1,
+            payload.old?.away_player_2,
+          ].filter(Boolean)
+        ); // remove null/undefined
+
+        // Invalidate PlayerStats query for each player affected
+        playerIds.forEach((id) => {
+          queryClient.invalidateQueries(['PlayerStats', id]);
+        });
       })
-      .subscribe((status) => console.log('Standings subscription status:', status));
+      .subscribe((status) => console.log('Results subscription status:', status));
 
     // --- Fixtures listener ---
     if (fixturesRef.current) supabase.removeChannel(fixturesRef.current);

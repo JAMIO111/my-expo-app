@@ -15,6 +15,9 @@ const index = () => {
 
   console.log('Fixture Details:', fixtureDetails);
   console.log('Current Role in Fixture Page:', currentRole);
+
+  const competitorType = fixtureDetails?.homeCompetitor?.type;
+
   return (
     <SafeViewWrapper useBottomInset={false} topColor="bg-brand">
       <Stack.Screen
@@ -22,10 +25,10 @@ const index = () => {
           header: () => (
             <SafeViewWrapper useBottomInset={false}>
               <CustomHeader
-                title={`${fixtureDetails?.homeTeam?.abbreviation} vs ${fixtureDetails?.awayTeam?.abbreviation}`}
+                title={`${competitorType === 'team' ? fixtureDetails?.homeCompetitor?.abbreviation : fixtureDetails?.homeCompetitor?.nickname.toUpperCase()} vs ${competitorType === 'team' ? fixtureDetails?.awayCompetitor?.abbreviation : fixtureDetails?.awayCompetitor?.nickname.toUpperCase()}`}
                 onRightPress={
                   player?.id === currentRole?.team?.captain.id &&
-                  currentRole?.team?.id === fixtureDetails?.homeTeam?.id &&
+                  currentRole?.team?.id === fixtureDetails?.homeCompetitor?.id &&
                   fixtureDetails?.is_complete === false
                     ? () => router.push(`home/${fixtureId}/submit-results`)
                     : null

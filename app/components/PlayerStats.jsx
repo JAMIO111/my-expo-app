@@ -5,6 +5,7 @@ import DonutChart from './DonutChart';
 const PlayerStats = ({ playerId }) => {
   console.log('PlayerStats Component Rendered with playerId:', playerId);
   const { data, error } = usePlayerStats(playerId);
+
   if (error) {
     console.error('Error fetching player stats:', error);
   } else {
@@ -63,7 +64,7 @@ const PlayerStats = ({ playerId }) => {
           <View className="flex-1 gap-8">
             <View>
               <Text className="font-saira-semibold text-3xl text-text-1">
-                {data?.playerMeta?.best_frame_win_streak ?? 0}
+                {data?.totalStats?.best_frame_streak ?? 0}
               </Text>
               <Text style={{ lineHeight: 18 }} className="text-lg font-semibold text-text-2">
                 Best Win Streak
@@ -71,7 +72,11 @@ const PlayerStats = ({ playerId }) => {
             </View>
             <View>
               <Text className="font-saira-semibold text-3xl text-text-1">
-                {data?.playerMeta?.current_frame_win_streak ?? 0}
+                {data?.totalStats?.current_frame_streak ?? 0}
+                {data?.totalStats?.current_frame_streak > 0 &&
+                data?.totalStats?.current_frame_streak === data?.totalStats?.best_frame_streak
+                  ? ' 🔥'
+                  : ''}
               </Text>
               <Text style={{ lineHeight: 18 }} className="text-lg font-semibold text-text-2">
                 Current Win Streak
@@ -129,7 +134,7 @@ const PlayerStats = ({ playerId }) => {
           <View className="flex-1 gap-8">
             <View>
               <Text className="font-saira-semibold text-3xl text-text-1">
-                {data?.playerMeta?.best_match_win_streak ?? 0}
+                {data?.totalStats?.best_match_streak ?? 0}
               </Text>
               <Text style={{ lineHeight: 18 }} className="text-lg font-semibold text-text-2">
                 Best Win Streak
@@ -137,7 +142,11 @@ const PlayerStats = ({ playerId }) => {
             </View>
             <View>
               <Text className="font-saira-semibold text-3xl text-text-1">
-                {data?.playerMeta?.current_match_win_streak ?? 0}
+                {data?.totalStats?.current_match_streak ?? 0}
+                {data?.totalStats?.current_match_streak > 0 &&
+                data?.totalStats?.current_match_streak === data?.totalStats?.best_match_streak
+                  ? ' 🔥'
+                  : ''}
               </Text>
               <Text style={{ lineHeight: 18 }} className="text-lg font-semibold text-text-2">
                 Current Win Streak

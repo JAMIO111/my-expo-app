@@ -10,10 +10,16 @@ export const useMonthlyFixtures = ({ month, seasonId, divisionId }) => {
     const { data, error } = await supabase
       .from('Fixtures')
       .select(
-        '*, home_team:Teams!Fixtures_home_team_fkey(display_name, crest, abbreviation), away_team:Teams!Fixtures_away_team_fkey(display_name,crest, abbreviation)'
+        `
+        *,
+        home_team:Teams!Fixtures_home_team_fkey(display_name, crest, abbreviation),
+        away_team:Teams!Fixtures_away_team_fkey(display_name, crest, abbreviation),
+        home_player:Players!Fixtures_home_player_fkey(id, first_name, surname, avatar_url, nickname),
+        away_player:Players!Fixtures_away_player_fkey(id, first_name, surname, avatar_url, nickname)
+      `
       )
       .eq('season', seasonId)
-      .eq('division', divisionId) // Adjust this if you need a different division
+      .eq('division', divisionId)
       .eq('approved', false)
       .gte('date_time', start)
       .lte('date_time', end)
@@ -25,8 +31,35 @@ export const useMonthlyFixtures = ({ month, seasonId, divisionId }) => {
 
     for (const fixture of data) {
       const key = fixture.date_time.split('T')[0];
+
+      const homeCompetitor =
+        fixture.competitor_type === 'team'
+          ? { ...fixture.home_team, type: 'team' }
+          : {
+              ...fixture.home_player,
+              type: 'player',
+              abbreviation: fixture.home_player.nickname.toUpperCase(),
+              display_name: `${fixture.home_player.first_name} ${fixture.home_player.surname}`,
+            };
+
+      const awayCompetitor =
+        fixture.competitor_type === 'team'
+          ? { ...fixture.away_team, type: 'team' }
+          : {
+              ...fixture.away_player,
+              type: 'player',
+              abbreviation: fixture.away_player.nickname.toUpperCase(),
+              display_name: `${fixture.away_player.first_name} ${fixture.away_player.surname}`,
+            };
+
+      const fixtureWithCompetitors = {
+        ...fixture,
+        home_competitor: homeCompetitor,
+        away_competitor: awayCompetitor,
+      };
+
       if (!grouped[key]) grouped[key] = [];
-      grouped[key].push(fixture);
+      grouped[key].push(fixtureWithCompetitors);
     }
 
     return grouped;

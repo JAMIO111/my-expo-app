@@ -67,6 +67,7 @@ const PoolRack = () => {
   };
 
   const handleNavigation = () => {
+    if (loading) return;
     console.log('🟢 handleNavigation triggered');
     logoOpacity.value = withTiming(0, { duration: 500 });
     cueY.value = withTiming(500, { duration: 2500, easing: Easing.out(Easing.exp) }, () => {

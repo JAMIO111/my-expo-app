@@ -18,6 +18,7 @@ import { useDistricts } from '@hooks/useDistricts';
 import { useDivisions } from '@hooks/useDivisions';
 import { useSeasons } from '@hooks/useSeasons';
 import { getActiveSeason } from '@lib/helperFunctions';
+import Avatar from './Avatar';
 
 const ResultsList = () => {
   const router = useRouter();
@@ -140,6 +141,8 @@ const ResultsList = () => {
     seasonId: season?.id,
     divisionId: division?.id,
   });
+
+  console.log('ResultsList resultsData:', resultsData);
 
   const scaleAnimPrev = useRef(new Animated.Value(1)).current;
   const scaleAnimNext = useRef(new Animated.Value(1)).current;
@@ -312,7 +315,10 @@ const ResultsList = () => {
               </Text>
 
               {results.map((f, index) => {
+                const competitorType = f.home_competitor.type; // 'team' or 'player'
                 const isLive = new Date() >= new Date(f.date_time);
+                const homeScore = f.frames.filter((frame) => frame.winner_side === 'home').length;
+                const awayScore = f.frames.filter((frame) => frame.winner_side === 'away').length;
                 return (
                   <Pressable
                     onPress={() => {
@@ -327,32 +333,44 @@ const ResultsList = () => {
                     key={f.id}>
                     <View className="w-full flex-row items-center justify-between px-4">
                       <View className="flex-row items-center gap-3">
-                        <TeamLogo {...f.home_team.crest} size={26} />
+                        {f.home_competitor.type === 'team' ? (
+                          <TeamLogo {...f.home_competitor.crest} size={26} />
+                        ) : (
+                          <Avatar player={f.home_competitor} size={26} borderRadius={4} />
+                        )}
 
                         <Text className="font-saira-semibold text-lg text-text-2">
-                          {f.home_team.abbreviation}
+                          {competitorType === 'team'
+                            ? f.home_competitor.abbreviation
+                            : f.home_competitor.nickname.toUpperCase()}
                         </Text>
                         <Text className="font-saira-medium text-lg text-text-1">
-                          {f.home_team.display_name}
+                          {f.home_competitor.display_name}
                         </Text>
                       </View>
                       <Text className={'w-12 text-center font-saira-semibold text-2xl text-text-1'}>
-                        {f.home_score}
+                        {homeScore}
                       </Text>
                     </View>
                     <View className="w-full flex-row items-center justify-between px-4">
                       <View className="flex-row items-center gap-3">
-                        <TeamLogo {...f.away_team.crest} size={26} />
+                        {f.away_competitor.type === 'team' ? (
+                          <TeamLogo {...f.away_competitor.crest} size={26} />
+                        ) : (
+                          <Avatar player={f.away_competitor} size={26} borderRadius={4} />
+                        )}
 
                         <Text className="font-saira-semibold text-lg text-text-2">
-                          {f.away_team.abbreviation}
+                          {f.away_competitor.type === 'team'
+                            ? f.away_competitor.abbreviation
+                            : f.away_competitor.nickname.toUpperCase()}
                         </Text>
                         <Text className="font-saira-medium text-lg text-text-1">
-                          {f.away_team.display_name}
+                          {f.away_competitor.display_name}
                         </Text>
                       </View>
                       <Text className={'w-12 text-center font-saira-semibold text-2xl text-text-1'}>
-                        {f.away_score}
+                        {awayScore}
                       </Text>
                     </View>
                     {index !== results.length - 1 && (

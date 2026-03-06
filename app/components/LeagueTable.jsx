@@ -4,7 +4,6 @@ import { LinearGradient } from 'expo-linear-gradient';
 import TeamLogo from './TeamLogo';
 import { useRouter } from 'expo-router';
 import { useStandings } from '@hooks/useStandings';
-import { useStandingsLive } from '../hooks/useStandingsLive';
 import { TableSkeleton } from '@components/Skeletons';
 
 const LeagueTable = ({ context, season, division }) => {
@@ -12,7 +11,7 @@ const LeagueTable = ({ context, season, division }) => {
   const hasNavigated = useRef(false);
 
   // const { data: standings, isLoading, error, isFetching } = useStandings(division, season);
-  const { data: standings, isLoading, error, isFetching } = useStandingsLive(division, season);
+  const { data: standings, isLoading, error, isFetching } = useStandings(division, season);
   console.log('LeagueTable standings:', standings);
 
   const handlePress = (team) => {

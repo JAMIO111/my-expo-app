@@ -14,10 +14,18 @@ const LeagueHomeCard = ({ standings }) => {
   const { currentRole } = useUser();
   const hasNavigated = useRef(false);
 
-  const displayTeam =
+  const displayTeamIndex =
     currentRole?.role === 'admin'
-      ? standings?.standings?.[0]
-      : standings?.standings?.find((team) => team.team === currentRole?.teamId);
+      ? 0
+      : standings?.standings?.findIndex((team) => team.id === currentRole?.teamId);
+
+  const displayTeam =
+    displayTeamIndex >= 0
+      ? {
+          ...standings.standings[displayTeamIndex],
+          position: displayTeamIndex + 1,
+        }
+      : null;
 
   console.log('Display Team:', displayTeam);
   return (
@@ -51,14 +59,12 @@ const LeagueHomeCard = ({ standings }) => {
             </Text>
             <TeamLogo
               size={20}
-              type={displayTeam?.Teams?.crest?.type}
-              color1={displayTeam?.Teams?.crest?.color1}
-              color2={displayTeam?.Teams?.crest?.color2}
-              thickness={displayTeam?.Teams?.crest?.thickness}
+              type={displayTeam?.crest?.type}
+              color1={displayTeam?.crest?.color1}
+              color2={displayTeam?.crest?.color2}
+              thickness={displayTeam?.crest?.thickness}
             />
-            <Text className="font-saira text-xl text-text-2">
-              {displayTeam?.Teams?.display_name}
-            </Text>
+            <Text className="font-saira text-xl text-text-2">{displayTeam?.display_name}</Text>
           </View>
           <Text className="font-saira text-2xl font-semibold text-text-1">{`${displayTeam?.points} Pts`}</Text>
         </View>

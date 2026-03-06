@@ -24,6 +24,7 @@ import HeadToHead from '@components/HeadToHead';
 import SeasonStats from '@components/SeasonStats';
 import LivePulseCard from '@components/LivePulseCard';
 import { useTeamPlayers } from '@hooks/useTeamPlayers';
+import Avatar from '@components/Avatar';
 
 const FixturePage = ({ fixtureDetails, isLoading, context }) => {
   const router = useRouter();
@@ -44,6 +45,8 @@ const FixturePage = ({ fixtureDetails, isLoading, context }) => {
   } = useTeamPlayers(team === 'left' ? fixtureDetails?.homeTeam?.id : fixtureDetails?.awayTeam?.id);
 
   console.log('FixturePage fixtureDetails:', fixtureDetails);
+
+  const competitorType = fixtureDetails?.homeCompetitor?.type;
 
   const address = [
     fixtureDetails?.homeTeam?.address?.line_1,
@@ -150,31 +153,40 @@ const FixturePage = ({ fixtureDetails, isLoading, context }) => {
               )}
               <View className="relative mb-2 flex-row items-start justify-center p-3">
                 <Pressable
-                  onPress={() => handleTeamPress(fixtureDetails?.homeTeam?.id)}
+                  onPress={() => handleTeamPress(fixtureDetails?.homeCompetitor?.id)}
                   className="absolute left-0 z-50">
                   <View className="rounded-full">
-                    <TeamLogo
-                      size={60}
-                      color1={fixtureDetails?.homeTeam?.crest?.color1}
-                      color2={fixtureDetails?.homeTeam?.crest?.color2}
-                      type={fixtureDetails?.homeTeam?.crest?.type}
-                      thickness={fixtureDetails?.homeTeam?.crest?.thickness}
-                    />
+                    {competitorType === 'team' ? (
+                      <TeamLogo
+                        size={60}
+                        color1={fixtureDetails?.homeCompetitor?.crest?.color1}
+                        color2={fixtureDetails?.homeCompetitor?.crest?.color2}
+                        type={fixtureDetails?.homeCompetitor?.crest?.type}
+                        thickness={fixtureDetails?.homeCompetitor?.crest?.thickness}
+                      />
+                    ) : (
+                      <Avatar player={fixtureDetails?.homePlayer} size={60} borderRadius={12} />
+                    )}
                   </View>
                 </Pressable>
                 <Pressable
-                  onPress={() => handleTeamPress(fixtureDetails?.homeTeam?.id)}
-                  style={{ backgroundColor: fixtureDetails?.homeTeam?.crest?.color1 }}
-                  className="ml-10 flex-1 items-center justify-center py-0.5">
+                  onPress={() => handleTeamPress(fixtureDetails?.homeCompetitor?.id)}
+                  style={{
+                    backgroundColor: fixtureDetails?.homeCompetitor?.crest?.color1 || 'white',
+                  }}
+                  className="ml-10 flex flex-1 flex-row items-center justify-center py-0.5">
                   <Text
+                    numberOfLines={1}
                     style={{ color: homeTextColor }}
-                    className="mt-1 font-saira-semibold text-2xl">
-                    {fixtureDetails?.homeTeam?.abbreviation}
+                    className={`flex-1 py-1 pl-4 pr-2 ${competitorType === 'team' ? 'mt-1 text-center font-saira-semibold text-2xl' : 'text-right font-saira-medium text-lg'}`}>
+                    {competitorType === 'team'
+                      ? fixtureDetails?.homeCompetitor?.abbreviation
+                      : `${fixtureDetails?.homeCompetitor?.nickname.toUpperCase()}`}
                   </Text>
                 </Pressable>
                 <Text className="rounded-b-2xl border-x-2 border-bg-2 bg-bg-3 p-3 font-saira-medium text-3xl text-text-1">
                   {isPast
-                    ? `${fixtureDetails?.home_score} - ${fixtureDetails?.away_score}`
+                    ? `${fixtureDetails?.frames.filter((frame) => frame.winner_side === 'home').length || 0} - ${fixtureDetails?.frames.filter((frame) => frame.winner_side === 'away').length || 0}`
                     : new Date(fixtureDetails?.date_time).toLocaleString('en-GB', {
                         timeZone: 'Europe/London',
 
@@ -184,26 +196,35 @@ const FixturePage = ({ fixtureDetails, isLoading, context }) => {
                       })}
                 </Text>
                 <Pressable
-                  onPress={() => handleTeamPress(fixtureDetails?.awayTeam?.id)}
+                  onPress={() => handleTeamPress(fixtureDetails?.awayCompetitor?.id)}
                   className="absolute right-0 z-50">
                   <View className="rounded-full">
-                    <TeamLogo
-                      size={60}
-                      color1={fixtureDetails?.awayTeam?.crest?.color1}
-                      color2={fixtureDetails?.awayTeam?.crest?.color2}
-                      type={fixtureDetails?.awayTeam?.crest?.type}
-                      thickness={fixtureDetails?.awayTeam?.crest?.thickness}
-                    />
+                    {competitorType === 'team' ? (
+                      <TeamLogo
+                        size={60}
+                        color1={fixtureDetails?.awayCompetitor?.crest?.color1}
+                        color2={fixtureDetails?.awayCompetitor?.crest?.color2}
+                        type={fixtureDetails?.awayCompetitor?.crest?.type}
+                        thickness={fixtureDetails?.awayCompetitor?.crest?.thickness}
+                      />
+                    ) : (
+                      <Avatar player={fixtureDetails?.awayPlayer} size={60} borderRadius={12} />
+                    )}
                   </View>
                 </Pressable>
                 <Pressable
-                  onPress={() => handleTeamPress(fixtureDetails?.awayTeam?.id)}
-                  style={{ backgroundColor: fixtureDetails?.awayTeam?.crest?.color1 }}
-                  className="mr-10 flex-1 items-center justify-center py-0.5">
+                  onPress={() => handleTeamPress(fixtureDetails?.awayCompetitor?.id)}
+                  style={{
+                    backgroundColor: fixtureDetails?.awayCompetitor?.crest?.color1 || 'white',
+                  }}
+                  className="mr-10 flex flex-1 flex-row items-center justify-center py-0.5">
                   <Text
+                    numberOfLines={1}
                     style={{ color: awayTextColor }}
-                    className="mt-1 font-saira-semibold text-2xl">
-                    {fixtureDetails?.awayTeam?.abbreviation}
+                    className={`flex-1 py-1 pl-2 pr-4 ${competitorType === 'team' ? 'mt-1 text-center font-saira-semibold text-2xl' : 'text-left font-saira-medium text-lg'}`}>
+                    {competitorType === 'team'
+                      ? fixtureDetails?.awayCompetitor?.abbreviation
+                      : `${fixtureDetails?.awayCompetitor?.nickname.toUpperCase()}`}
                   </Text>
                 </Pressable>
               </View>
@@ -212,14 +233,14 @@ const FixturePage = ({ fixtureDetails, isLoading, context }) => {
                   numberOfLines={1}
                   ellipsizeMode="middle"
                   className="flex-1 text-right font-saira-semibold text-xl text-text-1">
-                  {fixtureDetails?.homeTeam?.display_name}
+                  {fixtureDetails?.homeCompetitor?.display_name}
                 </Text>
                 <Text className="w-6 text-text-2"> vs </Text>
                 <Text
                   numberOfLines={1}
                   ellipsizeMode="middle"
                   className="flex-1 text-left font-saira-semibold text-xl text-text-1">
-                  {fixtureDetails?.awayTeam?.display_name}
+                  {fixtureDetails?.awayCompetitor?.display_name}
                 </Text>
               </View>
               <View className="border-t border-theme-gray-4 py-2"></View>
@@ -261,12 +282,16 @@ const FixturePage = ({ fixtureDetails, isLoading, context }) => {
             <View>
               <View className="flex h-full gap-3 bg-bg-1 p-3">
                 <SlidingTabButton
-                  option1={fixtureDetails?.homeTeam?.display_name}
-                  option2={fixtureDetails?.awayTeam?.display_name}
+                  option1={fixtureDetails?.homeCompetitor?.display_name}
+                  option2={fixtureDetails?.awayCompetitor?.display_name}
                   onChange={setTeam}
                 />
                 <PlayersList
-                  team={team === 'left' ? fixtureDetails?.homeTeam : fixtureDetails?.awayTeam}
+                  team={
+                    team === 'left'
+                      ? fixtureDetails?.homeCompetitor
+                      : fixtureDetails?.awayCompetitor
+                  }
                   context={context}
                   fixtureId={fixtureId}
                   players={players}
@@ -280,20 +305,23 @@ const FixturePage = ({ fixtureDetails, isLoading, context }) => {
           <View className="mt-5 h-full">
             <View className="border-b-[0.5px] border-theme-gray-5">
               <FormWidget
-                homeTeamId={fixtureDetails?.homeTeam?.id}
-                awayTeamId={fixtureDetails?.awayTeam?.id}
+                homeTeamId={fixtureDetails?.homeCompetitor?.id}
+                awayTeamId={fixtureDetails?.awayCompetitor?.id}
               />
             </View>
             <Text className="p-3 pb-1 font-saira-medium text-xl text-text-1">Current Season</Text>
             <SeasonStats
               fixtureDetails={fixtureDetails}
-              homeTeam={fixtureDetails?.homeTeam}
-              awayTeam={fixtureDetails?.awayTeam}
+              homeTeam={fixtureDetails?.homeCompetitor}
+              awayTeam={fixtureDetails?.awayCompetitor}
             />
             <Text className="p-3 pb-1 font-saira-medium text-xl text-text-1">
               Head to Head - All Time
             </Text>
-            <HeadToHead homeTeam={fixtureDetails?.homeTeam} awayTeam={fixtureDetails?.awayTeam} />
+            <HeadToHead
+              homeTeam={fixtureDetails?.homeCompetitor}
+              awayTeam={fixtureDetails?.awayCompetitor}
+            />
           </View>
         )}
       </View>

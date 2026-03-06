@@ -6,6 +6,7 @@ export const useFixtureDetails = (fixtureId) => {
   const fetchFixtureDetails = async (fixtureId) => {
     if (!fixtureId) throw new Error('Fixture ID is required');
 
+    // 1. Fixture details with team info
     const { data, error } = await supabase
       .from('Fixtures')
       .select(
@@ -29,7 +30,9 @@ export const useFixtureDetails = (fixtureId) => {
           display_name,
           abbreviation,
           crest
-        )
+        ),
+        homePlayer:Players!Fixtures_home_player_fkey(id, first_name, surname, avatar_url, nickname),
+        awayPlayer:Players!Fixtures_away_player_fkey(id, first_name, surname, avatar_url, nickname)
       `
       )
       .eq('id', fixtureId)
@@ -37,26 +40,43 @@ export const useFixtureDetails = (fixtureId) => {
 
     if (error) throw new Error(error.message || 'Failed to fetch fixture details');
 
+    // 2. Fetch frames for this fixture
+    const { data: frames, error: framesError } = await supabase
+      .from('Results')
+      .select('*')
+      .eq('fixture_id', fixtureId);
+
+    if (framesError) throw new Error(framesError.message || 'Failed to fetch fixture frames');
+
     return {
       ...data,
       date: new Date(data.date_time),
-      homeTeam: {
-        ...data.homeTeam,
-        abbreviation: data.homeTeam.abbreviation || 'N/A',
-        address: data.homeTeam.address || null,
-      },
-      awayTeam: {
-        ...data.awayTeam,
-        abbreviation: data.awayTeam.abbreviation || 'N/A',
-      },
+      address: data.homeTeam?.address,
+      homeCompetitor:
+        data.competitor_type === 'team'
+          ? { ...data.homeTeam, type: 'team' }
+          : {
+              ...data.homePlayer,
+              type: 'player',
+              display_name: `${data.homePlayer.first_name} ${data.homePlayer.surname}`,
+            },
+      awayCompetitor:
+        data.competitor_type === 'team'
+          ? { ...data.awayTeam, type: 'team' }
+          : {
+              ...data.awayPlayer,
+              type: 'player',
+              display_name: `${data.awayPlayer.first_name} ${data.awayPlayer.surname}`,
+            },
+      frames: frames || [],
     };
   };
 
   return useQuery({
     queryKey: ['fixture-details', fixtureId],
     queryFn: () => fetchFixtureDetails(fixtureId),
-    enabled: !!fixtureId, // Only run query if fixtureId is defined
-    staleTime: 1000 * 60 * 5, // 5 minutes
+    enabled: !!fixtureId,
+    staleTime: 1000 * 60 * 5,
     retry: false,
   });
 };
