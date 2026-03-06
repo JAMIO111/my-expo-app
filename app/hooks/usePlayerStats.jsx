@@ -158,7 +158,7 @@ export function usePlayerStats(playerId) {
       const { data: playerData, error: playerError } = await supabase
         .from('Players')
         .select(
-          'xp, current_frame_win_streak, best_frame_win_streak, current_match_win_streak, best_match_win_streak'
+          'xp, current_frame_win_streak, best_frame_win_streak, current_match_win_streak, best_match_win_streak, displayed_stats'
         )
         .eq('id', playerId)
         .single();
@@ -174,6 +174,7 @@ export function usePlayerStats(playerId) {
           best_frame_win_streak: safe(playerData?.best_frame_win_streak),
           current_match_win_streak: safe(playerData?.current_match_win_streak),
           best_match_win_streak: safe(playerData?.best_match_win_streak),
+          displayed_stats: playerData?.displayed_stats,
         },
       };
     },

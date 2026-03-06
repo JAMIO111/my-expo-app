@@ -86,7 +86,7 @@ export default function DistrictSettings() {
               value={scoringSystem}
               onChange={setScoringSystem}
               options={[
-                { label: 'Frames Won', value: 'frame_won' },
+                { label: 'Frames Won', value: 'frames_won' },
                 { label: 'Points for Result', value: 'points' },
                 { label: 'Frame Difference', value: 'frame_diff' },
               ]}
@@ -96,8 +96,8 @@ export default function DistrictSettings() {
               style={{ lineHeight: 22 }}
               className="mb-6 mt-2 px-2 font-saira-medium text-lg text-text-on-brand-2">
               {scoringSystem === 'points'
-                ? 'Teams will be awarded points based on match results. You can customise the points awarded for a win, draw, and loss.'
-                : scoringSystem === 'frame_won'
+                ? 'Teams will be awarded points based on match result. You can customise the points awarded for a win, draw, and loss.'
+                : scoringSystem === 'frames_won'
                   ? 'Both teams will be awarded a point for each frame they win.'
                   : 'The winning team will be awarded points based on the difference in frames won between both teams.'}
             </Text>

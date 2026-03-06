@@ -42,9 +42,9 @@ const index = () => {
             {parsedData?.map((item, index) => (
               <View
                 key={index}
-                className="mb-2 w-full flex-row items-center justify-between gap-5 rounded-xl border border-theme-gray-5 bg-bg-grouped-2 p-3 shadow shadow-theme-gray-6">
+                className="mb-2 w-full flex-row items-center justify-between gap-5 rounded-xl border border-theme-gray-5 bg-bg-grouped-2 p-2 shadow shadow-theme-gray-6">
                 <Text
-                  className={`${getBgClass(index)} h-10 w-10 rounded p-2 text-center font-saira text-2xl ${getTextClass(index)}`}>
+                  className={`${getBgClass(index)} h-12 w-12 rounded-lg p-2 text-center font-saira-medium text-2xl ${getTextClass(index)}`}>
                   {index + 1}
                 </Text>
                 {type === 'player' ? (
@@ -59,10 +59,19 @@ const index = () => {
                   />
                 )}
                 <View className="flex-1 items-center justify-start">
-                  <Text className="w-full text-left font-saira-semibold text-xl text-text-1">
+                  <Text
+                    style={{ width: '100%' }}
+                    numberOfLines={1}
+                    ellipsizeMode="tail"
+                    className="font-saira-semibold text-xl text-text-1">
                     {type === 'player' ? `${item.first_name} ${item.surname}` : item.display_name}
                   </Text>
-                  <Text className="w-full text-left font-saira-semibold text-xl text-text-2">
+
+                  <Text
+                    style={{ width: '100%' }}
+                    numberOfLines={1}
+                    ellipsizeMode="tail"
+                    className="font-saira-semibold text-xl text-text-2">
                     {item.team_name}
                   </Text>
                 </View>

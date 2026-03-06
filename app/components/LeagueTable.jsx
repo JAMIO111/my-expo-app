@@ -4,13 +4,15 @@ import { LinearGradient } from 'expo-linear-gradient';
 import TeamLogo from './TeamLogo';
 import { useRouter } from 'expo-router';
 import { useStandings } from '@hooks/useStandings';
+import { useStandingsLive } from '../hooks/useStandingsLive';
 import { TableSkeleton } from '@components/Skeletons';
 
 const LeagueTable = ({ context, season, division }) => {
   const router = useRouter();
   const hasNavigated = useRef(false);
 
-  const { data: standings, isLoading, error, isFetching } = useStandings(division, season);
+  // const { data: standings, isLoading, error, isFetching } = useStandings(division, season);
+  const { data: standings, isLoading, error, isFetching } = useStandingsLive(division, season);
   console.log('LeagueTable standings:', standings);
 
   const handlePress = (team) => {
@@ -21,7 +23,7 @@ const LeagueTable = ({ context, season, division }) => {
       hasNavigated.current = false;
     }, 750);
     if (context === 'home/league') {
-      router.push(`/home/league/${team.team}`);
+      router.push(`/home/league/${team.id}`);
     } else {
       //;
     }
@@ -81,23 +83,23 @@ const LeagueTable = ({ context, season, division }) => {
               )}
             <View className="flex-row items-center justify-around">
               <Text className="w-8 text-center font-saira-medium text-lg text-text-1">
-                {team.position}
+                {index + 1}
               </Text>
               <Pressable
                 onPress={() => handlePress(team)}
                 className="flex-1 flex-row items-center gap-3 py-3 pl-3">
                 <TeamLogo
-                  type={team?.Teams?.crest?.type}
-                  color1={team?.Teams?.crest?.color1}
-                  color2={team?.Teams?.crest?.color2}
-                  thickness={team?.Teams?.crest?.thickness}
+                  type={team?.crest?.type}
+                  color1={team?.crest?.color1}
+                  color2={team?.crest?.color2}
+                  thickness={team?.crest?.thickness}
                   size={20}
                 />
                 <Text
                   numberOfLines={1}
                   ellipsizeMode="tail"
                   className="flex-1 text-left font-saira-medium text-lg text-text-1">
-                  {team.Teams.display_name}
+                  {team.display_name}
                 </Text>
               </Pressable>
               <Text className="w-8 text-center font-saira text-lg text-text-1">{team.played}</Text>

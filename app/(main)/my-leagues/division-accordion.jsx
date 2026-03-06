@@ -92,7 +92,7 @@ const DivisionAccordion = ({ divisionName, teams = [] }) => {
                             {`${player.first_name} ${player.surname} ${player.nickname ? `(${player.nickname})` : ''}`}
                           </Text>
                           {team?.captain === player?.id && (
-                            <View className="h-8 justify-center rounded border bg-yellow-500 shadow-[0_2px_4px_rgba(0,0,0,0.2)]">
+                            <View className="h-8 w-14 justify-center rounded border bg-yellow-500 shadow-[0_2px_4px_rgba(0,0,0,0.2)]">
                               <View className="w-full items-center justify-center bg-white px-1">
                                 <Text style={{ lineHeight: 16 }} className="font-saira text-xs">
                                   Captain
@@ -101,8 +101,8 @@ const DivisionAccordion = ({ divisionName, teams = [] }) => {
                             </View>
                           )}
                           {team?.vice_captain === player?.id && (
-                            <View className="h-8 justify-center rounded border bg-brand-light shadow-[0_2px_4px_rgba(0,0,0,0.2)]">
-                              <View className="w-full items-center justify-center bg-white px-4">
+                            <View className="h-8 w-14 justify-center rounded border bg-brand-light shadow-[0_2px_4px_rgba(0,0,0,0.2)]">
+                              <View className="w-full items-center justify-center bg-white px-1">
                                 <Text style={{ lineHeight: 16 }} className="font-saira text-xs">
                                   VC
                                 </Text>

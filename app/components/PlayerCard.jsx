@@ -85,8 +85,8 @@ const PlayerCard = ({ player, team, context }) => {
             </Text>
             <View className="flex-row items-center">
               {player.nickname && (
-                <Text numberOfLines={1} className="font-saira-semibold text-xl text-text-2">
-                  {player?.nickname}
+                <Text numberOfLines={1} className="font-saira-medium text-xl text-text-2">
+                  {player?.nickname.toUpperCase()}
                 </Text>
               )}
             </View>
@@ -99,7 +99,7 @@ const PlayerCard = ({ player, team, context }) => {
             />
           )}
           {isCaptain && (
-            <View className="h-12 justify-center rounded border bg-yellow-500 shadow-[0_2px_4px_rgba(0,0,0,0.2)]">
+            <View className="h-12 w-20 justify-center rounded border bg-yellow-500 shadow-[0_2px_4px_rgba(0,0,0,0.2)]">
               <View className="w-full items-center justify-center bg-white px-1">
                 <Text style={{ lineHeight: 20 }} className="font-saira">
                   Captain
@@ -108,8 +108,8 @@ const PlayerCard = ({ player, team, context }) => {
             </View>
           )}
           {isViceCaptain && (
-            <View className="h-12 justify-center rounded border bg-brand-light shadow-[0_2px_4px_rgba(0,0,0,0.2)]">
-              <View className="w-full items-center justify-center bg-white px-4">
+            <View className="h-12 w-20 justify-center rounded border bg-brand-light shadow-[0_2px_4px_rgba(0,0,0,0.2)]">
+              <View className="w-full items-center justify-center bg-white px-1">
                 <Text style={{ lineHeight: 20 }} className="font-saira">
                   VC
                 </Text>

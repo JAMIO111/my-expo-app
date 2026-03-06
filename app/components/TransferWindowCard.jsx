@@ -41,7 +41,7 @@ const TransferWindowCard = ({ onPress }) => {
                 </Text>
               </View>
 
-              <Text className="pl-2 font-saira-bold text-3xl leading-8 text-white">
+              <Text className="pl-2 pt-2 font-saira-bold text-3xl leading-8 text-white">
                 Transfer Window{'\n'}Now Open
               </Text>
             </View>
