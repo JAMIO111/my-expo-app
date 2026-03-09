@@ -36,6 +36,7 @@ const FixturePage = ({ fixtureDetails, isLoading, context }) => {
   );
   const [view, setView] = useState('left');
   const [team, setTeam] = useState('left');
+  const [formType, setFormType] = useState('matches');
   const hasNavigated = useRef(false);
 
   const {
@@ -142,7 +143,7 @@ const FixturePage = ({ fixtureDetails, isLoading, context }) => {
                 <View className="flex-row items-center justify-around px-2">
                   <Text
                     style={{ lineHeight: 32 }}
-                    className="items-center justify-center gap-2 rounded-xl border border-theme-red bg-theme-red/20 px-3 py-1 text-center font-saira-medium text-xl text-theme-red">
+                    className="text-md items-center justify-center gap-2 rounded-xl border border-theme-red bg-theme-red/20 px-3 py-0.5 text-center font-saira-medium text-theme-red">
                     Results Required
                   </Text>
                 </View>
@@ -302,20 +303,23 @@ const FixturePage = ({ fixtureDetails, isLoading, context }) => {
             </View>
           )
         ) : (
-          <View className="mt-5 h-full">
-            <View className="border-b-[0.5px] border-theme-gray-5">
+          <View className="h-full gap-3 p-3">
+            <View>
               <FormWidget
-                homeTeamId={fixtureDetails?.homeCompetitor?.id}
-                awayTeamId={fixtureDetails?.awayCompetitor?.id}
+                homeCompetitorId={fixtureDetails?.homeCompetitor?.id}
+                awayCompetitorId={fixtureDetails?.awayCompetitor?.id}
+                competitorType={competitorType}
+                formType={formType}
+                onFormTypeChange={setFormType}
               />
             </View>
-            <Text className="p-3 pb-1 font-saira-medium text-xl text-text-1">Current Season</Text>
+            <Text className="mt-2 font-saira-medium text-2xl text-text-1">Current Season</Text>
             <SeasonStats
               fixtureDetails={fixtureDetails}
               homeTeam={fixtureDetails?.homeCompetitor}
               awayTeam={fixtureDetails?.awayCompetitor}
             />
-            <Text className="p-3 pb-1 font-saira-medium text-xl text-text-1">
+            <Text className="mt-2 pl-2 font-saira-medium text-2xl text-text-1">
               Head to Head - All Time
             </Text>
             <HeadToHead

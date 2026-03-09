@@ -32,7 +32,7 @@ const StatCardCompare = ({ stat, homeTeam, awayTeam }) => {
   }
 
   return (
-    <View className="px-4 pb-3 pt-2">
+    <View className="px-2 pb-3 pt-2">
       <View className="flex-row items-start justify-between">
         <Text className="w-32 text-left font-saira text-2xl font-bold text-text-1">
           {stat.differential ? (stat.homeValue > 0 ? '+' : stat.homeValue < 0 ? '-' : '') : ''}{' '}
@@ -48,7 +48,7 @@ const StatCardCompare = ({ stat, homeTeam, awayTeam }) => {
       </View>
 
       {/* Combined Bar */}
-      <View className="mt-1 h-2 w-full flex-row gap-1 overflow-hidden rounded-full">
+      <View className="mt-1 h-2 w-full flex-row gap-2 overflow-hidden rounded-full">
         <View
           className="rounded-full"
           style={{

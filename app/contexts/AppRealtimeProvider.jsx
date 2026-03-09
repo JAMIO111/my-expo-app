@@ -49,6 +49,7 @@ export default function AppRealtimeProvider({ children }) {
         console.log('Results update payload:', payload);
 
         // Collect all player IDs from new and old rows
+        const fixtureId = payload.new?.fixture_id ?? payload.old?.fixture_id;
         const playerIds = new Set(
           [
             payload.new?.home_player_1,
@@ -66,6 +67,10 @@ export default function AppRealtimeProvider({ children }) {
         playerIds.forEach((id) => {
           queryClient.invalidateQueries(['PlayerStats', id]);
         });
+        // Invalidate ResultsByFixture query for the affected fixture
+        if (fixtureId) {
+          queryClient.invalidateQueries(['ResultsByFixture', fixtureId]);
+        }
       })
       .subscribe((status) => console.log('Results subscription status:', status));
 

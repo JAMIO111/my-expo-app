@@ -1,23 +1,28 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 
-export const useLast5Results = (teamId) => {
+export const useLast5Results = (competitorId, competitorType, formType = 'matches') => {
   return useQuery({
-    queryKey: ['last5Results', teamId],
+    queryKey: ['last5Results', competitorId, competitorType, formType],
     queryFn: async () => {
-      if (!teamId) return null;
+      if (!competitorId) return [];
 
-      const { data, error } = await supabase
-        .rpc('get_last_5_results', { team_id: teamId })
-        .single();
+      const { data, error } = await supabase.rpc('get_last_5_results', {
+        _competitor_id: competitorId, // Match the underscore names
+        _competitor_type: competitorType,
+        _form_type: formType,
+      });
+
       if (error) {
-        throw new Error(error.message);
+        console.error('Form RPC Error:', error.message);
+        throw error;
       }
 
-      return data; // ['W', 'L', 'D', 'W', 'W']
+      return data || [];
     },
-    enabled: !!teamId, // avoid running query when teamId is not yet ready
-    staleTime: 1000 * 60 * 60, // 1 hour
-    cacheTime: 1000 * 60 * 60, // 1 hour
+    enabled: !!competitorId,
+    staleTime: 1000 * 60 * 5,
+    cacheTime: 1000 * 60 * 10,
+    keepPreviousData: true,
   });
 };

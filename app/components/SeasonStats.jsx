@@ -10,15 +10,22 @@ const SeasonStats = ({ homeTeam, awayTeam, fixtureDetails }) => {
     isFetching,
   } = useStandings(fixtureDetails?.division, fixtureDetails?.season);
 
+  const { }
+
   console.log('SeasonStats standings:', standings);
 
-  const homeStats = standings?.standings?.find((s) => s.team === homeTeam?.id);
-  const awayStats = standings?.standings?.find((s) => s.team === awayTeam?.id);
+  const homeStats = standings?.standings?.find((s) => s.id === homeTeam?.id);
+  const awayStats = standings?.standings?.find((s) => s.id === awayTeam?.id);
 
   console.log(homeStats, awayStats);
 
-  if (isLoading) return <Text>Loading...</Text>;
-  if (!standings || standings.length < 2)
+  if (isLoading)
+    return (
+      <View className="bg-bg-grouped-2 p-8">
+        <Text className="w-full text-center font-saira text-lg text-text-2">Loading...</Text>
+      </View>
+    );
+  if (!standings || standings.standings.length < 2)
     return (
       <View className="bg-bg-grouped-2 p-8">
         <Text className="w-full text-center font-saira text-lg text-text-2">
@@ -82,7 +89,7 @@ const SeasonStats = ({ homeTeam, awayTeam, fixtureDetails }) => {
   ];
 
   return (
-    <View>
+    <View className="rounded-3xl bg-bg-1 p-3">
       {/* Stat rows */}
       {statRows.map((stat, index) => (
         <StatCardCompare

@@ -27,7 +27,7 @@ export default function SlidingTabButton({ onChange, option1 = 'Option A', optio
     <View style={[styles.wrapper, { width: TAB_WIDTH }]}>
       <View
         className="bg-background"
-        style={[styles.container, { height: TAB_HEIGHT, borderRadius: TAB_HEIGHT / 5 }]}>
+        style={[styles.container, { height: TAB_HEIGHT, borderRadius: TAB_HEIGHT / 3 }]}>
         <Animated.View
           className="bg-input-background"
           style={[
@@ -37,7 +37,7 @@ export default function SlidingTabButton({ onChange, option1 = 'Option A', optio
               height: TAB_HEIGHT - padding * 2,
               top: padding,
               left: 0,
-              borderRadius: (TAB_HEIGHT - padding * 2) / 5,
+              borderRadius: (TAB_HEIGHT - padding * 2) / 3,
             },
             animatedThumbStyle,
           ]}

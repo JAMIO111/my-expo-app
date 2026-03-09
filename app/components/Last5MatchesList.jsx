@@ -13,7 +13,7 @@ const Last5MatchesList = ({ matches = [] }) => {
               <Text className="text-md font-saira-medium text-text-1">
                 {new Date(match?.date_time).toLocaleDateString('en-GB', {
                   weekday: 'long',
-                  day: '2-digit',
+                  day: 'numeric',
                   month: 'long',
                   year: 'numeric',
                 })}
@@ -23,32 +23,36 @@ const Last5MatchesList = ({ matches = [] }) => {
               <View className="flex-1 flex-row items-center justify-start gap-2">
                 <TeamLogo
                   size={20}
-                  color1={match?.home.crest?.color1}
-                  color2={match?.home.crest?.color2}
-                  type={match?.home.crest?.type}
-                  thickness={match?.home.crest?.thickness}
+                  color1={match?.home_competitor.image?.color1}
+                  color2={match?.home_competitor.image?.color2}
+                  type={match?.home_competitor.image?.type}
+                  thickness={match?.home_competitor.image?.thickness}
                 />
-                <Text className="font-saira-medium text-text-2">{match?.home.abbreviation}</Text>
-                <Text className="font-saira-medium text-text-1">{match?.home.name}</Text>
+                <Text className="font-saira-medium text-text-2">
+                  {match?.home_competitor.abbreviation}
+                </Text>
+                <Text className="font-saira-medium text-text-1">{match?.home_competitor.name}</Text>
               </View>
               <Text className="min-w-6 text-center font-saira-medium text-xl text-text-1">
-                {match?.home.score}
+                {match?.home_score}
               </Text>
             </View>
             <View className="flex-row items-center justify-start gap-2">
               <View className="flex-1 flex-row items-center justify-start gap-2">
                 <TeamLogo
                   size={20}
-                  color1={match?.away.crest?.color1}
-                  color2={match?.away.crest?.color2}
-                  type={match?.away.crest?.type}
-                  thickness={match?.away.crest?.thickness}
+                  color1={match?.away_competitor.image?.color1}
+                  color2={match?.away_competitor.image?.color2}
+                  type={match?.away_competitor.image?.type}
+                  thickness={match?.away_competitor.image?.thickness}
                 />
-                <Text className="font-saira-medium text-text-2">{match?.away.abbreviation}</Text>
-                <Text className="font-saira-medium text-text-1">{match?.away.name}</Text>
+                <Text className="font-saira-medium text-text-2">
+                  {match?.away_competitor.abbreviation}
+                </Text>
+                <Text className="font-saira-medium text-text-1">{match?.away_competitor.name}</Text>
               </View>
               <Text className="min-w-6 text-center font-saira-medium text-xl text-text-1">
-                {match?.away.score}
+                {match?.away_score}
               </Text>
             </View>
           </View>

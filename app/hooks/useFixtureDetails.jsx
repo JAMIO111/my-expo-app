@@ -57,7 +57,7 @@ export const useFixtureDetails = (fixtureId) => {
           ? { ...data.homeTeam, type: 'team' }
           : {
               ...data.homePlayer,
-              type: 'player',
+              type: 'individual',
               display_name: `${data.homePlayer.first_name} ${data.homePlayer.surname}`,
             },
       awayCompetitor:
@@ -65,7 +65,7 @@ export const useFixtureDetails = (fixtureId) => {
           ? { ...data.awayTeam, type: 'team' }
           : {
               ...data.awayPlayer,
-              type: 'player',
+              type: 'individual',
               display_name: `${data.awayPlayer.first_name} ${data.awayPlayer.surname}`,
             },
       frames: frames || [],

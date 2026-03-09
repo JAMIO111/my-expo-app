@@ -31,7 +31,7 @@ const TeamProfile = ({ context, profile, isLoading }) => {
     );
   console.log('Team Profile Component - profile prop:', profile.id);
   const { data: teamAwards } = useTeamAwards(profile?.id);
-  const { data: last5Results } = useLast5Results(profile?.id);
+  const { data: last5Results } = useLast5Results(profile?.id, 'team', 'matches');
   const [viewMatches, setViewMatches] = useState(true);
   const {
     data: players,
@@ -42,7 +42,7 @@ const TeamProfile = ({ context, profile, isLoading }) => {
   console.log('Team Awards Data:', teamAwards);
   console.log('Last 5 Results Data:', last5Results);
 
-  const safeMatches = (last5Results?.matches ?? []).filter(Boolean);
+  const safeMatches = (last5Results?.details ?? []).filter(Boolean);
 
   const { line_1, line_2, city, postcode } = profile?.address || {};
   console.log('Debug Team Profile:', profile);
@@ -178,7 +178,7 @@ const TeamProfile = ({ context, profile, isLoading }) => {
               </View>
             )}
           </Pressable>
-          {viewMatches && <Last5MatchesList matches={last5Results?.matches || []} />}
+          {viewMatches && <Last5MatchesList matches={last5Results?.details || []} />}
         </View>
         <View className="bg-bg-grouped-2 px-4 py-6">
           <Heading text="Team Awards" />

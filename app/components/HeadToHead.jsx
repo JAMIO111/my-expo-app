@@ -6,10 +6,15 @@ import StatCardCompare from '@components/StatCardCompare';
 const HeadToHead = ({ homeTeam, awayTeam }) => {
   const { data, isLoading } = useHeadToHeadStats(homeTeam?.id, awayTeam?.id);
 
-  if (isLoading) return <Text>Loading...</Text>;
+  if (isLoading)
+    return (
+      <View className="rounded-3xl bg-bg-1 p-8">
+        <Text className="w-full text-center font-saira text-lg text-text-2">Loading...</Text>
+      </View>
+    );
   if (!data || data.length < 2)
     return (
-      <View className="bg-bg-grouped-2 p-8">
+      <View className="rounded-3xl bg-bg-1 p-8">
         <Text className="w-full text-center font-saira text-lg text-text-2">
           No head-to-head data available.
         </Text>
@@ -53,10 +58,15 @@ const HeadToHead = ({ homeTeam, awayTeam }) => {
       awayValue: awayStats.frame_win_percent,
       isPercentage: true,
     },
+    {
+      statName: 'Frames Won / Match',
+      homeValue: homeStats.frames_won / (homeStats.games_played || 1),
+      awayValue: awayStats.frames_won / (awayStats.games_played || 1),
+    },
   ];
 
   return (
-    <View>
+    <View className="rounded-3xl bg-bg-1 p-3 pb-5">
       {/* Header */}
       <View className="mb-1 flex-row justify-between bg-bg-grouped-2 p-3">
         <View className="flex-1 flex-row items-center justify-start gap-3">
