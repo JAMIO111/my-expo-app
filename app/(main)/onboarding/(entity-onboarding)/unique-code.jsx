@@ -161,12 +161,12 @@ const UniqueCode = () => {
     <>
       <Stack.Screen
         options={{
-          title: isNewTeam ? 'Step 1 of 7' : isNewLeague ? 'Step 1 of 5' : 'Step 1 of 3',
+          title: isNewTeam ? 'Step 1 of 7' : isNewLeague ? 'Step 1 of 4' : 'Step 1 of 3',
         }}
       />
 
       <View className="flex-1 gap-3 bg-brand">
-        <StepPillGroup steps={isNewTeam ? 7 : isNewLeague ? 5 : 3} currentStep={1} />
+        <StepPillGroup steps={isNewTeam ? 7 : isNewLeague ? 4 : 3} currentStep={1} />
         <View className="p-5">
           <Text
             style={{ lineHeight: 50 }}

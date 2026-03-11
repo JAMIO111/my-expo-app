@@ -16,7 +16,7 @@ const AdminOrPlayer = () => {
       />
       <View className="flex-1 bg-brand">
         <View className="p-5">
-          <Text className="mb-4 font-delagothic text-6xl font-bold text-text-on-brand">
+          <Text className="mb-4 pt-2 font-delagothic text-6xl font-bold text-text-on-brand">
             Select your role.
           </Text>
           <Text className="font-saira text-2xl text-text-on-brand-2">

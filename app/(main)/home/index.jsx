@@ -83,25 +83,6 @@ const Home = () => {
     enabled: !!currentRole?.team?.id,
   });
 
-  const handleRecalcStandings = async () => {
-    console.log('🟡 Recalc button pressed');
-    console.log('Current Role:', currentRole?.activeSeason?.id, currentRole?.team?.division?.id);
-    const { error, data } = await supabase.rpc('recalculate_standings', {
-      _season_id: currentRole?.activeSeason?.id,
-      _division_id: currentRole?.team?.division?.id,
-    });
-
-    console.log('RPC data:', data);
-    console.log('RPC error:', error);
-
-    if (error) {
-      console.error('Failed to recalculate standings:', error.message);
-    } else {
-      console.log('Standings recalculation data:', data);
-      console.log('Standings recalculated successfully');
-    }
-  };
-
   console.log('Fixtures Awaiting Results:', fixturesAwaitingResults);
   console.log('Upcoming Fixtures:', upcomingFixtures);
   console.log('Results Pending Approval:', resultsPendingApproval);
@@ -274,7 +255,6 @@ const Home = () => {
                     router.push('/(main)/home/premium');
                   }}
                 />
-                <CTAButton text="Recalc Standings" callbackFn={handleRecalcStandings} />
                 <CTAButton
                   text="Check Badges"
                   callbackFn={async () => {

@@ -757,3 +757,62 @@ export const normalizeSubscription = (p) => {
     raw: p,
   };
 };
+
+export async function createNewSeason(districtId, startDate) {
+  const newStart = new Date(startDate);
+
+  try {
+    // Get all seasons for the district
+    const { data: seasons, error } = await supabase
+      .from('Seasons')
+      .select('id, name, start_date, end_date')
+      .eq('district', districtId);
+
+    if (error) throw error;
+
+    const today = new Date();
+
+    for (const season of seasons || []) {
+      const start = new Date(season.start_date);
+      const end = season.end_date ? new Date(season.end_date) : null;
+
+      // CASE 1 — A season is currently running
+      if (!end || end >= today) {
+        if (newStart >= start) {
+          throw new Error(
+            `A season ("${season.name}") is currently in progress and must finish before a new season can start.`
+          );
+        }
+      }
+
+      // CASE 2 — Overlap with previous completed season
+      if (end && newStart >= start && newStart <= end) {
+        throw new Error(
+          `Start date overlaps with previous season "${season.name}" which ran from ${season.start_date} to ${season.end_date}.`
+        );
+      }
+    }
+
+    // Generate simple name
+    const year = newStart.getFullYear();
+    const name = `${year} Season`;
+
+    const { data, error: insertError } = await supabase
+      .from('Seasons')
+      .insert({
+        name,
+        start_date: startDate,
+        district: districtId,
+        is_active: true,
+      })
+      .select()
+      .single();
+
+    if (insertError) throw insertError;
+
+    return data;
+  } catch (err) {
+    console.error('Create season failed:', err.message);
+    throw err;
+  }
+}

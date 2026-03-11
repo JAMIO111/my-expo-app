@@ -10,6 +10,9 @@ const CTAButton = ({
   callbackFn,
   disabled,
   loading = false,
+  borderRadius = 16,
+  textSize = 'text-xl',
+  fontWeight = 'font-saira-medium',
 }) => {
   const colorScheme = useColorScheme();
   const themeColors = colorScheme === 'dark' ? colors.dark : colors.light;
@@ -61,19 +64,19 @@ const CTAButton = ({
           backgroundColor: buttonTheme.primary,
           borderColor: buttonTheme.secondary,
           opacity: disabled || loading ? 0.6 : 1,
-          borderRadius: 16,
+          borderRadius: borderRadius,
         }}>
         {loading ? (
-          <View className="flex-row items-center justify-center gap-3">
+          <View className="flex-row items-center justify-center gap-2">
             <ActivityIndicator size="small" color={iconColor} />
-            <Text style={{ color: buttonTheme.text }} className={`pt-1 font-saira text-xl`}>
+            <Text style={{ color: buttonTheme.text }} className={`py-1 ${fontWeight} ${textSize}`}>
               {text}
             </Text>
           </View>
         ) : (
-          <View className="flex-row items-center justify-center gap-3">
+          <View className="flex-row items-center justify-center gap-2">
             {icon && icon}
-            <Text style={{ color: buttonTheme.text }} className={`pt-1 font-saira text-xl`}>
+            <Text style={{ color: buttonTheme.text }} className={`py-1 ${fontWeight} ${textSize}`}>
               {text}
             </Text>
           </View>

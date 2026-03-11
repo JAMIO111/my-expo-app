@@ -10,8 +10,6 @@ const SeasonStats = ({ homeTeam, awayTeam, fixtureDetails }) => {
     isFetching,
   } = useStandings(fixtureDetails?.division, fixtureDetails?.season);
 
-  const { }
-
   console.log('SeasonStats standings:', standings);
 
   const homeStats = standings?.standings?.find((s) => s.id === homeTeam?.id);

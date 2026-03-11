@@ -9,10 +9,10 @@ import { supabase } from '@/lib/supabase';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import Toast from 'react-native-toast-message';
 
-export default function DistrictName() {
+export default function SeasonName() {
   const router = useRouter();
-  const [districtName, setDistrictName] = useState('');
-  const [privateDistrict, setPrivateDistrict] = useState(false);
+  const [seasonName, setSeasonName] = useState('');
+  const [startDate, setStartDate] = useState(new Date().toISOString().split('T')[0]); // Default to today's date
 
   const { districtId } = useLocalSearchParams();
 
@@ -26,11 +26,11 @@ export default function DistrictName() {
   };
 
   const handleSubmit = async () => {
-    if (!districtName.trim()) {
+    if (!seasonName.trim()) {
       Toast.show({
         type: 'error',
         text1: 'Invalid Name',
-        text2: 'District name cannot be empty.',
+        text2: 'Season name cannot be empty.',
       });
       return;
     }
@@ -92,16 +92,16 @@ export default function DistrictName() {
       <View className="flex-1 bg-brand px-4">
         <StepPillGroup steps={4} currentStep={2} />
         <Text className="my-4 pt-5 font-delagothic text-5xl text-text-on-brand">
-          Please enter the name of your district.
+          Lets create your first season! What would you like to call it?
         </Text>
         <View className="mb-6">
           <CustomTextInput
-            title="District Name"
-            value={districtName}
-            onChangeText={setDistrictName}
-            leftIconName="map-outline"
+            title="Season Name"
+            value={seasonName}
+            onChangeText={setSeasonName}
+            leftIconName="calendar-outline"
             iconColor="purple"
-            placeholder="e.g. Downtown District"
+            placeholder="e.g. 2025/26 or Summer 2026"
             autoCapitalize="words"
             returnKeyType="done"
           />

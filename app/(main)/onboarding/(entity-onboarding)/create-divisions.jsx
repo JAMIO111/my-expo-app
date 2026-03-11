@@ -1,14 +1,5 @@
-import {
-  View,
-  Text,
-  FlatList,
-  Pressable,
-  Switch,
-  Platform,
-  KeyboardAvoidingView,
-  Alert,
-} from 'react-native';
-import { useState, useRef } from 'react';
+import { View, Text, FlatList, Pressable, Alert } from 'react-native';
+import { useState, useRef, useMemo, useEffect } from 'react';
 import { Stack, useRouter, useLocalSearchParams } from 'expo-router';
 import CTAButton from '@components/CTAButton';
 import StepPillGroup from '@components/StepPillGroup';
@@ -27,8 +18,9 @@ import Animated, {
   withSpring,
   interpolate,
 } from 'react-native-reanimated';
+import CustomMultiSelect from '../../../components/CustomMultiSelect';
 
-// SwipeableCard component for individual division cards
+// SwipeableCard (Keeping your existing logic)
 const SwipeableCard = ({ item, onDelete, children }) => {
   const translateX = useSharedValue(0);
   const opacity = useSharedValue(1);
@@ -57,7 +49,7 @@ const SwipeableCard = ({ item, onDelete, children }) => {
       if (shouldShowDialog) {
         // Show confirmation dialog instead of immediately deleting
         translateX.value = withSpring(-80); // Snap to show delete button
-        runOnJS(onDelete)(item.id, resetPosition);
+        runOnJS(onDelete)(item.tempId, resetPosition);
       } else if (translateX.value < REVEAL_THRESHOLD) {
         // Snap to show delete button
         translateX.value = withSpring(-80);
@@ -97,7 +89,7 @@ const SwipeableCard = ({ item, onDelete, children }) => {
 
   const handleDeletePress = () => {
     // Show confirmation dialog and pass reset function
-    runOnJS(onDelete)(item.id, resetPosition);
+    runOnJS(onDelete)(item.tempId, resetPosition);
   };
 
   return (
@@ -111,7 +103,7 @@ const SwipeableCard = ({ item, onDelete, children }) => {
             onPress={handleDeletePress}
             className="h-full w-full items-center justify-center">
             <Ionicons name="trash-outline" size={24} color="white" />
-            <Text className="mt-2 font-saira-medium text-white">Delete</Text>
+            <Text className="font-saira-medium text-white">Delete</Text>
           </Pressable>
         </Animated.View>
 
@@ -127,343 +119,367 @@ const SwipeableCard = ({ item, onDelete, children }) => {
 };
 
 export default function CreateDivisions() {
-  const [name, setName] = useState('');
-  const [promotionSpots, setPromotionSpots] = useState('');
-  const [relegationSpots, setRelegationSpots] = useState('');
-  const [divisions, setDivisions] = useState([]);
-  const [drawsEnabled, setDrawsEnabled] = useState(false);
-  const [specialMatchesEnabled, setSpecialMatchesEnabled] = useState(false);
-  const [specialMatchName, setSpecialMatchName] = useState('');
-  const [midSeasonTransfersEnabled, setMidSeasonTransfersEnabled] = useState(false);
-  const [specialMatchAbbreviation, setSpecialMatchAbbreviation] = useState('');
-  const [selectedDivision, setSelectedDivision] = useState(null);
+  const router = useRouter();
+  const { districtId, districtName, privateDistrict } = useLocalSearchParams();
   const bottomSheetRef = useRef(null);
   const colorScheme = useColorScheme();
   const themeColors = colors[colorScheme] || colors.light;
-  const router = useRouter();
-  const { districtId, districtName, privateDistrict } = useLocalSearchParams();
-  console.log('District:', districtName);
-  console.log('Private:', privateDistrict);
-  console.log('ID:', districtId);
 
-  // Auto-assign tier based on number of existing divisions
-  const nextTier = divisions.length + 1;
-  const isTopTier = nextTier === 1;
+  // --- STATE ---
+  const [groups, setGroups] = useState([]); // [{id: 1, name: 'Main', type: 'team'}]
+  const [divisions, setDivisions] = useState([]);
+  const [sheetMode, setSheetMode] = useState('GROUP'); // 'GROUP' or 'DIVISION'
 
-  const resetForm = () => {
-    setName('');
-    setPromotionSpots('');
-    setRelegationSpots('');
-    setDrawsEnabled(false);
-    setSpecialMatchesEnabled(false);
-    setSpecialMatchName('');
-    setSpecialMatchAbbreviation('');
-    setSelectedDivision(null);
-    setMidSeasonTransfersEnabled(false);
-  };
+  // Group Form
+  const [gName, setGName] = useState('');
+  const [compType, setCompType] = useState('team'); // 'individual' or 'team'
 
-  const handleSave = () => {
-    // Check top tier promotions
-    const topTier = divisions.find((d) => d.tier === 1);
-    if (topTier.promotionSpots !== 0) {
-      alert('Top tier promotions must be 0.');
-      return;
-    }
-
-    // Check bottom tier relegations
-    const bottomTier = divisions.find((d) => d.tier === divisions.length);
-    if (bottomTier.relegationSpots !== 0) {
-      alert('Bottom tier relegations must be 0.');
-      return;
-    }
-
-    // Check intermediate tiers for mismatch
-    const mismatchedTiers = [];
-    for (let i = 0; i < divisions.length - 1; i++) {
-      const current = divisions[i];
-      const next = divisions[i + 1];
-      if (current.relegationSpots !== next.promotionSpots) {
-        mismatchedTiers.push({
-          currentTier: current.tier,
-          nextTier: next.tier,
-          currentRelegation: current.relegationSpots,
-          nextPromotion: next.promotionSpots,
-        });
-      }
-    }
-
-    if (mismatchedTiers.length > 0) {
-      const message = mismatchedTiers
-        .map(
-          (m) =>
-            `Tier ${m.currentTier} relegations (${m.currentRelegation}) do not match Tier ${m.nextTier} promotions (${m.nextPromotion})`
-        )
-        .join('\n');
-
-      Alert.alert(
-        'Warning',
-        `Some intermediate tiers have mismatched promotions/relegations:\n\n${message}\n\nAre you sure this is what you want?`,
-        [
-          { text: 'No. Change it.', style: 'destructive' },
-          {
-            text: 'Yes. Continue anyway.',
-            onPress: () =>
-              router.push({
-                pathname: '/(main)/onboarding/division-rewards',
-                params: {
-                  divisions: JSON.stringify(divisions),
-                  districtId,
-                  districtName,
-                  privateDistrict,
-                },
-              }),
-          },
-        ]
-      );
-      return;
-    }
-
-    // If all checks pass
-    console.log('Saving divisions:', divisions);
-    router.push({
-      pathname: '/(main)/onboarding/(entity-onboarding)/division-rewards',
-      params: { divisions: JSON.stringify(divisions), districtId, districtName, privateDistrict },
-    });
-  };
+  // Division Form
+  const [dName, setDName] = useState('');
+  const [tier, setTier] = useState('1');
+  const [promo, setPromo] = useState('0');
+  const [releg, setReleg] = useState('0');
+  const [selectedGroupId, setSelectedGroupId] = useState(null);
+  const [editingDivisionId, setEditingDivisionId] = useState(null);
 
   const closeSheet = () => {
+    editingDivisionId ? setEditingDivisionId(null) : null;
+    setGName('');
+    setDName('');
+    setTier('1');
+    setPromo('0');
+    setReleg('0');
     bottomSheetRef.current?.close();
   };
 
-  const openSheet = () => {
-    bottomSheetRef.current?.expand();
+  useEffect(() => {
+    if (selectedGroupId) {
+      setTier(nextTier.toString());
+    }
+  }, [selectedGroupId, nextTier]);
+
+  // --- LOGIC ---
+  const handleAddGroup = () => {
+    if (!gName) return Alert.alert('Error', 'Enter a group name');
+    const newGroup = {
+      id: groups.length + 1,
+      name: gName,
+      type: compType,
+    };
+    setGroups([...groups, newGroup]);
+    setGName('');
+    closeSheet();
   };
 
-  const handleSubmit = () => {
-    if (!name) {
-      alert('Please enter a division name.');
-      return;
-    }
-    if (!isTopTier && !promotionSpots) {
-      alert('Please enter number of promotion spots.');
-      return;
-    }
-    if (!relegationSpots) {
-      alert('Please enter number of relegation spots.');
-      return;
-    }
-    if (specialMatchesEnabled && !specialMatchName) {
-      alert('Please enter a name for the special match.');
-      return;
-    }
-    if (specialMatchesEnabled && !specialMatchAbbreviation) {
-      alert('Please enter an abbreviation for the special match.');
-      return;
-    }
+  const handleDeleteGroup = (id) => {
+    setGroups((prev) => prev.filter((g) => g.id !== id));
+    setDivisions((prev) => prev.filter((d) => d.groupId !== id));
+  };
 
-    const newDivisionData = {
-      id: selectedDivision ? selectedDivision.id : Date.now().toString(),
-      name,
-      tier: selectedDivision ? selectedDivision.tier : nextTier,
-      promotionSpots: isTopTier ? 0 : Number(promotionSpots) || 0,
-      relegationSpots: Number(relegationSpots) || 0,
-      drawsEnabled,
-      midSeasonTransfersEnabled,
-      specialMatchesEnabled,
-      specialMatchName: specialMatchesEnabled ? specialMatchName : '',
-      specialMatchAbbreviation: specialMatchesEnabled ? specialMatchAbbreviation : '',
-    };
+  const isTopTier = useMemo(() => {
+    const groupDivisions = divisions.filter((d) => d.groupId === selectedGroupId);
+    if (groupDivisions.length === 0) return false;
+    const minTier = Math.min(...groupDivisions.map((d) => d.tier));
+    return Number(tier) === minTier;
+  }, [tier, selectedGroupId, divisions]);
+
+  const handleSaveDivision = () => {
+    if (!selectedGroupId) return Alert.alert('Missing Info', 'Select a group for the division');
+    if (!dName) return Alert.alert('Missing Info', 'Enter a division name');
 
     setDivisions((prev) => {
       let updated;
-      if (selectedDivision) {
-        // Update existing
-        updated = prev.map((d) => (d.id === selectedDivision.id ? newDivisionData : d));
+
+      if (editingDivisionId) {
+        // Editing existing division
+        updated = prev.map((d) =>
+          d.tempId === editingDivisionId
+            ? {
+                ...d,
+                name: dName,
+                tier: Number(tier),
+                promotionSpots: Number(tier) === 1 ? 0 : Number(promo),
+                relegationSpots: Number(releg),
+              }
+            : d
+        );
       } else {
-        // Add new
-        updated = [...prev, newDivisionData];
+        // Adding new division
+        const newDiv = {
+          tempId: Date.now().toString(),
+          groupId: selectedGroupId,
+          groupName: groups.find((g) => g.id === selectedGroupId)?.name || '',
+          name: dName,
+          tier: Number(tier),
+          promotionSpots: Number(tier) === 1 ? 0 : Number(promo),
+          relegationSpots: Number(releg),
+        };
+        updated = [...prev, newDiv];
       }
 
-      // Sort and adjust tiers/promotions/relegations
-      return updated
+      // Reorder tiers for the group to avoid duplicates/gaps
+      const groupDivs = updated
+        .filter((d) => d.groupId === selectedGroupId)
         .sort((a, b) => a.tier - b.tier)
-        .map((division, index, array) => ({
-          ...division,
-          promotionSpots: index === 0 ? 0 : division.promotionSpots,
-          relegationSpots: division.relegationSpots,
-        }));
+        .map((d, index) => ({ ...d, tier: index + 1 })); // ✅ create new objects
+
+      // Merge back with divisions from other groups
+      const otherDivs = updated.filter((d) => d.groupId !== selectedGroupId);
+      return [...otherDivs, ...groupDivs];
     });
 
+    // Reset form
+    setEditingDivisionId(null);
+    setDName('');
+    setTier(nextTier.toString());
+    setPromo('0');
+    setReleg('0');
     closeSheet();
-    resetForm();
-    setSelectedDivision(null);
   };
 
-  const handleDeleteDivision = (divisionId, resetCardPosition) => {
-    const division = divisions.find((d) => d.id === divisionId);
+  const handleEditDivision = (div) => {
+    setEditingDivisionId(div.tempId);
+    setSelectedGroupId(div.groupId);
+    setDName(div.name);
+    setTier(div.tier.toString());
+    setPromo(div.promotionSpots.toString());
+    setReleg(div.relegationSpots.toString());
 
-    Alert.alert('Delete Division', `Are you sure you want to delete "${division?.name}"?`, [
-      {
-        text: 'Cancel',
-        style: 'cancel',
-        onPress: () => {
-          // Reset card position when cancelled
-          if (resetCardPosition) {
-            resetCardPosition();
-          }
+    setSheetMode('DIVISION');
+    bottomSheetRef.current?.expand();
+  };
+
+  const handleDeleteDivision = (id) => {
+    setDivisions((prev) => {
+      // Remove the division
+      const updated = prev.filter((d) => d.tempId !== id);
+
+      // Find the group of the deleted division
+      const deletedGroupId = prev.find((d) => d.tempId === id)?.groupId;
+
+      if (!deletedGroupId) return updated;
+
+      // Reorder tiers only for that group
+      const groupDivs = updated
+        .filter((d) => d.groupId === deletedGroupId)
+        .sort((a, b) => a.tier - b.tier)
+        .map((d, index) => ({
+          ...d,
+          tier: index + 1, // assign sequential tiers
+        }));
+
+      // Merge back with divisions from other groups
+      const otherDivs = updated.filter((d) => d.groupId !== deletedGroupId);
+
+      return [...otherDivs, ...groupDivs];
+    });
+
+    // Optional: update nextTier for the selected group
+    if (selectedGroupId === null) return;
+
+    const groupDivisions = divisions
+      .filter((d) => d.groupId === selectedGroupId && d.id !== id)
+      .map((d) => d.tier);
+
+    const next = groupDivisions.length > 0 ? Math.max(...groupDivisions) + 1 : 1;
+    setTier(next.toString());
+  };
+
+  const handleSave = () => {
+    const payload = divisions.map(({ tempId, ...rest }) => rest);
+
+    const warnings = [];
+
+    groups.forEach((group) => {
+      // Get divisions for this group and sort by tier
+      const groupDivs = divisions
+        .filter((d) => d.groupId === group.id)
+        .sort((a, b) => a.tier - b.tier);
+
+      if (groupDivs.length === 0) return; // skip empty groups
+
+      // Top tier promotions must be 0
+      if (groupDivs[0].promotionSpots !== 0) {
+        warnings.push(`Group "${group.name}": Top tier promotions must be 0.`);
+      }
+
+      // Bottom tier relegations must be 0
+      if (groupDivs[groupDivs.length - 1].relegationSpots !== 0) {
+        warnings.push(`Group "${group.name}": Bottom tier relegations must be 0.`);
+      }
+
+      // Intermediate tiers mismatch check
+      for (let i = 0; i < groupDivs.length - 1; i++) {
+        const current = groupDivs[i];
+        const next = groupDivs[i + 1];
+        if (current.relegationSpots !== next.promotionSpots) {
+          warnings.push(
+            `Group "${group.name}": ${current.name} relegations (${current.relegationSpots}) do not match ${next.name} promotions (${next.promotionSpots})`
+          );
+        }
+      }
+    });
+
+    if (warnings.length > 0) {
+      Alert.alert('Warning', warnings.join('\n'), [
+        { text: "Okay, I'll fix it.", style: 'destructive' },
+        {
+          text: 'Continue anyway',
+          onPress: () =>
+            router.push({
+              pathname: '/(main)/onboarding/(entity-onboarding)/create-season',
+              params: {
+                divisions: JSON.stringify(payload),
+                groups: JSON.stringify(groups),
+                districtId,
+                districtName,
+                privateDistrict,
+              },
+            }),
         },
+      ]);
+      return;
+    }
+
+    // All checks pass
+    router.push({
+      pathname: '/(main)/onboarding/(entity-onboarding)/create-season',
+      params: {
+        divisions: JSON.stringify(payload),
+        groups: JSON.stringify(groups),
+        districtId,
+        districtName,
+        privateDistrict,
       },
-      {
-        text: 'Delete',
-        style: 'destructive',
-        onPress: () => {
-          // Remove the division and renumber all tiers
-          setDivisions((prev) => {
-            const filtered = prev.filter((d) => d.id !== divisionId);
-            // Renumber tiers sequentially starting from 1
-            return filtered
-              .sort((a, b) => a.tier - b.tier) // Sort by current tier first
-              .map((division, index) => ({
-                ...division,
-                tier: index + 1, // Assign new tier numbers 1, 2, 3, etc.
-              }));
-          });
-        },
-      },
-    ]);
+    });
   };
 
-  const renderDivisionCard = ({ item }) => (
-    <SwipeableCard
-      item={item}
-      onDelete={(divisionId, resetCardPosition) =>
-        handleDeleteDivision(divisionId, resetCardPosition)
-      }>
-      <Pressable
-        onPress={() => handleEditDivision(item)}
-        className="flex-row items-center justify-between gap-5 rounded-2xl bg-bg-grouped-2 px-5 py-3 shadow-sm">
-        <View className="flex-1 gap-2">
-          <View className="flex-row items-center gap-2">
-            <Text className="font-saira-medium text-2xl text-text-2">Tier {item.tier} -</Text>
-            <Text className="font-saira-medium text-2xl text-text-1">{item.name}</Text>
-          </View>
-          <View className="flex-row flex-wrap items-center gap-3">
-            <View
-              className={`${
-                item.drawsEnabled
-                  ? 'border-theme-green bg-theme-green/50'
-                  : 'border-theme-red bg-theme-red/50'
-              } max-w-[50%] rounded-lg border px-2`}>
-              <Text className="font-saira text-text-1" numberOfLines={1} ellipsizeMode="tail">
-                {item.drawsEnabled ? 'Draws Enabled' : 'Draws Disabled'}
-              </Text>
-            </View>
+  const nextTier = useMemo(() => {
+    const groupDivisions = divisions.filter((d) => d.groupId === selectedGroupId);
+    if (groupDivisions.length === 0) return 1;
+    const maxTier = Math.max(...groupDivisions.map((d) => d.tier));
+    return maxTier + 1;
+  }, [selectedGroupId, divisions]);
 
-            <View
-              className={`${
-                item.specialMatchesEnabled
-                  ? 'border-theme-purple bg-theme-purple/50'
-                  : 'border-theme-red bg-theme-red/50'
-              } max-w-[100%] rounded-lg border px-2`}>
-              <Text className="font-saira text-text-1" numberOfLines={1} ellipsizeMode="tail">
-                {item.specialMatchesEnabled ? item.specialMatchName : 'No Special Matches'}
-              </Text>
-            </View>
-          </View>
-        </View>
-        <View>
-          <View className="flex-row items-center gap-1">
-            <Ionicons name="caret-up-outline" size={32} color="#4CAF50" />
-            <Text className="pt-1 font-saira-medium text-2xl text-text-1">
-              {item.promotionSpots}
-            </Text>
-          </View>
+  const updateNextTier = (groupId) => {
+    if (!groupId) return setTier('1');
 
-          <View className="flex-row items-center gap-1">
-            <Ionicons name="caret-down-outline" size={32} color="#FF3B30" />
-            <Text className="pt-1 font-saira-medium text-2xl text-text-1">
-              {item.relegationSpots}
-            </Text>
-          </View>
-        </View>
-      </Pressable>
-    </SwipeableCard>
-  );
+    const groupDivisions = divisions.filter((d) => d.groupId === groupId).map((d) => d.tier);
 
-  const handleEditDivision = (division) => {
-    setSelectedDivision(division);
-    setName(division.name);
-    setPromotionSpots(division.promotionSpots.toString());
-    setRelegationSpots(division.relegationSpots.toString());
-    setDrawsEnabled(division.drawsEnabled);
-    setSpecialMatchesEnabled(division.specialMatchesEnabled);
-    setSpecialMatchName(division.specialMatchName);
-    setSpecialMatchAbbreviation(division.specialMatchAbbreviation);
-    setMidSeasonTransfersEnabled(division.midSeasonTransfersEnabled);
-    openSheet();
+    if (groupDivisions.length === 0) {
+      setTier('1');
+    } else {
+      const maxTier = Math.max(...groupDivisions);
+      setTier((maxTier + 1).toString());
+    }
   };
+
+  console.log('Groups:', groups);
+  console.log('Divisions:', divisions);
 
   return (
     <>
-      <Stack.Screen
-        options={{
-          title: 'Step 4 of 5',
-        }}
-      />
+      <Stack.Screen options={{ title: 'Step 3 of 4' }} />
       <View className="flex-1 bg-brand px-4">
-        <StepPillGroup steps={5} currentStep={4} />
-        <View className="my-8">
-          <Text className="pb-4 font-delagothic text-3xl text-text-on-brand">
-            Add and configure your league's divisions.
-          </Text>
-          <CTAButton
-            text={divisions.length === 0 ? 'Add Division' : 'Add Another Division'}
-            icon={<Ionicons name="add" size={24} color="black" />}
-            type="yellow"
-            textColor="text-black"
-            iconColor="black"
-            callbackFn={() => {
-              resetForm();
-              openSheet();
-            }}
-          />
-        </View>
+        <StepPillGroup steps={4} currentStep={3} />
 
-        {divisions.length > 0 ? (
-          <>
-            <Text className="mb-2 font-saira-medium text-2xl text-text-on-brand">
-              {districtName} Divisions
-            </Text>
-            <FlatList
-              data={divisions.sort((a, b) => a.tier - b.tier)} // Always display in tier order
-              keyExtractor={(item) => item.id}
-              renderItem={renderDivisionCard}
-              showsVerticalScrollIndicator={false}
-            />
-            <Text
-              style={{ lineHeight: 22 }}
-              className="mx-2 mb-4 mt-2 font-saira-medium text-lg text-text-on-brand-2">
-              Ensure divisions are in the correct order. Swipe left on a division to remove it.
-            </Text>
-            <View className="mb-16 w-full">
+        <View className="my-6">
+          <Text className="pb-2 font-delagothic text-2xl text-text-on-brand">
+            Structure your league.
+          </Text>
+          <Text className="pb-4 font-saira text-sm text-text-on-brand-2">
+            A group is a collection of divisions that promote/relegate to each other as a ladder.
+            Only create new group if division is unrelated to the existing one (e.g. Monday Teams,
+            and Thursday Singles) You are not creating competitions at this point - just the
+            structure.
+          </Text>
+          <View className="flex-row gap-2">
+            <View className="flex-1">
               <CTAButton
-                icon={<Ionicons name="checkmark" size={24} color="black" />}
-                text="Save & Continue"
+                text="NEW GROUP"
                 type="yellow"
-                textColor="text-black"
-                iconColor="black"
-                callbackFn={handleSave}
+                icon={<Ionicons name="duplicate-outline" size={20} color={themeColors.text} />}
+                callbackFn={() => {
+                  setSheetMode('GROUP');
+                  bottomSheetRef.current?.expand();
+                }}
+                borderRadius={12}
               />
             </View>
-          </>
-        ) : (
-          <View>
-            <Text className="mb-2 font-saira-medium text-2xl text-text-on-brand">
-              {districtName} Divisions
-            </Text>
-            <View className="items-center justify-center rounded-2xl bg-bg-grouped-1 p-8">
-              <Text className="font-saira text-xl text-text-1">No divisions added yet.</Text>
+
+            {groups.length > 0 && (
+              <View className="flex-1">
+                <CTAButton
+                  text="ADD DIVISION"
+                  type="white"
+                  icon={<Ionicons name="add" size={20} color={themeColors.text} />}
+                  callbackFn={() => {
+                    setSheetMode('DIVISION');
+                    updateNextTier(selectedGroupId);
+                    bottomSheetRef.current?.expand();
+                  }}
+                  borderRadius={12}
+                />
+              </View>
+            )}
+          </View>
+        </View>
+
+        <FlatList
+          data={groups}
+          keyExtractor={(item) => item.id.toString()}
+          renderItem={({ item: group }) => (
+            <View className="mb-8">
+              <View className="mb-3 flex-row items-baseline justify-between border-b border-white/20 pb-1">
+                <Text className="font-saira-semibold text-lg uppercase text-theme-yellow">
+                  {group.name} <Text className="text-sm text-text-on-brand-2">({group.type})</Text>
+                </Text>
+                <Pressable
+                  onPress={() => {
+                    handleDeleteGroup(group.id);
+                  }}
+                  className="flex-row items-center gap-2 rounded-lg bg-theme-red px-1 py-0.5">
+                  <Ionicons name="trash-outline" size={16} color="#FFFFFF" />
+                  <Text className="font-saira text-white">Delete Group</Text>
+                </Pressable>
+              </View>
+
+              {divisions
+                .filter((d) => d.groupId === group.id)
+                .map((div) => (
+                  <SwipeableCard key={div.tempId} item={div} onDelete={handleDeleteDivision}>
+                    <Pressable
+                      onPress={() => handleEditDivision(div)}
+                      className="flex-row items-center justify-between rounded-2xl bg-bg-grouped-2 px-5 py-3">
+                      <View>
+                        <Text className="font-saira-semibold text-xl text-text-1">{div.name}</Text>
+                        <Text className="text-md font-saira-medium text-text-2">
+                          Tier {div.tier}
+                        </Text>
+                      </View>
+                      <View className="flex-row gap-4">
+                        <View className="items-center gap-1">
+                          <Ionicons name="caret-up" size={20} color="green" />
+                          <Text className="font-saira-medium text-xl text-text-1">
+                            {div.promotionSpots}
+                          </Text>
+                        </View>
+                        <View className="items-center gap-1">
+                          <Ionicons name="caret-down" size={20} color="red" />
+                          <Text className="font-saira-medium text-xl text-text-1">
+                            {div.relegationSpots}
+                          </Text>
+                        </View>
+                      </View>
+                    </Pressable>
+                  </SwipeableCard>
+                ))}
             </View>
+          )}
+        />
+        {divisions.length > 0 && (
+          <View className="px-2 py-8">
+            <CTAButton text="Save & Continue" type="yellow" callbackFn={handleSave} />
           </View>
         )}
 
@@ -476,7 +492,17 @@ export default function CreateDivisions() {
               <View
                 style={{ paddingBottom: 80 }}
                 className="w-full rounded-t-3xl bg-bg-grouped-3 p-6">
-                <CTAButton text="Save Division" type="brand" callbackFn={handleSubmit} />
+                <CTAButton
+                  text={
+                    sheetMode === 'GROUP'
+                      ? 'Create Group'
+                      : editingDivisionId
+                        ? 'Save Changes'
+                        : 'Add Division'
+                  }
+                  type="brand"
+                  callbackFn={sheetMode === 'GROUP' ? handleAddGroup : handleSaveDivision}
+                />
               </View>
             </BottomSheetFooter>
           )}>
@@ -495,190 +521,126 @@ export default function CreateDivisions() {
               justifyContent: 'space-between',
             }}>
             <Text style={{ lineHeight: 40 }} className="font-saira-medium text-3xl text-text-1">
-              Add a Division
+              {sheetMode === 'GROUP' ? 'Create New Group' : 'Add New Division'}
             </Text>
             <Pressable className="p-2" onPress={closeSheet}>
               <Ionicons name="close" size={24} color={themeColors.primaryText} />
             </Pressable>
           </BottomSheetView>
 
-          <KeyboardAvoidingView
-            behavior="height"
-            keyboardVerticalOffset={Platform.OS === 'ios' ? 100 : 0}>
-            <BottomSheetScrollView
-              contentContainerStyle={{
-                paddingBottom: 200,
-                paddingTop: 80,
-                paddingHorizontal: 32,
-              }}>
-              <View className="mb-5 flex-1">
+          <BottomSheetScrollView
+            contentContainerStyle={{
+              paddingBottom: 600,
+              paddingTop: 80,
+              paddingHorizontal: 24,
+            }}>
+            {sheetMode === 'GROUP' ? (
+              <View className="flex-1 gap-4">
                 <CustomTextInput
-                  value={name}
-                  onChangeText={setName}
+                  title="Group Name"
+                  titleColor="text-text-1"
+                  value={gName}
+                  leftIconName="grid-outline"
+                  iconColor="#6B46C1" //purple
+                  onChangeText={setGName}
+                  placeholder="e.g. Thursday Night"
+                  autoCapitalize="words"
+                />
+                <View className="flex gap-2">
+                  <Text className="mt-2 pl-2 font-saira-medium text-xl text-text-1">
+                    Competitor Type
+                  </Text>
+                  <View className="flex-row gap-2">
+                    {['individual', 'team'].map((t) => (
+                      <Pressable
+                        key={t}
+                        onPress={() => setCompType(t)}
+                        className={`flex-1 items-center rounded-xl p-3 ${compType === t ? 'bg-theme-purple' : 'bg-gray-200'}`}>
+                        <Text
+                          className={`font-saira-medium text-lg ${compType === t ? 'text-white' : 'text-black'}`}>
+                          {t.slice(0, 1).toUpperCase() + t.slice(1)}
+                        </Text>
+                      </Pressable>
+                    ))}
+                  </View>
+                  <Text className="px-1 pt-2 text-sm text-text-2">
+                    Individual groups are for solo competitors, while team groups are for groups of
+                    2 or more. Please ensure this is correct as it will dictate who can join certain
+                    competitions and how they are displayed in the app.
+                  </Text>
+                </View>
+              </View>
+            ) : (
+              <View className="flex-1 gap-2">
+                <CustomMultiSelect
+                  options={groups.map((g) => ({ label: g.name, value: g.id }))}
+                  selectedValues={selectedGroupId ? [selectedGroupId] : []}
+                  onValueChange={(vals) => setSelectedGroupId(vals[0])}
+                  title="Group"
+                  placeholder="Select a group for this division"
+                  leftIconName="grid-outline"
+                  iconColor="#6B46C1"
+                  titleColor="text-text-1"
+                  multiSelect={false}
+                />
+                <CustomTextInput
+                  value={dName}
+                  onChangeText={setDName}
                   title="Division Name"
                   placeholder="e.g. Super League"
                   className="mb-4 h-12 rounded-lg border border-gray-300 bg-white px-3 font-saira text-xl"
                   leftIconName="trophy-outline"
                   iconColor="#A259FF"
-                  titleColor="text-text-1"
                   autoCapitalize="words"
+                  titleColor="text-text-1"
                 />
-              </View>
-
-              <View className="mb-4 flex-row items-center justify-between gap-3">
-                <View className="flex-1">
-                  <CustomTextInput
-                    value={
-                      selectedDivision ? selectedDivision.tier.toString() : nextTier.toString()
-                    }
-                    editable={false}
-                    className="mb-4 h-12 rounded-lg border border-gray-300 bg-white px-3 pb-2 text-xl"
-                    title="Tier"
-                    placeholder="e.g. 1"
-                    leftIconName="medal-outline"
-                    iconColor="#D7AF31"
-                    titleColor="text-text-1"
-                    keyboardType="numeric"
-                    clearButtonMode="never"
-                  />
-                </View>
-                <View className="flex-1">
-                  <CustomTextInput
-                    value={isTopTier ? '0' : promotionSpots}
-                    onChangeText={setPromotionSpots}
-                    title="Promotions"
-                    placeholder="e.g. 3"
-                    leftIconName="caret-up-outline"
-                    iconColor="#34C757"
-                    titleColor="text-text-1"
-                    editable={!isTopTier}
-                    keyboardType="numeric"
-                    clearButtonMode="never"
-                  />
-                </View>
-                <View className="flex-1">
-                  <CustomTextInput
-                    value={relegationSpots}
-                    onChangeText={setRelegationSpots}
-                    title="Relegations"
-                    placeholder="e.g. 3"
-                    iconColor="#FF3B30"
-                    leftIconName="caret-down-outline"
-                    titleColor="text-text-1"
-                    keyboardType="numeric"
-                    clearButtonMode="never"
-                  />
-                </View>
-              </View>
-
-              <View className="mt-5 w-full gap-5">
-                <View>
-                  <View className="h-16 flex-row items-center gap-5 rounded-xl border border-theme-gray-4 bg-bg-grouped-2 pr-5">
-                    <View className="h-full justify-center rounded-l-xl border-r border-theme-gray-3 bg-bg-grouped-1 pl-3 pr-4">
-                      <Ionicons name="hourglass-outline" size={26} color="#A259FF" />
-                    </View>
-                    <Text className="flex-1 font-saira-medium text-xl text-text-1">
-                      Allow Draws
-                    </Text>
-                    <Switch
-                      value={drawsEnabled}
-                      onValueChange={setDrawsEnabled}
-                      thumbColor="white"
-                      trackColor={{
-                        false: 'gray',
-                        true: '#4CAF50',
-                      }}
-                    />
-                  </View>
-                  <Text className="mt-2 text-text-2">
-                    This setting controls whether ties are permitted upon match submission and shown
-                    in the league table.{' '}
-                  </Text>
-                </View>
-                <View>
-                  <View className="h-16 flex-row items-center gap-5 rounded-xl border border-theme-gray-4 bg-bg-grouped-2 pr-5">
-                    <View className="h-full justify-center rounded-l-xl border-r border-theme-gray-3 bg-bg-grouped-1 pl-3 pr-4">
-                      <Ionicons name="swap-horizontal-outline" size={26} color="#A259FF" />
-                    </View>
-                    <Text className="flex-1 font-saira-medium text-xl text-text-1">
-                      Mid-Season Transfers
-                    </Text>
-                    <Switch
-                      value={midSeasonTransfersEnabled}
-                      onValueChange={setMidSeasonTransfersEnabled}
-                      thumbColor="white"
-                      trackColor={{
-                        false: 'gray',
-                        true: '#4CAF50',
-                      }}
-                    />
-                  </View>
-                  <Text className="mt-2 text-text-2">
-                    If disabled, players can still transfer out, but new players cannot transfer in
-                    until the next season.
-                  </Text>
-                </View>
-                <View>
-                  <View className="h-16 flex-row items-center gap-5 rounded-xl border border-theme-gray-4 bg-bg-grouped-2 pr-5">
-                    <View className="h-full justify-center rounded-l-xl border-r border-theme-gray-3 bg-bg-grouped-1 pl-3 pr-4">
-                      <Ionicons name="star-outline" size={26} color="#A259FF" />
-                    </View>
-                    <Text className="flex-1 font-saira-medium text-xl text-text-1">
-                      Include Bonus Frame
-                    </Text>
-                    <Switch
-                      value={specialMatchesEnabled}
-                      onValueChange={(newValue) => {
-                        setSpecialMatchesEnabled(newValue);
-                        if (!newValue) {
-                          setSpecialMatchName('');
-                          setSpecialMatchAbbreviation('');
-                        }
-                      }}
-                      thumbColor="white"
-                      trackColor={{
-                        false: 'gray',
-                        true: '#4CAF50',
-                      }}
-                    />
-                  </View>
-                  <Text className="mt-2 text-text-2">
-                    This setting allows you to create a bonus frame which is to be played once per
-                    match and displayed separately in the league table.
-                  </Text>
-                </View>
-
-                {specialMatchesEnabled && (
-                  <View className="flex-1 gap-5">
+                <View className="mt-4 flex-row gap-3">
+                  <View className="flex-1">
                     <CustomTextInput
-                      value={specialMatchName}
-                      onChangeText={setSpecialMatchName}
-                      title="Special Match Name"
-                      placeholder="e.g. Captain's Cup"
-                      leftIconName="trophy-outline"
-                      iconColor="#A259FF"
+                      value={tier}
+                      onChangeText={setTier}
+                      keyboardType="numeric"
+                      editable={false}
+                      className="mb-4 h-12 rounded-lg border border-gray-300 bg-white px-3 pb-2 text-xl"
+                      title="Tier"
+                      placeholder="e.g. 1"
+                      leftIconName="medal-outline"
+                      iconColor="#D7AF31"
                       titleColor="text-text-1"
-                      autoCapitalize="words"
+                      clearButtonMode="never"
                     />
-                    <View>
-                      <CustomTextInput
-                        value={specialMatchAbbreviation}
-                        onChangeText={setSpecialMatchAbbreviation}
-                        title="Special Match Abbreviation"
-                        placeholder="e.g. CC"
-                        leftIconName="pricetag-outline"
-                        iconColor="#A259FF"
-                        titleColor="text-text-1"
-                        maxLength={3}
-                        autoCapitalize="characters"
-                      />
-                      <Text className="mt-2 text-text-2">Max Length: 3</Text>
-                    </View>
                   </View>
-                )}
+                  <View className="flex-1">
+                    <CustomTextInput
+                      title="Promotions"
+                      value={isTopTier ? '0' : promo}
+                      onChangeText={setPromo}
+                      keyboardType="numeric"
+                      titleColor="text-text-1"
+                      placeholder="e.g. 3"
+                      leftIconName="caret-up-outline"
+                      iconColor="#34C757"
+                      editable={!isTopTier}
+                      clearButtonMode="never"
+                    />
+                  </View>
+                  <View className="flex-1">
+                    <CustomTextInput
+                      value={releg}
+                      onChangeText={setReleg}
+                      title="Relegations"
+                      placeholder="e.g. 3"
+                      iconColor="#FF3B30"
+                      leftIconName="caret-down-outline"
+                      titleColor="text-text-1"
+                      keyboardType="numeric"
+                      clearButtonMode="never"
+                    />
+                  </View>
+                </View>
               </View>
-            </BottomSheetScrollView>
-          </KeyboardAvoidingView>
+            )}
+          </BottomSheetScrollView>
         </BottomSheetWrapper>
       </View>
     </>
