@@ -76,19 +76,19 @@ const CustomMultiSelect = ({
             <FlatList
               data={options}
               keyExtractor={(item) => item.value}
-              contentContainerStyle={{ paddingVertical: 10 }}
+              contentContainerStyle={{ paddingVertical: 20 }}
               renderItem={({ item }) => {
                 const isSelected = selectedValues.includes(item.value);
                 return (
                   <TouchableOpacity
                     onPress={() => toggleSelection(item.value)}
-                    className={`mb-2 flex-row items-center justify-between rounded-xl p-4 ${
+                    className={`mb-4 flex-row items-center justify-between rounded-xl p-4 ${
                       isSelected
-                        ? 'border border-theme-purple bg-theme-purple/10'
+                        ? 'border border-theme-purple bg-theme-purple/20'
                         : 'border border-theme-gray-6 bg-bg-2'
                     }`}>
                     <Text
-                      className={`font-saira-medium text-lg ${isSelected ? 'text-theme-purple' : 'text-text-1'}`}>
+                      className={`font-saira-medium text-lg ${isSelected ? 'text-text-1' : 'text-text-1'}`}>
                       {item.label.slice(0, 1).toUpperCase() + item.label.slice(1)}
                     </Text>
                     {isSelected && <Ionicons name="checkmark-circle" size={24} color="#A259FF" />}

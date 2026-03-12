@@ -1,4 +1,4 @@
-import { View, Text, Switch } from 'react-native';
+import { View, Text, Switch, Platform, ScrollView } from 'react-native';
 import { useState } from 'react';
 import { Stack, useLocalSearchParams } from 'expo-router';
 import CTAButton from '@components/CTAButton';
@@ -6,13 +6,16 @@ import StepPillGroup from '@components/StepPillGroup';
 import CustomTextInput from '@components/CustomTextInput';
 import { useRouter } from 'expo-router';
 import { supabase } from '@/lib/supabase';
-import Ionicons from 'react-native-vector-icons/Ionicons';
 import Toast from 'react-native-toast-message';
+import CustomDatePicker from '../../../components/CustomDatePicker';
+import CustomMultiSelect from '../../../components/CustomMultiSelect';
+import { StatusBar } from 'expo-status-bar';
 
 export default function SeasonName() {
   const router = useRouter();
   const [seasonName, setSeasonName] = useState('');
   const [startDate, setStartDate] = useState(new Date().toISOString().split('T')[0]); // Default to today's date
+  const [seasonStatus, setSeasonStatus] = useState(['draft']);
 
   const { districtId } = useLocalSearchParams();
 
@@ -82,54 +85,61 @@ export default function SeasonName() {
     }
   };
 
+  console.log('start date :', startDate);
+
   return (
     <>
       <Stack.Screen
         options={{
-          title: 'Step 2 of 4',
+          title: 'Step 4 of 4',
         }}
       />
+      <StatusBar style="light" />
       <View className="flex-1 bg-brand px-4">
-        <StepPillGroup steps={4} currentStep={2} />
-        <Text className="my-4 pt-5 font-delagothic text-5xl text-text-on-brand">
-          Lets create your first season! What would you like to call it?
+        <StepPillGroup steps={4} currentStep={4} />
+        <Text className="my-4 pt-2 font-delagothic text-3xl text-text-on-brand">
+          Let's create your first season!
         </Text>
-        <View className="mb-6">
+        <ScrollView contentContainerStyle={{ paddingBottom: 20, gap: 20 }} className="flex-1">
           <CustomTextInput
             title="Season Name"
             value={seasonName}
             onChangeText={setSeasonName}
-            leftIconName="calendar-outline"
+            leftIconName="pencil-outline"
             iconColor="purple"
-            placeholder="e.g. 2025/26 or Summer 2026"
+            placeholder={`e.g. 20${new Date().getFullYear().toString().slice(-2)}/${(new Date().getFullYear() + 1).toString().slice(-2)}, Winter ${new Date().getFullYear()}`}
             autoCapitalize="words"
             returnKeyType="done"
           />
-        </View>
-        <View className="h-16 flex-row items-center gap-5 rounded-xl border border-theme-gray-4 bg-bg-grouped-2 pr-5">
-          <View className="h-full justify-center rounded-l-xl border-r border-theme-gray-3 bg-bg-grouped-1 pl-3 pr-4">
-            <Ionicons name="lock-closed-outline" size={26} color="purple" />
-          </View>
-          <Text className="flex-1 font-saira-medium text-xl text-text-1">Private District</Text>
-          <Switch
-            value={privateDistrict}
-            onValueChange={(newValue) => {
-              setPrivateDistrict(newValue);
-            }}
-            thumbColor="white"
-            trackColor={{
-              false: 'gray',
-              true: '#4CAF50',
-            }}
+          <CustomDatePicker
+            title="Season Start Date"
+            value={startDate}
+            onChange={setStartDate}
+            leftIconName="calendar-outline"
+            iconColor="purple"
+          />
+          <CustomMultiSelect
+            title="Season Status"
+            leftIconName="pulse-outline"
+            iconColor="purple"
+            titleColor="text-text-on-brand"
+            multiSelect={false}
+            options={[
+              { label: 'Active', value: 'active' },
+              { label: 'Draft', value: 'draft' },
+            ]}
+            selectedValues={seasonStatus}
+            onValueChange={setSeasonStatus}
+          />
+        </ScrollView>
+        <View className="px-2 py-8">
+          <CTAButton
+            type="yellow"
+            textColor="text-black"
+            text="Continue"
+            callbackFn={handleSubmit}
           />
         </View>
-        <Text
-          style={{ lineHeight: 22 }}
-          className="mb-6 mt-2 font-saira-medium text-lg text-text-on-brand-2">
-          Do you want to hide fixtures, results, standings and leaderboards from users from other
-          districts?
-        </Text>
-        <CTAButton type="yellow" textColor="text-black" text="Continue" callbackFn={handleSubmit} />
       </View>
     </>
   );

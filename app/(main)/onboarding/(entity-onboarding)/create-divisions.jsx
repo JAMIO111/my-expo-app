@@ -19,6 +19,7 @@ import Animated, {
   interpolate,
 } from 'react-native-reanimated';
 import CustomMultiSelect from '../../../components/CustomMultiSelect';
+import { StatusBar } from 'expo-status-bar';
 
 // SwipeableCard (Keeping your existing logic)
 const SwipeableCard = ({ item, onDelete, children }) => {
@@ -380,6 +381,7 @@ export default function CreateDivisions() {
   return (
     <>
       <Stack.Screen options={{ title: 'Step 3 of 4' }} />
+      <StatusBar style="light" />
       <View className="flex-1 bg-brand px-4">
         <StepPillGroup steps={4} currentStep={3} />
 
