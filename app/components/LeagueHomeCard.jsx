@@ -17,12 +17,12 @@ const LeagueHomeCard = ({ standings }) => {
   const displayTeamIndex =
     currentRole?.role === 'admin'
       ? 0
-      : standings?.findIndex((team) => team.id === currentRole?.teamId);
+      : standings?.standings?.findIndex((team) => team.id === currentRole?.team?.id);
 
   const displayTeam =
     displayTeamIndex >= 0
       ? {
-          ...standings[displayTeamIndex],
+          ...standings?.standings[displayTeamIndex],
           position: displayTeamIndex + 1,
         }
       : null;
@@ -41,11 +41,13 @@ const LeagueHomeCard = ({ standings }) => {
       className={`h-28 w-full rounded-2xl border border-theme-gray-5 bg-bg-grouped-2 shadow`}>
       <View className="mx-3 flex-row items-center justify-between border-b border-theme-gray-5 px-1 pb-1 pt-2">
         <Text className="font-saira-medium text-2xl text-text-1">
-          League Table {currentRole?.role === 'admin' && `- ${currentRole?.divisions[0]?.name}`}
+          League Table{' '}
+          {currentRole?.role === 'admin' &&
+            `- ${currentRole?.competitions?.filter((comp) => comp.division_tier === 1)?.[0]?.name}`}
         </Text>
         <Ioconicons name="chevron-forward" size={20} color={themeColors?.icon} />
       </View>
-      {standings === undefined || standings.length === 0 ? (
+      {standings === undefined || standings?.standings.length === 0 ? (
         <View className="items-left flex-1 justify-center px-4">
           <Text className="text-left font-saira text-xl text-text-2">
             No standings available yet.

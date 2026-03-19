@@ -7,17 +7,27 @@ import CustomTextInput from '@components/CustomTextInput';
 import { useRouter } from 'expo-router';
 import { supabase } from '@/lib/supabase';
 import Toast from 'react-native-toast-message';
-import CustomDatePicker from '../../../components/CustomDatePicker';
-import CustomMultiSelect from '../../../components/CustomMultiSelect';
+import CustomDatePicker from '@components/CustomDatePicker';
+import CustomMultiSelect from '@components/CustomMultiSelect';
 import { StatusBar } from 'expo-status-bar';
+import { useUser } from '@contexts/UserProvider';
+import { useQueryClient } from '@tanstack/react-query';
 
 export default function SeasonName() {
   const router = useRouter();
+  const { player } = useUser();
+  const queryClient = useQueryClient();
   const [seasonName, setSeasonName] = useState('');
   const [startDate, setStartDate] = useState(new Date().toISOString().split('T')[0]); // Default to today's date
   const [seasonStatus, setSeasonStatus] = useState(['draft']);
+  const [loading, setLoading] = useState(false);
 
-  const { districtId } = useLocalSearchParams();
+  const { districtId, districtName, privateDistrict, divisions } = useLocalSearchParams();
+
+  console.log('Received params:', { districtId, districtName, privateDistrict, divisions });
+  console.log('SeasonName:', seasonName, 'StartDate:', startDate, 'SeasonStatus:', seasonStatus);
+  console.log('Parsed divisions:', JSON.parse(divisions || '[]'));
+  console.log('Player Info:', player);
 
   const capitaliseEachWord = (str) => {
     return str
@@ -37,51 +47,55 @@ export default function SeasonName() {
       });
       return;
     }
-
+    if (!startDate) {
+      Toast.show({
+        type: 'error',
+        text1: 'Invalid Date',
+        text2: 'Start date cannot be empty.',
+      });
+      return;
+    }
+    if (seasonStatus.length === 0) {
+      Toast.show({
+        type: 'error',
+        text1: 'Invalid Status',
+        text2: 'Please select a season status.',
+      });
+      return;
+    }
     try {
-      // Fetch all districts
-      const { data: existingDistricts, error } = await supabase.from('Districts').select('name');
+      setLoading(true);
 
-      if (error) {
-        console.error(error);
-        Toast.show({
-          type: 'error',
-          text1: 'Error',
-          text2: 'Failed to load data. Please try again.',
-        });
-        return;
-      }
+      const { data, error } = await supabase.rpc('create_district_season_divisions', {
+        _district_id: districtId,
+        _district_name: districtName,
+        _is_private: privateDistrict,
+        _season_name: capitaliseEachWord(seasonName?.trim()),
+        _start_date: startDate,
+        _season_status: seasonStatus[0], // since it's single select, take the first value
+        _divisions: JSON.parse(divisions || '[]'),
+        _admin_id: player?.id,
+      });
 
-      // Check uniqueness (case-insensitive match)
-      const nameExists = existingDistricts.some(
-        (d) => d.name.trim().toLowerCase() === districtName.trim().toLowerCase()
-      );
+      if (error) throw error;
 
-      if (nameExists) {
-        Toast.show({
-          type: 'error',
-          text1: 'District Name Taken',
-          text2: 'This district name is already taken. Please choose another.',
-        });
-        return;
-      }
+      queryClient.invalidateQueries(['authUserProfile']);
 
-      // ✅ If unique, navigate
-      router.push({
-        pathname: '/(main)/onboarding/(entity-onboarding)/create-divisions',
-        params: {
-          districtId,
-          districtName: capitaliseEachWord(districtName.trim()),
-          privateDistrict,
-        },
+      Toast.show({
+        type: 'success',
+        text1: 'Season Created',
+        text2: 'Everything is ready to go.',
       });
     } catch (err) {
       console.error(err);
+
       Toast.show({
         type: 'error',
         text1: 'Error',
-        text2: 'An unexpected error occurred. Please try again.',
+        text2: err.message,
       });
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -136,8 +150,15 @@ export default function SeasonName() {
           <CTAButton
             type="yellow"
             textColor="text-black"
-            text="Continue"
+            text={loading ? 'Creating League...' : 'Create Season'}
             callbackFn={handleSubmit}
+            disabled={loading}
+          />
+          <CTAButton
+            type="error"
+            text="Go Back"
+            callbackFn={() => queryClient.invalidateQueries(['authUserProfile'])}
+            disabled={loading}
           />
         </View>
       </View>

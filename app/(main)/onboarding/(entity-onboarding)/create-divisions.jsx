@@ -18,7 +18,7 @@ import Animated, {
   withSpring,
   interpolate,
 } from 'react-native-reanimated';
-import CustomMultiSelect from '../../../components/CustomMultiSelect';
+import CustomMultiSelect from '@components/CustomMultiSelect';
 import { StatusBar } from 'expo-status-bar';
 
 // SwipeableCard (Keeping your existing logic)
@@ -140,6 +140,7 @@ export default function CreateDivisions() {
   const [tier, setTier] = useState('1');
   const [promo, setPromo] = useState('0');
   const [releg, setReleg] = useState('0');
+  const [maxComps, setMaxComps] = useState(null);
   const [selectedGroupId, setSelectedGroupId] = useState(null);
   const [editingDivisionId, setEditingDivisionId] = useState(null);
 
@@ -150,6 +151,7 @@ export default function CreateDivisions() {
     setTier('1');
     setPromo('0');
     setReleg('0');
+    setMaxComps(null);
     bottomSheetRef.current?.close();
   };
 
@@ -201,6 +203,7 @@ export default function CreateDivisions() {
                 tier: Number(tier),
                 promotionSpots: Number(tier) === 1 ? 0 : Number(promo),
                 relegationSpots: Number(releg),
+                maxCompetitors: maxComps !== null ? Number(maxComps) : null,
               }
             : d
         );
@@ -210,10 +213,12 @@ export default function CreateDivisions() {
           tempId: Date.now().toString(),
           groupId: selectedGroupId,
           groupName: groups.find((g) => g.id === selectedGroupId)?.name || '',
+          competitorType: groups.find((g) => g.id === selectedGroupId)?.type || 'team',
           name: dName,
           tier: Number(tier),
           promotionSpots: Number(tier) === 1 ? 0 : Number(promo),
           relegationSpots: Number(releg),
+          maxCompetitors: maxComps !== null ? Number(maxComps) : null,
         };
         updated = [...prev, newDiv];
       }
@@ -235,6 +240,7 @@ export default function CreateDivisions() {
     setTier(nextTier.toString());
     setPromo('0');
     setReleg('0');
+    setMaxComps(null);
     closeSheet();
   };
 
@@ -245,7 +251,7 @@ export default function CreateDivisions() {
     setTier(div.tier.toString());
     setPromo(div.promotionSpots.toString());
     setReleg(div.relegationSpots.toString());
-
+    setMaxComps(div.maxCompetitors !== null ? div.maxCompetitors.toString() : null);
     setSheetMode('DIVISION');
     bottomSheetRef.current?.expand();
   };
@@ -581,7 +587,7 @@ export default function CreateDivisions() {
                   title="Group"
                   placeholder="Select a group for this division"
                   leftIconName="grid-outline"
-                  iconColor="#6B46C1"
+                  iconColor="purple"
                   titleColor="text-text-1"
                   multiSelect={false}
                 />
@@ -592,7 +598,7 @@ export default function CreateDivisions() {
                   placeholder="e.g. Super League"
                   className="mb-4 h-12 rounded-lg border border-gray-300 bg-white px-3 font-saira text-xl"
                   leftIconName="trophy-outline"
-                  iconColor="#A259FF"
+                  iconColor="purple"
                   autoCapitalize="words"
                   titleColor="text-text-1"
                 />
@@ -639,6 +645,27 @@ export default function CreateDivisions() {
                       clearButtonMode="never"
                     />
                   </View>
+                </View>
+                <View className="mt-4">
+                  <CustomTextInput
+                    title={`Max Competitors (optional)`}
+                    value={maxComps}
+                    onChangeText={setMaxComps}
+                    keyboardType="numeric"
+                    titleColor="text-text-1"
+                    placeholder="e.g. 20"
+                    leftIconName="people-outline"
+                    iconColor="purple"
+                    editable={!isTopTier}
+                    clearButtonMode="never"
+                  />
+                  <Text className="px-1 pt-2 text-sm text-text-2">
+                    This limits the number of{' '}
+                    {groups.find((g) => g.id === selectedGroupId)?.type === 'individual'
+                      ? 'players'
+                      : 'teams'}{' '}
+                    that can be in this division. Leave blank for unlimited.
+                  </Text>
                 </View>
               </View>
             )}

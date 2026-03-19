@@ -758,7 +758,7 @@ export const normalizeSubscription = (p) => {
   };
 };
 
-export async function createNewSeason(districtId, startDate) {
+export async function createNewSeason(districtId, districtName, startDate) {
   const newStart = new Date(startDate);
 
   try {
@@ -793,14 +793,10 @@ export async function createNewSeason(districtId, startDate) {
       }
     }
 
-    // Generate simple name
-    const year = newStart.getFullYear();
-    const name = `${year} Season`;
-
     const { data, error: insertError } = await supabase
       .from('Seasons')
       .insert({
-        name,
+        name: districtName,
         start_date: startDate,
         district: districtId,
         is_active: true,

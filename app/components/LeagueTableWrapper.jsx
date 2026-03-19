@@ -6,6 +6,7 @@ import { useUser } from '@contexts/UserProvider';
 import { useDistricts } from '@hooks/useDistricts';
 import { useDivisions } from '@hooks/useDivisions';
 import { useSeasons } from '@hooks/useSeasons';
+import { useCompetitionInstances } from '@hooks/useCompetitionInstances';
 import CTAButton from './CTAButton';
 import BottomSheetWrapper from './BottomSheetWrapper';
 import DropdownFilterButton from './DropdownFilterButton';
@@ -25,13 +26,16 @@ const LeagueTableWrapper = ({ context }) => {
   const { player, currentRole } = useUser();
 
   // Default full objects from context
-  const defaultDistrict =
-    currentRole?.role === 'admin'
-      ? currentRole?.district
-      : (currentRole?.team?.division?.district ?? null);
+  const defaultDistrict = currentRole?.district || null;
   const defaultDivision =
-    currentRole?.role === 'admin' ? currentRole?.divisions[0] : currentRole?.team?.division;
-  const defaultSeason = currentRole?.activeSeason ?? null;
+    currentRole?.role === 'admin'
+      ? currentRole?.competitions?.filter((comp) => comp.division_tier === 1)?.[0]
+      : currentRole?.division;
+  const defaultSeason = currentRole?.activeSeason || null;
+  const defaultCompetitionInstance =
+    currentRole?.competitions
+      .filter((comp) => comp.competition_type === 'league')
+      .sort((a, b) => a.division_tier - b.division_tier)?.[0] || null;
 
   const [district, setDistrict] = useState(defaultDistrict);
   const [division, setDivision] = useState(defaultDivision);
@@ -39,6 +43,10 @@ const LeagueTableWrapper = ({ context }) => {
   const [tempDistrict, setTempDistrict] = useState(defaultDistrict);
   const [tempDivision, setTempDivision] = useState(defaultDivision);
   const [tempSeason, setTempSeason] = useState(defaultSeason);
+  const [tempCompetitionInstance, setTempCompetitionInstance] = useState(
+    defaultCompetitionInstance
+  );
+  const [competitionInstance, setCompetitionInstance] = useState(defaultCompetitionInstance);
 
   const [activeFilter, setActiveFilter] = useState(null);
 
@@ -73,6 +81,12 @@ const LeagueTableWrapper = ({ context }) => {
     isLoading: isSeasonsLoading,
     error: seasonsError,
   } = useSeasons(district?.id);
+
+  const {
+    data: competitionInstances = [],
+    isLoading: isCompetitionInstancesLoading,
+    error: competitionInstancesError,
+  } = useCompetitionInstances(season?.id);
 
   // When district changes: reset division + season, fetch active season object
   useEffect(() => {
@@ -109,12 +123,23 @@ const LeagueTableWrapper = ({ context }) => {
   }, [seasons, defaultSeason, season]);
 
   // Loading or error fallback
-  if (isDistrictsLoading || isDivisionsLoading || isSeasonsLoading) {
+  if (
+    isDistrictsLoading ||
+    isDivisionsLoading ||
+    isSeasonsLoading ||
+    isCompetitionInstancesLoading
+  ) {
     return <Text>Loading...</Text>;
   }
 
-  if (districtsError || divisionsError || seasonsError) {
-    console.error('Error loading data:', districtsError, divisionsError, seasonsError);
+  if (districtsError || divisionsError || seasonsError || competitionInstancesError) {
+    console.error(
+      'Error loading data:',
+      districtsError,
+      divisionsError,
+      seasonsError,
+      competitionInstancesError
+    );
     return <Text>Error loading data</Text>;
   }
 
@@ -128,6 +153,9 @@ const LeagueTableWrapper = ({ context }) => {
         break;
       case 'season':
         setSeason(tempSeason);
+        break;
+      case 'competition':
+        setCompetitionInstance(tempCompetitionInstance);
         break;
     }
     closeSheet();
@@ -148,6 +176,13 @@ const LeagueTableWrapper = ({ context }) => {
                 openSheet();
               }}
             />
+            <DropdownFilterButton
+              text={season?.name || 'Select Season'}
+              callbackFn={() => {
+                setActiveFilter('season');
+                openSheet();
+              }}
+            />
           </View>
           <View className="flex-row gap-3">
             <DropdownFilterButton
@@ -158,9 +193,9 @@ const LeagueTableWrapper = ({ context }) => {
               }}
             />
             <DropdownFilterButton
-              text={season?.name || 'Select Season'}
+              text={competitionInstance?.name || 'Select Competition'}
               callbackFn={() => {
-                setActiveFilter('season');
+                setActiveFilter('competition');
                 openSheet();
               }}
             />
@@ -168,7 +203,11 @@ const LeagueTableWrapper = ({ context }) => {
         </View>
 
         {/* Pass IDs down to LeagueTable */}
-        <LeagueTable context={context} season={season?.id} division={division?.id} />
+        <LeagueTable
+          context={context}
+          season={season?.id}
+          division={competitionInstance?.division_id}
+        />
       </ScrollView>
 
       <BottomSheetWrapper
@@ -266,6 +305,25 @@ const LeagueTableWrapper = ({ context }) => {
                   size={24}
                   color={themeColors.primaryText}
                   name={tempSeason?.id === s.id ? 'checkbox' : 'square-outline'}
+                />
+              </Pressable>
+            ))}
+          {activeFilter === 'competition' &&
+            competitionInstances.map((c) => (
+              <Pressable
+                className="mb-3 flex-row items-center justify-between"
+                key={c.id}
+                onPress={() => setTempCompetitionInstance(c)}>
+                <Text
+                  className={`font-saira text-2xl ${
+                    tempCompetitionInstance?.id === c.id ? 'text-text-1' : 'text-text-2'
+                  }`}>
+                  {c.name}
+                </Text>
+                <Ionicons
+                  size={24}
+                  color={themeColors.primaryText}
+                  name={tempCompetitionInstance?.id === c.id ? 'checkbox' : 'square-outline'}
                 />
               </Pressable>
             ))}

@@ -8,48 +8,43 @@ export default function AppRealtimeProvider({ children }) {
   const queryClient = useQueryClient();
   const { currentRole, player } = useUser();
 
-  const standingsRef = useRef(null);
-  const fixturesRef = useRef(null);
-  const teamPlayersRef = useRef(null);
+  const channelsRef = useRef([]);
+  const isSubscribedRef = useRef(false);
   const appState = useRef(AppState.currentState);
 
   const subscribe = () => {
     if (!currentRole?.team?.id) return;
+    if (isSubscribedRef.current) return; // 🛑 prevent duplicates
 
-    // --- TeamPlayers listener ---
-    if (teamPlayersRef.current) supabase.removeChannel(teamPlayersRef.current);
-    teamPlayersRef.current = supabase
+    console.log('Subscribing to realtime channels...');
+    isSubscribedRef.current = true;
+
+    const channels = [];
+
+    // --- TeamPlayers ---
+    const teamPlayers = supabase
       .channel('team_players')
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'TeamPlayers' }, // quotes required for exact casing
-        (payload) => {
-          console.log('TeamPlayers update payload:', payload);
-          const playerId = payload.new?.player_id ?? payload.old?.player_id;
-          const teamId = payload.new?.team_id ?? payload.old?.team_id;
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'TeamPlayers' }, (payload) => {
+        const playerId = payload.new?.player_id ?? payload.old?.player_id;
+        const teamId = payload.new?.team_id ?? payload.old?.team_id;
 
-          if (playerId) queryClient.invalidateQueries(['PlayerProfile', playerId]);
-          if (teamId) queryClient.invalidateQueries(['TeamPlayers', teamId]);
-          if (playerId === player?.id) {
-            console.log(
-              'Current user affected by TeamPlayers change, invalidating authUserProfile'
-            );
-            queryClient.invalidateQueries(['authUserProfile']);
-          }
+        if (playerId) queryClient.invalidateQueries(['PlayerProfile', playerId]);
+        if (teamId) queryClient.invalidateQueries(['TeamPlayers', teamId]);
+
+        if (playerId === player?.id) {
+          queryClient.invalidateQueries(['authUserProfile']);
         }
-      )
-      .subscribe((status) => console.log('TeamPlayers subscription status:', status));
+      })
+      .subscribe((status) => console.log('TeamPlayers:', status));
 
-    // --- Results listener ---
-    if (standingsRef.current) supabase.removeChannel(standingsRef.current);
+    channels.push(teamPlayers);
 
-    standingsRef.current = supabase
+    // --- Results ---
+    const results = supabase
       .channel('results-channel')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'Results' }, (payload) => {
-        console.log('Results update payload:', payload);
-
-        // Collect all player IDs from new and old rows
         const fixtureId = payload.new?.fixture_id ?? payload.old?.fixture_id;
+
         const playerIds = new Set(
           [
             payload.new?.home_player_1,
@@ -61,25 +56,24 @@ export default function AppRealtimeProvider({ children }) {
             payload.old?.away_player_1,
             payload.old?.away_player_2,
           ].filter(Boolean)
-        ); // remove null/undefined
+        );
 
-        // Invalidate PlayerStats query for each player affected
         playerIds.forEach((id) => {
           queryClient.invalidateQueries(['PlayerStats', id]);
         });
-        // Invalidate ResultsByFixture query for the affected fixture
+
         if (fixtureId) {
           queryClient.invalidateQueries(['ResultsByFixture', fixtureId]);
         }
       })
-      .subscribe((status) => console.log('Results subscription status:', status));
+      .subscribe((status) => console.log('Results:', status));
 
-    // --- Fixtures listener ---
-    if (fixturesRef.current) supabase.removeChannel(fixturesRef.current);
-    fixturesRef.current = supabase
+    channels.push(results);
+
+    // --- Fixtures ---
+    const fixtures = supabase
       .channel('fixtures-channel')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'Fixtures' }, (payload) => {
-        console.log('Fixtures update payload:', payload);
         const month = payload.new ? new Date(payload.new.date_time).getMonth() : null;
         const seasonId = payload.new?.season ?? payload.old?.season;
         const divisionId = payload.new?.division ?? payload.old?.division;
@@ -89,34 +83,45 @@ export default function AppRealtimeProvider({ children }) {
           queryClient.invalidateQueries(['results-grouped', month, seasonId, divisionId]);
         }
       })
-      .subscribe((status) => console.log('Fixtures subscription status:', status));
+      .subscribe((status) => console.log('Fixtures:', status));
+
+    channels.push(fixtures);
+
+    channelsRef.current = channels;
   };
 
   const unsubscribe = () => {
-    if (standingsRef.current) supabase.removeChannel(standingsRef.current);
-    if (fixturesRef.current) supabase.removeChannel(fixturesRef.current);
-    if (teamPlayersRef.current) supabase.removeChannel(teamPlayersRef.current);
+    console.log('Unsubscribing from realtime channels...');
 
-    standingsRef.current = null;
-    fixturesRef.current = null;
-    teamPlayersRef.current = null;
+    channelsRef.current.forEach((ch) => {
+      supabase.removeChannel(ch);
+    });
+
+    channelsRef.current = [];
+    isSubscribedRef.current = false;
   };
 
   useEffect(() => {
     subscribe();
 
-    const appStateListener = AppState.addEventListener('change', (next) => {
+    const sub = AppState.addEventListener('change', (next) => {
+      // Only react when coming BACK to active
       if (appState.current.match(/inactive|background/) && next === 'active') {
-        console.log('App resumed, resubscribing all listeners');
-        unsubscribe();
-        subscribe();
+        console.log('App resumed');
+
+        // ❗️DO NOT blindly resubscribe
+        // Only resubscribe if nothing is active
+        if (!isSubscribedRef.current) {
+          subscribe();
+        }
       }
+
       appState.current = next;
     });
 
     return () => {
       unsubscribe();
-      appStateListener.remove();
+      sub.remove();
     };
   }, [currentRole?.team?.id]);
 

@@ -27,7 +27,6 @@ import { useQueryClient } from '@tanstack/react-query';
 const Home = () => {
   const [windowLoading, setWindowLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
-  const [windowOpen, setWindowOpen] = useState(false);
   const {
     user,
     player,
@@ -46,11 +45,13 @@ const Home = () => {
   console.log('Roles:', roles);
   console.log('Is User Loading:', isUserLoading);
   console.log('Is Error:', isError);
-  console.log('index DivisionId', currentRole?.team?.division?.id);
+  console.log('index DivisionId', currentRole?.division?.id);
   console.log('index SeasonId', currentRole?.activeSeason?.id);
 
   const divisionId =
-    currentRole?.role === 'admin' ? currentRole?.divisions[0]?.id : currentRole?.team?.division?.id;
+    currentRole?.role === 'admin'
+      ? currentRole?.competitions?.filter((comp) => comp.division_tier === 1)?.[0]?.division_id
+      : currentRole?.division?.id;
   console.log('Division ID:', divisionId);
 
   const {
@@ -58,6 +59,8 @@ const Home = () => {
     isLoading: isStandingsLoading,
     refetch: standingsRefetch,
   } = useStandings(divisionId, currentRole?.activeSeason?.id);
+
+  console.log('Standings:', standings);
 
   const {
     data: upcomingFixtures,

@@ -14,6 +14,8 @@ export default function DistrictName() {
   const [districtName, setDistrictName] = useState('');
   const [privateDistrict, setPrivateDistrict] = useState(false);
 
+  console.log('DistrictName:', districtName, 'PrivateDistrict:', privateDistrict);
+
   const { districtId } = useLocalSearchParams();
 
   const capitaliseEachWord = (str) => {
@@ -51,7 +53,7 @@ export default function DistrictName() {
 
       // Check uniqueness (case-insensitive match)
       const nameExists = existingDistricts.some(
-        (d) => d.name.trim().toLowerCase() === districtName.trim().toLowerCase()
+        (d) => d.name?.trim().toLowerCase() === districtName?.trim().toLowerCase()
       );
 
       if (nameExists) {
@@ -68,7 +70,7 @@ export default function DistrictName() {
         pathname: '/(main)/onboarding/(entity-onboarding)/create-divisions',
         params: {
           districtId,
-          districtName: capitaliseEachWord(districtName.trim()),
+          districtName: capitaliseEachWord(districtName?.trim()),
           privateDistrict,
         },
       });
