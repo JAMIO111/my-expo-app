@@ -69,24 +69,57 @@ const Home = () => {
   } = useUpcomingFixtures(currentRole?.team?.id);
 
   const {
-    data: resultsPendingApproval,
-    isLoading: isResultsPendingApprovalLoading,
-    refetch: resultsPendingApprovalRefetch,
+    data: teamResultsPendingApproval,
+    isLoading: isTeamResultsPendingApprovalLoading,
+    refetch: teamResultsPendingApprovalRefetch,
   } = useResultsPendingApproval({
-    awayTeamId: currentRole?.team?.id,
+    competitorId: currentRole?.team?.id,
+    competitorType: 'team',
     enabled: !!currentRole?.team?.id,
   });
 
   const {
-    data: fixturesAwaitingResults,
-    isLoading: isFixturesAwaitingResultsLoading,
+    data: playerResultsPendingApproval,
+    isLoading: isPlayerResultsPendingApprovalLoading,
+    refetch: playerResultsPendingApprovalRefetch,
+  } = useResultsPendingApproval({
+    competitorId: player?.id,
+    competitorType: 'player',
+    enabled: !!player?.id,
+  });
+
+  const resultsPendingApproval = [
+    ...(teamResultsPendingApproval || []),
+    ...(playerResultsPendingApproval || []),
+  ].sort((a, b) => new Date(b.date_time) - new Date(a.date_time)); // sort by date descending
+
+  const {
+    data: teamFixturesAwaitingResults,
+    isLoading: isTeamFixturesAwaitingResultsLoading,
     refetch: fixturesAwaitingResultsRefetch,
   } = useFixturesAwaitingResults({
-    homeTeamId: currentRole?.team?.id,
+    competitorId: currentRole?.team?.id,
+    competitorType: 'team',
     enabled: !!currentRole?.team?.id,
   });
 
-  console.log('Fixtures Awaiting Results:', fixturesAwaitingResults);
+  const {
+    data: playerFixturesAwaitingResults,
+    isLoading: isPlayerFixturesAwaitingResultsLoading,
+    refetch: playerFixturesAwaitingResultsRefetch,
+  } = useFixturesAwaitingResults({
+    competitorId: player?.id,
+    competitorType: 'player',
+    enabled: !!player?.id,
+  });
+
+  const fixturesAwaitingResults = [
+    ...(teamFixturesAwaitingResults || []),
+    ...(playerFixturesAwaitingResults || []),
+  ].sort((a, b) => new Date(b.date_time) - new Date(a.date_time)); // sort by date descending
+
+  console.log('Team Fixtures Awaiting Results:', teamFixturesAwaitingResults);
+  console.log('Player Fixtures Awaiting Results:', playerFixturesAwaitingResults);
   console.log('Upcoming Fixtures:', upcomingFixtures);
   console.log('Results Pending Approval:', resultsPendingApproval);
 
@@ -193,7 +226,7 @@ const Home = () => {
                       <PendingResultCard
                         key={fixture.id}
                         fixture={fixture}
-                        refetch={resultsPendingApprovalRefetch}
+                        refetch={teamResultsPendingApprovalRefetch}
                       />
                     ))}
                   <View className="w-full bg-bg-grouped-1">

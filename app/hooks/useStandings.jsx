@@ -64,6 +64,7 @@ export function useStandings(divisionId, seasonId) {
         .eq('division', divisionId)
         .eq('season', seasonId)
         .eq('is_complete', true)
+        .eq('approved', true)
         .eq('competitor_type', competitorType);
       if (fixturesError) throw fixturesError;
 

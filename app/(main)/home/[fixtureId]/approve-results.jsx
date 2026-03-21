@@ -9,8 +9,8 @@ import { Stack } from 'expo-router';
 import { useResultsByFixture } from '@hooks/useResultsByFixture';
 import { useFixtureDetails } from '@hooks/useFixtureDetails';
 import TeamLogo from '@components/TeamLogo';
+import Avatar from '@components/Avatar';
 import { supabase } from '@/lib/supabase';
-import { useUser } from '@contexts/UserProvider';
 import Toast from 'react-native-toast-message';
 
 const ApproveResults = () => {
@@ -19,49 +19,36 @@ const ApproveResults = () => {
   const { fixtureId } = useLocalSearchParams();
   const { data: results, isLoading } = useResultsByFixture(fixtureId);
   const { data: fixtureDetails } = useFixtureDetails(fixtureId);
-  const { currentRole, player } = useUser();
+  console.log('fixtureDetails in ApproveResults:', fixtureDetails);
 
   const handleApproveResults = async () => {
-    if (
-      player?.id !== currentRole?.team?.captain &&
-      player?.id !== currentRole?.team?.vice_captain
-    ) {
+    setApprovingResults(true);
+    const { error } = await supabase
+      .from('Fixtures')
+      .update({ approved: true })
+      .eq('id', fixtureId)
+      .eq('approved', false)
+      .eq('is_complete', true)
+      .select();
+
+    if (error) {
       Toast.show({
         type: 'error',
-        text1: 'Action Not Allowed',
-        text2: 'Only the captain and vice captain can approve results.',
+        text1: 'Approval Failed',
+        text2: 'An error occurred while approving the results. Please try again.',
       });
+      console.error('Error approving results:', error);
     } else {
-      setApprovingResults(true);
-      console.log('Approving results for fixture:', fixtureId);
-      console.log('Player ID:', player?.id);
-      console.log('Current Role:', currentRole?.activeSeason?.id, currentRole?.team?.division?.id);
-      const { data, error } = await supabase.rpc('approve_results_and_update_standings_and_stats', {
-        _fixture_id: fixtureId,
-        _approver: player?.id,
-        _season_id: currentRole?.activeSeason?.id,
-        _division_id: currentRole?.team?.division?.id,
-        _scoring_mode: 2,
-        _points_for_win: 3,
-        _points_for_draw: 1,
+      console.log('Results approved successfully'); // Show success toast or redirect
+      Toast.show({
+        type: 'success',
+        text1: 'Results Approved',
+        text2: 'The results have been successfully approved.',
       });
-
-      if (error) {
-        console.error('RPC failed:', error.message);
-      } else if (data.success) {
-        console.log(data.message); // Show success toast or redirect
-        Toast.show({
-          type: 'success',
-          text1: 'Results Approved',
-          text2: 'The results have been successfully approved.',
-        });
-        console.log('navigating to home');
-        router.back();
-      } else {
-        console.error('Approval failed:', data.message); // Show error toast
-      }
-      setApprovingResults(false);
+      console.log('navigating to home');
+      router.back();
     }
+    setApprovingResults(false);
   };
 
   const handleDisputeResults = async () => {
@@ -82,48 +69,64 @@ const ApproveResults = () => {
       <View className="mt-16 flex-1 bg-bg-grouped-1">
         <View className="gap-2 border-b border-separator bg-bg-grouped-2 px-5 py-3">
           <View className="flex-row items-center justify-start gap-2">
-            <TeamLogo
-              size={36}
-              type={fixtureDetails?.homeTeam?.crest?.type}
-              color1={fixtureDetails?.homeTeam?.crest?.color1}
-              color2={fixtureDetails?.homeTeam?.crest?.color2}
-              thickness={fixtureDetails?.homeTeam?.crest?.thickness}
-            />
+            {fixtureDetails?.competitor_type === 'team' ? (
+              <TeamLogo
+                size={36}
+                type={fixtureDetails?.homeTeam?.crest?.type}
+                color1={fixtureDetails?.homeTeam?.crest?.color1}
+                color2={fixtureDetails?.homeTeam?.crest?.color2}
+                thickness={fixtureDetails?.homeTeam?.crest?.thickness}
+              />
+            ) : (
+              <Avatar size={36} borderRadius={18} player={fixtureDetails?.homePlayer} />
+            )}
             <Text className="ml-3 pt-1 font-saira-medium text-2xl text-text-1">
-              {fixtureDetails?.homeTeam?.abbreviation}
+              {fixtureDetails?.competitor_type === 'team'
+                ? fixtureDetails?.homeTeam?.abbreviation
+                : `(${fixtureDetails?.homePlayer?.nickname})`}
             </Text>
             <Text
               numberOfLines={1}
               className="flex-1 pt-1 text-left font-saira-medium text-2xl text-text-2">
-              {fixtureDetails?.homeTeam?.display_name}
+              {fixtureDetails?.competitor_type === 'team'
+                ? fixtureDetails?.homeTeam?.display_name
+                : `${fixtureDetails?.homePlayer?.first_name} ${fixtureDetails?.homePlayer?.surname}`}
             </Text>
             <Text className="pt-3 text-center font-saira-bold text-3xl text-text-1">
-              {results.filter((result) => result.home_player.id === result?.winner_id).length}
+              {results.filter((result) => result.winner_side === 'home').length}
             </Text>
           </View>
           <View className="flex-row items-center justify-start gap-2">
-            <TeamLogo
-              size={36}
-              type={fixtureDetails?.awayTeam?.crest?.type}
-              color1={fixtureDetails?.awayTeam?.crest?.color1}
-              color2={fixtureDetails?.awayTeam?.crest?.color2}
-              thickness={fixtureDetails?.awayTeam?.crest?.thickness}
-            />
+            {fixtureDetails?.competitor_type === 'team' ? (
+              <TeamLogo
+                size={36}
+                type={fixtureDetails?.awayTeam?.crest?.type}
+                color1={fixtureDetails?.awayTeam?.crest?.color1}
+                color2={fixtureDetails?.awayTeam?.crest?.color2}
+                thickness={fixtureDetails?.awayTeam?.crest?.thickness}
+              />
+            ) : (
+              <Avatar size={36} borderRadius={18} player={fixtureDetails?.awayPlayer} />
+            )}
             <Text className="ml-3 pt-1 font-saira-medium text-2xl text-text-1">
-              {fixtureDetails?.awayTeam?.abbreviation}
+              {fixtureDetails?.competitor_type === 'team'
+                ? fixtureDetails?.awayTeam?.abbreviation
+                : `(${fixtureDetails?.awayPlayer?.nickname})`}
             </Text>
+
             <Text
               numberOfLines={1}
               className="flex-1 pt-1 text-left font-saira-medium text-2xl text-text-2">
-              {fixtureDetails?.awayTeam?.display_name}
+              {fixtureDetails?.competitor_type === 'team'
+                ? fixtureDetails?.awayTeam?.display_name
+                : `${fixtureDetails?.awayPlayer?.first_name} ${fixtureDetails?.awayPlayer?.surname}`}
             </Text>
             <Text className="pt-3 text-center font-saira-bold text-3xl text-text-1">
-              {results.filter((result) => result.away_player.id === result?.winner_id).length}
+              {results.filter((result) => result.winner_side === 'away').length}
             </Text>
           </View>
         </View>
         <ScrollView className="flex-1">
-          <View className=""></View>
           <ConfirmFramesList
             results={results}
             isLoading={isLoading}

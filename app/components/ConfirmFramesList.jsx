@@ -1,5 +1,11 @@
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
+const getPlayerNames = (...players) =>
+  players
+    .filter(Boolean)
+    .map((p) => `${p.first_name} ${p.surname}`)
+    .join(' & ');
+
 const ConfirmFramesList = ({ results, isLoading, disputedFrames, setDisputedFrames }) => {
   if (isLoading) {
     return <Text>Loading...</Text>;
@@ -9,68 +15,82 @@ const ConfirmFramesList = ({ results, isLoading, disputedFrames, setDisputedFram
     <View className="flex-1 bg-bg-grouped-2">
       {results?.length > 0 ? (
         results.map((result, index) => {
-          const homeWinner = result.home_player.id === result.winner_id;
-          const awayWinner = result.away_player.id === result.winner_id;
+          const homeWinner = result.winner_side === 'home';
+          const awayWinner = result.winner_side === 'away';
+          const isDisputed = disputedFrames.includes(result.id);
+          const doublesMatch = result.home_player_2 && result.away_player_2;
+
           return (
             <Pressable
+              key={result.id}
               onPress={() => {
-                // Handle frame press
-                setDisputedFrames((prev) => {
-                  if (prev.includes(result.id)) {
-                    return prev.filter((id) => id !== result.id);
-                  } else {
-                    return [...prev, result.id];
-                  }
-                });
-              }}
-              key={result.id}>
-              <View className="relative mt-1 gap-1">
+                setDisputedFrames((prev) =>
+                  prev.includes(result.id)
+                    ? prev.filter((id) => id !== result.id)
+                    : [...prev, result.id]
+                );
+              }}>
+              <View className="relative mt-1 gap-1 pb-3">
+                {/* Frame Title */}
                 <Text
-                  className={`${disputedFrames.includes(result.id) ? 'font-semibold text-theme-red' : 'font-medium'} pl-5 font-saira text-text-2`}>
-                  {disputedFrames.includes(result.id)
+                  className={`${
+                    isDisputed ? 'font-semibold text-theme-red' : 'font-medium'
+                  } pl-5 font-saira text-text-2`}>
+                  {isDisputed
                     ? `Frame ${result.frame_number} - Disputed`
                     : `Frame ${result.frame_number}`}
                 </Text>
+
+                {/* Home */}
                 <View className="flex-row items-center justify-between gap-3">
                   <View
                     className={`${homeWinner ? 'bg-brand' : 'bg-transparent'}`}
-                    style={{
-                      height: 26, // h-6 = 26px
-                      width: 5, // w-2 = 5px
-                      borderTopRightRadius: 5, // rounded-r = 5px
-                      borderBottomRightRadius: 5,
-                    }}></View>
+                    style={styles.indicator}
+                  />
+
                   <Text
                     numberOfLines={1}
-                    className={`${homeWinner ? 'font-saira-semibold' : 'font-saira'} mt-1 flex-1 text-2xl text-text-1`}>
-                    {result.home_player.first_name} {result.home_player.surname}
+                    className={`${
+                      homeWinner ? 'font-saira-semibold' : 'font-saira'
+                    } mt-1 flex-1 ${doublesMatch ? 'text-lg' : 'text-xl'} text-text-1`}>
+                    {getPlayerNames(result.home_player_1, result.home_player_2)}
                   </Text>
+
                   <Text
-                    className={`${homeWinner ? 'font-saira-semibold text-text-1' : 'font-saira text-text-2'} pr-5 text-2xl`}>
+                    className={`${
+                      homeWinner ? 'font-saira-semibold text-text-1' : 'font-saira text-text-2'
+                    } pr-5 ${doublesMatch ? 'text-lg' : 'text-xl'}`}>
                     {homeWinner ? 'Winner' : 'Loser'}
                   </Text>
                 </View>
+
+                {/* Away */}
                 <View className="flex-row items-center justify-between gap-3">
                   <View
                     className={`${awayWinner ? 'bg-brand' : 'bg-transparent'}`}
-                    style={{
-                      height: 26, // h-6 = 26px
-                      width: 5, // w-2 = 5px
-                      borderTopRightRadius: 5, // rounded-r = 5px
-                      borderBottomRightRadius: 5,
-                    }}></View>
+                    style={styles.indicator}
+                  />
+
                   <Text
                     numberOfLines={1}
-                    className={`${awayWinner ? 'font-saira-semibold' : 'font-saira'} mt-1 flex-1 text-2xl text-text-1`}>
-                    {result.away_player.first_name} {result.away_player.surname}{' '}
+                    className={`${
+                      awayWinner ? 'font-saira-semibold' : 'font-saira'
+                    } mt-1 flex-1 ${doublesMatch ? 'text-lg' : 'text-xl'} text-text-1`}>
+                    {getPlayerNames(result.away_player_1, result.away_player_2)}
                   </Text>
+
                   <Text
-                    className={`${awayWinner ? 'font-saira-semibold text-text-1' : 'font-saira text-text-2'} pr-5 text-2xl`}>
+                    className={`${
+                      awayWinner ? 'font-saira-semibold text-text-1' : 'font-saira text-text-2'
+                    } pr-5 ${doublesMatch ? 'text-lg' : 'text-2xl'}`}>
                     {awayWinner ? 'Winner' : 'Loser'}
                   </Text>
                 </View>
-                <View
-                  className={`${index !== results.length - 1 ? 'mx-5 border-b border-theme-gray-5' : ''}`}></View>
+
+                {/* Divider */}
+                {index !== results.length - 1 && (
+                  <View className="mx-5 border-b border-theme-gray-5" />
+                )}
               </View>
             </Pressable>
           );
@@ -86,4 +106,11 @@ const ConfirmFramesList = ({ results, isLoading, disputedFrames, setDisputedFram
 
 export default ConfirmFramesList;
 
-const styles = StyleSheet.create({});
+const styles = StyleSheet.create({
+  indicator: {
+    height: 26,
+    width: 5,
+    borderTopRightRadius: 5,
+    borderBottomRightRadius: 5,
+  },
+});

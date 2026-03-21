@@ -147,8 +147,8 @@ const SubmitResultsScreen = () => {
   const homeScore = frames.filter((f) => f.winner === f.homePlayer).length;
   const awayScore = frames.filter((f) => f.winner === f.awayPlayer).length;
 
-  const homeTextColor = getContrastColor(fixtureDetails?.homeTeam?.crest?.color1);
-  const awayTextColor = getContrastColor(fixtureDetails?.awayTeam?.crest?.color1);
+  const homeTextColor = getContrastColor(fixtureDetails?.homeTeam?.crest?.color1 || '#FFF');
+  const awayTextColor = getContrastColor(fixtureDetails?.awayTeam?.crest?.color1 || '#FFF');
 
   function getOrdinalSuffix(n) {
     const j = n % 10,
