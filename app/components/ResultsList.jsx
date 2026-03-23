@@ -31,21 +31,9 @@ const ResultsList = () => {
   const bottomSheetRef = useRef(null);
   const [activeFilter, setActiveFilter] = useState(null);
 
-  // Default full objects from context
-  const defaultDistrict =
-    currentRole?.role === 'admin'
-      ? currentRole?.district
-      : (currentRole?.team?.division?.district ?? null);
-  const defaultDivision =
-    currentRole?.role === 'admin' ? currentRole?.divisions[0] : currentRole?.team?.division;
-  const defaultSeason = currentRole?.activeSeason ?? null;
-
-  const [district, setDistrict] = useState(defaultDistrict);
-  const [division, setDivision] = useState(defaultDivision);
-  const [season, setSeason] = useState(defaultSeason);
-  const [tempDistrict, setTempDistrict] = useState(defaultDistrict);
-  const [tempDivision, setTempDivision] = useState(defaultDivision);
-  const [tempSeason, setTempSeason] = useState(defaultSeason);
+  const [district, setDistrict] = useState(
+    currentRole?.role === 'admin' ? currentRole?.district : (currentRole?.district ?? null)
+  );
 
   // Fetch districts (no id needed)
   const {
@@ -68,39 +56,48 @@ const ResultsList = () => {
     error: seasonsError,
   } = useSeasons(district?.id);
 
-  // When district changes: reset division + season, fetch active season object
+  const [division, setDivision] = useState(
+    currentRole?.role === 'admin'
+      ? (currentRole?.divisions.find((div) => div.tier === 1 && div.group_id === 1) ?? null)
+      : (currentRole?.division ?? null)
+  );
+  const [season, setSeason] = useState(currentRole?.activeSeason);
+  const [tempDistrict, setTempDistrict] = useState(district);
+  const [tempDivision, setTempDivision] = useState(division);
+  const [tempSeason, setTempSeason] = useState(season);
+
   useEffect(() => {
-    if (!district) {
-      setDivision(null);
-      setSeason(null);
-      return;
-    }
-
-    const init = async () => {
-      const active = await getActiveSeason(district?.id); // assume returns full season object
-      setSeason(active);
-    };
-
     setDivision(null);
+    setTempDivision(null);
     setSeason(null);
-    init();
-  }, [district]);
+    setTempSeason(null);
+  }, [district?.id]);
 
-  // When divisions load, set default division if none selected yet
   useEffect(() => {
-    if (divisions.length && defaultDivision && !division) {
-      const found = divisions.find((d) => d.id === defaultDivision.id);
-      if (found) setDivision(found);
-    }
-  }, [divisions, defaultDivision, division]);
+    if (district && !season) {
+      const fetchSeason = async () => {
+        try {
+          const activeSeason = await getActiveSeason(district.id);
+          setSeason(activeSeason);
+          setTempSeason(activeSeason);
+        } catch (err) {
+          console.error('Error fetching active season:', err);
+          setSeason(null);
+          setTempSeason(null);
+        }
+      };
 
-  // When seasons load, set default season if none selected yet
-  useEffect(() => {
-    if (seasons.length && defaultSeason && !season) {
-      const found = seasons.find((s) => s.id === defaultSeason.id);
-      if (found) setSeason(found);
+      fetchSeason();
     }
-  }, [seasons, defaultSeason, season]);
+  }, [district, season]);
+
+  // Default to first division when divisions list changes and no division is selected
+  useEffect(() => {
+    if (!division && divisions.length > 0) {
+      setDivision(divisions[0]);
+      setTempDivision(divisions[0]);
+    }
+  }, [divisions, division]);
 
   const openSheet = () => {
     bottomSheetRef.current?.expand();

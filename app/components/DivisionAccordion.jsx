@@ -11,25 +11,19 @@ if (Platform.OS === 'android') {
   UIManager.setLayoutAnimationEnabledExperimental?.(true);
 }
 
-const DivisionAccordion = ({ divisionName, teams = [] }) => {
+const DivisionAccordion = ({ isExpanded, onPress, divisionName, teams = [] }) => {
   const router = useRouter();
-  const [expanded, setExpanded] = useState(false);
   const [expandedTeam, setExpandedTeam] = useState(null);
   const { data: teamPlayers, isLoading } = useTeamPlayers(expandedTeam);
-
-  const toggle = () => {
-    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
-    setExpanded((prev) => !prev);
-  };
 
   return (
     <View className="w-full overflow-hidden rounded-2xl border border-theme-gray-5 bg-bg-grouped-2">
       {/* Header */}
-      <Pressable onPress={toggle} className="flex-row items-center justify-between p-4">
+      <Pressable onPress={onPress} className="flex-row items-center justify-between p-4">
         <View>
           <Text className="font-saira-semibold text-xl text-text-1">{divisionName}</Text>
 
-          {!expanded && (
+          {!isExpanded && (
             <Text className="font-saira-medium text-text-2">
               {teams.length} team{teams.length !== 1 ? 's' : ''}
             </Text>
@@ -41,13 +35,13 @@ const DivisionAccordion = ({ divisionName, teams = [] }) => {
           size={22}
           color="gray"
           style={{
-            transform: [{ rotate: expanded ? '180deg' : '0deg' }],
+            transform: [{ rotate: isExpanded ? '180deg' : '0deg' }],
           }}
         />
       </Pressable>
 
       {/* Expanded content */}
-      {expanded && (
+      {isExpanded && (
         <View className="gap-2 border-t border-theme-gray-5 p-4">
           {teams.map((team) => (
             <Pressable

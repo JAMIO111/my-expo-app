@@ -2,12 +2,9 @@ import { useQuery } from '@tanstack/react-query';
 import { startOfMonth, endOfMonth } from 'date-fns';
 import { supabase } from '@/lib/supabase';
 
-export const useMonthlyFixtures = ({ month, seasonId, divisionId }) => {
-  const fetchFixturesByMonth = async ({ month, seasonId, divisionId }) => {
-    const start = startOfMonth(month).toISOString();
-    const end = endOfMonth(month).toISOString();
-
-    const { data, error } = await supabase
+export const useGroupedFixtures = ({ month, seasonId, divisionId }) => {
+  const fetchGroupedFixtures = async ({ month, seasonId, divisionId }) => {
+    let query = supabase
       .from('Fixtures')
       .select(
         `
@@ -21,17 +18,21 @@ export const useMonthlyFixtures = ({ month, seasonId, divisionId }) => {
       .eq('season', seasonId)
       .eq('division', divisionId)
       .eq('approved', false)
-      .gte('date_time', start)
-      .lte('date_time', end)
       .order('date_time', { ascending: true });
 
+    if (month) {
+      const start = startOfMonth(month).toISOString();
+      const end = endOfMonth(month).toISOString();
+      query = query.gte('date_time', start).lte('date_time', end);
+    }
+
+    const { data, error } = await query;
     if (error) throw new Error(error.message);
 
+    // Group fixtures by date
     const grouped = {};
-
     for (const fixture of data) {
       const key = fixture.date_time.split('T')[0];
-
       const homeCompetitor =
         fixture.competitor_type === 'team'
           ? { ...fixture.home_team, type: 'team' }
@@ -67,10 +68,10 @@ export const useMonthlyFixtures = ({ month, seasonId, divisionId }) => {
 
   return useQuery({
     queryKey: ['fixtures-grouped', month?.toISOString(), seasonId, divisionId],
-    queryFn: () => fetchFixturesByMonth({ month, seasonId, divisionId }),
+    queryFn: () => fetchGroupedFixtures({ month, seasonId, divisionId }),
     staleTime: 1000 * 60 * 5,
     cacheTime: 1000 * 60 * 60,
-    enabled: !!month && !!seasonId && !!divisionId,
+    enabled: !!seasonId && !!divisionId, // month optional now
     keepPreviousData: true,
   });
 };

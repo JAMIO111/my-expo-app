@@ -243,7 +243,7 @@ const Home = () => {
                 </View>
               )}
               <View className="w-full gap-5 p-3 pb-20 pt-5">
-                {currentRole.type === 'player' ? (
+                {currentRole.type === 'player' && currentRole.district?.transfer_window_open ? (
                   <TransferWindowCard />
                 ) : currentRole.type === 'admin' ? (
                   <ToggleTransferWindowCard

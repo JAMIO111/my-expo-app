@@ -3,7 +3,7 @@ import { supabase } from '@/lib/supabase';
 
 export const useSeasonStats = (teamId, seasonId) => {
   return useQuery({
-    queryKey: ['seasonStats', teamId, seasonId],
+    queryKey: ['SeasonStats', teamId, seasonId],
     queryFn: async () => {
       if (!teamId || !seasonId) return null;
 

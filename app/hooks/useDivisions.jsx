@@ -9,6 +9,7 @@ export function useDivisions(districtId) {
         .from('Divisions')
         .select('*')
         .eq('district', districtId)
+        .order('group_id', { ascending: true })
         .order('tier', { ascending: true });
 
       if (error) throw error;

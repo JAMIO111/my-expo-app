@@ -61,7 +61,7 @@ const index = () => {
             />
           </View>
           <View className="bg-bg-2 p-3">
-            <DivisionsList districtId={currentRole?.districtId} />
+            <DivisionsList districtId={currentRole?.district.id} />
           </View>
           <CircleButtonRow
             format={[

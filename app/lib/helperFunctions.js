@@ -1,4 +1,4 @@
-import supabase from '@/lib/supabaseClient';
+import { supabase } from '@/lib/supabase';
 
 export function generateQuadraticTiers(startValue, endValue, numTiers, curveStrength = 2) {
   const tiers = [];
@@ -568,7 +568,7 @@ export async function getActiveSeason(districtId) {
     .from('Seasons')
     .select('*')
     .eq('district', districtId)
-    .eq('is_active', true); // or whatever your active flag is
+    .eq('status', 'active'); // or whatever your active flag is
 
   if (error) {
     console.error('Error fetching active season:', error);
@@ -588,6 +588,7 @@ export async function getActiveSeason(districtId) {
 
   return data[0];
 }
+
 export async function handleSubmitResults({
   fixtureId,
   frameResults,
