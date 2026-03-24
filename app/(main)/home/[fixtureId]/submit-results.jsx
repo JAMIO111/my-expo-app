@@ -14,6 +14,7 @@ import { Picker } from '@react-native-picker/picker';
 import { Ionicons } from '@expo/vector-icons';
 import CTAButton from '@components/CTAButton';
 import TeamLogo from '@components/TeamLogo';
+import Avatar from '@components/Avatar';
 import CustomHeader from '@components/CustomHeader';
 import SafeViewWrapper from '@components/SafeViewWrapper';
 import Toast from 'react-native-toast-message';
@@ -28,6 +29,7 @@ import { getContrastColor } from '@lib/helperFunctions';
 
 const SubmitResultsScreen = () => {
   const [confirmDeleteModalVisible, setConfirmDeleteModalVisible] = useState(false);
+  const [frameToDelete, setFrameToDelete] = useState(null);
   const router = useRouter();
   const colorScheme = useColorScheme();
   const { fixtureId } = useLocalSearchParams();
@@ -51,12 +53,12 @@ const SubmitResultsScreen = () => {
   const addFrame = () => {
     const newFrame = {
       tempId: Date.now().toString(),
-      homePlayer: '',
-      awayPlayer: '',
-      winner: null,
-      lag_won: null,
-      break_dish: null,
-      reverse_dish: null,
+      homePlayers: [],
+      awayPlayers: [],
+      winnerSide: null,
+      lagWon: null,
+      breakDish: null,
+      reverseDish: null,
     };
     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
     setFrames((prev) => [...prev, newFrame]);
@@ -73,32 +75,32 @@ const SubmitResultsScreen = () => {
         updated[key] = value;
 
         // 1. If players change → validate dependent fields
-        if (key === 'homePlayer' || key === 'awayPlayer') {
-          const validPlayers = [
-            key === 'homePlayer' ? value : f.homePlayer,
-            key === 'awayPlayer' ? value : f.awayPlayer,
-          ];
+        if (key === 'homePlayers' || key === 'awayPlayers') {
+          const home = key === 'homePlayers' ? value : f.homePlayers;
+          const away = key === 'awayPlayers' ? value : f.awayPlayers;
 
-          ['winner', 'lag_won', 'break_dish', 'reverse_dish'].forEach((field) => {
-            if (!validPlayers.includes(updated[field])) {
-              updated[field] = null;
-            }
-          });
+          // if no players, reset results
+          if (home.length === 0 || away.length === 0) {
+            updated.winnerSide = null;
+            updated.breakDish = null;
+            updated.reverseDish = null;
+            updated.lagWon = null;
+          }
         }
 
         // 2. If winner changes → clear dish stats
-        if (key === 'winner' && previousValue !== value) {
-          updated.break_dish = null;
-          updated.reverse_dish = null;
+        if (key === 'winnerSide' && previousValue !== value) {
+          updated.breakDish = null;
+          updated.reverseDish = null;
         }
 
         // 3. Make break and reverse mutually exclusive
-        if (key === 'break_dish' && previousValue !== value) {
-          updated.reverse_dish = null;
+        if (key === 'breakDish' && previousValue !== value) {
+          updated.reverseDish = null;
         }
 
-        if (key === 'reverse_dish' && previousValue !== value) {
-          updated.break_dish = null;
+        if (key === 'reverseDish' && previousValue !== value) {
+          updated.breakDish = null;
         }
 
         return updated;
@@ -124,28 +126,38 @@ const SubmitResultsScreen = () => {
   };
 
   const handleCancel = () => {
+    setFrameToDelete(null);
     setConfirmDeleteModalVisible(false);
   };
 
   useEffect(() => {
     if (existingResults && existingResults.length > 0 && frames.length === 0) {
-      const mappedFrames = existingResults.map((result, i) => ({
-        id: result.id, // actual DB ID (for updates, if needed)
-        tempId: `${result.id}`, // still use tempId for UI interaction
-        homePlayer: result.home_player.id,
-        awayPlayer: result.away_player.id,
-        winner: result.winner_id,
-        lag_won: result.lag_winner_id,
-        break_dish: result.break_dish_winner_id,
-        reverse_dish: result.reverse_dish_winner_id,
-      }));
+      const mappedFrames = existingResults?.map((result) => {
+        const homePlayers = [result.home_player_1, result.home_player_2].filter(Boolean);
+
+        const awayPlayers = [result.away_player_1, result.away_player_2].filter(Boolean);
+
+        return {
+          id: result.id,
+          tempId: `${result.id}`,
+
+          homePlayers: homePlayers?.map((p) => p.id),
+          awayPlayers: awayPlayers?.map((p) => p.id),
+
+          winnerSide: result.winner_side || null,
+
+          breakDish: result.break_dish ? result.winner_side : null,
+          reverseDish: result.reverse_dish ? result.winner_side : null,
+          lagWon: result.lag_won || null, // if you add this later
+        };
+      });
 
       setFrames(mappedFrames); // Reverse to show latest first
     }
   }, [existingResults]);
 
-  const homeScore = frames.filter((f) => f.winner === f.homePlayer).length;
-  const awayScore = frames.filter((f) => f.winner === f.awayPlayer).length;
+  const homeScore = frames.filter((f) => f.winnerSide === 'home').length;
+  const awayScore = frames.filter((f) => f.winnerSide === 'away').length;
 
   const homeTextColor = getContrastColor(fixtureDetails?.homeTeam?.crest?.color1 || '#FFF');
   const awayTextColor = getContrastColor(fixtureDetails?.awayTeam?.crest?.color1 || '#FFF');
@@ -221,45 +233,88 @@ const SubmitResultsScreen = () => {
       <View className="flex-1 bg-bg-1">
         <ScrollView className="mt-16 flex-1 bg-bg-grouped-1 p-4">
           {/* Match Score */}
-          <View className="relative mb-2 flex-row items-start justify-center p-3">
-            <View className="absolute left-0 z-50">
-              <View className="rounded-full border border-border-color">
-                <TeamLogo
-                  size={60}
-                  color1={fixtureDetails?.homeTeam?.crest?.color1}
-                  color2={fixtureDetails?.homeTeam?.crest?.color2}
-                  type={fixtureDetails?.homeTeam?.crest?.type}
-                  thickness={fixtureDetails?.homeTeam?.crest?.thickness}
-                />
+          <View className="mb-4 rounded-3xl bg-bg-1 p-4 shadow-sm">
+            <View className="flex-row items-center justify-between">
+              {/* HOME */}
+              <View className="flex-1 items-center">
+                {fixtureDetails?.competitor_type === 'team' ? (
+                  <TeamLogo
+                    size={60}
+                    color1={fixtureDetails?.homeTeam?.crest?.color1}
+                    color2={fixtureDetails?.homeTeam?.crest?.color2}
+                    type={fixtureDetails?.homeTeam?.crest?.type}
+                    thickness={fixtureDetails?.homeTeam?.crest?.thickness}
+                  />
+                ) : (
+                  <View className="mb-2 rounded-2xl border border-border-color p-1">
+                    <Avatar size={60} borderRadius={12} player={fixtureDetails?.homePlayer} />
+                  </View>
+                )}
+
+                {fixtureDetails?.competitor_type === 'team' ? (
+                  <View className="mt-3 items-center">
+                    <Text className={`font-saira-semibold text-lg text-text-1`}>
+                      {fixtureDetails?.homeTeam?.abbreviation}
+                    </Text>
+                    <Text className={`font-saira-semibold text-lg text-text-2`}>
+                      {fixtureDetails?.homeTeam?.display_name}
+                    </Text>
+                  </View>
+                ) : (
+                  <View className="items-center">
+                    <Text className="font-saira-medium text-lg text-text-1">
+                      {fixtureDetails?.homePlayer?.first_name}
+                    </Text>
+                    <Text className="font-saira-medium text-lg text-text-2">
+                      {fixtureDetails?.homePlayer?.surname}
+                    </Text>
+                  </View>
+                )}
               </View>
-            </View>
-            <View
-              style={{ backgroundColor: fixtureDetails?.homeTeam?.crest?.color1 }}
-              className="ml-10 flex-1 items-center justify-center border border-theme-gray-4 py-1">
-              <Text className={`${homeTextColor} mt-1 font-saira-semibold text-2xl`}>
-                {fixtureDetails?.homeTeam?.abbreviation}
-              </Text>
-            </View>
-            <Text className="rounded-b-2xl border-x-2 border-bg-grouped-1 bg-bg-3 p-3 font-saira-medium text-2xl text-text-1">
-              {homeScore} - {awayScore}
-            </Text>
-            <View className="absolute right-0 z-50">
-              <View className="rounded-full border border-border-color">
-                <TeamLogo
-                  size={60}
-                  color1={fixtureDetails?.awayTeam?.crest?.color1}
-                  color2={fixtureDetails?.awayTeam?.crest?.color2}
-                  type={fixtureDetails?.awayTeam?.crest?.type}
-                  thickness={fixtureDetails?.awayTeam?.crest?.thickness}
-                />
+
+              {/* SCORE */}
+              <View className="mx-3 flex-row items-center justify-center gap-3 rounded-2xl bg-bg-2 px-4 pb-2 pt-4 shadow-sm">
+                <Text className="font-saira-bold text-3xl text-text-1">{homeScore}</Text>
+                <Text className="mb-2 text-text-2">vs</Text>
+                <Text className="font-saira-bold text-3xl text-text-1">{awayScore}</Text>
               </View>
-            </View>
-            <View
-              style={{ backgroundColor: fixtureDetails?.awayTeam?.crest?.color1 }}
-              className="mr-10 flex-1 items-center justify-center border border-theme-gray-4 py-1">
-              <Text className={`${awayTextColor} mt-1 font-saira-semibold text-2xl`}>
-                {fixtureDetails?.awayTeam?.abbreviation}
-              </Text>
+
+              {/* AWAY */}
+              <View className="flex-1 items-center">
+                {fixtureDetails?.competitor_type === 'team' ? (
+                  <TeamLogo
+                    size={60}
+                    color1={fixtureDetails?.awayTeam?.crest?.color1}
+                    color2={fixtureDetails?.awayTeam?.crest?.color2}
+                    type={fixtureDetails?.awayTeam?.crest?.type}
+                    thickness={fixtureDetails?.awayTeam?.crest?.thickness}
+                  />
+                ) : (
+                  <View className="mb-2 rounded-2xl border border-border-color p-1">
+                    <Avatar size={60} borderRadius={12} player={fixtureDetails?.awayPlayer} />
+                  </View>
+                )}
+
+                {fixtureDetails?.competitor_type === 'team' ? (
+                  <View className="mt-3 items-center">
+                    <Text className={`font-saira-semibold text-lg text-text-1`}>
+                      {fixtureDetails?.awayTeam?.abbreviation}
+                    </Text>
+                    <Text className={`font-saira-semibold text-lg text-text-2`}>
+                      {fixtureDetails?.awayTeam?.display_name}
+                    </Text>
+                  </View>
+                ) : (
+                  <View className="items-center">
+                    <Text className="font-saira-medium text-lg text-text-1">
+                      {fixtureDetails?.awayPlayer?.first_name}
+                    </Text>
+                    <Text className="font-saira-medium text-lg text-text-2">
+                      {fixtureDetails?.awayPlayer?.surname}
+                    </Text>
+                  </View>
+                )}
+              </View>
             </View>
           </View>
 
@@ -270,8 +325,15 @@ const SubmitResultsScreen = () => {
             .map((frame, i) => {
               const isActive = frame.tempId === activeFrameId;
               const index = frames.length - i;
-              const homePlayer = homePlayers?.data?.find((p) => p.id === frame.homePlayer);
-              const awayPlayer = awayPlayers?.data?.find((p) => p.id === frame.awayPlayer);
+              const isDoubles = frame.homePlayers.length === 2 || frame.awayPlayers.length === 2;
+              const homePlayer = homePlayers?.data?.find((p) => p.id === frame.homePlayers[0]);
+              const awayPlayer = awayPlayers?.data?.find((p) => p.id === frame.awayPlayers[0]);
+              const homeSelected = frame.homePlayers
+                .map((id) => homePlayers?.data?.find((p) => p.id === id))
+                .filter(Boolean);
+              const awaySelected = frame.awayPlayers
+                .map((id) => awayPlayers?.data?.find((p) => p.id === id))
+                .filter(Boolean);
               return (
                 <Pressable
                   key={frame.tempId}
@@ -302,73 +364,80 @@ const SubmitResultsScreen = () => {
                     ]}>
                     <View className="flex-row gap-3">
                       <View className="flex-1">
-                        <Picker
-                          selectedValue={frame.homePlayer}
-                          onValueChange={(val) => updateFrame(frame.tempId, 'homePlayer', val)}
-                          style={{
-                            fontSize: Platform.OS === 'android' ? 14 : undefined,
-                            borderRadius: 16,
-                            backgroundColor: '#00000009',
-                          }}
-                          itemStyle={{ fontSize: 14, fontFamily: 'Saira-medium' }}
-                          className="h-8">
-                          <Picker.Item label="Select" value="" />
-                          {Array.isArray(homePlayers?.data) &&
-                            homePlayers.data.map((p) => (
+                        {[0, 1].map((index) => (
+                          <Picker
+                            key={index}
+                            selectedValue={frame.homePlayers[index] || ''}
+                            onValueChange={(val) => {
+                              const updated = [...frame.homePlayers];
+                              updated[index] = val || null;
+
+                              // remove empty trailing player
+                              const cleaned = updated.filter(Boolean);
+
+                              updateFrame(frame.tempId, 'homePlayers', cleaned);
+                            }}>
+                            <Picker.Item
+                              label={index === 0 ? 'Player 1' : 'Player 2 (optional)'}
+                              value=""
+                            />
+                            {(homePlayers?.data || []).map((p) => (
                               <Picker.Item
                                 key={p.id}
                                 label={`${p.first_name} ${p.surname}`}
                                 value={p.id}
                               />
                             ))}
-                        </Picker>
+                          </Picker>
+                        ))}
                       </View>
                       <View className="flex-1">
-                        <Picker
-                          selectedValue={frame.awayPlayer}
-                          onValueChange={(val) => updateFrame(frame.tempId, 'awayPlayer', val)}
-                          style={{
-                            fontSize: Platform.OS === 'android' ? 14 : undefined,
-                            borderRadius: 16,
-                            backgroundColor: '#00000009',
-                            borderColor: 'gray',
-                          }}
-                          itemStyle={{ fontSize: 14, fontFamily: 'Saira-medium' }}
-                          className="h-8">
-                          <Picker.Item label="Select" value="" />
-                          {Array.isArray(awayPlayers?.data) &&
-                            awayPlayers.data.map((p) => (
+                        {[0, 1].map((index) => (
+                          <Picker
+                            key={index}
+                            selectedValue={frame.awayPlayers[index] || ''}
+                            onValueChange={(val) => {
+                              const updated = [...frame.awayPlayers];
+                              updated[index] = val || null;
+
+                              // remove empty trailing player
+                              const cleaned = updated.filter(Boolean);
+
+                              updateFrame(frame.tempId, 'awayPlayers', cleaned);
+                            }}>
+                            <Picker.Item
+                              label={index === 0 ? 'Player 1' : 'Player 2 (optional)'}
+                              value=""
+                            />
+                            {(awayPlayers?.data || []).map((p) => (
                               <Picker.Item
                                 key={p.id}
                                 label={`${p.first_name} ${p.surname}`}
                                 value={p.id}
                               />
                             ))}
-                        </Picker>
+                          </Picker>
+                        ))}
                       </View>
                     </View>
 
-                    {frame.homePlayer && frame.awayPlayer && (
+                    {frame.homePlayers.length >= 1 && frame.awayPlayers.length >= 1 && (
                       <View className="flex-col items-center justify-center gap-3">
                         <View className="flex-row items-center justify-evenly">
                           <Pressable
-                            style={{
-                              height: 50,
-                              width: 50,
-                            }}
                             onPress={() =>
                               updateFrame(
                                 frame.tempId,
-                                'winner',
-                                frame.winner === frame.homePlayer ? null : frame.homePlayer
+                                'winnerSide',
+                                frame.winnerSide === 'home' ? null : 'home'
                               )
                             }
                             className={`h-15 w-15 items-center justify-center rounded-2xl border ${
-                              frame.winner === frame.homePlayer
+                              frame.winnerSide === 'home'
                                 ? 'border-brand bg-brand-light'
                                 : 'border-border-color bg-bg-grouped-2'
                             }`}>
-                            {frame.winner === frame.homePlayer && (
+                            {frame.winnerSide === 'home' && (
                               <Ionicons name="trophy-outline" size={36} color="white" />
                             )}
                           </Pressable>
@@ -376,23 +445,19 @@ const SubmitResultsScreen = () => {
                             Select Winner
                           </Text>
                           <Pressable
-                            style={{
-                              height: 50,
-                              width: 50,
-                            }}
                             onPress={() =>
                               updateFrame(
                                 frame.tempId,
-                                'winner',
-                                frame.winner === frame.awayPlayer ? null : frame.awayPlayer
+                                'winnerSide',
+                                frame.winnerSide === 'away' ? null : 'away'
                               )
                             }
-                            className={`items-center justify-center rounded-2xl border ${
-                              frame.winner === frame.awayPlayer
+                            className={`h-15 w-15 items-center justify-center rounded-2xl border ${
+                              frame.winnerSide === 'away'
                                 ? 'border-brand bg-brand-light'
                                 : 'border-border-color bg-bg-grouped-2'
                             }`}>
-                            {frame.winner === frame.awayPlayer && (
+                            {frame.winnerSide === 'away' && (
                               <Ionicons name="trophy-outline" size={36} color="white" />
                             )}
                           </Pressable>
@@ -406,16 +471,16 @@ const SubmitResultsScreen = () => {
                             onPress={() =>
                               updateFrame(
                                 frame.tempId,
-                                'lag_won',
-                                frame.lag_won === frame.homePlayer ? null : frame.homePlayer
+                                'lagWon',
+                                frame.lagWon === 'home' ? null : 'home'
                               )
                             }
                             className={`h-15 w-15 items-center justify-center rounded-2xl border ${
-                              frame.lag_won === frame.homePlayer
+                              frame.lagWon === 'home'
                                 ? 'border-brand bg-brand-light'
                                 : 'border-border-color bg-bg-grouped-2'
                             }`}>
-                            {frame.lag_won === frame.homePlayer && (
+                            {frame.lagWon === 'home' && (
                               <Ionicons name="radio-button-off-outline" size={36} color="white" />
                             )}
                           </Pressable>
@@ -430,23 +495,23 @@ const SubmitResultsScreen = () => {
                             onPress={() =>
                               updateFrame(
                                 frame.tempId,
-                                'lag_won',
-                                frame.lag_won === frame.awayPlayer ? null : frame.awayPlayer
+                                'lagWon',
+                                frame.lagWon === 'away' ? null : 'away'
                               )
                             }
                             className={`items-center justify-center rounded-2xl border ${
-                              frame.lag_won === frame.awayPlayer
+                              frame.lagWon === 'away'
                                 ? 'border-brand bg-brand-light'
                                 : 'border-border-color bg-bg-grouped-2'
                             }`}>
-                            {frame.lag_won === frame.awayPlayer && (
+                            {frame.lagWon === 'away' && (
                               <Ionicons name="radio-button-off-outline" size={36} color="white" />
                             )}
                           </Pressable>
                         </View>
-                        {frame.winner !== null && (
+                        {frame.winnerSide !== null && (
                           <View className="flex-row items-center justify-evenly">
-                            {frame.winner === frame.homePlayer ? (
+                            {frame.winnerSide === 'home' ? (
                               <Pressable
                                 style={{
                                   height: 50,
@@ -455,16 +520,16 @@ const SubmitResultsScreen = () => {
                                 onPress={() =>
                                   updateFrame(
                                     frame.tempId,
-                                    'break_dish',
-                                    frame.break_dish === frame.homePlayer ? null : frame.homePlayer
+                                    'breakDish',
+                                    frame.breakDish ? false : true
                                   )
                                 }
                                 className={`h-15 w-15 items-center justify-center rounded-2xl border ${
-                                  frame.break_dish === frame.homePlayer
+                                  frame.breakDish && frame.winnerSide === 'home'
                                     ? 'border-brand bg-brand-light'
                                     : 'border-border-color bg-bg-grouped-2'
                                 }`}>
-                                {frame.break_dish === frame.homePlayer && (
+                                {frame.breakDish && frame.winnerSide === 'home' && (
                                   <Ionicons name="triangle-outline" size={36} color="white" />
                                 )}
                               </Pressable>
@@ -474,7 +539,7 @@ const SubmitResultsScreen = () => {
                             <Text className="flex-1 text-center font-saira-medium text-xl text-text-1">
                               Break Dish
                             </Text>
-                            {frame.winner === frame.awayPlayer ? (
+                            {frame.winnerSide === 'away' ? (
                               <Pressable
                                 style={{
                                   height: 50,
@@ -483,16 +548,16 @@ const SubmitResultsScreen = () => {
                                 onPress={() =>
                                   updateFrame(
                                     frame.tempId,
-                                    'break_dish',
-                                    frame.break_dish === frame.awayPlayer ? null : frame.awayPlayer
+                                    'breakDish',
+                                    frame.breakDish ? false : true
                                   )
                                 }
                                 className={`items-center justify-center rounded-2xl border ${
-                                  frame.break_dish === frame.awayPlayer
+                                  frame.breakDish && frame.winnerSide === 'away'
                                     ? 'border-brand bg-brand-light'
                                     : 'border-border-color bg-bg-grouped-2'
                                 }`}>
-                                {frame.break_dish === frame.awayPlayer && (
+                                {frame.breakDish && frame.winnerSide === 'away' && (
                                   <Ionicons name="triangle-outline" size={36} color="white" />
                                 )}
                               </Pressable>
@@ -501,9 +566,9 @@ const SubmitResultsScreen = () => {
                             )}
                           </View>
                         )}
-                        {frame.winner !== null && (
+                        {frame.winnerSide !== null && (
                           <View className="flex-row items-center justify-evenly">
-                            {frame.winner === frame.homePlayer ? (
+                            {frame.winnerSide === 'home' ? (
                               <Pressable
                                 style={{
                                   height: 50,
@@ -512,18 +577,16 @@ const SubmitResultsScreen = () => {
                                 onPress={() =>
                                   updateFrame(
                                     frame.tempId,
-                                    'reverse_dish',
-                                    frame.reverse_dish === frame.homePlayer
-                                      ? null
-                                      : frame.homePlayer
+                                    'reverseDish',
+                                    frame.reverseDish ? false : true
                                   )
                                 }
                                 className={`h-15 w-15 items-center justify-center rounded-2xl border ${
-                                  frame.reverse_dish === frame.homePlayer
+                                  frame.reverseDish && frame.winnerSide === 'home'
                                     ? 'border-brand bg-brand-light'
                                     : 'border-border-color bg-bg-grouped-2'
                                 }`}>
-                                {frame.reverse_dish === frame.homePlayer && (
+                                {frame.reverseDish && frame.winnerSide === 'home' && (
                                   <Ionicons name="triangle-outline" size={36} color="white" />
                                 )}
                               </Pressable>
@@ -533,7 +596,7 @@ const SubmitResultsScreen = () => {
                             <Text className="flex-1 text-center font-saira-medium text-xl text-text-1">
                               Reverse Dish
                             </Text>
-                            {frame.winner === frame.awayPlayer ? (
+                            {frame.winnerSide === 'away' ? (
                               <Pressable
                                 style={{
                                   height: 50,
@@ -542,18 +605,16 @@ const SubmitResultsScreen = () => {
                                 onPress={() =>
                                   updateFrame(
                                     frame.tempId,
-                                    'reverse_dish',
-                                    frame.reverse_dish === frame.awayPlayer
-                                      ? null
-                                      : frame.awayPlayer
+                                    'reverseDish',
+                                    frame.reverseDish ? false : true
                                   )
                                 }
                                 className={`items-center justify-center rounded-2xl border ${
-                                  frame.reverse_dish === frame.awayPlayer
+                                  frame.reverseDish && frame.winnerSide === 'away'
                                     ? 'border-brand bg-brand-light'
                                     : 'border-border-color bg-bg-grouped-2'
                                 }`}>
-                                {frame.reverse_dish === frame.awayPlayer && (
+                                {frame.reverseDish && frame.winnerSide === 'away' && (
                                   <Ionicons
                                     style={{ transform: [{ rotate: '180deg' }] }}
                                     name="triangle-outline"
@@ -573,18 +634,21 @@ const SubmitResultsScreen = () => {
                       {isActive && (
                         <>
                           <Pressable
-                            onPress={() => setConfirmDeleteModalVisible(true)}
+                            onPress={() => {
+                              setFrameToDelete(frame.tempId);
+                              setConfirmDeleteModalVisible(true);
+                            }}
                             className="rounded-2xl border border-theme-red-hc bg-theme-red/85 p-3"
                             hitSlop={10}>
                             <Ionicons name="trash-outline" size={30} color="white" />
                           </Pressable>
                           <ConfirmModal
-                            visible={confirmDeleteModalVisible}
+                            visible={confirmDeleteModalVisible && frameToDelete === frame.tempId}
                             onConfirm={() => deleteFrame(frame.tempId)}
                             onCancel={handleCancel}
                             title="Delete Frame?"
                             type="cancel"
-                            message={`Are you sure you want to delete frame ${frame.indexOf}.`}
+                            message={`Are you sure you want to delete frame ${index}.`}
                           />
                         </>
                       )}
@@ -594,17 +658,20 @@ const SubmitResultsScreen = () => {
                           type="yellow"
                           callbackFn={() => {
                             if (
-                              frame.homePlayer &&
-                              frame.awayPlayer &&
-                              (frame.winner === frame.homePlayer ||
-                                frame.winner === frame.awayPlayer)
+                              frame.homePlayers.length >= 1 &&
+                              frame.awayPlayers.length >= 1 &&
+                              frame.homePlayers.length === frame.awayPlayers.length &&
+                              frame.homePlayers.length <= 2 &&
+                              frame.awayPlayers.length <= 2 &&
+                              frame.winnerSide !== null
                             ) {
                               markComplete(frame.tempId);
                             } else {
                               Toast.show({
                                 type: 'error',
                                 text1: 'Error!',
-                                text2: 'Ensure both players are selected and a winner is chosen.',
+                                text2:
+                                  'Ensure both players are selected, the number of players is equal, and a winner is chosen. Each team can have a maximum of 2 players.',
                                 props: {
                                   colorScheme: colorScheme,
                                 },
@@ -650,8 +717,8 @@ const SubmitResultsScreen = () => {
                     </View>
                     <View className="flex flex-1 flex-row items-center gap-5">
                       <View className="flex flex-1 flex-row items-center justify-end gap-2">
-                        {frame.lag_won === frame.homePlayer && (
-                          <View className="items-center justify-center rounded-lg bg-bg-2 p-2">
+                        {frame.lagWon === 'home' && (
+                          <View className="items-center justify-center rounded-lg bg-bg-2 p-2 shadow-sm">
                             <Ionicons
                               name="radio-button-off-outline"
                               size={20}
@@ -659,8 +726,8 @@ const SubmitResultsScreen = () => {
                             />
                           </View>
                         )}
-                        {frame.reverse_dish === frame.homePlayer && (
-                          <View className="items-center justify-center rounded-lg bg-bg-2 p-2">
+                        {frame.reverseDish && frame.winnerSide === 'home' && (
+                          <View className="items-center justify-center rounded-lg bg-bg-2 p-2 shadow-sm">
                             <Ionicons
                               style={{ transform: [{ rotate: '180deg' }] }}
                               name="triangle-outline"
@@ -669,13 +736,13 @@ const SubmitResultsScreen = () => {
                             />
                           </View>
                         )}
-                        {frame.break_dish === frame.homePlayer && (
-                          <View className="items-center justify-center rounded-lg bg-bg-2 p-2">
+                        {frame.breakDish && frame.winnerSide === 'home' && (
+                          <View className="items-center justify-center rounded-lg bg-bg-2 p-2 shadow-sm">
                             <Ionicons name="triangle-outline" size={20} color={trophyColor} />
                           </View>
                         )}
-                        {frame.winner === frame.homePlayer && (
-                          <View className="items-center justify-center rounded-lg bg-bg-2 p-2">
+                        {frame.winnerSide === 'home' && (
+                          <View className="items-center justify-center rounded-lg bg-bg-2 p-2 shadow-sm">
                             <Ionicons name="trophy" size={20} color={trophyColor} />
                           </View>
                         )}
@@ -688,18 +755,18 @@ const SubmitResultsScreen = () => {
                         }}
                       />
                       <View className="flex flex-1 flex-row items-center justify-start gap-2">
-                        {frame.winner === frame.awayPlayer && (
-                          <View className="items-center justify-center rounded-lg bg-bg-2 p-2">
+                        {frame.winnerSide === 'away' && (
+                          <View className="items-center justify-center rounded-lg bg-bg-2 p-2 shadow-sm">
                             <Ionicons name="trophy" size={20} color={trophyColor} />
                           </View>
                         )}
-                        {frame.break_dish === frame.awayPlayer && (
-                          <View className="items-center justify-center rounded-lg bg-bg-2 p-2">
+                        {frame.breakDish && frame.winnerSide === 'away' && (
+                          <View className="items-center justify-center rounded-lg bg-bg-2 p-2 shadow-sm">
                             <Ionicons name="triangle-outline" size={20} color={trophyColor} />
                           </View>
                         )}
-                        {frame.reverse_dish === frame.awayPlayer && (
-                          <View className="items-center justify-center rounded-lg bg-bg-2 p-2">
+                        {frame.reverseDish && frame.winnerSide === 'away' && (
+                          <View className="items-center justify-center rounded-lg bg-bg-2 p-2 shadow-sm">
                             <Ionicons
                               style={{ transform: [{ rotate: '180deg' }] }}
                               name="triangle-outline"
@@ -708,8 +775,8 @@ const SubmitResultsScreen = () => {
                             />
                           </View>
                         )}
-                        {frame.lag_won === frame.awayPlayer && (
-                          <View className="items-center justify-center rounded-lg bg-bg-2 p-2">
+                        {frame.lagWon === 'away' && (
+                          <View className="items-center justify-center rounded-lg bg-bg-2 p-2 shadow-sm">
                             <Ionicons
                               name="radio-button-off-outline"
                               size={20}
@@ -746,7 +813,7 @@ const SubmitResultsScreen = () => {
               />
             </View>
           )}
-          <View className="mt-4">
+          <View className="mt-">
             <CTAButton
               text={submitting ? 'Submitting...' : 'Submit Final Result'}
               type="success"
