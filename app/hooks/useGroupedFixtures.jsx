@@ -12,7 +12,8 @@ export const useGroupedFixtures = ({ month, seasonId, divisionId }) => {
         home_team:Teams!Fixtures_home_team_fkey(display_name, crest, abbreviation),
         away_team:Teams!Fixtures_away_team_fkey(display_name, crest, abbreviation),
         home_player:Players!Fixtures_home_player_fkey(id, first_name, surname, avatar_url, nickname),
-        away_player:Players!Fixtures_away_player_fkey(id, first_name, surname, avatar_url, nickname)
+        away_player:Players!Fixtures_away_player_fkey(id, first_name, surname, avatar_url, nickname),
+        frames:Results!Results_fixture_id_fkey(*)
       `
       )
       .eq('season', seasonId)
@@ -57,6 +58,7 @@ export const useGroupedFixtures = ({ month, seasonId, divisionId }) => {
         ...fixture,
         home_competitor: homeCompetitor,
         away_competitor: awayCompetitor,
+        frames: fixture.frames || [],
       };
 
       if (!grouped[key]) grouped[key] = [];

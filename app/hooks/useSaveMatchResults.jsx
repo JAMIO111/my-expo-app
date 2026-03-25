@@ -11,12 +11,19 @@ export function useSaveMatchResults(fixtureId, existingResults) {
     setSaving(true);
 
     try {
+      console.log('Saving frames:', frames);
+      console.log('Existing results:', existingResults);
       // Map frames to include frameNumber based on order
       const framesWithNumbers = frames.map((f, i) => ({
-        id: f.id ?? null, // send null if no id
-        homePlayer: f.homePlayer || null,
-        awayPlayer: f.awayPlayer || null,
-        winner: f.winner || null,
+        id: f.id ?? null,
+        homePlayer1: f.homePlayer1.id || null, // REQUIRED
+        homePlayer2: f.homePlayer2?.id || null, // OPTIONAL
+        awayPlayer1: f.awayPlayer1.id || null, // REQUIRED
+        awayPlayer2: f.awayPlayer2?.id || null, // OPTIONAL
+        winnerSide: f.winnerSide || null,
+        breakDish: f.breakDish || false,
+        reverseDish: f.reverseDish || false,
+        lagWon: f.lagWon || null,
         frameNumber: i + 1,
       }));
 
@@ -38,6 +45,7 @@ export function useSaveMatchResults(fixtureId, existingResults) {
       });
 
       if (error) {
+        console.error('Save RPC Error:', error.message);
         Toast.show({
           type: 'error',
           text1: 'Submission Failed',

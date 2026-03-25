@@ -15,7 +15,7 @@ const PlayerStats = ({ playerId }) => {
     <View
       contentContainerStyle={{ alignItems: 'center', justifyContent: 'center' }}
       className="w-full gap-1">
-      <View className="bg-bg-grouped-2 px-4 py-8">
+      <View className="bg-bg-grouped-2 px-6 py-8">
         <Text className="mb-2 font-saira-semibold text-3xl text-text-1">Frames</Text>
         <View className="mb-8 w-full flex-row items-center justify-between">
           <DonutChart

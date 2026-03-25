@@ -118,16 +118,17 @@ const ProfilePage = () => {
             </View>
           </View>
           <View className="rounded-t-3xl bg-bg-grouped-2 pt-4">
-            <SlidingTabButton option1="Badges" option2="Stats" onChange={setView} />
-            <View className="">
-              <View style={{ display: view === 'left' ? 'flex' : 'none' }}>
-                <BadgeList badges={badges} />
-              </View>
-              <View
-                className="bg-bg-grouped-1"
-                style={{ display: view === 'right' ? 'flex' : 'none' }}>
-                <PlayerStats playerId={player?.id} />
-              </View>
+            <View className="px-5">
+              <SlidingTabButton option1="Badges" option2="Stats" onChange={setView} value={view} />
+            </View>
+
+            <View className="px-2" style={{ display: view === 'left' ? 'flex' : 'none' }}>
+              <BadgeList badges={badges} />
+            </View>
+            <View
+              className="bg-bg-grouped-1"
+              style={{ display: view === 'right' ? 'flex' : 'none' }}>
+              <PlayerStats playerId={player?.id} />
             </View>
           </View>
         </View>

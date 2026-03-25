@@ -267,6 +267,8 @@ const FixtureList = () => {
               </Text>
 
               {fixtures.map((f, index) => {
+                const homeScore = f.frames.filter((frame) => frame.winner_side === 'home').length;
+                const awayScore = f.frames.filter((frame) => frame.winner_side === 'away').length;
                 const isLive = new Date() >= new Date(f.date_time);
                 const isOverdue =
                   isBefore(addHours(parseISO(f.date_time), 24), new Date()) && !f.is_complete;
@@ -308,7 +310,7 @@ const FixtureList = () => {
                       )}
                       {isLive ? (
                         <Text className="pt-1 text-right font-saira-semibold text-xl text-text-1">
-                          {f.home_score ?? '0'} - {f.away_score ?? '0'}
+                          {homeScore ?? '0'} - {awayScore ?? '0'}
                         </Text>
                       ) : (
                         <Text className="w-16 text-center font-saira-medium text-lg text-text-1">

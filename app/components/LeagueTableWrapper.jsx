@@ -19,6 +19,7 @@ import BottomSheet, {
 } from '@gorhom/bottom-sheet';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { ScrollView } from 'react-native-gesture-handler';
+import LoadingScreen from './LoadingScreen';
 
 const LeagueTableWrapper = ({ context }) => {
   const colorScheme = useColorScheme();
@@ -129,7 +130,7 @@ const LeagueTableWrapper = ({ context }) => {
     isSeasonsLoading ||
     isCompetitionInstancesLoading
   ) {
-    return <Text>Loading...</Text>;
+    return <LoadingScreen />;
   }
 
   if (districtsError || divisionsError || seasonsError || competitionInstancesError) {

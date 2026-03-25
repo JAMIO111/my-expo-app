@@ -11,7 +11,7 @@ const BottomSheetWrapper = forwardRef(
       footerComponent = null,
       snapPoints = ['75%'],
       initialIndex = -1,
-      marginTop = 50,
+      marginTop = 100,
       backgroundColor,
       indicatorColor = 'themeGray3',
     },

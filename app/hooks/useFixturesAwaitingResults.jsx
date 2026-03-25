@@ -16,7 +16,8 @@ export function useFixturesAwaitingResults({ competitorId, competitorType, enabl
           competition_instance:CompetitionInstances!Fixtures_competition_instance_id_fkey(id, name)`
         )
         .lte('date_time', new Date().toISOString())
-        .eq('approved', false);
+        .eq('approved', false)
+        .eq('is_complete', false);
 
       // Apply filter based on competitor type
       if (competitorType === 'team') {

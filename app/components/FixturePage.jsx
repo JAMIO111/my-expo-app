@@ -272,6 +272,7 @@ const FixturePage = ({ fixtureDetails, isLoading, context }) => {
             option1="Stats"
             option2={fixtureDetails?.approved ? 'Frames' : 'Squads'}
             onChange={handleViewChange}
+            value={view}
           />
         </View>
         {view === 'right' ? (
@@ -286,6 +287,7 @@ const FixturePage = ({ fixtureDetails, isLoading, context }) => {
                   option1={fixtureDetails?.homeCompetitor?.display_name}
                   option2={fixtureDetails?.awayCompetitor?.display_name}
                   onChange={setTeam}
+                  value={team}
                 />
                 <PlayersList
                   team={
