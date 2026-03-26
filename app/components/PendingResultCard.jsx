@@ -21,7 +21,7 @@ const PendingResultCard = ({ fixture }) => {
               {fixture?.competition_instance?.name} Fixture
             </Text>
           </View>
-          <Text className="w-fit rounded-full border border-theme-yellow bg-theme-yellow/70 px-3 py-1 text-center font-saira-medium text-black">
+          <Text className="w-fit rounded-xl border border-theme-yellow bg-theme-yellow/70 px-3 py-1 text-center font-saira-medium text-black">
             Awaiting Approval
           </Text>
         </View>

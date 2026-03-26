@@ -12,8 +12,10 @@ import TeamLogo from '@components/TeamLogo';
 import Avatar from '@components/Avatar';
 import { supabase } from '@/lib/supabase';
 import Toast from 'react-native-toast-message';
+import { useUser } from '@contexts/UserProvider';
 
 const ApproveResults = () => {
+  const { player } = useUser();
   const [disputedFrames, setDisputedFrames] = useState([]);
   const [approvingResults, setApprovingResults] = useState(false);
   const { fixtureId } = useLocalSearchParams();
@@ -25,10 +27,8 @@ const ApproveResults = () => {
     setApprovingResults(true);
     const { error } = await supabase
       .from('Fixtures')
-      .update({ approved: true })
+      .update({ approved: true, approved_at: new Date().toISOString(), approved_by: player?.id })
       .eq('id', fixtureId)
-      .eq('approved', false)
-      .eq('is_complete', true)
       .select();
 
     if (error) {
@@ -134,7 +134,7 @@ const ApproveResults = () => {
             setDisputedFrames={setDisputedFrames}
           />
         </ScrollView>
-        <View className="gap-3 p-4">
+        <View className="gap-3 p-4 pb-0">
           {disputedFrames.length > 0 && (
             <CTAButton
               type="error"

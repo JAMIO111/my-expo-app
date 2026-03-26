@@ -12,7 +12,7 @@ import { getAgeInYearsAndDays } from '@lib/helperFunctions';
 import BadgeList from '@components/BadgeList';
 import { usePlayerStats } from '@hooks/usePlayerStats';
 import { calculateLevel } from '@lib/helperFunctions';
-import PlayerStats from '@components/PlayerStats';
+import EntityStats from '../../components/EntityStats';
 import CachedImage from '@components/CachedImage';
 import usePlayerBadges from '@hooks/usePlayerBadges';
 
@@ -128,7 +128,7 @@ const ProfilePage = () => {
             <View
               className="bg-bg-grouped-1"
               style={{ display: view === 'right' ? 'flex' : 'none' }}>
-              <PlayerStats playerId={player?.id} />
+              <EntityStats entityId={player?.id} entityType="player" />
             </View>
           </View>
         </View>

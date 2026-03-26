@@ -15,7 +15,7 @@ export function useTeamStats(teamId) {
         _team_id: teamId,
       });
 
-      if (error) throw error;
+      if (error) console.error('Team Stats RPC Error:', error.message);
       return data;
     },
     // Use 'select' to transform the data after it's fetched

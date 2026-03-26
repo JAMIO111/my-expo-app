@@ -1,5 +1,5 @@
 import { StyleSheet, Text, View, ScrollView, Pressable, Animated, Easing } from 'react-native';
-import { router, Stack } from 'expo-router';
+import { useRouter, Stack, useLocalSearchParams } from 'expo-router';
 import { useRef, useEffect, useState } from 'react';
 import PlayersList from '@components/PlayersList';
 import Heading from '@components/Heading';
@@ -17,6 +17,8 @@ import Last5MatchesList from './Last5MatchesList';
 import { useTeamPlayers } from '@hooks/useTeamPlayers';
 
 const TeamProfile = ({ context, profile, isLoading }) => {
+  const router = useRouter();
+  const { userId, teamId, fixtureId } = useLocalSearchParams();
   if (isLoading || !profile)
     return (
       <>
@@ -73,6 +75,16 @@ const TeamProfile = ({ context, profile, isLoading }) => {
     inputRange: [0, 1],
     outputRange: ['0deg', '180deg'],
   });
+
+  const handleViewStats = () => {
+    if (context === 'home/league') {
+      router.push(`home/league/${teamId}/team-stats`);
+    } else if (context === 'teams') {
+      router.push(`/teams/${userId}/team-stats`);
+    } else if (context === 'fixture') {
+      router.push(`home/${fixtureId}/${teamId}/team-stats`);
+    }
+  };
 
   return (
     <ScrollView className="flex-1 bg-bg-1" contentContainerStyle={{ flexGrow: 1 }}>
@@ -137,7 +149,7 @@ const TeamProfile = ({ context, profile, isLoading }) => {
               icon={<Ionicons name="stats-chart" size={20} color="black" />}
               type="yellow"
               text="View All Stats"
-              callbackFn={() => {}}
+              callbackFn={handleViewStats}
             />
             <CTAButton
               icon={<Ionicons name="git-compare-outline" size={24} color="white" />}

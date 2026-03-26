@@ -43,15 +43,14 @@ export default function CompareTeamStats() {
   const stats1 = entityType === 'team' ? teamStats1.data : playerStats1.data;
   const stats2 = entityType === 'team' ? teamStats2.data : playerStats2.data;
 
+  console.log('Entity 1:', entity1);
+  console.log('Entity 2:', entity2);
   console.log('Entity 1 Stats:', stats1);
   console.log('Entity 2 Stats:', stats2);
 
-  const defaultDistrict =
-    currentRole?.role === 'admin'
-      ? currentRole?.district
-      : (currentRole?.team?.division?.district ?? null);
+  const defaultDistrict = currentRole?.district;
   const defaultDivision =
-    currentRole?.role === 'admin' ? currentRole?.divisions[0] : currentRole?.team?.division;
+    currentRole?.role === 'admin' ? currentRole?.divisions[0] : currentRole?.division;
 
   const [district, setDistrict] = useState(defaultDistrict);
   const [division, setDivision] = useState(defaultDivision);
@@ -307,7 +306,7 @@ export default function CompareTeamStats() {
         <Text style={{ fontSize: 24, paddingBottom: 6, paddingLeft: 12 }}>
           {defaultDistrict.name} {entityType === 'team' ? 'Teams' : 'Players'}
         </Text>
-        <BottomSheetScrollView contentContainerStyle={{ padding: 10, paddingBottom: 100 }}>
+        <BottomSheetScrollView contentContainerStyle={{ padding: 10, paddingBottom: 140 }}>
           <View style={{ flexDirection: 'row', flexWrap: 'wrap', marginTop: 0 }}>
             {entities
               ?.filter((entity) =>

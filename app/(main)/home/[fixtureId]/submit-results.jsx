@@ -19,7 +19,7 @@ import Avatar from '@components/Avatar';
 import CustomHeader from '@components/CustomHeader';
 import SafeViewWrapper from '@components/SafeViewWrapper';
 import Toast from 'react-native-toast-message';
-import ConfirmModal from '@components/ConfirmModal';
+import FloatingBottomSheet from '@components/FloatingBottomSheet';
 import { useFixtureDetails } from '@hooks/useFixtureDetails';
 import { useColorScheme } from 'react-native';
 import { useTeamPlayers } from '@hooks/useTeamPlayers';
@@ -154,6 +154,13 @@ const SubmitResultsScreen = () => {
     }
   }, [existingResults]);
 
+  useEffect(() => {
+    if (!allowDoubles) {
+      updateActiveFrame('homePlayer2', null);
+      updateActiveFrame('awayPlayer2', null);
+    }
+  }, [allowDoubles]);
+
   const homeScore = frames.filter((f) => f.winnerSide === 'home').length;
   const awayScore = frames.filter((f) => f.winnerSide === 'away').length;
 
@@ -223,17 +230,7 @@ const SubmitResultsScreen = () => {
   console.log('Frames: ', frames);
 
   return (
-    <SafeViewWrapper
-      topColor="bg-brand"
-      useBottomInset={false}
-      bottomColor={
-        isExistingResultsLoading ||
-        isFixtureDetailsLoading ||
-        isHomeTeamPlayersLoading ||
-        isAwayTeamPlayersLoading
-          ? 'bg-brand'
-          : 'bg-bg-2'
-      }>
+    <SafeViewWrapper topColor="bg-brand" useBottomInset={false}>
       <Stack.Screen
         options={{
           header: () => (
@@ -346,6 +343,9 @@ const SubmitResultsScreen = () => {
                 const index = frames.length - i;
                 const homeCount = [frame.homePlayer1, frame.homePlayer2].filter(Boolean).length;
                 const awayCount = [frame.awayPlayer1, frame.awayPlayer2].filter(Boolean).length;
+                const isValidPlayers = allowDoubles
+                  ? homeCount === 2 && awayCount === 2
+                  : homeCount === 1 && awayCount === 1;
 
                 return (
                   <Pressable
@@ -357,12 +357,6 @@ const SubmitResultsScreen = () => {
                     }}
                     className="mb-3 rounded-3xl bg-bg-grouped-2 shadow-sm"
                     style={styles.cardContainer}>
-                    <Text
-                      className={`mt-4 w-full px-5 ${isActive ? 'text-left' : 'text-center'} font-saira-medium text-lg text-text-2`}>
-                      {index}
-                      {getOrdinalSuffix(index)} Frame
-                    </Text>
-
                     {/* Editable view */}
                     <View
                       className="flex flex-col gap-3"
@@ -375,6 +369,11 @@ const SubmitResultsScreen = () => {
                           paddingHorizontal: isActive ? 16 : 0,
                         },
                       ]}>
+                      <Text
+                        className={`mt-4 w-full px-5 ${isActive ? 'text-left' : 'text-center'} font-saira-medium text-lg text-text-2`}>
+                        {index}
+                        {getOrdinalSuffix(index)} Frame
+                      </Text>
                       {fixtureDetails?.competitor_type === 'team' && (
                         <SlidingTabButton
                           value={allowDoubles ? 'right' : 'left'}
@@ -384,7 +383,7 @@ const SubmitResultsScreen = () => {
                         />
                       )}
 
-                      <View className="flex-row gap-3">
+                      <View className="flex-row gap-5 pb-2">
                         <Pressable
                           onPress={() => {
                             setEditingPlayer('homePlayer1');
@@ -392,6 +391,7 @@ const SubmitResultsScreen = () => {
                           }}
                           className="flex-1 rounded-2xl bg-bg-2 p-3 py-4 shadow-sm">
                           <Text
+                            numberOfLines={1}
                             className={`text-center ${frame.homePlayer1 ? 'font-saira-medium text-text-1' : 'font-saira-regular text-text-2'}`}>
                             {getPlayerName(frame.homePlayer1)}
                           </Text>
@@ -403,13 +403,14 @@ const SubmitResultsScreen = () => {
                           }}
                           className="flex-1 rounded-2xl bg-bg-2 p-3 py-4 shadow-sm">
                           <Text
+                            numberOfLines={1}
                             className={`text-center ${frame.awayPlayer1 ? 'font-saira-medium text-text-1' : 'font-saira-regular text-text-2'}`}>
                             {getPlayerName(frame.awayPlayer1)}
                           </Text>
                         </Pressable>
                       </View>
                       {allowDoubles && (
-                        <View className="flex-row gap-2">
+                        <View className="flex-row gap-5 pb-2">
                           <Pressable
                             onPress={() => {
                               setEditingPlayer('homePlayer2');
@@ -417,6 +418,7 @@ const SubmitResultsScreen = () => {
                             }}
                             className="flex-1 rounded-2xl bg-bg-2 p-3 py-4 shadow-sm">
                             <Text
+                              numberOfLines={1}
                               className={`text-center ${frame.homePlayer2 ? 'font-saira-medium text-text-1' : 'font-saira-regular text-text-2'}`}>
                               {getPlayerName(frame.homePlayer2)}
                             </Text>
@@ -428,6 +430,7 @@ const SubmitResultsScreen = () => {
                             }}
                             className="flex-1 rounded-2xl bg-bg-2 p-3 py-4 shadow-sm">
                             <Text
+                              numberOfLines={1}
                               className={`text-center ${frame.awayPlayer2 ? 'font-saira-medium text-text-1' : 'font-saira-regular text-text-2'}`}>
                               {getPlayerName(frame.awayPlayer2)}
                             </Text>
@@ -435,7 +438,7 @@ const SubmitResultsScreen = () => {
                         </View>
                       )}
 
-                      {homeCount >= 1 && awayCount >= 1 && (
+                      {isValidPlayers && (
                         <View className="mt-3 flex-col items-center justify-center gap-3">
                           <View className="flex-row items-center justify-evenly">
                             <Pressable
@@ -452,7 +455,7 @@ const SubmitResultsScreen = () => {
                               className={`h-15 w-15 items-center justify-center rounded-2xl border ${
                                 frame.winnerSide === 'home'
                                   ? 'border-brand bg-brand-light'
-                                  : 'border-border-color bg-bg-grouped-2'
+                                  : 'border-border-color bg-bg-grouped-1'
                               }`}>
                               {frame.winnerSide === 'home' && (
                                 <Ionicons name="trophy-outline" size={36} color="white" />
@@ -475,7 +478,7 @@ const SubmitResultsScreen = () => {
                               className={`items-center justify-center rounded-2xl border ${
                                 frame.winnerSide === 'away'
                                   ? 'border-brand bg-brand-light'
-                                  : 'border-border-color bg-bg-grouped-2'
+                                  : 'border-border-color bg-bg-grouped-1'
                               }`}>
                               {frame.winnerSide === 'away' && (
                                 <Ionicons name="trophy-outline" size={36} color="white" />
@@ -494,7 +497,7 @@ const SubmitResultsScreen = () => {
                               className={`h-15 w-15 items-center justify-center rounded-2xl border ${
                                 frame.lagWon === 'home'
                                   ? 'border-brand bg-brand-light'
-                                  : 'border-border-color bg-bg-grouped-2'
+                                  : 'border-border-color bg-bg-grouped-1'
                               }`}>
                               {frame.lagWon === 'home' && (
                                 <Ionicons name="radio-button-on" size={36} color="white" />
@@ -514,7 +517,7 @@ const SubmitResultsScreen = () => {
                               className={`items-center justify-center rounded-2xl border ${
                                 frame.lagWon === 'away'
                                   ? 'border-brand bg-brand-light'
-                                  : 'border-border-color bg-bg-grouped-2'
+                                  : 'border-border-color bg-bg-grouped-1'
                               }`}>
                               {frame.lagWon === 'away' && (
                                 <Ionicons name="radio-button-on" size={36} color="white" />
@@ -535,7 +538,7 @@ const SubmitResultsScreen = () => {
                                   className={`h-15 w-15 items-center justify-center rounded-2xl border ${
                                     frame.breakDish && frame.winnerSide === 'home'
                                       ? 'border-brand bg-brand-light'
-                                      : 'border-border-color bg-bg-grouped-2'
+                                      : 'border-border-color bg-bg-grouped-1'
                                   }`}>
                                   {frame.breakDish && frame.winnerSide === 'home' && (
                                     <Ionicons name="triangle-outline" size={36} color="white" />
@@ -559,7 +562,7 @@ const SubmitResultsScreen = () => {
                                   className={`items-center justify-center rounded-2xl border ${
                                     frame.breakDish && frame.winnerSide === 'away'
                                       ? 'border-brand bg-brand-light'
-                                      : 'border-border-color bg-bg-grouped-2'
+                                      : 'border-border-color bg-bg-grouped-1'
                                   }`}>
                                   {frame.breakDish && frame.winnerSide === 'away' && (
                                     <Ionicons name="triangle-outline" size={36} color="white" />
@@ -587,7 +590,7 @@ const SubmitResultsScreen = () => {
                                   className={`h-15 w-15 items-center justify-center rounded-2xl border ${
                                     frame.reverseDish && frame.winnerSide === 'home'
                                       ? 'border-brand bg-brand-light'
-                                      : 'border-border-color bg-bg-grouped-2'
+                                      : 'border-border-color bg-bg-grouped-1'
                                   }`}>
                                   {frame.reverseDish && frame.winnerSide === 'home' && (
                                     <Ionicons
@@ -619,7 +622,7 @@ const SubmitResultsScreen = () => {
                                   className={`items-center justify-center rounded-2xl border ${
                                     frame.reverseDish && frame.winnerSide === 'away'
                                       ? 'border-brand bg-brand-light'
-                                      : 'border-border-color bg-bg-grouped-2'
+                                      : 'border-border-color bg-bg-grouped-1'
                                   }`}>
                                   {frame.reverseDish && frame.winnerSide === 'away' && (
                                     <Ionicons
@@ -649,13 +652,17 @@ const SubmitResultsScreen = () => {
                               hitSlop={10}>
                               <Ionicons name="trash-outline" size={30} color="white" />
                             </Pressable>
-                            <ConfirmModal
+                            <FloatingBottomSheet
                               visible={confirmDeleteModalVisible && frameToDelete === frame.tempId}
-                              onConfirm={() => deleteFrame(frame.tempId)}
-                              onCancel={handleCancel}
                               title="Delete Frame?"
-                              type="cancel"
-                              message={`Are you sure you want to delete frame ${index}.`}
+                              message={`Are you sure you want to delete frame ${index}?`}
+                              onCancel={handleCancel}
+                              topButtonText="Cancel"
+                              bottomButtonText="Delete"
+                              topButtonType="default"
+                              bottomButtonType="error"
+                              topButtonFn={handleCancel}
+                              bottomButtonFn={() => deleteFrame(frame.tempId)}
                             />
                           </>
                         )}
@@ -665,10 +672,10 @@ const SubmitResultsScreen = () => {
                             type="yellow"
                             callbackFn={() => {
                               if (
-                                homeCount >= 1 &&
-                                awayCount >= 1 &&
+                                (allowDoubles
+                                  ? homeCount === 2 && awayCount === 2
+                                  : homeCount === 1 && awayCount === 1) &&
                                 homeCount === awayCount &&
-                                homeCount <= 2 &&
                                 frame.winnerSide !== null
                               ) {
                                 markComplete(frame.tempId);
@@ -677,7 +684,7 @@ const SubmitResultsScreen = () => {
                                   type: 'error',
                                   text1: 'Error!',
                                   text2:
-                                    'Ensure both players are selected, the number of players is equal, and a winner is chosen. Each team can have a maximum of 2 players.',
+                                    'Ensure both players are selected, the number of players is equal, and a winner is chosen.',
                                   props: {
                                     colorScheme: colorScheme,
                                   },
@@ -700,30 +707,13 @@ const SubmitResultsScreen = () => {
                         },
                       ]}
                       className="flex">
-                      <View
-                        pointerEvents={isActive ? 'none' : 'auto'}
-                        className="flex-row items-center justify-between gap-3 px-3 py-2">
-                        <Text
-                          className={`${
-                            frame.homePlayer1 ? 'text-text-1' : 'text-theme-red'
-                          } flex-1 text-right font-saira-medium text-lg`}>
-                          {getPlayerName(frame.homePlayer1)}
-                        </Text>
-                        <Text className="mx-2 text-center text-sm text-text-2">vs</Text>
-                        <Text
-                          className={`${
-                            frame.awayPlayer1 ? 'text-text-1' : 'text-theme-red'
-                          } flex-1 text-left font-saira-medium text-lg`}>
-                          {getPlayerName(frame.awayPlayer1)}
-                        </Text>
-                      </View>
                       <View className="flex flex-1 flex-row items-center gap-2 px-3">
                         <View
                           style={{ borderRadius: 14 }}
-                          className="flex h-14 flex-1 flex-row items-center justify-end gap-2 bg-bg-2 p-2 shadow-sm">
+                          className="flex h-12 flex-1 flex-row items-center justify-end gap-2 bg-bg-2 p-2 shadow-sm">
                           {frame.lagWon === 'home' && (
-                            <View className="items-center justify-center rounded-lg bg-bg-1 p-2 shadow-sm">
-                              <Ionicons name="radio-button-on" size={20} color={trophyColor} />
+                            <View className="items-center justify-center rounded-lg bg-brand p-2 shadow-sm">
+                              <Ionicons name="radio-button-on" size={14} color="#FFF" />
                             </View>
                           )}
                           {frame.reverseDish && frame.winnerSide === 'home' && (
@@ -731,33 +721,44 @@ const SubmitResultsScreen = () => {
                               <Ionicons
                                 style={{ transform: [{ rotate: '180deg' }] }}
                                 name="triangle-outline"
-                                size={20}
-                                color={trophyColor}
+                                size={14}
+                                color="#FF0000"
                               />
                             </View>
                           )}
                           {frame.breakDish && frame.winnerSide === 'home' && (
                             <View className="items-center justify-center rounded-lg bg-bg-1 p-2 shadow-sm">
-                              <Ionicons name="triangle-outline" size={20} color={trophyColor} />
+                              <Ionicons name="triangle-outline" size={14} color="#000" />
                             </View>
                           )}
                           {frame.winnerSide === 'home' && (
-                            <View className="items-center justify-center rounded-lg bg-bg-1 p-2 shadow-sm">
-                              <Ionicons name="trophy" size={20} color={trophyColor} />
+                            <View
+                              style={{ backgroundColor: trophyColor }}
+                              className="items-center justify-center rounded-lg bg-bg-1 p-2 shadow-sm">
+                              <Ionicons name="trophy" size={14} color="#FFF" />
                             </View>
                           )}
                         </View>
+                        <View className="h-full justify-center rounded-xl bg-bg-2 shadow-sm">
+                          <Text
+                            className={`w-full px-2 text-center font-saira-medium text-xl text-text-2`}>
+                            {index}
+                            {getOrdinalSuffix(index)}
+                          </Text>
+                        </View>
                         <View
                           style={{ borderRadius: 14 }}
-                          className="flex h-14 flex-1 flex-row items-center justify-start gap-2 bg-bg-2 p-2 shadow-sm">
+                          className="flex h-12 flex-1 flex-row items-center justify-start gap-2 bg-bg-2 p-2 shadow-sm">
                           {frame.winnerSide === 'away' && (
-                            <View className="items-center justify-center rounded-lg bg-bg-1 p-2 shadow-sm">
-                              <Ionicons name="trophy" size={20} color={trophyColor} />
+                            <View
+                              style={{ backgroundColor: trophyColor }}
+                              className="items-center justify-center rounded-lg bg-bg-1 p-2 shadow-sm">
+                              <Ionicons name="trophy" size={14} color="#FFF" />
                             </View>
                           )}
                           {frame.breakDish && frame.winnerSide === 'away' && (
                             <View className="items-center justify-center rounded-lg bg-bg-1 p-2 shadow-sm">
-                              <Ionicons name="triangle-outline" size={20} color={trophyColor} />
+                              <Ionicons name="triangle-outline" size={14} color="#000" />
                             </View>
                           )}
                           {frame.reverseDish && frame.winnerSide === 'away' && (
@@ -765,14 +766,67 @@ const SubmitResultsScreen = () => {
                               <Ionicons
                                 style={{ transform: [{ rotate: '180deg' }] }}
                                 name="triangle-outline"
-                                size={20}
-                                color={trophyColor}
+                                size={14}
+                                color="#FF0000"
                               />
                             </View>
                           )}
                           {frame.lagWon === 'away' && (
-                            <View className="items-center justify-center rounded-lg bg-bg-1 p-2 shadow-sm">
-                              <Ionicons name="radio-button-on" size={20} color={trophyColor} />
+                            <View className="items-center justify-center rounded-lg bg-brand p-2 shadow-sm">
+                              <Ionicons name="radio-button-on" size={14} color="#FFF" />
+                            </View>
+                          )}
+                        </View>
+                      </View>
+                      <View
+                        pointerEvents={isActive ? 'none' : 'auto'}
+                        className="flex-row items-center justify-between gap-3 px-3 pt-3">
+                        <View className="flex flex-1 flex-col gap-1">
+                          <View className="flex flex-row items-center gap-2">
+                            <Avatar size={24} borderRadius={8} player={frame.homePlayer1} />
+                            <Text
+                              numberOfLines={1}
+                              className={`${
+                                frame.homePlayer1 ? 'text-text-1' : 'text-theme-red'
+                              } flex-1 text-left font-saira-medium text-lg`}>
+                              {getPlayerName(frame.homePlayer1)}
+                            </Text>
+                          </View>
+                          {frame.homePlayer2 && (
+                            <View className="flex flex-row items-center gap-2">
+                              <Avatar size={24} borderRadius={8} player={frame.homePlayer2} />
+                              <Text
+                                numberOfLines={1}
+                                className={`${
+                                  frame.homePlayer2 ? 'text-text-1' : 'text-theme-red'
+                                } flex-1 text-left font-saira-medium text-lg`}>
+                                {getPlayerName(frame.homePlayer2)}
+                              </Text>
+                            </View>
+                          )}
+                        </View>
+                        <Text className="mx-2 text-center text-sm text-text-2">vs</Text>
+                        <View className="flex flex-1 flex-col gap-1">
+                          <View className="flex flex-row items-center gap-2">
+                            <Text
+                              numberOfLines={1}
+                              className={`${
+                                frame.awayPlayer1 ? 'text-text-1' : 'text-theme-red'
+                              } flex-1 text-right font-saira-medium text-lg`}>
+                              {getPlayerName(frame.awayPlayer1)}
+                            </Text>
+                            <Avatar size={24} borderRadius={8} player={frame.awayPlayer1} />
+                          </View>
+                          {frame.awayPlayer2 && (
+                            <View className="flex flex-row items-center gap-2">
+                              <Text
+                                numberOfLines={1}
+                                className={`${
+                                  frame.awayPlayer2 ? 'text-text-1' : 'text-theme-red'
+                                } flex-1 text-right font-saira-medium text-lg`}>
+                                {getPlayerName(frame.awayPlayer2)}
+                              </Text>
+                              <Avatar size={24} borderRadius={8} player={frame.awayPlayer2} />
                             </View>
                           )}
                         </View>

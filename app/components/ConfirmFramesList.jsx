@@ -44,7 +44,7 @@ const ConfirmFramesList = ({ results, isLoading, disputedFrames, setDisputedFram
                 {/* Home */}
                 <View className="flex-row items-center justify-between gap-3">
                   <View
-                    className={`${homeWinner ? 'bg-brand' : 'bg-transparent'}`}
+                    className={`${homeWinner ? (isDisputed ? 'bg-theme-red' : 'bg-brand') : 'bg-transparent'}`}
                     style={styles.indicator}
                   />
 
@@ -67,7 +67,7 @@ const ConfirmFramesList = ({ results, isLoading, disputedFrames, setDisputedFram
                 {/* Away */}
                 <View className="flex-row items-center justify-between gap-3">
                   <View
-                    className={`${awayWinner ? 'bg-brand' : 'bg-transparent'}`}
+                    className={`${awayWinner ? (isDisputed ? 'bg-theme-red' : 'bg-brand') : 'bg-transparent'}`}
                     style={styles.indicator}
                   />
 

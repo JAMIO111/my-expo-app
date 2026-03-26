@@ -1,15 +1,24 @@
 import { StyleSheet, Text, View } from 'react-native';
-import { usePlayerStats } from '../hooks/usePlayerStats';
+import { usePlayerStats } from '@hooks/usePlayerStats';
+import { useTeamStats } from '@hooks/useTeamStats';
 import DonutChart from './DonutChart';
 
-const PlayerStats = ({ playerId }) => {
-  console.log('PlayerStats Component Rendered with playerId:', playerId);
-  const { data, error } = usePlayerStats(playerId);
+const EntityStats = ({ entityId, entityType }) => {
+  console.log('PlayerStats Component Rendered with entityId:', entityId);
+  const { data: playerData, error: playerError } = usePlayerStats(
+    entityType === 'player' ? entityId : null
+  );
+  const { data: teamData, error: teamError } = useTeamStats(
+    entityType === 'team' ? entityId : null
+  );
+
+  const data = entityType === 'team' ? teamData : playerData;
+  const error = entityType === 'team' ? teamError : playerError;
 
   if (error) {
-    console.error('Error fetching player stats:', error);
+    console.error('Error fetching stats:', error);
   } else {
-    console.log('Player Stats Data:', data);
+    console.log('Stats Data:', data);
   }
   return (
     <View
@@ -159,6 +168,6 @@ const PlayerStats = ({ playerId }) => {
   );
 };
 
-export default PlayerStats;
+export default EntityStats;
 
 const styles = StyleSheet.create({});

@@ -40,6 +40,6 @@ export const useAuthUserProfile = () => {
     staleTime: 1000 * 60 * 30,
     cacheTime: 1000 * 60 * 60,
 
-    retry: 1, // don’t spam RPC if it fails
+    retry: 5, // don’t spam RPC if it fails
   });
 };

@@ -18,7 +18,7 @@ const ConfirmModal = ({
     case 'success':
       backgroundColor = 'bg-theme-green';
       break;
-    case 'cancel':
+    case 'error':
       backgroundColor = 'bg-theme-red';
       break;
     case 'warning':
