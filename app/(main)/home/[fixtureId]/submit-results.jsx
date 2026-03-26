@@ -827,7 +827,7 @@ const SubmitResultsScreen = () => {
         footerComponent={(props) => (
           <BottomSheetFooter {...props}>
             <View
-              style={{ paddingBottom: 100 }}
+              style={{ paddingBottom: 140 }}
               className="w-full rounded-t-3xl bg-bg-grouped-3 p-6">
               <CTAButton text="Save" type="brand" callbackFn={handlePlayerSave} />
             </View>
