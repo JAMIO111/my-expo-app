@@ -4,7 +4,11 @@ import { supabase } from '@/lib/supabase';
 // Helper to handle division by zero and rounding
 const getWinRate = (won, played) => {
   if (!played || played === 0) return 0;
-  return Math.round((won / played) * 100);
+
+  const value = (won / played) * 100;
+  const rounded = Math.round(value * 10) / 10;
+
+  return Number.isInteger(rounded) ? `${rounded}` : rounded.toFixed(1);
 };
 
 export function useTeamStats(teamId) {

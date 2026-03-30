@@ -1,6 +1,12 @@
 import { useState, useEffect } from 'react';
 import { View, Text, Pressable, StyleSheet } from 'react-native';
-import Animated, { useSharedValue, useAnimatedStyle, withTiming } from 'react-native-reanimated';
+import Animated, {
+  runOnJS,
+  useSharedValue,
+  useAnimatedStyle,
+  withTiming,
+} from 'react-native-reanimated';
+import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 
 export default function SlidingTabButton({
   value = 'left',
@@ -34,49 +40,61 @@ export default function SlidingTabButton({
     if (onChange) onChange(side);
   };
 
+  const swipeGesture = Gesture.Pan().onEnd((event) => {
+    const SWIPE_THRESHOLD = containerWidth / 6;
+
+    if (event.translationX > SWIPE_THRESHOLD) {
+      runOnJS(handlePress)('right'); // swipe right → right tab
+    } else if (event.translationX < -SWIPE_THRESHOLD) {
+      runOnJS(handlePress)('left'); // swipe left → left tab
+    }
+  });
+
   return (
     <View style={styles.wrapper} onLayout={(e) => setContainerWidth(e.nativeEvent.layout.width)}>
-      <View
-        style={[
-          styles.container,
-          {
-            height: TAB_HEIGHT,
-            borderRadius: TAB_HEIGHT / 3,
-          },
-        ]}
-        className="bg-background">
-        {/* Sliding thumb */}
-        {containerWidth > 0 && (
-          <Animated.View
-            style={[
-              styles.thumb,
-              {
-                width: THUMB_WIDTH,
-                height: TAB_HEIGHT - padding * 2,
-                top: padding,
-                left: 0,
-                borderRadius: (TAB_HEIGHT - padding * 2) / 3,
-              },
-              animatedThumbStyle,
-            ]}
-            className="bg-input-background shadow-sm"
-          />
-        )}
+      <GestureDetector gesture={swipeGesture}>
+        <View
+          style={[styles.container, { height: TAB_HEIGHT, borderRadius: TAB_HEIGHT / 3 }]}
+          className="bg-background">
+          {/* Sliding thumb */}
+          {containerWidth > 0 && (
+            <Animated.View
+              style={[
+                styles.thumb,
+                {
+                  width: THUMB_WIDTH,
+                  height: TAB_HEIGHT - padding * 2,
+                  top: padding,
+                  left: 0,
+                  borderRadius: (TAB_HEIGHT - padding * 2) / 3,
+                },
+                animatedThumbStyle,
+              ]}
+              className="bg-input-background shadow-sm"
+            />
+          )}
 
-        {/* Left tab */}
-        <Pressable style={styles.tab} onPress={() => handlePress('left')}>
-          <Text style={styles.text} className="text-text-1">
-            {option1}
-          </Text>
-        </Pressable>
+          {/* Left tab */}
+          <Pressable
+            style={styles.tab}
+            onPress={() => handlePress('left')}
+            pointerEvents="box-none">
+            <Text style={styles.text} className="text-text-1">
+              {option1}
+            </Text>
+          </Pressable>
 
-        {/* Right tab */}
-        <Pressable style={styles.tab} onPress={() => handlePress('right')}>
-          <Text style={styles.text} className="text-text-1">
-            {option2}
-          </Text>
-        </Pressable>
-      </View>
+          {/* Right tab */}
+          <Pressable
+            style={styles.tab}
+            onPress={() => handlePress('right')}
+            pointerEvents="box-none">
+            <Text style={styles.text} className="text-text-1">
+              {option2}
+            </Text>
+          </Pressable>
+        </View>
+      </GestureDetector>
     </View>
   );
 }

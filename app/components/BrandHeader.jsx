@@ -11,8 +11,8 @@ const BrandHeader = ({ text1 = 'Break', text2 = 'Room', backgroundColor = 'bg-br
       <Image
         source={
           colorScheme === 'dark'
-            ? require('@assets/Break-Room-Logo-1024-Background-Dark.png')
-            : require('@assets/Break-Room-Logo-1024-Background.png')
+            ? require('@assets/Break-Room-Logo-2-1024-Background-Dark.png')
+            : require('@assets/Break-Room-Logo-2-1024-Background.png')
         }
         className="mx-1 h-14 w-14"
         resizeMode="contain"

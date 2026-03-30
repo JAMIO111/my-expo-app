@@ -104,7 +104,7 @@ const SignUpPage = () => {
             <View className="flex-row items-center justify-center gap-2">
               <Text style={styles.title}>Break</Text>
               <Image
-                source={require('@assets/Break-Room-Logo-1024-Background.png')}
+                source={require('@assets/Break-Room-Logo-2-1024-Background.png')}
                 className="mt-2 h-14 w-14"
                 resizeMode="contain"
               />

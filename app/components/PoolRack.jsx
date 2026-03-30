@@ -108,8 +108,8 @@ const PoolRack = () => {
           <Image
             source={
               colorScheme === 'dark'
-                ? require('@assets/Break-Room-Logo-1024-Background-Dark.png')
-                : require('@assets/Break-Room-Logo-1024-Background.png')
+                ? require('@assets/Break-Room-Logo-2-1024-Background-Dark.png')
+                : require('@assets/Break-Room-Logo-2-1024-Background.png')
             }
             style={[
               {

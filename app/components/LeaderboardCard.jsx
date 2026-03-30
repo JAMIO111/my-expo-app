@@ -10,6 +10,7 @@ const LeaderboardCard = ({
   statKey = 'value',
   onPress,
   label,
+  percent,
   loading,
 }) => {
   const router = useRouter();
@@ -32,32 +33,6 @@ const LeaderboardCard = ({
 
   const sortedData = [...data].sort((a, b) => getValue(b) - getValue(a));
 
-  const getBgClass = (index) => {
-    switch (index) {
-      case 0:
-        return 'bg-gold';
-      case 1:
-        return 'bg-silver';
-      case 2:
-        return 'bg-bronze';
-      default:
-        return 'bg-brand-light';
-    }
-  };
-
-  const getTextClass = (index) => {
-    switch (index) {
-      case 0:
-        return 'text-black';
-      case 1:
-        return 'text-black';
-      case 2:
-        return 'text-black';
-      default:
-        return 'text-white';
-    }
-  };
-
   if (loading) {
     return <LeaderboardSkeleton />;
   }
@@ -75,6 +50,7 @@ const LeaderboardCard = ({
               type,
               title,
               label,
+              percent,
             },
           }))
       }
@@ -102,7 +78,7 @@ const LeaderboardCard = ({
               />
             ) : (
               <View className="mx-2 h-10 w-10 items-center justify-center rounded-md bg-brand-light">
-                <Text className="pt-1 font-michroma text-xs text-white">
+                <Text className="font-michroma text-xs text-white">
                   {getInitials(item.first_name, item.surname)}
                 </Text>
               </View>
@@ -120,7 +96,7 @@ const LeaderboardCard = ({
           </View>
 
           {/* Stat Value */}
-          <Text className="ml-3 font-saira-semibold text-2xl text-text-1">{getValue(item)}</Text>
+          <Text className="ml-3 font-saira-semibold text-2xl text-text-1">{`${getValue(item)}${percent ? ' %' : ''}`}</Text>
         </View>
       ))}
     </Pressable>

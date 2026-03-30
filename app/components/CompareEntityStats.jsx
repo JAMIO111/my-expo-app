@@ -14,8 +14,8 @@ import BottomSheetWrapper from '@/components/BottomSheetWrapper';
 import { BottomSheetScrollView } from '@gorhom/bottom-sheet';
 import TeamLogo from '@components/TeamLogo';
 import { useUser } from '@contexts/UserProvider';
-import { useTeamsByDivision } from '@hooks/useTeamsByDivision';
 import { usePlayersByDistrict } from '@hooks/usePlayersByDistrict';
+import { useTeamsByDistrict } from '@hooks/useTeamsByDistrict';
 import { useLocalSearchParams } from 'expo-router';
 import { useTeamStats } from '@hooks/useTeamStats';
 import { usePlayerStats } from '@hooks/usePlayerStats';
@@ -49,16 +49,13 @@ export default function CompareTeamStats() {
   console.log('Entity 2 Stats:', stats2);
 
   const defaultDistrict = currentRole?.district;
-  const defaultDivision =
-    currentRole?.role === 'admin' ? currentRole?.divisions[0] : currentRole?.division;
 
   const [district, setDistrict] = useState(defaultDistrict);
-  const [division, setDivision] = useState(defaultDivision);
 
-  const { data: teams } = useTeamsByDivision(entityType === 'team' ? division?.id : null);
+  const { data: teams } = useTeamsByDistrict(entityType === 'player' ? null : district.id);
   const { data: players } = usePlayersByDistrict(entityType === 'player' ? district?.id : null);
 
-  console.log('Teams in Division:', teams);
+  console.log('Teams in District:', teams);
   console.log('Players in District:', players);
 
   const entities = entityType === 'team' ? teams : players;
@@ -92,6 +89,27 @@ export default function CompareTeamStats() {
   const closeSheet = () => {
     bottomSheetRef.current?.close();
   };
+
+  const filteredEntities = entities?.filter((entity) =>
+    entityType === 'team'
+      ? entity.display_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        entity.name?.toLowerCase().includes(searchQuery.toLowerCase())
+      : entity.first_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        entity.surname?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        entity.nickname?.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  const groupedEntities =
+    entityType === 'team'
+      ? filteredEntities?.reduce((acc, team) => {
+          const division = team.division?.name || 'No Division';
+
+          if (!acc[division]) acc[division] = [];
+          acc[division].push(team);
+
+          return acc;
+        }, {})
+      : null;
 
   return (
     <>
@@ -255,7 +273,9 @@ export default function CompareTeamStats() {
                     : `${entity1?.first_name} ${entity1?.surname}`
                   : `Select a ${entityType}`}
               </Text>
-              <Text className="text-sm text-text-on-brand-2">Division 1</Text>
+              <Text className="text-sm text-text-on-brand-2">
+                {entityType === 'team' ? entity1?.division.name : entity1?.nickname}
+              </Text>
             </View>
           </View>
           <View className="flex flex-1 flex-row items-center justify-end gap-3">
@@ -267,7 +287,9 @@ export default function CompareTeamStats() {
                     : `${entity2?.first_name} ${entity2?.surname}`
                   : `Select a ${entityType}`}
               </Text>
-              <Text className="text-sm text-text-on-brand-2">Division 1</Text>
+              <Text className="text-sm text-text-on-brand-2">
+                {entityType === 'team' ? entity2?.division.name : entity2?.nickname.toUpperCase()}
+              </Text>
             </View>
             {entity2 ? (
               entityType === 'team' ? (
@@ -307,83 +329,137 @@ export default function CompareTeamStats() {
           {defaultDistrict.name} {entityType === 'team' ? 'Teams' : 'Players'}
         </Text>
         <BottomSheetScrollView contentContainerStyle={{ padding: 10, paddingBottom: 140 }}>
-          <View style={{ flexDirection: 'row', flexWrap: 'wrap', marginTop: 0 }}>
-            {entities
-              ?.filter((entity) =>
-                entityType === 'team'
-                  ? entity.display_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                    entity.name?.toLowerCase().includes(searchQuery.toLowerCase())
-                  : entity.first_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                    entity.surname?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                    entity.nickname?.toLowerCase().includes(searchQuery.toLowerCase())
-              )
-              ?.map((entity, index) => (
-                <Pressable
-                  className={`relative rounded-xl bg-bg-2 py-4 ${changingEntity === 'entity1' && entity.id === entity1?.id ? 'border-2 border-brand' : ''} ${changingEntity === 'entity2' && entity.id === entity2?.id ? 'border-2 border-brand' : ''}`}
-                  key={entity.id}
-                  style={{
-                    gap: 2,
-                    width: '32%', // roughly 3 columns
-                    marginRight: (index + 1) % 3 === 0 ? 0 : '2%', // add margin except for last item in row
-                    marginBottom: 6,
-                    paddingHorizontal: 8,
-                    alignItems: 'center',
-                  }}
-                  onPress={() => {
-                    if (changingEntity === 'entity1') {
-                      setEntity1(entity);
-                    } else {
-                      setEntity2(entity);
-                    }
-                    closeSheet();
-                  }}>
-                  {/* Logo stays at the top */}
-                  {entityType === 'team' ? (
-                    <TeamLogo
-                      type={entity.crest.type}
-                      color1={entity.crest.color1}
-                      color2={entity.crest.color2}
-                      thickness={entity.crest.thickness}
-                      size={44}
-                    />
-                  ) : (
-                    <Avatar player={entity} size={60} borderRadius={30} />
-                  )}
+          <View style={{ marginTop: 0 }}>
+            {entityType === 'team' ? (
+              // ✅ GROUPED TEAMS
+              Object.entries(groupedEntities || {}).map(([division, teams]) => (
+                <View key={division} style={{ marginBottom: 12 }}>
+                  {/* Division Header */}
+                  <Text
+                    style={{ fontFamily: 'Saira-Bold', marginBottom: 6 }}
+                    className="text-text-1">
+                    {division}
+                  </Text>
 
-                  <View
-                    style={{
-                      flex: 1, // take remaining space
-                      justifyContent: 'center', // vertical center if text doesn't wrap
-                      marginTop: 4,
-                      width: '100%',
-                    }}>
-                    <Text
-                      className="text-text-1"
-                      style={{
-                        fontFamily: 'Saira-Medium',
-                        textAlign: 'center',
-                        flexWrap: 'wrap',
-                      }}
-                      numberOfLines={2} // optional max 2 lines
-                      ellipsizeMode="tail">
-                      {entityType === 'team'
-                        ? entity.display_name
-                        : `${entity.first_name} ${entity.surname}`}
-                    </Text>
+                  {/* Grid */}
+                  <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
+                    {teams.map((entity, index) => (
+                      <Pressable
+                        key={entity.id}
+                        className={`relative rounded-xl bg-bg-2 py-4 ${
+                          (changingEntity === 'entity1' && entity.id === entity1?.id) ||
+                          (changingEntity === 'entity2' && entity.id === entity2?.id)
+                            ? 'border-2 border-brand'
+                            : ''
+                        }`}
+                        style={{
+                          gap: 2,
+                          width: '32%',
+                          marginRight: (index + 1) % 3 === 0 ? 0 : '2%',
+                          marginBottom: 6,
+                          paddingHorizontal: 8,
+                          alignItems: 'center',
+                        }}
+                        onPress={() => {
+                          changingEntity === 'entity1' ? setEntity1(entity) : setEntity2(entity);
+                          closeSheet();
+                        }}>
+                        <TeamLogo
+                          type={entity.crest.type}
+                          color1={entity.crest.color1}
+                          color2={entity.crest.color2}
+                          thickness={entity.crest.thickness}
+                          size={44}
+                        />
+
+                        <View
+                          style={{
+                            flex: 1,
+                            justifyContent: 'center',
+                            marginTop: 4,
+                            width: '100%',
+                          }}>
+                          <Text
+                            className="text-text-1"
+                            style={{
+                              fontFamily: 'Saira-Medium',
+                              textAlign: 'center',
+                            }}
+                            numberOfLines={2}>
+                            {entity.display_name}
+                          </Text>
+                        </View>
+
+                        {(changingEntity === 'entity1' && entity.id === entity1?.id) ||
+                        (changingEntity === 'entity2' && entity.id === entity2?.id) ? (
+                          <View
+                            className="absolute right-0 top-0 flex h-6 w-6 items-center justify-center bg-brand"
+                            style={{
+                              borderTopRightRadius: 6,
+                              borderBottomLeftRadius: 4,
+                            }}>
+                            <Ionicons name="checkmark" size={16} color="#fff" />
+                          </View>
+                        ) : null}
+                      </Pressable>
+                    ))}
                   </View>
-                  {(changingEntity === 'entity1' && entity.id === entity1?.id) ||
-                  (changingEntity === 'entity2' && entity.id === entity2?.id) ? (
+                </View>
+              ))
+            ) : (
+              // ✅ PLAYERS (FLAT FILTERED LIST)
+              <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
+                {filteredEntities?.map((entity, index) => (
+                  <Pressable
+                    key={entity.id}
+                    className={`relative rounded-xl bg-bg-2 py-4 ${
+                      (changingEntity === 'entity1' && entity.id === entity1?.id) ||
+                      (changingEntity === 'entity2' && entity.id === entity2?.id)
+                        ? 'border-2 border-brand'
+                        : ''
+                    }`}
+                    style={{
+                      gap: 2,
+                      width: '32%',
+                      marginRight: (index + 1) % 3 === 0 ? 0 : '2%',
+                      marginBottom: 6,
+                      paddingHorizontal: 8,
+                      alignItems: 'center',
+                    }}
+                    onPress={() => {
+                      changingEntity === 'entity1' ? setEntity1(entity) : setEntity2(entity);
+                      closeSheet();
+                    }}>
+                    <Avatar player={entity} size={60} borderRadius={30} />
+
                     <View
-                      style={{
-                        borderTopRightRadius: 6,
-                        borderBottomLeftRadius: 4,
-                      }}
-                      className="absolute right-0 top-0 flex h-6 w-6 items-center justify-center bg-brand">
-                      <Ionicons name="checkmark" size={16} color="#fff" />
+                      style={{ flex: 1, justifyContent: 'center', marginTop: 4, width: '100%' }}>
+                      <Text
+                        className="text-text-1"
+                        style={{
+                          fontFamily: 'Saira-Medium',
+                          textAlign: 'center',
+                        }}
+                        numberOfLines={2}>
+                        {entity.first_name} {entity.surname}
+                      </Text>
                     </View>
-                  ) : null}
-                </Pressable>
-              ))}
+
+                    {(changingEntity === 'entity1' && entity.id === entity1?.id) ||
+                    (changingEntity === 'entity2' && entity.id === entity2?.id) ? (
+                      <View
+                        className="absolute right-0 top-0 flex h-6 w-6 items-center justify-center bg-brand"
+                        style={{
+                          borderTopRightRadius: 6,
+                          borderBottomLeftRadius: 4,
+                        }}>
+                        <Ionicons name="checkmark" size={16} color="#fff" />
+                      </View>
+                    ) : null}
+                  </Pressable>
+                ))}
+              </View>
+            )}
           </View>
         </BottomSheetScrollView>
       </BottomSheetWrapper>

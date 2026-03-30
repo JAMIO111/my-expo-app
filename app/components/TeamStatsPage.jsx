@@ -33,14 +33,14 @@ const TeamStatsPage = ({ teamId }) => {
 
           <View className="items-start justify-center">
             <Text
-              style={{ fontSize: 26, lineHeight: 30 }}
+              style={{ fontSize: 24, lineHeight: 30 }}
               className="font-saira-medium text-text-on-brand">
               {teamProfile?.display_name}
             </Text>
             <Text
-              style={{ fontSize: 22 }}
+              style={{ fontSize: 18 }}
               className="font-saira-medium text-text-on-brand-2 opacity-60">
-              {teamProfile?.abbreviation || ''}
+              {`${teamProfile?.division?.district?.name || ''} - ${teamProfile?.division?.name || ''}`}
             </Text>
           </View>
         </View>

@@ -2,9 +2,9 @@ import TeamStatsPage from '@/components/TeamStatsPage';
 import { useLocalSearchParams } from 'expo-router';
 
 const index = () => {
-  const { userId } = useLocalSearchParams();
-  console.log('User ID in Team Stats Index:', userId);
-  return <TeamStatsPage teamId={userId} />;
+  const { teamId } = useLocalSearchParams();
+  console.log('Team ID in Team Stats Index:', teamId);
+  return <TeamStatsPage teamId={teamId} />;
 };
 
 export default index;

@@ -15,10 +15,12 @@ import { trophyIcons } from '../lib/badgeIcons';
 import { useLast5Results } from '@hooks/useLast5Results';
 import Last5MatchesList from './Last5MatchesList';
 import { useTeamPlayers } from '@hooks/useTeamPlayers';
+import { useUser } from '@contexts/UserProvider';
 
 const TeamProfile = ({ context, profile, isLoading }) => {
+  const { currentRole } = useUser();
   const router = useRouter();
-  const { userId, teamId, fixtureId } = useLocalSearchParams();
+  const { teamId, fixtureId } = useLocalSearchParams();
   if (isLoading || !profile)
     return (
       <>
@@ -77,11 +79,11 @@ const TeamProfile = ({ context, profile, isLoading }) => {
   });
 
   const handleViewStats = () => {
-    if (context === 'home/league') {
+    if (context === 'home/league/team') {
       router.push(`home/league/${teamId}/team-stats`);
     } else if (context === 'teams') {
-      router.push(`/teams/${userId}/team-stats`);
-    } else if (context === 'fixture') {
+      router.push(`/teams/${currentRole?.team.id}/team-stats`);
+    } else if (context === 'home/upcoming-fixture') {
       router.push(`home/${fixtureId}/${teamId}/team-stats`);
     }
   };
