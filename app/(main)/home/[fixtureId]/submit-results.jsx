@@ -71,9 +71,9 @@ const SubmitResultsScreen = () => {
   const addFrame = () => {
     const newFrame = {
       tempId: Date.now().toString(),
-      homePlayer1: null,
+      homePlayer1: fixtureDetails.competitor_type === 'team' ? null : fixtureDetails.homePlayer,
       homePlayer2: null,
-      awayPlayer1: null,
+      awayPlayer1: fixtureDetails.competitor_type === 'team' ? null : fixtureDetails.awayPlayer,
       awayPlayer2: null,
       winnerSide: null,
       lagWon: null,
@@ -250,9 +250,9 @@ const SubmitResultsScreen = () => {
           <ScrollView className="mt-16 flex-1 bg-bg-grouped-1 p-4">
             {/* Match Score */}
             <View className="mb-4 rounded-3xl bg-bg-1 p-4 shadow-sm">
-              <View className="flex-row items-center justify-between">
+              <View className="flex-row items-center justify-between px-2">
                 {/* HOME */}
-                <View className="flex-1 items-center">
+                <View className="items-center">
                   {fixtureDetails?.competitor_type === 'team' ? (
                     <TeamLogo
                       size={60}
@@ -287,16 +287,38 @@ const SubmitResultsScreen = () => {
                     </View>
                   )}
                 </View>
-
-                {/* SCORE */}
-                <View className="mx-3 flex-row items-center justify-center gap-3 rounded-2xl bg-bg-2 px-4 pb-2 pt-4 shadow-sm">
-                  <Text className="font-saira-bold text-3xl text-text-1">{homeScore}</Text>
-                  <Text className="mb-2 text-text-2">vs</Text>
-                  <Text className="font-saira-bold text-3xl text-text-1">{awayScore}</Text>
+                <View className="flex-1 items-center justify-center">
+                  <Text className="mb-2 text-center font-saira text-lg text-text-1">
+                    {fixtureDetails?.competition?.name}
+                  </Text>
+                  {/* SCORE */}
+                  <View className="mx-2 flex-row items-center justify-center gap-1 rounded-2xl bg-bg-2 px-2 pb-2 pt-4 shadow-sm">
+                    <Text className="w-12 text-center font-saira-bold text-3xl text-text-1">
+                      {homeScore}
+                    </Text>
+                    <Text className="mb-2 font-saira text-text-2">vs</Text>
+                    <Text className="w-12 text-center font-saira-bold text-3xl text-text-1">
+                      {awayScore}
+                    </Text>
+                  </View>
+                  <Text className="mt-2 text-center font-saira text-text-2">
+                    {new Date(fixtureDetails.date_time).toLocaleDateString('en-GB', {
+                      weekday: 'short',
+                      day: 'numeric',
+                      month: 'short',
+                      year: '2-digit',
+                    })}
+                  </Text>
+                  <Text className="text-center font-saira text-text-2">
+                    {new Date(fixtureDetails.date_time).toLocaleTimeString('en-GB', {
+                      hour: '2-digit',
+                      minute: '2-digit',
+                    })}
+                  </Text>
                 </View>
 
                 {/* AWAY */}
-                <View className="flex-1 items-center">
+                <View className="items-center">
                   {fixtureDetails?.competitor_type === 'team' ? (
                     <TeamLogo
                       size={60}
@@ -386,6 +408,7 @@ const SubmitResultsScreen = () => {
                       <View className="flex-row gap-5 pb-2">
                         <Pressable
                           onPress={() => {
+                            if (fixtureDetails?.competitor_type === 'individual') return;
                             setEditingPlayer('homePlayer1');
                             openSheet();
                           }}
@@ -398,6 +421,7 @@ const SubmitResultsScreen = () => {
                         </Pressable>
                         <Pressable
                           onPress={() => {
+                            if (fixtureDetails?.competitor_type === 'individual') return;
                             setEditingPlayer('awayPlayer1');
                             openSheet();
                           }}
@@ -413,6 +437,7 @@ const SubmitResultsScreen = () => {
                         <View className="flex-row gap-5 pb-2">
                           <Pressable
                             onPress={() => {
+                              if (fixtureDetails?.competitor_type === 'individual') return;
                               setEditingPlayer('homePlayer2');
                               openSheet();
                             }}
@@ -425,6 +450,7 @@ const SubmitResultsScreen = () => {
                           </Pressable>
                           <Pressable
                             onPress={() => {
+                              if (fixtureDetails?.competitor_type === 'individual') return;
                               setEditingPlayer('awayPlayer2');
                               openSheet();
                             }}

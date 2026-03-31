@@ -32,7 +32,8 @@ export const useFixtureDetails = (fixtureId) => {
           crest
         ),
         homePlayer:Players!Fixtures_home_player_fkey(id, first_name, surname, avatar_url, nickname),
-        awayPlayer:Players!Fixtures_away_player_fkey(id, first_name, surname, avatar_url, nickname)
+        awayPlayer:Players!Fixtures_away_player_fkey(id, first_name, surname, avatar_url, nickname),
+        competition:CompetitionInstances!Fixtures_competition_instance_id_fkey(id, name)
       `
       )
       .eq('id', fixtureId)

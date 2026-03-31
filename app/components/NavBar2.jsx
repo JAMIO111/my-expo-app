@@ -23,7 +23,7 @@ const NavBar = ({ type = 'main' }) => {
       href: `/${currentRole?.type === 'admin' ? 'my-leagues' : 'teams'}`,
       icon: TeamIcon,
     },
-    { name: 'Comps', href: '/onboarding/explore', icon: TrophyIcon },
+    { name: 'Comps', href: '/competitions', icon: TrophyIcon },
     { name: 'Home', href: '/home' }, // Center item — spinner
     { name: 'Rankings', href: '/rankings', icon: ChartIcon },
     { name: 'Profile', href: '/profile', icon: UserIcon },

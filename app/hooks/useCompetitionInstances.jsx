@@ -5,13 +5,19 @@ export function useCompetitionInstances(seasonId) {
   return useQuery({
     queryKey: ['CompetitionInstances', seasonId],
     queryFn: async () => {
-      let query = supabase
+      // Supabase allows selecting related tables using foreign key relationships
+      const { data, error } = await supabase
         .from('CompetitionInstances')
-        .select('*')
+        .select(
+          `
+          *,
+          CompetitionParticipants(*, player:Players(id, first_name, surname, avatar_url), team:Teams(id, display_name, crest)),
+          competition:Competitions(competitor_type, competition_type),
+          division:Divisions(name)
+        `
+        )
         .eq('season_id', seasonId)
-        .eq('status', 'active');
-
-      const { data, error } = await query.order('division_tier', { ascending: true });
+        .order('division_tier', { ascending: true });
 
       if (error) throw error;
       return data;

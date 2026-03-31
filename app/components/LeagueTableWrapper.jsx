@@ -310,24 +310,26 @@ const LeagueTableWrapper = ({ context }) => {
               </Pressable>
             ))}
           {activeFilter === 'competition' &&
-            competitionInstances.map((c) => (
-              <Pressable
-                className="mb-3 flex-row items-center justify-between"
-                key={c.id}
-                onPress={() => setTempCompetitionInstance(c)}>
-                <Text
-                  className={`font-saira text-2xl ${
-                    tempCompetitionInstance?.id === c.id ? 'text-text-1' : 'text-text-2'
-                  }`}>
-                  {c.name}
-                </Text>
-                <Ionicons
-                  size={24}
-                  color={themeColors.primaryText}
-                  name={tempCompetitionInstance?.id === c.id ? 'checkbox' : 'square-outline'}
-                />
-              </Pressable>
-            ))}
+            competitionInstances
+              .filter((c) => c.status === 'active')
+              .map((c) => (
+                <Pressable
+                  className="mb-3 flex-row items-center justify-between"
+                  key={c.id}
+                  onPress={() => setTempCompetitionInstance(c)}>
+                  <Text
+                    className={`font-saira text-2xl ${
+                      tempCompetitionInstance?.id === c.id ? 'text-text-1' : 'text-text-2'
+                    }`}>
+                    {c.name}
+                  </Text>
+                  <Ionicons
+                    size={24}
+                    color={themeColors.primaryText}
+                    name={tempCompetitionInstance?.id === c.id ? 'checkbox' : 'square-outline'}
+                  />
+                </Pressable>
+              ))}
         </BottomSheetScrollView>
       </BottomSheetWrapper>
     </View>
