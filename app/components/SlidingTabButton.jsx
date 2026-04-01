@@ -75,20 +75,14 @@ export default function SlidingTabButton({
           )}
 
           {/* Left tab */}
-          <Pressable
-            style={styles.tab}
-            onPress={() => handlePress('left')}
-            pointerEvents="box-none">
+          <Pressable style={styles.tab} onPress={() => handlePress('left')}>
             <Text style={styles.text} className="text-text-1">
               {option1}
             </Text>
           </Pressable>
 
           {/* Right tab */}
-          <Pressable
-            style={styles.tab}
-            onPress={() => handlePress('right')}
-            pointerEvents="box-none">
+          <Pressable style={styles.tab} onPress={() => handlePress('right')}>
             <Text style={styles.text} className="text-text-1">
               {option2}
             </Text>

@@ -14,6 +14,16 @@ const index = () => {
     currentRole?.activeSeason.id
   );
   console.log('Competitions:', competitionsInstances);
+
+  const activeCompetitions = competitionsInstances?.filter(
+    (instance) => instance.status === 'active'
+  );
+  const completedCompetitions = competitionsInstances?.filter(
+    (instance) => instance.status === 'completed'
+  );
+  const upcomingCompetitions = competitionsInstances?.filter(
+    (instance) => instance.status === 'upcoming'
+  );
   return (
     <>
       <Stack.Screen
@@ -30,11 +40,38 @@ const index = () => {
       />
       <SafeViewWrapper bottomColor="bg-brand" topColor="bg-brand">
         <ScrollView
-          contentContainerStyle={{ display: 'flex', flexGrow: 1, gap: 16, paddingVertical: 20 }}
+          contentContainerStyle={{ display: 'flex', flexGrow: 1, gap: 20, paddingVertical: 20 }}
           className="mt-16 flex-1 bg-brand px-4">
-          {competitionsInstances?.map((instance) => (
-            <CompetitionInstanceCard key={instance.id} instance={instance} />
-          ))}
+          <View>
+            <Text className="mb-2 px-1 font-saira-medium text-2xl text-text-on-brand">
+              Active Competitions
+            </Text>
+            <View className="gap-4">
+              {activeCompetitions?.map((instance) => (
+                <CompetitionInstanceCard key={instance.id} instance={instance} />
+              ))}
+            </View>
+          </View>
+          <View>
+            <Text className="mb-2 px-1 font-saira-medium text-2xl text-text-on-brand">
+              Upcoming Competitions
+            </Text>
+            <View className="gap-4">
+              {upcomingCompetitions?.map((instance) => (
+                <CompetitionInstanceCard key={instance.id} instance={instance} />
+              ))}
+            </View>
+          </View>
+          <View>
+            <Text className="mb-2 px-1 font-saira-medium text-2xl text-text-on-brand">
+              Completed Competitions
+            </Text>
+            <View className="gap-4">
+              {completedCompetitions?.map((instance) => (
+                <CompetitionInstanceCard key={instance.id} instance={instance} />
+              ))}
+            </View>
+          </View>
         </ScrollView>
         <NavBar />
       </SafeViewWrapper>

@@ -133,12 +133,46 @@ const CompareTeamStatsRows = ({ team1Stats, team2Stats, context }) => {
     },
     {
       statName: 'Frame Win %',
-      homeValue: team1Stats.totalStats.frame_win_percent,
-      homeValueH: team1Stats.totalStats.home_frame_win_percent,
-      homeValueA: team1Stats.totalStats.away_frame_win_percent,
-      awayValue: team2Stats.totalStats.frame_win_percent,
-      awayValueH: team2Stats.totalStats.home_frame_win_percent,
-      awayValueA: team2Stats.totalStats.away_frame_win_percent,
+      homeValue:
+        team1Stats.totalStats.frames_played < 1
+          ? 0
+          : Math.round(
+              (team1Stats.totalStats.frames_won / team1Stats.totalStats.frames_played) * 10000
+            ) / 100,
+      homeValueH:
+        team1Stats.totalStats.home_frames_played < 1
+          ? 0
+          : Math.round(
+              (team1Stats.totalStats.home_frames_won / team1Stats.totalStats.home_frames_played) *
+                10000
+            ) / 100,
+      homeValueA:
+        team1Stats.totalStats.away_frames_played < 1
+          ? 0
+          : Math.round(
+              (team1Stats.totalStats.away_frames_won / team1Stats.totalStats.away_frames_played) *
+                10000
+            ) / 100,
+      awayValue:
+        team2Stats.totalStats.frames_played < 1
+          ? 0
+          : Math.round(
+              (team2Stats.totalStats.frames_won / team2Stats.totalStats.frames_played) * 10000
+            ) / 100,
+      awayValueH:
+        team2Stats.totalStats.home_frames_played < 1
+          ? 0
+          : Math.round(
+              (team2Stats.totalStats.home_frames_won / team2Stats.totalStats.home_frames_played) *
+                10000
+            ) / 100,
+      awayValueA:
+        team2Stats.totalStats.away_frames_played < 1
+          ? 0
+          : Math.round(
+              (team2Stats.totalStats.away_frames_won / team2Stats.totalStats.away_frames_played) *
+                10000
+            ) / 100,
       isPercentage: true,
     },
     {

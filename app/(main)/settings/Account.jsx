@@ -236,7 +236,7 @@ const Account = () => {
         footerComponent={(props) => (
           <BottomSheetFooter {...props}>
             <View
-              style={{ paddingBottom: 80 }}
+              style={{ paddingBottom: 160 }}
               className="w-full rounded-t-3xl bg-bg-grouped-3 p-6">
               <CTAButton
                 text="Switch Role"
@@ -270,7 +270,7 @@ const Account = () => {
 
         {/* Scrollable content with top padding to avoid overlap */}
         <BottomSheetScrollView
-          contentContainerStyle={{ paddingBottom: 200, paddingTop: 80, paddingHorizontal: 32 }}>
+          contentContainerStyle={{ paddingBottom: 240, paddingTop: 80, paddingHorizontal: 32 }}>
           {/* Your selectable items */}
           {roles
             ?.filter((r) => r.id !== currentRole?.id)

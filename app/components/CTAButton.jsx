@@ -67,14 +67,14 @@ const CTAButton = ({
           borderRadius: borderRadius,
         }}>
         {loading ? (
-          <View className="flex-row items-center justify-center gap-2">
+          <View className="flex-row items-center justify-center gap-3">
             <ActivityIndicator size="small" color={iconColor} />
             <Text style={{ color: buttonTheme.text }} className={`py-1 ${fontWeight} ${textSize}`}>
               {text}
             </Text>
           </View>
         ) : (
-          <View className="flex-row items-center justify-center gap-2">
+          <View className="flex-row items-center justify-center gap-3">
             {icon && icon}
             <Text style={{ color: buttonTheme.text }} className={`py-1 ${fontWeight} ${textSize}`}>
               {text}

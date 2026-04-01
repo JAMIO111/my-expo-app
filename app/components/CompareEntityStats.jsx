@@ -274,7 +274,9 @@ export default function CompareTeamStats() {
                   : `Select a ${entityType}`}
               </Text>
               <Text className="text-sm text-text-on-brand-2">
-                {entityType === 'team' ? entity1?.division.name : entity1?.nickname}
+                {entityType === 'team'
+                  ? entity1?.division.name
+                  : entity1?.nickname?.toUpperCase() || ''}
               </Text>
             </View>
           </View>
@@ -288,7 +290,9 @@ export default function CompareTeamStats() {
                   : `Select a ${entityType}`}
               </Text>
               <Text className="text-sm text-text-on-brand-2">
-                {entityType === 'team' ? entity2?.division.name : entity2?.nickname.toUpperCase()}
+                {entityType === 'team'
+                  ? entity2?.division.name
+                  : entity2?.nickname?.toUpperCase() || ''}
               </Text>
             </View>
             {entity2 ? (
@@ -325,7 +329,9 @@ export default function CompareTeamStats() {
           onDebouncedChange={setSearchQuery}
           placeholder={`Search for ${entityType === 'team' ? 'teams' : 'players'}...`}
         />
-        <Text style={{ fontSize: 24, paddingBottom: 6, paddingLeft: 12 }}>
+        <Text
+          className="pl-1 font-saira-semibold text-2xl text-text-1"
+          style={{ fontSize: 24, paddingVertical: 4, paddingLeft: 12 }}>
           {defaultDistrict.name} {entityType === 'team' ? 'Teams' : 'Players'}
         </Text>
         <BottomSheetScrollView contentContainerStyle={{ padding: 10, paddingBottom: 140 }}>
@@ -336,8 +342,8 @@ export default function CompareTeamStats() {
                 <View key={division} style={{ marginBottom: 12 }}>
                   {/* Division Header */}
                   <Text
-                    style={{ fontFamily: 'Saira-Bold', marginBottom: 6 }}
-                    className="text-text-1">
+                    style={{ fontFamily: 'Saira-semibold', marginBottom: 6 }}
+                    className="pl-1 text-lg text-text-1">
                     {division}
                   </Text>
 

@@ -1,27 +1,7 @@
 import { StyleSheet, Text, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import CTAButton from './components/CTAButton';
-
-const rows = [
-  ['yellow', 'red', 'yellow', 'yellow', 'red'],
-  ['red', 'yellow', 'red', 'yellow'],
-  ['yellow', 'black', 'red'],
-  ['red', 'yellow'],
-  ['yellow'],
-];
-
-const getBallColor = (color) => {
-  switch (color) {
-    case 'red':
-      return 'bg-red-600';
-    case 'yellow':
-      return 'bg-yellow-400';
-    case 'black':
-      return 'bg-black';
-    default:
-      return 'bg-white';
-  }
-};
+import Ionicons from '@expo/vector-icons/Ionicons';
 
 const notFound = () => {
   const router = useRouter();
@@ -34,12 +14,52 @@ const notFound = () => {
           <CTAButton text="Go Home" type="yellow" callbackFn={() => router.replace('/')} />
         </View>
       </View>
-      <View className="absolute -left-4 -top-4 h-12 w-12 rounded-full bg-black"></View>
-      <View className="absolute -right-4 -top-4 h-12 w-12 rounded-full bg-black"></View>
-      <View className="absolute -bottom-4 -left-4 h-12 w-12 rounded-full bg-black"></View>
-      <View className="absolute -bottom-4 -right-4 h-12 w-12 rounded-full bg-black"></View>
-      <View className="absolute -left-7 top-[50%] h-12 w-12 rounded-full bg-black"></View>
-      <View className="absolute -right-7 top-[50%] h-12 w-12 rounded-full bg-black"></View>
+      <View className="absolute inset-x-0 top-0 items-center justify-center">
+        <View className="h-8 w-full flex-row items-center justify-around bg-red-950 px-10">
+          <View className="h-2 w-2 rounded-full bg-gray-400"></View>
+          <View className="h-2 w-2 rounded-full bg-gray-400"></View>
+          <View className="h-2 w-2 rounded-full bg-gray-400"></View>
+        </View>
+        <View className="h-5 w-full bg-brand-light"></View>
+      </View>
+      <View className="absolute bottom-0 w-full items-center justify-center">
+        <View className="h-5 w-full bg-brand-light"></View>
+        <View className="h-8 w-full flex-row items-center justify-around bg-red-950 px-10">
+          <View className="h-2 w-2 rounded-full bg-gray-400"></View>
+          <View className="h-2 w-2 rounded-full bg-gray-400"></View>
+          <View className="h-2 w-2 rounded-full bg-gray-400"></View>
+        </View>
+      </View>
+      <View className="absolute left-0 h-full flex-row">
+        <View className="h-full w-6 items-center justify-around bg-red-950 py-20">
+          <View className="h-2 w-2 rounded-full bg-gray-400"></View>
+          <View className="h-2 w-2 rounded-full bg-gray-400"></View>
+          <View className="h-2 w-2 rounded-full bg-gray-400"></View>
+          <View className="h-2 w-2 rounded-full bg-red-950"></View>
+          <View className="h-2 w-2 rounded-full bg-gray-400"></View>
+          <View className="h-2 w-2 rounded-full bg-gray-400"></View>
+          <View className="h-2 w-2 rounded-full bg-gray-400"></View>
+        </View>
+        <View className="-z-10 h-full w-5 bg-brand-light"></View>
+      </View>
+      <View className="absolute right-0 h-full flex-row">
+        <View className="-z-10 h-full w-5 bg-brand-light"></View>
+        <View className="h-full w-6 items-center justify-around bg-red-950 py-20">
+          <View className="h-2 w-2 rounded-full bg-gray-400"></View>
+          <View className="h-2 w-2 rounded-full bg-gray-400"></View>
+          <View className="h-2 w-2 rounded-full bg-gray-400"></View>
+          <View className="h-2 w-2 rounded-full bg-red-950"></View>
+          <View className="h-2 w-2 rounded-full bg-gray-400"></View>
+          <View className="h-2 w-2 rounded-full bg-gray-400"></View>
+          <View className="h-2 w-2 rounded-full bg-gray-400"></View>
+        </View>
+      </View>
+      <View className="absolute left-3 top-5 h-12 w-12 rounded-full bg-black"></View>
+      <View className="absolute right-3 top-5 h-12 w-12 rounded-full bg-black"></View>
+      <View className="absolute bottom-5 left-3 h-12 w-12 rounded-full bg-black"></View>
+      <View className="absolute bottom-5 right-3 h-12 w-12 rounded-full bg-black"></View>
+      <View className="absolute left-2 top-[50%] h-12 w-12 rounded-full bg-black"></View>
+      <View className="absolute right-2 top-[50%] h-12 w-12 rounded-full bg-black"></View>
       {/* Rack */}
 
       <View className="absolute bottom-16 mb-10 items-center justify-center">

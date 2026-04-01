@@ -64,7 +64,16 @@ export function checkEligibility(player, instance, currentRole) {
   const division = instance.division_id;
 
   // Already entered
-  if (instance.CompetitionParticipants?.some((p) => p.player_id === player.id)) {
+  if (
+    instance.competition.competitor_type === 'team' &&
+    instance.CompetitionParticipants?.some((p) => p.team_id === currentRole?.team?.id)
+  ) {
+    return 'Entered';
+  }
+  if (
+    instance.competition.competitor_type === 'individual' &&
+    instance.CompetitionParticipants?.some((p) => p.player_id === player.id)
+  ) {
     return 'Entered';
   }
 
@@ -102,7 +111,7 @@ export function checkEligibility(player, instance, currentRole) {
   return 'Eligible';
 }
 
-const formatCompetitionType = (value) => {
+export const formatCompetitionType = (value) => {
   if (!value) return '';
 
   return value
@@ -121,10 +130,10 @@ const CompetitionInstanceCard = ({ instance }) => {
   return (
     <Pressable
       onPress={() => {
-        router.push(`/competition/${instance.id}`);
+        router.push(`/competitions/${instance.id}`);
       }}
       key={instance.id}
-      className="rounded-2xl bg-bg-2 shadow-md">
+      className="relative rounded-2xl bg-bg-2 shadow-md">
       <View className="p-4">
         <Text className="font-saira-medium text-2xl text-text-1">{instance.name}</Text>
         <Text className="font-saira text-lg text-text-2">
@@ -144,21 +153,7 @@ const CompetitionInstanceCard = ({ instance }) => {
               {instance.status.slice(0, 1).toUpperCase() + instance.status.slice(1)}
             </Text>
           </View>
-          {(instance.status === 'upcoming' || eligibility === 'Entered') && (
-            <View
-              style={{
-                backgroundColor: eligibilityColors.background,
-                borderColor: eligibilityColors.border,
-                borderWidth: 1,
-              }}
-              className="w-fit flex-row items-center justify-center rounded-xl px-3 py-1">
-              <Text
-                style={{ color: eligibilityColors.text }}
-                className="text-md text-center font-saira-medium">
-                {eligibility}
-              </Text>
-            </View>
-          )}
+
           {instance.division && (
             <View
               style={{
@@ -202,6 +197,28 @@ const CompetitionInstanceCard = ({ instance }) => {
           </Text>
         </View>
       </View>
+      {(instance.status === 'upcoming' || eligibility === 'Entered') && (
+        <View
+          style={{
+            backgroundColor: eligibilityColors.background,
+            borderColor: eligibilityColors.border,
+            borderWidth: 1,
+          }}
+          className="absolute right-3 top-3 w-fit flex-row items-center justify-center gap-1 rounded-xl px-3 py-1">
+          <Ionicons
+            name={
+              eligibility === 'Ineligible' ? 'close-circle-outline' : 'checkmark-circle-outline'
+            }
+            size={16}
+            color={eligibilityColors.text}
+          />
+          <Text
+            style={{ color: eligibilityColors.text }}
+            className="text-md text-center font-saira-medium">
+            {eligibility}
+          </Text>
+        </View>
+      )}
     </Pressable>
   );
 };
