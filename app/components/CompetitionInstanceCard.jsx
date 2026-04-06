@@ -1,4 +1,5 @@
 import { View, Text, Pressable } from 'react-native';
+import { useRef } from 'react';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useUser } from '@contexts/UserProvider';
@@ -126,6 +127,7 @@ export const formatCompetitionType = (value) => {
 };
 
 const CompetitionInstanceCard = ({ instance }) => {
+  const hasNavigated = useRef(false);
   const router = useRouter();
   const statusColors = getStatusColors(instance.status);
   const { player, currentRole } = useUser();
@@ -135,6 +137,11 @@ const CompetitionInstanceCard = ({ instance }) => {
   return (
     <Pressable
       onPress={() => {
+        if (hasNavigated.current) return;
+        hasNavigated.current = true;
+        setTimeout(() => {
+          hasNavigated.current = false;
+        }, 500); // Reset navigation state after 500ms
         router.push(`/competitions/${instance.id}`);
       }}
       key={instance.id}

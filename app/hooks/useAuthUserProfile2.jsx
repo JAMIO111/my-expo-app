@@ -11,7 +11,7 @@ export const fetchAuthUserProfile = async () => {
     throw new Error('User not authenticated');
   }
 
-  const { data, error } = await supabase.rpc('get_auth_user_profile', {
+  const { data, error } = await supabase.rpc('get_user_context', {
     _auth_id: user.id,
   });
 

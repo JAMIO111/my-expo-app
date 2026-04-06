@@ -46,18 +46,24 @@ const CustomDropdown = ({
         <Pressable
           className="flex-1 justify-center bg-black/40 px-6"
           onPress={() => setOpen(false)}>
-          <View className="rounded-xl bg-bg-grouped-1 p-2">
+          <View className="rounded-xl bg-bg-1">
+            <View className="flex-row border-b border-theme-gray-3 px-4 py-3">
+              <Text className="flex-1 font-saira-medium text-xl text-text-1">{title}</Text>
+              <Ionicons name="close" size={24} color="#9CA3AF" onPress={() => setOpen(false)} />
+            </View>
             <FlatList
+              contentContainerStyle={{ gap: 8, padding: 12 }}
               data={options}
               keyExtractor={(item) => item.value}
               renderItem={({ item }) => (
                 <TouchableOpacity
                   onPress={() => {
-                    onChange(item.value);
+                    item.value === value ? onChange(null) : onChange(item.value);
                     setOpen(false);
                   }}
-                  className="rounded-lg px-4 py-3">
-                  <Text className="font-saira text-lg text-text-1">{item.label}</Text>
+                  className={`rounded-lg border bg-bg-2 px-4 py-2 shadow-sm ${item.value === value ? 'border-brand' : 'border-transparent'}`}>
+                  <Text className="font-saira-medium text-xl text-text-1">{item.label}</Text>
+                  {item.subLabel && <Text className="font-saira text-text-2">{item.subLabel}</Text>}
                 </TouchableOpacity>
               )}
             />

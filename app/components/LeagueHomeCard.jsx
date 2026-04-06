@@ -14,6 +14,8 @@ const LeagueHomeCard = ({ standings }) => {
   const { currentRole } = useUser();
   const hasNavigated = useRef(false);
 
+  console.log('Standings in LeagueHomeCard:', standings);
+
   const displayTeamIndex =
     currentRole?.role === 'admin'
       ? 0
@@ -43,6 +45,7 @@ const LeagueHomeCard = ({ standings }) => {
         <Text className="font-saira-medium text-2xl text-text-1">
           League Table{' '}
           {currentRole?.role === 'admin' &&
+            standings?.standings?.length > 0 &&
             `- ${currentRole?.competitions?.filter((comp) => comp.division_tier === 1)?.[0]?.name}`}
         </Text>
         <Ioconicons name="chevron-forward" size={20} color={themeColors?.icon} />

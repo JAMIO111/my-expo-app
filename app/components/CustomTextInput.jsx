@@ -16,6 +16,7 @@ const CustomTextInput = forwardRef((props, ref) => {
     clearButtonMode = 'while-editing',
     editable = true,
     maxLength,
+    maximumValue, // ✅ New prop
     returnKeyType = 'default',
     onSubmitEditing,
     autoComplete = 'off',
@@ -23,6 +24,25 @@ const CustomTextInput = forwardRef((props, ref) => {
     autoCorrect = false,
     textContentType = 'none',
   } = props;
+
+  // Handles numeric input enforcement
+  const handleTextChange = (text) => {
+    let newValue = text;
+
+    // If numeric keyboard, enforce digits only
+    if (keyboardType === 'numeric' || keyboardType === 'number-pad') {
+      newValue = newValue.replace(/[^0-9]/g, '');
+
+      if (maximumValue !== undefined) {
+        const num = parseInt(newValue, 10);
+        if (!isNaN(num) && num > maximumValue) {
+          newValue = '';
+        }
+      }
+    }
+
+    onChangeText && onChangeText(newValue);
+  };
 
   return (
     <View>
@@ -40,7 +60,7 @@ const CustomTextInput = forwardRef((props, ref) => {
           placeholder={placeholder}
           placeholderTextColor="#9CA3AF"
           value={value}
-          onChangeText={onChangeText}
+          onChangeText={handleTextChange}
           maxLength={maxLength}
           ref={ref}
           returnKeyType={returnKeyType}

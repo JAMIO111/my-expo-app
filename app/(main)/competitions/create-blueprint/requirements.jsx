@@ -4,12 +4,15 @@ import CustomHeader from '@components/CustomHeader';
 import SafeViewWrapper from '@components/SafeViewWrapper';
 import { ScrollView } from 'react-native-gesture-handler';
 import CTAButton from '@components/CTAButton';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useUser } from '@contexts/UserProvider';
 import CustomTextInput from '@components/CustomTextInput';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import Toast from 'react-native-toast-message';
+import CustomDropdown from '@components/CustomDropdown';
 
 const Requirements = () => {
+  const { currentRole } = useUser();
   const router = useRouter();
   const params = useLocalSearchParams();
   const [compName, setCompName] = useState('');
@@ -17,6 +20,28 @@ const Requirements = () => {
   const [minAge, setMinAge] = useState('');
   const [maxAge, setMaxAge] = useState('');
   const [gender, setGender] = useState('');
+  const [division, setDivision] = useState(null);
+
+  console.log('Selected Division:', division);
+
+  useEffect(() => {
+    setDivision(null);
+  }, [competitorType]);
+
+  const formattedDivisions =
+    currentRole?.divisions
+      ?.filter((div) => div.competitor_type === competitorType)
+      ?.sort((a, b) => {
+        // first by group_id ascending
+        if ((a.group_id ?? 0) !== (b.group_id ?? 0)) return (a.group_id ?? 0) - (b.group_id ?? 0);
+        // then by tier ascending
+        return a.tier - b.tier;
+      })
+      .map((div) => ({
+        label: div.name,
+        subLabel: `Tier ${div.tier}${div.group_id ? ` - ${div.group_name}` : ''}`,
+        value: div.id,
+      })) ?? [];
 
   const handleContinue = () => {
     if (!compName.trim()) {
@@ -37,7 +62,15 @@ const Requirements = () => {
     }
     router.push({
       pathname: '/competitions/create-blueprint/competition-rules',
-      params: { ...params, competitorType, compName, minAge, maxAge, gender },
+      params: {
+        ...params,
+        competitorType,
+        compName,
+        minAge,
+        maxAge,
+        gender,
+        division,
+      },
     });
   };
 
@@ -83,7 +116,7 @@ const Requirements = () => {
             <View className="flex-row gap-5">
               <Pressable
                 onPress={() => setCompetitorType('team')}
-                className={`flex-1 flex-row items-center gap-3 rounded-xl border-2 bg-bg-1 p-4 ${
+                className={`flex-1 flex-row items-center gap-3 rounded-xl border-2 bg-bg-1 p-4 py-3 ${
                   competitorType === 'team' ? 'border-theme-orange' : 'border-transparent'
                 }`}>
                 <Ionicons name="people" size={24} color="#FFA500" />
@@ -96,7 +129,7 @@ const Requirements = () => {
               </Pressable>
               <Pressable
                 onPress={() => setCompetitorType('individual')}
-                className={`flex-1 flex-row items-center gap-3 rounded-xl border-2 bg-bg-1 p-4 ${
+                className={`flex-1 flex-row items-center gap-3 rounded-xl border-2 bg-bg-1 p-4 py-3 ${
                   competitorType === 'individual' ? 'border-theme-purple' : 'border-transparent'
                 }`}>
                 <Ionicons name="person" size={24} color="#800080" />
@@ -145,11 +178,14 @@ const Requirements = () => {
               minimum age. For youth competitions, set the maximum age.
             </Text>
           </View>
-          <View className="gap-3">
+          <View className="gap-1">
+            <Text className="px-2 font-saira-medium text-xl text-text-on-brand">
+              Gender Requirement
+            </Text>
             <View className="flex-row gap-5">
               <Pressable
                 onPress={() => (gender === 'male' ? setGender(null) : setGender('male'))}
-                className={`flex-1 flex-row items-center gap-3 rounded-xl border-2 bg-bg-1 p-4 ${
+                className={`flex-1 flex-row items-center gap-3 rounded-xl border-2 bg-bg-1 p-4 py-3 ${
                   gender === 'male' ? 'border-theme-blue' : 'border-transparent'
                 }`}>
                 <Ionicons name="male" size={24} color="#007AFF" />
@@ -162,7 +198,7 @@ const Requirements = () => {
               </Pressable>
               <Pressable
                 onPress={() => (gender === 'female' ? setGender(null) : setGender('female'))}
-                className={`flex-1 flex-row items-center gap-3 rounded-xl border-2 bg-bg-1 p-4 ${
+                className={`flex-1 flex-row items-center gap-3 rounded-xl border-2 bg-bg-1 p-4 py-3 ${
                   gender === 'female' ? 'border-theme-pink' : 'border-transparent'
                 }`}>
                 <Ionicons name="female" size={24} color="#FF2D55" />
@@ -174,9 +210,26 @@ const Requirements = () => {
                 )}
               </Pressable>
             </View>
-            <Text className="px-2 font-saira text-xs text-text-on-brand-2">
+            <Text className="px-2 pt-2 font-saira text-xs text-text-on-brand-2">
               Set the gender requirement for the competition (optional). Leave unselected for mixed
               competitions.
+            </Text>
+          </View>
+          <View className="gap-3">
+            <CustomDropdown
+              title="Division Requirement"
+              leftIconName="ribbon"
+              iconColor="purple"
+              placeholder={
+                competitorType ? 'Select division (optional)' : 'Select competitor type first'
+              }
+              value={division}
+              onChange={setDivision}
+              options={formattedDivisions}
+              disabled={!competitorType}
+            />
+            <Text className="px-2 font-saira text-xs text-text-on-brand-2">
+              {`Only ${competitorType === 'individual' ? 'individuals' : 'teams'} in this division will be able to enter. Leave unselected for open competitions.`}
             </Text>
           </View>
           <CTAButton text="Continue" type="yellow" callbackFn={handleContinue} />

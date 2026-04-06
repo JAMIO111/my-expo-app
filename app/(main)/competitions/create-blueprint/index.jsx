@@ -80,8 +80,8 @@ const index = () => {
                 <View className="flex-1">
                   <Text className="font-saira-medium text-xl text-text-1">Knockout Blueprint</Text>
                   <Text className="mt-2 font-saira text-sm text-text-2">
-                    Create a blueprint for a straight knockout competition, including rounds, legs,
-                    and aggregate scoring.
+                    Create a blueprint for a straight knockout competition. Configure rounds, legs,
+                    bracket generation, and consolation matches.
                   </Text>
                 </View>
                 <Image
