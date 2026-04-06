@@ -1,14 +1,14 @@
 import { Pressable, StyleSheet, Text, View, useColorScheme, Platform, Alert } from 'react-native';
 import { useState, useRef } from 'react';
-import ModalWrappedDatePicker from '@components/ModalWrappedDatePicker';
 import CTAButton from '@components/CTAButton';
 import { useRouter, useLocalSearchParams, Stack } from 'expo-router';
 import StepPillGroup from '@components/StepPillGroup';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import BottomSheetWrapper from '@components/BottomSheetWrapper';
-import { BottomSheetFooter, BottomSheetScrollView, BottomSheetView } from '@gorhom/bottom-sheet';
+import { BottomSheetFooter, BottomSheetView } from '@gorhom/bottom-sheet';
 import colors from '@lib/colors';
 import DateTimePicker from '@react-native-community/datetimepicker';
+import Toast from 'react-native-toast-message';
 
 const Dob = () => {
   const [dob, setDob] = useState(null);
@@ -36,12 +36,12 @@ const Dob = () => {
     <>
       <Stack.Screen
         options={{
-          title: 'Step 3 of 4',
+          title: 'Step 3 of 5',
           headerBackTitle: 'Nickname',
         }}
       />
       <View className="flex-1 gap-3 bg-brand">
-        <StepPillGroup steps={4} currentStep={3} />
+        <StepPillGroup steps={5} currentStep={3} />
         <View className="p-4">
           <Text className="mb-4 font-delagothic text-5xl font-bold text-text-on-brand">{`When were you born ${params.firstName}?`}</Text>
           <Text className=" font-saira text-2xl text-text-on-brand-2">
@@ -74,11 +74,15 @@ const Dob = () => {
               text="Continue"
               callbackFn={() => {
                 if (!dob) {
-                  Alert.alert('Error', 'Please select your date of birth.');
+                  Toast.show({
+                    type: 'info',
+                    text1: 'Date of Birth Required',
+                    text2: 'Please select your date of birth.',
+                  });
                   return;
                 }
                 router.push({
-                  pathname: '/(main)/onboarding/(profile-onboarding)/avatar',
+                  pathname: '/(main)/onboarding/(profile-onboarding)/gender',
                   params: { ...params, dob },
                 });
               }}
@@ -92,7 +96,7 @@ const Dob = () => {
           footerComponent={(props) => (
             <BottomSheetFooter {...props}>
               <View
-                style={{ paddingBottom: 80 }}
+                style={{ paddingBottom: 140 }}
                 className="w-full rounded-t-3xl bg-bg-grouped-3 p-6">
                 <CTAButton text="Save" type="brand" callbackFn={handleSave} />
               </View>

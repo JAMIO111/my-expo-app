@@ -39,7 +39,6 @@ const index = () => {
                 rightIcon="settings-outline"
                 onRightPress={() => {
                   router.push(`/settings`);
-                  console.log('Settings button pressed');
                 }}
                 showBack={false}
                 title={currentRole?.district?.name || 'My League'}

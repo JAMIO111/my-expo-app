@@ -22,6 +22,7 @@ const ConfirmModal = ({
   bottomButtonType = 'success',
   topButtonFn = () => {},
   bottomButtonFn = () => {},
+  onAnimationEnd = () => {},
 }) => {
   const [showModal, setShowModal] = useState(visible);
 
@@ -32,13 +33,9 @@ const ConfirmModal = ({
     if (visible) {
       setShowModal(true);
       Animated.parallel([
-        Animated.timing(fadeAnim, {
-          toValue: 0.5, // target opacity
-          duration: 300,
-          useNativeDriver: true,
-        }),
+        Animated.timing(fadeAnim, { toValue: 0.5, duration: 300, useNativeDriver: true }),
         Animated.timing(slideAnim, {
-          toValue: 0, // move to final position
+          toValue: 0,
           duration: 300,
           easing: Easing.out(Easing.ease),
           useNativeDriver: true,
@@ -46,18 +43,17 @@ const ConfirmModal = ({
       ]).start();
     } else {
       Animated.parallel([
-        Animated.timing(fadeAnim, {
-          toValue: 0,
-          duration: 200,
-          useNativeDriver: true,
-        }),
+        Animated.timing(fadeAnim, { toValue: 0, duration: 200, useNativeDriver: true }),
         Animated.timing(slideAnim, {
           toValue: 300,
           duration: 200,
           easing: Easing.in(Easing.ease),
           useNativeDriver: true,
         }),
-      ]).start(() => setShowModal(false));
+      ]).start(() => {
+        setShowModal(false); // hide the modal
+        onAnimationEnd(); // notify parent that animation finished
+      });
     }
   }, [visible]);
 

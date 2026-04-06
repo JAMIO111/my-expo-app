@@ -7,7 +7,7 @@ import colors from '@lib/colors';
 
 const SeasonControlCard = ({ activeSeason, onStart, onEnd, loading }) => {
   const scale = useRef(new Animated.Value(1)).current;
-  const isOpen = !activeSeason;
+  const isOpen = !!activeSeason;
   const colorScheme = useColorScheme();
   const themeColors = colors[colorScheme] || colors.light; // Fallback to light theme if colorScheme is undefined
 

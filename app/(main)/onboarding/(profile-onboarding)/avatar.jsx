@@ -65,6 +65,7 @@ const Avatar = () => {
           first_name: params.firstName,
           surname: params.surname,
           nickname: params.nickname,
+          gender: params.gender,
           dob: params.dob
             ? (() => {
                 const d = new Date(params.dob);
@@ -74,6 +75,7 @@ const Avatar = () => {
                 return `${y}-${m}-${day}`;
               })()
             : null,
+
           avatar_url: avatarUrl,
           onboarding: 1,
           claimed: true,
@@ -104,11 +106,11 @@ const Avatar = () => {
     <>
       <Stack.Screen
         options={{
-          title: 'Step 4 of 4',
+          title: 'Step 5 of 5',
         }}
       />
       <View className="flex-1 gap-3 bg-brand">
-        <StepPillGroup steps={4} currentStep={4} />
+        <StepPillGroup steps={5} currentStep={5} />
         <View className="p-4">
           <Text
             style={{ lineHeight: 50 }}

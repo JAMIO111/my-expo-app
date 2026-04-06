@@ -94,7 +94,7 @@ const Season = () => {
         footerComponent={(props) => (
           <BottomSheetFooter {...props}>
             <View
-              style={{ paddingBottom: 80 }}
+              style={{ paddingBottom: 140 }}
               className="w-full gap-5 rounded-t-3xl bg-bg-grouped-3 p-6">
               <CTAButton
                 icon={<Ionicons name="swap-horizontal-outline" size={24} color="#fff" />}

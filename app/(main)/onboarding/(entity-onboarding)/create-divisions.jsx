@@ -498,7 +498,7 @@ export default function CreateDivisions() {
           footerComponent={(props) => (
             <BottomSheetFooter {...props}>
               <View
-                style={{ paddingBottom: 80 }}
+                style={{ paddingBottom: 140 }}
                 className="w-full rounded-t-3xl bg-bg-grouped-3 p-6">
                 <CTAButton
                   text={

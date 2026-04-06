@@ -236,7 +236,7 @@ const Account = () => {
         footerComponent={(props) => (
           <BottomSheetFooter {...props}>
             <View
-              style={{ paddingBottom: 160 }}
+              style={{ paddingBottom: 140 }}
               className="w-full rounded-t-3xl bg-bg-grouped-3 p-6">
               <CTAButton
                 text="Switch Role"

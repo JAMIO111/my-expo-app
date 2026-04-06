@@ -6,6 +6,7 @@ import CTAButton from '@components/CTAButton';
 import StepPillGroup from '@components/StepPillGroup';
 import CustomTextInput from '@components/CustomTextInput';
 import { useUser } from '@contexts/UserProvider';
+import Toast from 'react-native-toast-message';
 
 const Name = () => {
   const { user } = useUser();
@@ -31,13 +32,13 @@ const Name = () => {
     <>
       <Stack.Screen
         options={{
-          title: 'Step 1 of 4',
+          title: 'Step 1 of 5',
           headerBackTitle: 'Name',
         }}
       />
 
       <View className="flex-1 gap-3 bg-brand">
-        <StepPillGroup steps={4} currentStep={1} />
+        <StepPillGroup steps={5} currentStep={1} />
         <View className="p-5">
           <Text className="mb-4 font-delagothic text-5xl font-bold text-text-on-brand">
             What's your name?
@@ -86,7 +87,11 @@ const Name = () => {
               text="Continue"
               callbackFn={() => {
                 if (firstName.trim() === '' || surname.trim() === '') {
-                  Alert.alert('Error', 'Please enter both your first name and surname.');
+                  Toast.show({
+                    type: 'info',
+                    text1: 'Name Required',
+                    text2: 'Please enter both your first name and surname.',
+                  });
                   return;
                 }
                 router.push({

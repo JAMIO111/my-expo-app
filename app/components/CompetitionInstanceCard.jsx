@@ -44,11 +44,15 @@ export function getStatusColors(status) {
       return { background: '#00800033', text: '#008000', border: '#00800066' }; // Green
     case 'Ineligible':
       return { background: '#FF000033', text: '#FF0000', border: '#FF000066' }; // Red
+    case 'Closed':
+      return { background: '#FF000033', text: '#FF0000', border: '#FF000066' }; // Red
     case 'Entered':
       return { background: '#00800033', text: '#008000', border: '#00800066' }; // Green
     case 'active':
       return { background: '#0000FF22', text: '#0000FF', border: '#0000FF66' }; // Blue
     case 'upcoming':
+      return { background: '#FFA50022', text: '#ff9100', border: '#ff910066' }; // Orange
+    case 'Requested':
       return { background: '#FFA50022', text: '#ff9100', border: '#ff910066' }; // Orange
     case 'completed':
       return { background: '#80008033', text: '#800080', border: '#80008066' }; // Purple
@@ -58,23 +62,24 @@ export function getStatusColors(status) {
 }
 
 export function checkEligibility(player, instance, currentRole) {
+  const validParticipants = instance.CompetitionParticipants.filter(
+    (p) => p.status !== 'left' && p.status !== 'cancelled'
+  );
+
   if (!player || !instance) return 'Ineligible';
 
   const { dob, gender } = player;
   const division = instance.division_id;
 
   // Already entered
-  if (
-    instance.competition.competitor_type === 'team' &&
-    instance.CompetitionParticipants?.some((p) => p.team_id === currentRole?.team?.id)
-  ) {
-    return 'Entered';
-  }
-  if (
-    instance.competition.competitor_type === 'individual' &&
-    instance.CompetitionParticipants?.some((p) => p.player_id === player.id)
-  ) {
-    return 'Entered';
+  const participant =
+    instance.competition.competitor_type === 'team'
+      ? validParticipants?.find((p) => p.team_id === currentRole?.team?.id)
+      : validParticipants?.find((p) => p.player_id === player.id);
+
+  if (participant) {
+    if (participant.status === 'requested') return 'Requested';
+    if (participant.status === 'active') return 'Entered';
   }
 
   // Division check
@@ -104,7 +109,7 @@ export function checkEligibility(player, instance, currentRole) {
   if (instance.entry_deadline) {
     const entryDeadline = new Date(instance.entry_deadline);
     if (!isNaN(entryDeadline) && new Date() > entryDeadline) {
-      return 'Ineligible';
+      return 'Closed';
     }
   }
 
@@ -133,7 +138,7 @@ const CompetitionInstanceCard = ({ instance }) => {
         router.push(`/competitions/${instance.id}`);
       }}
       key={instance.id}
-      className="relative rounded-2xl bg-bg-2 shadow-md">
+      className="relative rounded-2xl bg-bg-1 shadow-md">
       <View className="p-4">
         <Text className="font-saira-medium text-2xl text-text-1">{instance.name}</Text>
         <Text className="font-saira text-lg text-text-2">
@@ -176,7 +181,7 @@ const CompetitionInstanceCard = ({ instance }) => {
           <View className="flex-row items-center justify-center gap-2">
             <Ionicons name="people-outline" size={20} color="#666" />
             <Text className="mt-1 font-saira text-xl text-text-2">
-              {instance.CompetitionParticipants.length}
+              {instance.CompetitionParticipants.filter((p) => p.status === 'active').length}
             </Text>
           </View>
           {instance.gender === 'male' && <Ionicons name="male" size={20} color="#0085E5" />}
@@ -197,28 +202,31 @@ const CompetitionInstanceCard = ({ instance }) => {
           </Text>
         </View>
       </View>
-      {(instance.status === 'upcoming' || eligibility === 'Entered') && (
-        <View
-          style={{
-            backgroundColor: eligibilityColors.background,
-            borderColor: eligibilityColors.border,
-            borderWidth: 1,
-          }}
-          className="absolute right-3 top-3 w-fit flex-row items-center justify-center gap-1 rounded-xl px-3 py-1">
-          <Ionicons
-            name={
-              eligibility === 'Ineligible' ? 'close-circle-outline' : 'checkmark-circle-outline'
-            }
-            size={16}
-            color={eligibilityColors.text}
-          />
-          <Text
-            style={{ color: eligibilityColors.text }}
-            className="text-md text-center font-saira-medium">
-            {eligibility}
-          </Text>
-        </View>
-      )}
+      {(instance.status === 'upcoming' || eligibility === 'Entered') &&
+        currentRole?.role !== 'admin' && (
+          <View
+            style={{
+              backgroundColor: eligibilityColors.background,
+              borderColor: eligibilityColors.border,
+              borderWidth: 1,
+            }}
+            className="absolute right-3 top-3 w-fit flex-row items-center justify-center gap-1 rounded-xl px-3 py-1">
+            <Ionicons
+              name={
+                eligibility === 'Ineligible' || eligibility === 'Closed'
+                  ? 'close-circle-outline'
+                  : 'checkmark-circle-outline'
+              }
+              size={16}
+              color={eligibilityColors.text}
+            />
+            <Text
+              style={{ color: eligibilityColors.text }}
+              className="text-md text-center font-saira-medium">
+              {eligibility}
+            </Text>
+          </View>
+        )}
     </Pressable>
   );
 };
