@@ -29,7 +29,7 @@ const RoleSelect = () => {
           This will determine what features and content you have access to and what information is
           shown.
         </Text>
-        <ScrollView className="py-3">
+        <ScrollView className="px-2 py-3">
           {roles?.map((role, index) => (
             <Pressable
               key={index}
@@ -37,12 +37,12 @@ const RoleSelect = () => {
                 setCurrentRole(role);
                 router.replace('/(main)/home');
               }}>
-              <View className="mb-3 flex-row items-center justify-between gap-2 rounded-2xl border border-theme-gray-4 bg-bg-grouped-2 px-4 py-3 shadow-md shadow-theme-gray-5">
+              <View className="mb-3 flex-row items-center justify-between gap-2 rounded-2xl border border-theme-gray-5 bg-bg-grouped-2 px-4 py-3 shadow-sm shadow-theme-gray-5">
                 <View className="flex-1">
                   <Text
                     numberOfLines={1}
                     ellipsizeMode="tail"
-                    className="font-saira-bold text-2xl text-text-1">
+                    className="font-saira-semibold text-2xl text-text-1">
                     {role.team?.display_name || role.district?.name}
                   </Text>
                   <Text

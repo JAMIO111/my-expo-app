@@ -30,7 +30,11 @@ const DonutChart = ({
 
         <View className="absolute items-center justify-center">
           <Text className="font-saira-semibold text-2xl text-text-1">0</Text>
-          <Text className="px-6 text-center text-sm text-text-2">No matches yet</Text>
+          <Text
+            style={{ lineHeight: 18 }}
+            className="px-6 text-center font-saira-medium text-sm text-text-2">
+            No matches yet
+          </Text>
         </View>
       </View>
     );
@@ -85,7 +89,11 @@ const DonutChart = ({
 
       <View className="absolute inset-0 items-center justify-center">
         <Text className="font-saira-semibold text-2xl text-text-1">{total}</Text>
-        <Text className="text-md px-8 text-center text-text-2">{statTitle}</Text>
+        <Text
+          style={{ lineHeight: 18 }}
+          className="text-md px-8 text-center font-saira-medium text-text-2">
+          {statTitle}
+        </Text>
       </View>
     </View>
   );

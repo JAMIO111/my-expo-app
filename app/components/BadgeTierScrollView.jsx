@@ -13,7 +13,7 @@ const BadgeTierScrollView = ({ selectedBadge, currentValue = 15 }) => {
 
   const data = Array.isArray(selectedBadge.meta_data) ? selectedBadge.meta_data : [];
 
-  const initialOffset = screenWidth / 2 - cardWidth / 2 - 53;
+  const initialOffset = screenWidth / 2 - cardWidth / 2 - 40; // Center first item
 
   const contentWidth = (cardWidth + gap) * data.length + initialOffset * 2;
   const maxScroll = contentWidth - screenWidth;
@@ -46,7 +46,7 @@ const BadgeTierScrollView = ({ selectedBadge, currentValue = 15 }) => {
   const progress = maxScroll > 0 ? Math.min(scrollX / maxScroll, 1) : 0;
 
   return (
-    <View style={{ width: '100%', paddingHorizontal: 16 }}>
+    <View style={{ width: '100%' }}>
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
@@ -108,6 +108,7 @@ const BadgeTierScrollView = ({ selectedBadge, currentValue = 15 }) => {
       <View
         style={{
           marginTop: 8,
+          padding: 20,
           flexDirection: 'row',
           alignItems: 'center',
         }}>

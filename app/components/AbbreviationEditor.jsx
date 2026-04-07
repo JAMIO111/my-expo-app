@@ -20,7 +20,7 @@ const AbbreviationEditor = () => {
       const { data, error } = await supabase
         .from('Teams')
         .select('abbreviation, division(id, district(id))')
-        .eq('division.district.id', currentRole?.team?.division?.district?.id);
+        .eq('division.district.id', currentRole?.district?.id);
 
       if (error) {
         console.error('Error fetching abbreviations:', error);
@@ -37,10 +37,10 @@ const AbbreviationEditor = () => {
       setTakenAbbreviations(filtered);
     };
 
-    if (currentRole?.team?.division?.district?.id) {
+    if (currentRole?.district?.id) {
       fetchTakenAbbreviations();
     }
-  }, [currentRole?.team?.division?.district?.id]);
+  }, [currentRole?.district?.id]);
 
   const handleSave = async () => {
     const { error } = await supabase.rpc('log_and_update_changes', {

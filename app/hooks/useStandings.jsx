@@ -4,8 +4,14 @@ import { supabase } from '@/lib/supabase';
 export function useStandings(divisionId, seasonId) {
   return useQuery({
     queryKey: ['Standings', divisionId, seasonId],
+    enabled: !!divisionId && !!seasonId,
+    staleTime: 30 * 60 * 1000,
+    cacheTime: 60 * 60 * 1000,
+
     queryFn: async () => {
-      if (!divisionId || !seasonId) throw new Error('divisionId and seasonId are required');
+      if (!divisionId || !seasonId) {
+        throw new Error('divisionId and seasonId are required');
+      }
 
       // 1. Division config
       const { data: seasonDivisionData, error: seasonDivisionError } = await supabase
@@ -13,11 +19,12 @@ export function useStandings(divisionId, seasonId) {
         .select('*')
         .eq('division', divisionId)
         .single();
+
       if (seasonDivisionError) throw seasonDivisionError;
 
       const competitorType = seasonDivisionData?.competitor_type || 'team';
 
-      // 2. Competitiors
+      // 2. Competitors
       let competitors = [];
 
       if (competitorType === 'team') {
@@ -48,44 +55,7 @@ export function useStandings(divisionId, seasonId) {
         }));
       }
 
-      // 3. Fixtures
-      const { data: fixtures, error: fixturesError } = await supabase
-        .from('Fixtures')
-        .select(
-          `
-          id,
-          competitor_type,
-          home_team(id, display_name, crest),
-          away_team(id, display_name, crest),
-          home_player(id, first_name, surname),
-          away_player(id, first_name, surname)
-        `
-        )
-        .eq('division', divisionId)
-        .eq('season', seasonId)
-        .eq('is_complete', true)
-        .eq('approved', true)
-        .eq('competitor_type', competitorType);
-      if (fixturesError) throw fixturesError;
-
-      const fixtureIds = fixtures.map((f) => f.id);
-      if (!fixtureIds.length) return { division: seasonDivisionData, standings: [] };
-
-      // 4. Frames
-      const { data: frames, error: framesError } = await supabase
-        .from('Results')
-        .select('*')
-        .in('fixture_id', fixtureIds);
-      if (framesError) throw framesError;
-
-      // 5. Pre-index frames by fixture
-      const framesByFixture = {};
-      frames.forEach((f) => {
-        if (!framesByFixture[f.fixture_id]) framesByFixture[f.fixture_id] = [];
-        framesByFixture[f.fixture_id].push(f);
-      });
-
-      // 6. Initialise standings
+      // 3. Initialise standings map (ALL start at 0)
       const standingsMap = {};
 
       competitors.forEach((c) => {
@@ -104,128 +74,187 @@ export function useStandings(divisionId, seasonId) {
         };
       });
 
-      // 7. Apply fixture results
+      // 4. Fixtures
+      const { data: fixtures, error: fixturesError } = await supabase
+        .from('Fixtures')
+        .select(
+          `
+          id,
+          competitor_type,
+          home_team(id, display_name, crest),
+          away_team(id, display_name, crest),
+          home_player(id, first_name, surname),
+          away_player(id, first_name, surname)
+        `
+        )
+        .eq('division', divisionId)
+        .eq('season', seasonId)
+        .eq('is_complete', true)
+        .eq('approved', true)
+        .eq('competitor_type', competitorType);
+
+      if (fixturesError) throw fixturesError;
+
+      const fixtureIds = fixtures.map((f) => f.id);
+
+      // 👉 If NO fixtures → return all 0 standings
+      if (!fixtureIds.length) {
+        const standings = Object.values(standingsMap)
+          .sort((a, b) => a.display_name.localeCompare(b.display_name))
+          .map((t, index) => ({
+            ...t,
+            position: index + 1,
+          }));
+
+        return formatResponse(seasonDivisionData, standings);
+      }
+
+      // 5. Frames
+      const { data: frames, error: framesError } = await supabase
+        .from('Results')
+        .select('*')
+        .in('fixture_id', fixtureIds);
+
+      if (framesError) throw framesError;
+
+      // 6. Group frames by fixture
+      const framesByFixture = {};
+      frames.forEach((f) => {
+        if (!framesByFixture[f.fixture_id]) {
+          framesByFixture[f.fixture_id] = [];
+        }
+        framesByFixture[f.fixture_id].push(f);
+      });
+
+      // 7. Apply results
+      const scoringSystem = seasonDivisionData?.scoring_system || 'frames_won';
+
       fixtures.forEach((fixture) => {
         const home = fixture.competitor_type === 'team' ? fixture.home_team : fixture.home_player;
+
         const away = fixture.competitor_type === 'team' ? fixture.away_team : fixture.away_player;
+
         if (!home || !away) return;
 
         const fixtureFrames = framesByFixture[fixture.id] || [];
+
         let homeFrames = 0;
         let awayFrames = 0;
 
         fixtureFrames.forEach((fr) => {
-          if (!fr.winner_side) return;
-
-          // Increment frame counts based on winner_side
           if (fr.winner_side === 'home') homeFrames++;
-          else if (fr.winner_side === 'away') awayFrames++;
+          if (fr.winner_side === 'away') awayFrames++;
         });
 
-        standingsMap[home.id].frames_for += homeFrames;
-        standingsMap[home.id].frames_against += awayFrames;
+        const homeRow = standingsMap[home.id];
+        const awayRow = standingsMap[away.id];
 
-        standingsMap[away.id].frames_for += awayFrames;
-        standingsMap[away.id].frames_against += homeFrames;
+        if (!homeRow || !awayRow) return;
 
-        standingsMap[home.id].played += 1;
-        standingsMap[away.id].played += 1;
+        // basic stats
+        homeRow.frames_for += homeFrames;
+        homeRow.frames_against += awayFrames;
 
-        const scoringSystem = seasonDivisionData?.scoring_system || 'frames_won';
+        awayRow.frames_for += awayFrames;
+        awayRow.frames_against += homeFrames;
 
-        // POINTS SYSTEM
+        homeRow.played++;
+        awayRow.played++;
+
+        // scoring systems
         if (scoringSystem === 'points') {
           const win = seasonDivisionData?.points_for_win ?? 3;
           const draw = seasonDivisionData?.points_for_draw ?? 1;
           const loss = seasonDivisionData?.points_for_loss ?? 0;
 
           if (homeFrames > awayFrames) {
-            standingsMap[home.id].won++;
-            standingsMap[away.id].lost++;
-            standingsMap[home.id].points += win;
-            standingsMap[away.id].points += loss;
+            homeRow.won++;
+            awayRow.lost++;
+            homeRow.points += win;
+            awayRow.points += loss;
           } else if (awayFrames > homeFrames) {
-            standingsMap[away.id].won++;
-            standingsMap[home.id].lost++;
-            standingsMap[away.id].points += win;
-            standingsMap[home.id].points += loss;
+            awayRow.won++;
+            homeRow.lost++;
+            awayRow.points += win;
+            homeRow.points += loss;
           } else {
-            standingsMap[home.id].drawn++;
-            standingsMap[away.id].drawn++;
-            standingsMap[home.id].points += draw;
-            standingsMap[away.id].points += draw;
+            homeRow.drawn++;
+            awayRow.drawn++;
+            homeRow.points += draw;
+            awayRow.points += draw;
           }
-        }
-
-        // FRAMES WON SYSTEM
-        else if (scoringSystem === 'frames_won') {
-          standingsMap[home.id].points += homeFrames;
-          standingsMap[away.id].points += awayFrames;
+        } else if (scoringSystem === 'frames_won') {
+          homeRow.points += homeFrames;
+          awayRow.points += awayFrames;
 
           if (homeFrames > awayFrames) {
-            standingsMap[home.id].won++;
-            standingsMap[away.id].lost++;
+            homeRow.won++;
+            awayRow.lost++;
           } else if (awayFrames > homeFrames) {
-            standingsMap[away.id].won++;
-            standingsMap[home.id].lost++;
+            awayRow.won++;
+            homeRow.lost++;
           } else {
-            standingsMap[home.id].drawn++;
-            standingsMap[away.id].drawn++;
+            homeRow.drawn++;
+            awayRow.drawn++;
           }
-        }
-
-        // FRAME DIFFERENCE SYSTEM
-        else if (scoringSystem === 'frame_diff') {
+        } else if (scoringSystem === 'frame_diff') {
           const diff = Math.abs(homeFrames - awayFrames);
 
           if (homeFrames > awayFrames) {
-            standingsMap[home.id].points += diff;
-            standingsMap[home.id].won++;
-            standingsMap[away.id].lost++;
+            homeRow.points += diff;
+            homeRow.won++;
+            awayRow.lost++;
           } else if (awayFrames > homeFrames) {
-            standingsMap[away.id].points += diff;
-            standingsMap[away.id].won++;
-            standingsMap[home.id].lost++;
+            awayRow.points += diff;
+            awayRow.won++;
+            homeRow.lost++;
           } else {
-            standingsMap[home.id].drawn++;
-            standingsMap[away.id].drawn++;
+            homeRow.drawn++;
+            awayRow.drawn++;
           }
         }
       });
 
-      // 8. Compute frame_diff
+      // 8. Finalise standings
       const standings = Object.values(standingsMap).map((t) => ({
         ...t,
         frame_diff: t.frames_for - t.frames_against,
       }));
 
-      // 9. Sorting
-      const sortOrder = ['points', 'won', 'frame_diff'];
-      const sortedStandings = standings
+      // 9. Sort
+      const sorted = standings
         .sort((a, b) => {
-          for (const key of sortOrder) if (b[key] !== a[key]) return b[key] - a[key];
-          return 0;
-        })
-        .map((t, index) => ({ ...t, position: index + 1 })); // <-- position added
+          if (b.points !== a.points) return b.points - a.points;
+          if (b.frame_diff !== a.frame_diff) return b.frame_diff - a.frame_diff;
+          if (b.frames_for !== a.frames_for) return b.frames_for - a.frames_for;
 
-      return {
-        division: {
-          id: seasonDivisionData?.division,
-          name: seasonDivisionData?.division_name,
-          promotion_spots: seasonDivisionData?.promotion_spots,
-          relegation_spots: seasonDivisionData?.relegation_spots,
-          special_match: seasonDivisionData?.special_match,
-          draws_allowed: seasonDivisionData?.draws_allowed,
-          scoring_system: seasonDivisionData?.scoring_system,
-          points_for_win: seasonDivisionData?.points_for_win,
-          points_for_draw: seasonDivisionData?.points_for_draw,
-          points_for_loss: seasonDivisionData?.points_for_loss,
-        },
-        standings: sortedStandings,
-      };
+          return a.display_name.localeCompare(b.display_name);
+        })
+        .map((t, index) => ({
+          ...t,
+          position: index + 1,
+        }));
+
+      return formatResponse(seasonDivisionData, sorted);
     },
-    enabled: !!divisionId && !!seasonId,
-    staleTime: 30 * 60 * 1000,
-    cacheTime: 60 * 60 * 1000,
   });
+}
+
+// helper to keep things clean
+function formatResponse(division, standings) {
+  return {
+    division: {
+      id: division?.division,
+      name: division?.division_name,
+      promotion_spots: division?.promotion_spots,
+      relegation_spots: division?.relegation_spots,
+      special_match: division?.special_match,
+      draws_allowed: division?.draws_allowed,
+      scoring_system: division?.scoring_system,
+      points_for_win: division?.points_for_win,
+      points_for_draw: division?.points_for_draw,
+      points_for_loss: division?.points_for_loss,
+    },
+    standings,
+  };
 }

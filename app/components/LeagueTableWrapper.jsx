@@ -69,13 +69,6 @@ const LeagueTableWrapper = ({ context }) => {
     error: districtsError,
   } = useDistricts();
 
-  // Fetch divisions by district id
-  const {
-    data: divisions = [],
-    isLoading: isDivisionsLoading,
-    error: divisionsError,
-  } = useDivisions(district?.id);
-
   // Fetch seasons by district id
   const {
     data: seasons = [],
@@ -92,7 +85,7 @@ const LeagueTableWrapper = ({ context }) => {
   // When district changes: reset division + season, fetch active season object
   useEffect(() => {
     if (!district) {
-      setDivision(null);
+      setCompetitionInstance(null);
       setSeason(null);
       return;
     }
@@ -100,20 +93,15 @@ const LeagueTableWrapper = ({ context }) => {
     const init = async () => {
       const active = await getActiveSeason(district?.id); // assume returns full season object
       setSeason(active);
+      setTempSeason(active);
     };
 
-    setDivision(null);
+    setCompetitionInstance(null);
+    setTempCompetitionInstance(null);
+    setTempSeason(null);
     setSeason(null);
     init();
   }, [district]);
-
-  // When divisions load, set default division if none selected yet
-  useEffect(() => {
-    if (divisions.length && defaultDivision && !division) {
-      const found = divisions.find((d) => d.id === defaultDivision.id);
-      if (found) setDivision(found);
-    }
-  }, [divisions, defaultDivision, division]);
 
   // When seasons load, set default season if none selected yet
   useEffect(() => {
@@ -124,23 +112,12 @@ const LeagueTableWrapper = ({ context }) => {
   }, [seasons, defaultSeason, season]);
 
   // Loading or error fallback
-  if (
-    isDistrictsLoading ||
-    isDivisionsLoading ||
-    isSeasonsLoading ||
-    isCompetitionInstancesLoading
-  ) {
+  if (isDistrictsLoading || isSeasonsLoading || isCompetitionInstancesLoading) {
     return <LoadingScreen />;
   }
 
-  if (districtsError || divisionsError || seasonsError || competitionInstancesError) {
-    console.error(
-      'Error loading data:',
-      districtsError,
-      divisionsError,
-      seasonsError,
-      competitionInstancesError
-    );
+  if (districtsError || seasonsError || competitionInstancesError) {
+    console.error('Error loading data:', districtsError, seasonsError, competitionInstancesError);
     return <Text>Error loading data</Text>;
   }
 
@@ -186,13 +163,6 @@ const LeagueTableWrapper = ({ context }) => {
             />
           </View>
           <View className="flex-row gap-3">
-            <DropdownFilterButton
-              text={division?.name || 'Select Division'}
-              callbackFn={() => {
-                setActiveFilter('division');
-                openSheet();
-              }}
-            />
             <DropdownFilterButton
               text={competitionInstance?.name || 'Select Competition'}
               callbackFn={() => {

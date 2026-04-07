@@ -10,9 +10,8 @@ import {
 } from 'react-native';
 import { useState } from 'react';
 import { badgeIcons } from '@lib/badgeIcons';
-import CTAButton from '@components/CTAButton';
-import { ScrollView } from 'react-native-gesture-handler';
 import BadgeTierScrollView from './BadgeTierScrollView';
+import Ionicons from 'react-native-vector-icons/Ionicons';
 
 const NUM_COLUMNS = 3;
 const ITEM_MARGIN = 10;
@@ -97,19 +96,21 @@ const BadgeList = ({ badges }) => {
         visible={modalVisible}
         onRequestClose={closeModal}>
         <View style={styles.modalOverlay}>
-          <View className="border border-theme-gray-5 bg-bg-grouped-2" style={styles.modalContent}>
-            <View className="mb-8 w-full">
-              <Text className="w-full rounded-xl bg-theme-gray-3 p-2 pt-4 text-center font-saira-medium text-3xl text-text-1">
+          <View
+            className="overflow-hidden border border-theme-gray-5 bg-bg-grouped-2"
+            style={styles.modalContent}>
+            <View className="mb-8 w-full flex-row items-center justify-between border-b border-theme-gray-4 bg-bg-2 px-3">
+              <Text className="flex-1 p-2 pt-4 text-center font-saira-medium text-3xl text-text-1">
                 {selectedBadge?.key
                   .split('-')
                   .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
                   .join(' ')}
               </Text>
+              <Pressable onPress={closeModal} className="">
+                <Ionicons name="close" size={32} color="#555" />
+              </Pressable>
             </View>
             <BadgeTierScrollView selectedBadge={selectedBadge} />
-            <View className="mt-6 w-full">
-              <CTAButton text="Dismiss" type="success" callbackFn={closeModal} />
-            </View>
           </View>
         </View>
       </Modal>
@@ -163,7 +164,6 @@ const styles = StyleSheet.create({
   },
   modalContent: {
     borderRadius: 16,
-    padding: 10,
     alignItems: 'center',
     width: '100%',
     height: 'auto',

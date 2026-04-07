@@ -73,9 +73,9 @@ const DivisionAccordion = ({ isExpanded, onPress, divisionName, teams = [] }) =>
                 <View className="gap-3">
                   <View className="mt-3 gap-2 rounded-2xl bg-bg-grouped-2 p-3">
                     {isLoading ? (
-                      <Text className="text-text-2">Loading players...</Text>
+                      <Text className="font-saira text-text-2">Loading players...</Text>
                     ) : !teamPlayers || teamPlayers?.length === 0 ? (
-                      <Text className="text-text-2">No players assigned.</Text>
+                      <Text className="font-saira text-text-2">No players assigned.</Text>
                     ) : (
                       teamPlayers?.map((player) => (
                         <View key={player.id} className="flex-row items-center gap-3">
@@ -107,12 +107,6 @@ const DivisionAccordion = ({ isExpanded, onPress, divisionName, teams = [] }) =>
                       ))
                     )}
                   </View>
-                  <CTAButton
-                    type="brand"
-                    text="View Team Profile"
-                    callbackFn={() => router.push(`/my-leagues/${team.id}/team-profile`)}
-                    className="mt-3"
-                  />
                   <CTAButton
                     type="yellow"
                     text="Manage Team"

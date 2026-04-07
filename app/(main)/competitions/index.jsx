@@ -66,26 +66,28 @@ const index = () => {
                 </View>
                 <Ionicons name="construct" size={40} color="#0084ff" />
               </Pressable>
-              <Pressable
-                onPress={() => {
-                  if (hasNavigated.current) return;
-                  hasNavigated.current = true;
-                  setTimeout(() => {
-                    hasNavigated.current = false;
-                  }, 500); // Reset navigation state after 500ms
-                  router.push('/competitions/initiate-competition');
-                }}
-                className="flex-1 flex-row gap-8 rounded-2xl bg-bg-1 p-4">
-                <View className="flex-1">
-                  <Text className="font-saira-medium text-xl text-text-1">
-                    Initiate Competition
-                  </Text>
-                  <Text className="text-md mt-2 font-saira text-text-2">
-                    Initiate a new instance of a competition from an existing template.
-                  </Text>
-                </View>
-                <Ionicons name="play-circle" size={40} color="#209e00" />
-              </Pressable>
+              {currentRole?.activeSeason && (
+                <Pressable
+                  onPress={() => {
+                    if (hasNavigated.current) return;
+                    hasNavigated.current = true;
+                    setTimeout(() => {
+                      hasNavigated.current = false;
+                    }, 500); // Reset navigation state after 500ms
+                    router.push('/competitions/initiate-competition');
+                  }}
+                  className="flex-1 flex-row gap-8 rounded-2xl bg-bg-1 p-4">
+                  <View className="flex-1">
+                    <Text className="font-saira-medium text-xl text-text-1">
+                      Initiate Competition
+                    </Text>
+                    <Text className="text-md mt-2 font-saira text-text-2">
+                      Initiate a new instance of a competition from an existing template.
+                    </Text>
+                  </View>
+                  <Ionicons name="play-circle" size={40} color="#209e00" />
+                </Pressable>
+              )}
             </View>
           )}
           {activeCompetitions?.length > 0 && (

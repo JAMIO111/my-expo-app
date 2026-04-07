@@ -36,7 +36,7 @@ const EntityStats = ({ entityId, entityType }) => {
           <View className="flex-1 gap-3 pl-8 pr-2">
             <View className="flex flex-row items-center gap-2">
               <View className="h-3 w-3 rounded-full bg-green-700"></View>
-              <Text className="flex-1 text-lg text-text-2">Won</Text>
+              <Text className="flex-1 font-saira-medium text-lg text-text-2">Won</Text>
               <Text className="pr-4 font-saira-semibold text-2xl text-text-1">
                 {data?.totalStats?.frames_won ?? 0}
               </Text>
@@ -44,7 +44,7 @@ const EntityStats = ({ entityId, entityType }) => {
             <View className="border-b border-theme-gray-5"></View>
             <View className="flex flex-row items-center gap-2">
               <View className="h-3 w-3 rounded-full bg-yellow-500"></View>
-              <Text className="flex-1 text-lg text-text-2">Drawn</Text>
+              <Text className="flex-1 font-saira-medium text-lg text-text-2">Drawn</Text>
               <Text className="pr-4 font-saira-semibold text-2xl text-text-1">
                 {data?.totalStats?.frames_drawn ?? 0}
               </Text>
@@ -52,7 +52,7 @@ const EntityStats = ({ entityId, entityType }) => {
             <View className="border-b border-theme-gray-5"></View>
             <View className="flex flex-row items-center gap-2">
               <View className="h-3 w-3 rounded-full bg-red-500"></View>
-              <Text className="flex-1 text-lg text-text-2">Lost</Text>
+              <Text className="flex-1 font-saira-medium text-lg text-text-2">Lost</Text>
               <Text className="pr-4 font-saira-semibold text-2xl text-text-1">
                 {data?.totalStats?.frames_lost ?? 0}
               </Text>
@@ -106,7 +106,7 @@ const EntityStats = ({ entityId, entityType }) => {
           <View className="flex-1 gap-3 pl-8 pr-2">
             <View className="flex flex-row items-center gap-2">
               <View className="h-3 w-3 rounded-full bg-green-700"></View>
-              <Text className="flex-1 text-lg text-text-2">Won</Text>
+              <Text className="flex-1 font-saira-medium text-lg text-text-2">Won</Text>
               <Text className="pr-4 font-saira-semibold text-2xl text-text-1">
                 {data?.totalStats?.matches_won ?? 0}
               </Text>
@@ -114,7 +114,7 @@ const EntityStats = ({ entityId, entityType }) => {
             <View className="border-b border-theme-gray-5"></View>
             <View className="flex flex-row items-center gap-2">
               <View className="h-3 w-3 rounded-full bg-yellow-500"></View>
-              <Text className="flex-1 text-lg text-text-2">Drawn</Text>
+              <Text className="flex-1 font-saira-medium text-lg text-text-2">Drawn</Text>
               <Text className="pr-4 font-saira-semibold text-2xl text-text-1">
                 {data?.totalStats?.matches_drawn ?? 0}
               </Text>
@@ -122,7 +122,7 @@ const EntityStats = ({ entityId, entityType }) => {
             <View className="border-b border-theme-gray-5"></View>
             <View className="flex flex-row items-center gap-2">
               <View className="h-3 w-3 rounded-full bg-red-500"></View>
-              <Text className="flex-1 text-lg text-text-2">Lost</Text>
+              <Text className="flex-1 font-saira-medium text-lg text-text-2">Lost</Text>
               <Text className="pr-4 font-saira-semibold text-2xl text-text-1">
                 {data?.totalStats?.matches_lost ?? 0}
               </Text>

@@ -82,7 +82,7 @@ const Team = () => {
                 setIsLeavingTeam(true);
                 const { error } = await supabase
                   .from('TeamPlayers')
-                  .delete()
+                  .update({ left_at: new Date().toISOString(), status: 'left' })
                   .eq('player_id', player.id)
                   .eq('team_id', currentRole?.team?.id);
 
