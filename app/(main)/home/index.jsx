@@ -17,6 +17,7 @@ import PendingResultCard from '@components/PendingResultCard';
 import AwaitingResultCard from '@components/AwaitingResultCard';
 import { useResultsPendingApproval } from '@hooks/useResultsPendingApproval';
 import { useFixturesAwaitingResults } from '@hooks/useFixturesAwaitingResults';
+import { useDisputedFixtures } from '@hooks/useDisputedFixtures';
 import { supabase } from '@/lib/supabase';
 import BrandHeader from '@components/BrandHeader';
 import HomeScreenCardLarge from '@components/HomeScreenCardLarge';
@@ -92,6 +93,33 @@ const Home = () => {
     ...(teamResultsPendingApproval || []),
     ...(playerResultsPendingApproval || []),
   ].sort((a, b) => new Date(b.date_time) - new Date(a.date_time)); // sort by date descending
+
+  const {
+    data: teamDisputedFixtures,
+    isLoading: isTeamDisputedFixturesLoading,
+    refetch: teamDisputedFixturesRefetch,
+  } = useDisputedFixtures({
+    competitorId: currentRole?.team?.id,
+    competitorType: 'team',
+    enabled: !!currentRole?.team?.id,
+  });
+
+  const {
+    data: playerDisputedFixtures,
+    isLoading: isPlayerDisputedFixturesLoading,
+    refetch: playerDisputedFixturesRefetch,
+  } = useDisputedFixtures({
+    competitorId: player?.id,
+    competitorType: 'player',
+    enabled: !!player?.id,
+  });
+
+  const disputedFixtures = [
+    ...(teamDisputedFixtures || []),
+    ...(playerDisputedFixtures || []),
+  ].sort((a, b) => new Date(b.date_time) - new Date(a.date_time)); // sort by date descending
+
+  console.log('All Disputed Fixtures:', disputedFixtures);
 
   const {
     data: teamFixturesAwaitingResults,
@@ -220,6 +248,15 @@ const Home = () => {
               {(currentRole?.team?.captain === player?.id ||
                 currentRole?.team?.vice_captain === player?.id) && (
                 <View className="w-full bg-bg-grouped-1">
+                  {disputedFixtures &&
+                    disputedFixtures.length > 0 &&
+                    disputedFixtures.map((fixture) => (
+                      <PendingResultCard
+                        key={fixture.id}
+                        fixture={fixture}
+                        refetch={teamResultsPendingApprovalRefetch}
+                      />
+                    ))}
                   {resultsPendingApproval &&
                     resultsPendingApproval.length > 0 &&
                     resultsPendingApproval.map((fixture) => (

@@ -1,13 +1,13 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 
-export function useResultsPendingApproval({
+export function useDisputedFixtures({
   competitorId,
   competitorType, // 'team' | 'player'
   enabled = true,
 }) {
   return useQuery({
-    queryKey: ['ResultsPendingApproval', competitorId, competitorType],
+    queryKey: ['DisputedFixtures', competitorId, competitorType],
     queryFn: async () => {
       let query = supabase
         .from('Fixtures')
@@ -21,13 +21,13 @@ export function useResultsPendingApproval({
         )
         .eq('approved', false)
         .eq('is_complete', true)
-        .eq('is_disputed', false);
+        .eq('is_disputed', true);
 
       // Apply filter based on competitor type
       if (competitorType === 'team') {
-        query = query.eq('away_team', competitorId);
+        query = query.eq('home_team', competitorId);
       } else if (competitorType === 'player') {
-        query = query.eq('away_player', competitorId);
+        query = query.eq('home_player', competitorId);
       } else {
         throw new Error('Invalid competitorType');
       }
@@ -36,7 +36,7 @@ export function useResultsPendingApproval({
 
       if (error) throw error;
 
-      console.log('Results pending approval:', data);
+      console.log('Disputed fixtures:', data);
       return data;
     },
     enabled: enabled && !!competitorId && !!competitorType,

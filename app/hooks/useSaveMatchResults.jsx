@@ -25,6 +25,7 @@ export function useSaveMatchResults(fixtureId, existingResults) {
         reverseDish: f.reverseDish || false,
         lagWon: f.lagWon || null,
         frameNumber: i + 1,
+        status: 'pending',
       }));
 
       // Detect deleted IDs
