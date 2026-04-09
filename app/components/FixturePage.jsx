@@ -131,20 +131,28 @@ const FixturePage = ({ fixtureDetails, isLoading, context }) => {
                     <Text className="text-center font-saira text-lg text-text-2">Secs</Text>
                   </View>
                 </View>
+              ) : fixtureDetails?.approved ? (
+                <View className="flex-row items-center justify-around px-2">
+                  <Text
+                    style={{ lineHeight: 32 }}
+                    className="items-center justify-center gap-2 rounded-xl bg-theme-gray-5 px-3 py-1 text-center font-saira-medium text-lg text-text-1 shadow-sm">
+                    Final Score
+                  </Text>
+                </View>
               ) : fixtureDetails?.is_complete ? (
                 <View className="flex-row items-center justify-around px-2">
                   <Text
                     style={{ lineHeight: 32 }}
-                    className="items-center justify-center gap-2 rounded-xl bg-theme-gray-5 px-4 py-1 text-center font-saira-medium text-2xl text-text-1">
-                    Final Score
+                    className="items-center justify-center gap-2 rounded-xl bg-theme-gray-5 px-4 py-1 text-center font-saira-medium text-lg text-text-1 shadow-sm">
+                    Pending Confirmation
                   </Text>
                 </View>
               ) : isOverdue ? (
                 <View className="flex-row items-center justify-around px-2">
                   <Text
                     style={{ lineHeight: 32 }}
-                    className="text-md items-center justify-center gap-2 rounded-xl border border-theme-red bg-theme-red/20 px-3 py-0.5 text-center font-saira-medium text-theme-red">
-                    Results Required
+                    className="items-center justify-center gap-2 rounded-xl border border-theme-red px-3 py-0.5 text-center font-saira-medium text-lg text-theme-red shadow-sm">
+                    Awaiting Results
                   </Text>
                 </View>
               ) : (

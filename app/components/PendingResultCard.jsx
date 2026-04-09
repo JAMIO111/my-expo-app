@@ -14,23 +14,33 @@ const PendingResultCard = ({ fixture }) => {
   return (
     <Pressable
       onPress={() =>
-        fixture?.is_disputed
-          ? router.push(`home/${fixture?.id}/submit-results`)
-          : router.push(`home/${fixture?.id}/approve-results`)
+        fixture?.is_amended
+          ? router.push(`home/${fixture?.id}/approve-results`)
+          : fixture?.is_disputed
+            ? router.push(`home/${fixture?.id}/submit-results`)
+            : router.push(`home/${fixture?.id}/approve-results`)
       }>
       <View className="relative items-center justify-between gap-5 border-b border-separator bg-bg-grouped-2 px-4 py-4 shadow-[0_2px_4px_rgba(0,0,0,0.1)]">
         <View className="w-full flex-1 flex-row items-center justify-between">
           <View className="flex-col">
             <Text className="font-saira-medium text-2xl text-text-1">
-              {fixture?.is_disputed ? 'Amend Result' : 'Pending Result'}
+              {fixture?.is_amended
+                ? 'Approve Amendment'
+                : fixture?.is_disputed
+                  ? 'Amend Result'
+                  : 'Pending Result'}
             </Text>
             <Text className="text-md font-saira text-text-2">
               {fixture?.competition_instance?.name} Fixture
             </Text>
           </View>
           <Text
-            className={`absolute right-0 top-0 w-fit rounded-xl border ${fixture?.is_disputed ? 'border-theme-red bg-theme-red/20 text-theme-red' : 'border-theme-yellow bg-theme-yellow/20 text-theme-yellow'} px-3 py-1 text-center font-saira-medium text-black`}>
-            {fixture?.is_disputed ? 'Disputed Result' : 'Pending Result'}
+            className={`absolute right-0 top-0 w-fit rounded-xl border ${fixture?.is_amended ? 'border-theme-orange bg-theme-orange/20 text-theme-orange' : fixture?.is_disputed ? 'border-theme-red bg-theme-red/20 text-theme-red' : 'border-theme-yellow bg-theme-yellow/20 text-theme-yellow'} px-3 py-1 text-center font-saira-medium text-black`}>
+            {fixture?.is_amended
+              ? 'Amended Result'
+              : fixture?.is_disputed
+                ? 'Disputed Result'
+                : 'Pending Result'}
           </Text>
         </View>
         <View className="flex-1 items-center justify-between gap-2">

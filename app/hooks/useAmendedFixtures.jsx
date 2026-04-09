@@ -1,13 +1,13 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 
-export function useDisputedFixtures({
+export function useAmendedFixtures({
   competitorId,
   competitorType, // 'team' | 'player'
   enabled = true,
 }) {
   return useQuery({
-    queryKey: ['DisputedFixtures', competitorId, competitorType],
+    queryKey: ['AmendedFixtures', competitorId, competitorType],
     queryFn: async () => {
       let query = supabase
         .from('Fixtures')
@@ -22,7 +22,7 @@ export function useDisputedFixtures({
         .eq('approved', false)
         .eq('is_complete', true)
         .eq('is_disputed', true)
-        .eq('is_amended', false);
+        .eq('is_amended', true);
 
       // Apply filter based on competitor type
       if (competitorType === 'team') {
@@ -37,7 +37,7 @@ export function useDisputedFixtures({
 
       if (error) throw error;
 
-      console.log('Disputed fixtures:', data);
+      console.log('Amended fixtures:', data);
       return data;
     },
     enabled: enabled && !!competitorId && !!competitorType,

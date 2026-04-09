@@ -59,7 +59,7 @@ const Last5MatchesList = ({ matches = [] }) => {
         ))
       ) : (
         <View className="items-center justify-center rounded-2xl bg-bg-2 py-8">
-          <Text className="text-text-2">No recent matches available.</Text>
+          <Text className="font-saira text-text-2">No recent matches available.</Text>
         </View>
       )}
     </View>

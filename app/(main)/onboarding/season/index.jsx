@@ -18,7 +18,7 @@ import CTAButton from '@components/CTAButton';
 import { UpcomingFixtureSkeleton } from '@components/Skeletons';
 
 const Season = () => {
-  const { player, currentRole, setCurrentRole, roles } = useUser();
+  const { user, player, currentRole, setCurrentRole, roles } = useUser();
   const { data: nextMatch, isLoading } = useUpcomingFixtures(currentRole?.team?.id, {
     nextOnly: false,
   });
@@ -37,6 +37,9 @@ const Season = () => {
   const closeSheet = () => {
     bottomSheetRef.current?.close();
   };
+
+  console.log('Current User:', user);
+  console.log('Current Role:', currentRole);
 
   return (
     <>
@@ -63,7 +66,7 @@ const Season = () => {
             className="w-full items-center justify-center bg-brand-dark p-3">
             <DropdownFilterButton
               text={
-                `${currentRole?.team?.display_name} - ${currentRole?.team?.division?.district.name}` ||
+                `${currentRole?.team?.display_name} - ${currentRole?.district?.name}` ||
                 'Select Team'
               }
               callbackFn={() => {

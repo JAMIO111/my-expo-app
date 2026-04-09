@@ -2,12 +2,6 @@ import { createContext, useContext, useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 import * as WebBrowser from 'expo-web-browser';
 import * as Linking from 'expo-linking';
-import RNIap, {
-  initConnection,
-  purchaseUpdatedListener,
-  purchaseErrorListener,
-  finishTransaction,
-} from 'react-native-iap';
 import { useAuthUserProfile } from '@hooks/useAuthUserProfile2';
 
 WebBrowser.maybeCompleteAuthSession();
@@ -85,38 +79,6 @@ export const UserProvider = ({ children }) => {
     return () => listener.subscription.unsubscribe();
   }, []);
 
-  // ----------------------
-  // IAP
-  // ----------------------
-  useEffect(() => {
-    let purchaseUpdateListenerRef;
-    let purchaseErrorListenerRef;
-
-    const initIAP = async () => {
-      await initConnection();
-
-      purchaseUpdateListenerRef = purchaseUpdatedListener(async (purchase) => {
-        try {
-          console.log('Purchase update', purchase);
-          await finishTransaction(purchase, false);
-        } catch (err) {
-          console.warn(err);
-        }
-      });
-
-      purchaseErrorListenerRef = purchaseErrorListener((error) => {
-        console.warn('Purchase error', error);
-      });
-    };
-
-    initIAP();
-
-    return () => {
-      purchaseUpdateListenerRef?.remove();
-      purchaseErrorListenerRef?.remove();
-    };
-  }, []);
-
   // 1️⃣ Auto-select if only one role on first load
   useEffect(() => {
     if (!currentRole && data?.roles?.length === 1) {
@@ -129,7 +91,7 @@ export const UserProvider = ({ children }) => {
     if (!currentRole || !data?.roles) return;
 
     // Try to find the updated version of the current role
-    const updatedRole = data.roles.find((r) => r.id === currentRole.id);
+    const updatedRole = data.roles.find((r) => r.id === currentRole?.id);
 
     if (updatedRole) {
       // Replace currentRole with the updated object if it changed

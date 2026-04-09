@@ -37,6 +37,7 @@ const SubmitResultsScreen = () => {
   const [editingPlayer, setEditingPlayer] = useState(null);
   const [selectedPlayer, setSelectedPlayer] = useState(null);
   const [allowDoubles, setAllowDoubles] = useState(false);
+  const [queryLoading, setQueryLoading] = useState(false);
   const router = useRouter();
   const colorScheme = useColorScheme();
   const themeColors = colors[colorScheme];
@@ -78,8 +79,8 @@ const SubmitResultsScreen = () => {
       awayPlayer2: null,
       winnerSide: null,
       lagWon: null,
-      breakDish: null,
-      reverseDish: null,
+      breakDish: false,
+      reverseDish: false,
     };
     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
     setFrames((prev) => [...prev, newFrame]);
@@ -145,8 +146,8 @@ const SubmitResultsScreen = () => {
 
           winnerSide: result.winner_side || null,
 
-          breakDish: result.break_dish || null,
-          reverseDish: result.reverse_dish || null,
+          breakDish: result.break_dish || false,
+          reverseDish: result.reverse_dish || false,
           lagWon: result.lag_won || null, // if you add this later
           status: result.status,
           comment: result.comment || null,
@@ -230,7 +231,89 @@ const SubmitResultsScreen = () => {
     setSubmitting(false);
   };
 
-  const handleAmendment = async () => {};
+  const handleAmendment = async () => {
+    setQueryLoading(true);
+
+    const disputedFrames = frames.filter((f) => f.status === 'disputed');
+
+    const amendedFrames = frames.filter((f) => {
+      if (f.status !== 'disputed') return false;
+
+      const original = existingResults.find((r) => r.id === f.id);
+
+      return (
+        String(f.winnerSide) !== String(original.winner_side) ||
+        f.homePlayer1?.id !== original.home_player_1?.id ||
+        f.homePlayer2?.id !== original.home_player_2?.id ||
+        f.awayPlayer1?.id !== original.away_player_1?.id ||
+        f.awayPlayer2?.id !== original.away_player_2?.id ||
+        f.breakDish !== original.break_dish ||
+        f.reverseDish !== original.reverse_dish ||
+        f.lagWon !== original.lag_won
+      );
+    });
+
+    console.log('Amended Frames:', amendedFrames);
+    console.log('Existing Results:', existingResults);
+    console.log('Frames:', frames);
+
+    try {
+      if (disputedFrames.length === 0) {
+        Toast.show({
+          type: 'info',
+          text1: 'No Changes',
+          text2: 'There are no disputed frames to amend.',
+        });
+        return;
+      }
+
+      if (disputedFrames.length !== amendedFrames.length) {
+        Toast.show({
+          type: 'info',
+          text1: 'Amend All Disputed Frames',
+          text2:
+            'Please make the correct changes to all the disputed frames before submitting amendments. Otherwise escalate the dispute to the league administrators.',
+        });
+        return;
+      }
+
+      const payload = amendedFrames.map((f) => ({
+        id: f.id,
+        winner_side: f.winnerSide,
+        home_player_1: f.homePlayer1?.id,
+        home_player_2: f.homePlayer2?.id,
+        away_player_1: f.awayPlayer1?.id,
+        away_player_2: f.awayPlayer2?.id,
+        break_dish: f.breakDish || false,
+        reverse_dish: f.reverseDish || false,
+        lag_won: f.lagWon,
+      }));
+
+      const { error } = await supabase.rpc('amend_result', {
+        fixture_id: fixtureId,
+        frames: payload,
+      });
+
+      if (error) throw error;
+
+      Toast.show({
+        type: 'success',
+        text1: 'Results Amended',
+        text2: 'Pending opponent approval.',
+      });
+
+      router.back();
+    } catch (err) {
+      console.error(err);
+      Toast.show({
+        type: 'error',
+        text1: 'Error',
+        text2: 'Failed to amend results.',
+      });
+    } finally {
+      setQueryLoading(false);
+    }
+  };
 
   const handleEscalate = async () => {
     setQueryLoading(true);
@@ -239,7 +322,8 @@ const SubmitResultsScreen = () => {
         .from('Fixtures')
         .update({ is_escalated: true, updated_at: new Date().toISOString() })
         .eq('id', fixtureId)
-        .eq('approved', false);
+        .eq('approved', false)
+        .eq('is_disputed', true);
 
       if (error) {
         throw error;
@@ -413,15 +497,28 @@ const SubmitResultsScreen = () => {
                     key={frame.tempId}
                     onPress={() => {
                       if (amendMode && !isDisputed) return;
+                      if (activeFrameId && activeFrameId !== frame.tempId) return;
 
-                      LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
-
-                      if (activeFrameId === frame.tempId) {
-                        // 🔽 collapse if clicking same frame
-                        setActiveFrameId(null);
+                      if (
+                        (allowDoubles
+                          ? homeCount === 2 && awayCount === 2
+                          : homeCount === 1 && awayCount === 1) &&
+                        homeCount === awayCount &&
+                        frame.winnerSide !== null
+                      ) {
+                        activeFrameId === frame.tempId
+                          ? markComplete()
+                          : activateFrame(frame.tempId);
                       } else {
-                        // 🔄 switch to new frame
-                        setActiveFrameId(frame.tempId);
+                        Toast.show({
+                          type: 'error',
+                          text1: 'Error!',
+                          text2:
+                            'Ensure both players are selected, the number of players is equal, and a winner is chosen.',
+                          props: {
+                            colorScheme: colorScheme,
+                          },
+                        });
                       }
                     }}
                     className={`mb-3 rounded-3xl border-2 ${isDisputed ? 'border-theme-red' : 'border-transparent'} bg-bg-grouped-2 shadow-sm`}

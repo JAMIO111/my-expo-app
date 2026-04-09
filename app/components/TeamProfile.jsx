@@ -36,6 +36,7 @@ const TeamProfile = ({ context, profile, isLoading }) => {
   console.log('Team Profile Component - profile prop:', profile.id);
   const { data: teamAwards } = useTeamAwards(profile?.id);
   const { data: last5Results } = useLast5Results(profile?.id, 'team', 'matches');
+  console.log('Last 5 Results in TeamProfile:', last5Results);
   const [viewMatches, setViewMatches] = useState(true);
   const {
     data: players,

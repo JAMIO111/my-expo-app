@@ -3,6 +3,7 @@ import { useState } from 'react';
 import ConfirmFramesList from '@components/ConfirmFramesList';
 import { router, useLocalSearchParams } from 'expo-router';
 import CTAButton from '@components/CTAButton';
+import { useQueryClient } from '@tanstack/react-query';
 import SafeViewWrapper from '@components/SafeViewWrapper';
 import CustomHeader from '@components/CustomHeader';
 import { Stack } from 'expo-router';
@@ -16,6 +17,7 @@ import { useUser } from '@contexts/UserProvider';
 import LoadingScreen from '@components/LoadingScreen';
 
 const ApproveResults = () => {
+  const queryClient = useQueryClient();
   const { player } = useUser();
   const [disputedFrames, setDisputedFrames] = useState([]);
   const [queryLoading, setQueryLoading] = useState(false);
@@ -23,6 +25,39 @@ const ApproveResults = () => {
   const { data: results, isLoading } = useResultsByFixture(fixtureId);
   const { data: fixtureDetails, isLoading: fixtureLoading } = useFixtureDetails(fixtureId);
   console.log('fixtureDetails in ApproveResults:', fixtureDetails);
+
+  const handleRejectAmendment = async () => {
+    setQueryLoading(true);
+    try {
+      const { error } = await supabase
+        .from('Fixtures')
+        .update({
+          is_escalated: true,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', fixtureId)
+        .select();
+      if (error) {
+        throw error;
+      }
+      Toast.show({
+        type: 'success',
+        text1: 'Amendment Rejected',
+        text2:
+          'The amendment has been rejected and the results have been escalated to the league admin.',
+      });
+      router.back();
+    } catch (error) {
+      Toast.show({
+        type: 'error',
+        text1: 'Rejection Failed',
+        text2: 'An error occurred while rejecting the amendment. Please try again.',
+      });
+      console.error('Error rejecting amendment:', error);
+    } finally {
+      setQueryLoading(false);
+    }
+  };
 
   const handleApproveResults = async () => {
     setQueryLoading(true);
@@ -37,12 +72,17 @@ const ApproveResults = () => {
         throw error;
       }
       console.log('Results approved successfully'); // Show success toast or redirect
+      queryClient.invalidateQueries([
+        'FixturesAwaitingResults',
+        type,
+        competitorId,
+        competitorType,
+      ]);
       Toast.show({
         type: 'success',
         text1: 'Results Approved',
         text2: 'The results have been successfully approved.',
       });
-      console.log('navigating to home');
       router.back();
     } catch (error) {
       Toast.show({
@@ -66,6 +106,7 @@ const ApproveResults = () => {
       if (error) {
         throw error;
       }
+      queryClient.invalidateQueries(['results', fixtureId]);
       Toast.show({
         type: 'success',
         text1: 'Results Disputed',
@@ -165,6 +206,7 @@ const ApproveResults = () => {
               isLoading={isLoading}
               disputedFrames={disputedFrames}
               setDisputedFrames={setDisputedFrames}
+              amendMode={fixtureDetails?.is_amended}
             />
           </ScrollView>
           <View className="gap-3 p-4 pb-0">
@@ -184,9 +226,18 @@ const ApproveResults = () => {
                   text="Approve Results"
                   callbackFn={handleApproveResults}
                 />
-                <Text className="text-center font-saira text-lg text-text-2">
-                  Or tap on 1 or more frames to dispute.
-                </Text>
+                {fixtureDetails?.is_amended ? (
+                  <CTAButton
+                    loading={queryLoading}
+                    type="error"
+                    text="Reject Amendment and Escalate"
+                    callbackFn={handleRejectAmendment}
+                  />
+                ) : (
+                  <Text className="text-center font-saira text-lg text-text-2">
+                    Or tap on 1 or more frames to dispute.
+                  </Text>
+                )}
               </>
             )}
           </View>

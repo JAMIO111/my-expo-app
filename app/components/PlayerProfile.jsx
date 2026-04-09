@@ -31,6 +31,7 @@ const PlayerProfile = ({ context, isLoading, playerProfile, error }) => {
 
   const router = useRouter();
   const { fixtureId, teamId, userId } = useLocalSearchParams();
+
   const colorScheme = useColorScheme();
   const queryClient = useQueryClient();
   const [captainModalVisible, setCaptainModalVisible] = useState(false);
@@ -46,7 +47,11 @@ const PlayerProfile = ({ context, isLoading, playerProfile, error }) => {
   console.log('Player Profile:', playerProfile);
   console.log('Player Profile Stats:', playerStats);
 
-  const currentTeam = playerProfile.teams.filter((t) => t.status === 'active')[0] || null;
+  const currentTeam =
+    context === 'teams'
+      ? playerProfile.teams.find((t) => t.team_id === currentRole?.team.id)
+      : playerProfile.teams.find((t) => t.team_id === teamId) || null;
+  console.log('Current Teams:', playerProfile.teams);
   const inMyTeam = currentTeam?.team_id === currentRole?.team.id;
   const isMe = playerProfile.id === player.id;
   const iAmCaptain = currentRole?.role === 'captain';

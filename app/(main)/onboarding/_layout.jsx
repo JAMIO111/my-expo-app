@@ -18,7 +18,7 @@ const _layout = () => {
     } else if (player && player.onboarding === 1) {
       router.replace('/(main)/onboarding/(entity-onboarding)/admin-or-player');
     } else if (player && player.onboarding === 9) {
-      router.replace('/(main)/home');
+      router.replace('/(main)/onboarding/season');
     }
   }, [loading, player]);
 

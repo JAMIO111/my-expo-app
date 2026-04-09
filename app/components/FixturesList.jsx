@@ -285,13 +285,13 @@ const FixtureList = () => {
                     className="mb-3 mt-2 items-center justify-center gap-2"
                     key={f.id}>
                     {isOverdue ? (
-                      <Text className="mb-1 items-center justify-center gap-2 rounded-lg bg-theme-gray-5 px-2 py-0.5 text-center font-saira-medium text-lg text-theme-red">
+                      <Text className="mb-1 items-center justify-center gap-2 rounded-lg border border-theme-red px-2 py-0.5 text-center font-saira-medium text-lg text-theme-red shadow-sm">
                         Results Required
                       </Text>
                     ) : isLive ? (
                       f.is_complete ? (
-                        <Text className="mb-1 items-center justify-center gap-2 rounded-lg bg-theme-gray-5 px-2 py-0.5 text-center font-saira-medium text-lg text-text-1">
-                          Final Score
+                        <Text className="mb-1 items-center justify-center gap-2 rounded-lg bg-theme-gray-5 px-2 py-0.5 text-center font-saira-medium text-lg text-text-1 shadow-sm">
+                          Pending Confirmation
                         </Text>
                       ) : (
                         <View>

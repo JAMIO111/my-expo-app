@@ -14,7 +14,6 @@ import IonIcons from 'react-native-vector-icons/Ionicons';
 import CTAButton from '@components/CTAButton';
 import { ScrollView, Switch } from 'react-native-gesture-handler';
 import colors from '../lib/colors';
-import { useCurrentSubscriptions } from '@hooks/useCurrentSubscriptions';
 import { useIAP } from '@hooks/useIAP';
 
 const BasicPaywall = () => {
@@ -30,21 +29,17 @@ const BasicPaywall = () => {
   const scrollRef = useRef(null);
   const {
     connected,
+    loading,
     products,
     subscriptions,
     getProducts,
     purchase,
-    completeTransaction,
     restorePurchases,
-    loading,
-  } = useIAP();
-
-  const {
     currentSubscription,
-    loading: currentSubscriptionLoading,
-    error: currentSubscriptionError,
-    restorePurchases: restoreCurrentPurchases,
-  } = useCurrentSubscriptions();
+    currentSubscriptionLoading,
+    currentSubscriptionError,
+    fetchCurrentSubscription,
+  } = useIAP();
 
   useEffect(() => {
     getProducts({
@@ -167,7 +162,7 @@ const BasicPaywall = () => {
       <View className="mb-5 w-full items-start justify-start gap-4 rounded-2xl p-6">
         {[
           { text: 'Access to Live Results', icon: 'play-outline' },
-          { text: 'View the League Tables', icon: 'list-outline' },
+          { text: 'In Depth Team & Player Stats', icon: 'list-outline' },
           { text: 'See Upcoming Fixtures', icon: 'calendar-outline' },
           { text: 'Climb the Leaderboards', icon: 'podium-outline' },
           { text: 'Unlock Exclusive Badges', icon: 'star-outline' },
@@ -278,7 +273,7 @@ const BasicPaywall = () => {
 
         <View className="mt-4 w-full gap-4 overflow-visible px-4">
           {subscriptions && subscriptions.length > 0 ? (
-            subscriptions.map((plan) => {
+            subscriptions.map((plan, idx) => {
               const isCurrentPlan =
                 currentSubscription &&
                 plan.sku ===
@@ -292,7 +287,7 @@ const BasicPaywall = () => {
 
               return (
                 <Pressable
-                  key={plan.id}
+                  key={idx}
                   disabled={isCurrentPlan || loading}
                   onPress={() => {
                     if (isCurrentPlan) return;
@@ -422,13 +417,15 @@ const BasicPaywall = () => {
           />
         </View>
         <View className="mb-4 flex-row items-center justify-between gap-3 px-4 pt-6">
-          <Pressable
-            onPress={() => restorePurchases()}
-            className="flex-1 text-left text-text-2 underline">
-            Restore Purchases
+          <Pressable onPress={() => restorePurchases()} className="flex-1 text-text-2 underline">
+            <Text className="text-left text-text-2 underline">Restore Purchases</Text>
           </Pressable>
-          <Pressable className="flex-1 text-center text-text-2 underline">Privacy Policy</Pressable>
-          <Pressable className="flex-1 text-right text-text-2 underline">Terms of Use</Pressable>
+          <Pressable className="flex-1 text-text-2 underline">
+            <Text className="text-center text-text-2 underline">Privacy Policy</Text>
+          </Pressable>
+          <Pressable className="flex-1 text-text-2 underline">
+            <Text className="text-right text-text-2 underline">Terms of Use</Text>
+          </Pressable>
         </View>
       </View>
     </ScrollView>

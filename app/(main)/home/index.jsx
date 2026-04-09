@@ -15,9 +15,7 @@ import { StatusBar } from 'expo-status-bar';
 import { useStandings } from '@hooks/useStandings';
 import PendingResultCard from '@components/PendingResultCard';
 import AwaitingResultCard from '@components/AwaitingResultCard';
-import { useResultsPendingApproval } from '@hooks/useResultsPendingApproval';
 import { useFixturesAwaitingResults } from '@hooks/useFixturesAwaitingResults';
-import { useDisputedFixtures } from '@hooks/useDisputedFixtures';
 import { supabase } from '@/lib/supabase';
 import BrandHeader from '@components/BrandHeader';
 import HomeScreenCardLarge from '@components/HomeScreenCardLarge';
@@ -73,9 +71,10 @@ const Home = () => {
     data: teamResultsPendingApproval,
     isLoading: isTeamResultsPendingApprovalLoading,
     refetch: teamResultsPendingApprovalRefetch,
-  } = useResultsPendingApproval({
+  } = useFixturesAwaitingResults({
     competitorId: currentRole?.team?.id,
     competitorType: 'team',
+    type: 'pendingApproval',
     enabled: !!currentRole?.team?.id,
   });
 
@@ -83,9 +82,10 @@ const Home = () => {
     data: playerResultsPendingApproval,
     isLoading: isPlayerResultsPendingApprovalLoading,
     refetch: playerResultsPendingApprovalRefetch,
-  } = useResultsPendingApproval({
+  } = useFixturesAwaitingResults({
     competitorId: player?.id,
     competitorType: 'player',
+    type: 'pendingApproval',
     enabled: !!player?.id,
   });
 
@@ -98,9 +98,10 @@ const Home = () => {
     data: teamDisputedFixtures,
     isLoading: isTeamDisputedFixturesLoading,
     refetch: teamDisputedFixturesRefetch,
-  } = useDisputedFixtures({
+  } = useFixturesAwaitingResults({
     competitorId: currentRole?.team?.id,
     competitorType: 'team',
+    type: 'disputed',
     enabled: !!currentRole?.team?.id,
   });
 
@@ -108,9 +109,10 @@ const Home = () => {
     data: playerDisputedFixtures,
     isLoading: isPlayerDisputedFixturesLoading,
     refetch: playerDisputedFixturesRefetch,
-  } = useDisputedFixtures({
+  } = useFixturesAwaitingResults({
     competitorId: player?.id,
     competitorType: 'player',
+    type: 'disputed',
     enabled: !!player?.id,
   });
 
@@ -119,7 +121,34 @@ const Home = () => {
     ...(playerDisputedFixtures || []),
   ].sort((a, b) => new Date(b.date_time) - new Date(a.date_time)); // sort by date descending
 
+  const {
+    data: teamAmendedFixtures,
+    isLoading: isTeamAmendedFixturesLoading,
+    refetch: teamAmendedFixturesRefetch,
+  } = useFixturesAwaitingResults({
+    competitorId: currentRole?.team?.id,
+    competitorType: 'team',
+    type: 'amended',
+    enabled: !!currentRole?.team?.id,
+  });
+
+  const {
+    data: playerAmendedFixtures,
+    isLoading: isPlayerAmendedFixturesLoading,
+    refetch: playerAmendedFixturesRefetch,
+  } = useFixturesAwaitingResults({
+    competitorId: player?.id,
+    competitorType: 'player',
+    type: 'amended',
+    enabled: !!player?.id,
+  });
+
+  const amendedFixtures = [...(teamAmendedFixtures || []), ...(playerAmendedFixtures || [])].sort(
+    (a, b) => new Date(b.date_time) - new Date(a.date_time)
+  ); // sort by date descending
+
   console.log('All Disputed Fixtures:', disputedFixtures);
+  console.log('All Amended Fixtures:', amendedFixtures);
 
   const {
     data: teamFixturesAwaitingResults,
@@ -128,6 +157,7 @@ const Home = () => {
   } = useFixturesAwaitingResults({
     competitorId: currentRole?.team?.id,
     competitorType: 'team',
+    type: 'awaitingResults',
     enabled: !!currentRole?.team?.id,
   });
 
@@ -138,6 +168,7 @@ const Home = () => {
   } = useFixturesAwaitingResults({
     competitorId: player?.id,
     competitorType: 'player',
+    type: 'awaitingResults',
     enabled: !!player?.id,
   });
 
@@ -251,6 +282,15 @@ const Home = () => {
                   {disputedFixtures &&
                     disputedFixtures.length > 0 &&
                     disputedFixtures.map((fixture) => (
+                      <PendingResultCard
+                        key={fixture.id}
+                        fixture={fixture}
+                        refetch={teamResultsPendingApprovalRefetch}
+                      />
+                    ))}
+                  {amendedFixtures &&
+                    amendedFixtures.length > 0 &&
+                    amendedFixtures.map((fixture) => (
                       <PendingResultCard
                         key={fixture.id}
                         fixture={fixture}

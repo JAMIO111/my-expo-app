@@ -9,7 +9,13 @@ const getPlayerNames = (...players) =>
     .map((p) => `${p.first_name} ${p.surname}`)
     .join(' & ');
 
-const ConfirmFramesList = ({ results, isLoading, disputedFrames, setDisputedFrames }) => {
+const ConfirmFramesList = ({
+  results,
+  isLoading,
+  disputedFrames,
+  setDisputedFrames,
+  amendMode,
+}) => {
   const [commentModalVisible, setCommentModalVisible] = useState(false);
   const [editingFrame, setEditingFrame] = useState(null);
   const [comment, setComment] = useState('');
@@ -92,6 +98,7 @@ const ConfirmFramesList = ({ results, isLoading, disputedFrames, setDisputedFram
               <Pressable
                 key={result.id}
                 onPress={() => {
+                  if (amendMode) return; // don't allow opening modal in amend mode
                   setEditingFrame(result);
                   setComment(dispute?.comment || '');
                   setCommentModalVisible(true);

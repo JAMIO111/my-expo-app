@@ -35,7 +35,7 @@ const RoleSelect = () => {
               key={index}
               onPress={() => {
                 setCurrentRole(role);
-                router.replace('/(main)/home');
+                router.replace('/(main)/onboarding/season');
               }}>
               <View className="mb-3 flex-row items-center justify-between gap-2 rounded-2xl border border-theme-gray-5 bg-bg-grouped-2 px-4 py-3 shadow-sm shadow-theme-gray-5">
                 <View className="flex-1">
