@@ -14,7 +14,8 @@ import IonIcons from 'react-native-vector-icons/Ionicons';
 import CTAButton from '@components/CTAButton';
 import { ScrollView, Switch } from 'react-native-gesture-handler';
 import colors from '../lib/colors';
-import { useIAP } from '@hooks/useIAP';
+import useIAPHook from '@hooks/useIAPHook';
+import { useSubscription } from '@hooks/useSubscription';
 
 const BasicPaywall = () => {
   const [selectedBilling, setSelectedBilling] = useState('monthly');
@@ -27,44 +28,12 @@ const BasicPaywall = () => {
   const colorScheme = useColorScheme();
   const themeColors = colors[colorScheme];
   const scrollRef = useRef(null);
-  const {
-    connected,
-    loading,
-    products,
-    subscriptions,
-    getProducts,
-    purchase,
-    restorePurchases,
-    currentSubscription,
-    currentSubscriptionLoading,
-    currentSubscriptionError,
-    fetchCurrentSubscription,
-  } = useIAP();
-
-  useEffect(() => {
-    getProducts({
-      skus: [
-        'com.jdigital.breakroom.pro.monthly',
-        'com.jdigital.breakroom.pro.annual',
-        'com.jdigital.breakroom.core.monthly',
-        'com.jdigital.breakroom.core.annual',
-      ],
-      type: 'subs',
-    });
-  }, []);
+  const { subscriptions, currentSubscription, handleSubscribe, restorePurchases, isLoading } =
+    useIAPHook();
+  const { subscription } = useSubscription();
 
   console.log('Available subscription plans from useIAP:', subscriptions);
   console.log('Current subscription:', currentSubscription);
-
-  const handleSubscribe = async (plan) => {
-    console.log('Selected plan:', plan);
-    if (!plan) return;
-    try {
-      await purchase({ sku: plan.sku, type: 'subs' });
-    } catch (err) {
-      console.warn('Purchase error', err);
-    }
-  };
 
   const proPercentageOff = subscriptions
     ? Math.round(
@@ -277,7 +246,7 @@ const BasicPaywall = () => {
               const isCurrentPlan =
                 currentSubscription &&
                 plan.sku ===
-                  currentSubscription.productId; /* Adjust this condition based on your subscription data structure */
+                  currentSubscription.sku; /* Adjust this condition based on your subscription data structure */
 
               const isUpgrade =
                 currentSubscription && plan.tier === 'pro' && currentSubscription.tier === 'core';
@@ -288,7 +257,7 @@ const BasicPaywall = () => {
               return (
                 <Pressable
                   key={idx}
-                  disabled={isCurrentPlan || loading}
+                  disabled={isCurrentPlan || isLoading}
                   onPress={() => {
                     if (isCurrentPlan) return;
                     setSelectedBilling(plan.interval);
@@ -323,38 +292,46 @@ const BasicPaywall = () => {
                           : 'period'}
                     </Text>
 
-                    {isCurrentPlan && <Text className="text-sm text-green-500">Current plan</Text>}
+                    {isCurrentPlan && (
+                      <Text className="font-saira text-sm text-theme-green">Current plan</Text>
+                    )}
 
-                    {isUpgrade && <Text className="text-sm text-blue-500">Upgrade</Text>}
+                    {isUpgrade && (
+                      <Text className="font-saira text-sm text-theme-blue">Upgrade to Pro!</Text>
+                    )}
 
                     {isDowngrade && (
                       <Text
                         numberOfLines={1}
                         ellipsizeMode="tail"
-                        className="text-sm text-theme-blue">
+                        className="font-saira text-sm text-theme-blue">
                         Downgrades next billing period
                       </Text>
                     )}
                   </View>
 
                   {isCurrentPlan ? (
-                    <View className="bg-theme-yellow-100 rounded-full border border-brand">
-                      <View className="rounded-full bg-brand-light">
+                    <View
+                      style={{ borderRadius: 12 }}
+                      className="bg-theme-yellow-100 border border-brand">
+                      <View style={{ borderRadius: 10 }} className="bg-brand-light">
                         <Text
-                          style={{ lineHeight: 28 }}
-                          className="px-2 font-saira-medium text-xl text-white">
-                          Current Plan
+                          style={{ lineHeight: 20 }}
+                          className="px-2 pt-2 text-center font-saira-medium text-xl text-white">
+                          Current{'\n'}Plan
                         </Text>
                       </View>
                     </View>
                   ) : (
                     plan.interval === 'annual' && (
-                      <View className="rounded-full border border-theme-purple bg-black">
-                        <View className="rounded-full bg-theme-purple/70">
+                      <View
+                        style={{ borderRadius: 12 }}
+                        className="border border-theme-purple bg-black">
+                        <View style={{ borderRadius: 10 }} className="bg-theme-purple/70">
                           <Text
-                            style={{ lineHeight: 28 }}
-                            className="px-2 font-saira-medium text-xl text-white">
-                            {plan.tier === 'pro' ? proPercentageOff : corePercentageOff}% Off
+                            style={{ lineHeight: 20 }}
+                            className="px-2 pt-2 text-center font-saira-medium text-xl text-white">
+                            {plan.tier === 'pro' ? proPercentageOff : corePercentageOff}%{'\n'}Off
                           </Text>
                         </View>
                       </View>
@@ -387,24 +364,26 @@ const BasicPaywall = () => {
             </Text>
           )}
         </View>
-        <View className="mb-2 mt-8 w-full flex-row items-center justify-between px-6">
-          <Text className="font-saira-medium text-xl text-text-1">Enable 7-day free trial</Text>
-          <Switch
-            value={isTrialEnabled}
-            onValueChange={setIsTrialEnabled}
-            thumbColor={'white'}
-            trackColor={{
-              false: 'gray',
-              true: '#4CAF50',
-            }}
-          />
-        </View>
-        <View className="mt-4 w-full px-4">
+        {!currentSubscription && (
+          <View className="mb-2 mt-8 w-full flex-row items-center justify-between px-6">
+            <Text className="font-saira-medium text-xl text-text-1">Enable 7-day free trial</Text>
+            <Switch
+              value={isTrialEnabled}
+              onValueChange={setIsTrialEnabled}
+              thumbColor={'white'}
+              trackColor={{
+                false: 'gray',
+                true: '#4CAF50',
+              }}
+            />
+          </View>
+        )}
+        <View className="mt-6 w-full px-4">
           <CTAButton
             type="yellow"
             textColor="black"
             text={
-              loading
+              isLoading
                 ? 'Processing...'
                 : !selectedPlan
                   ? 'Select a Plan'
@@ -413,18 +392,18 @@ const BasicPaywall = () => {
                     : 'Upgrade Now!'
             }
             callbackFn={() => handleSubscribe(selectedPlan)}
-            disabled={!selectedPlan || loading}
+            disabled={!selectedPlan || isLoading}
           />
         </View>
-        <View className="mb-4 flex-row items-center justify-between gap-3 px-4 pt-6">
+        <View className="mb-6 flex-row items-center justify-between gap-3 px-4 pt-10">
+          <Pressable className="flex-1 text-text-2 underline">
+            <Text className="text-left font-saira text-text-2 underline">Privacy Policy</Text>
+          </Pressable>
           <Pressable onPress={() => restorePurchases()} className="flex-1 text-text-2 underline">
-            <Text className="text-left text-text-2 underline">Restore Purchases</Text>
+            <Text className="text-center font-saira text-text-2 underline">Restore Purchases</Text>
           </Pressable>
           <Pressable className="flex-1 text-text-2 underline">
-            <Text className="text-center text-text-2 underline">Privacy Policy</Text>
-          </Pressable>
-          <Pressable className="flex-1 text-text-2 underline">
-            <Text className="text-right text-text-2 underline">Terms of Use</Text>
+            <Text className="text-right font-saira text-text-2 underline">Terms of Use</Text>
           </Pressable>
         </View>
       </View>

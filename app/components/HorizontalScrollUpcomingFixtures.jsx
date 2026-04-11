@@ -64,7 +64,7 @@ const HorizontalScrollUpcomingFixtures = ({ fixtures, isLoading }) => {
               width: cardWidth,
               marginRight: index === fixtures.length - 1 ? 0 : gap,
             }}>
-            <UpcomingFixtureCard cardShadow="shadow-gray" fixture={fixture} />
+            <UpcomingFixtureCard fixture={fixture} />
           </View>
         ))
       )}

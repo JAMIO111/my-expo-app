@@ -1,4 +1,3 @@
-import { StyleSheet, ScrollView } from 'react-native';
 import BasicPaywall from '@components/BasicPaywall';
 import SafeViewWrapper from '@components/SafeViewWrapper';
 import NavBar from '@components/NavBar2';
@@ -17,5 +16,3 @@ const Upgrade = () => {
 };
 
 export default Upgrade;
-
-const styles = StyleSheet.create({});

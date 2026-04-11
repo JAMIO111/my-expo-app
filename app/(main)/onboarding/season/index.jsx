@@ -15,17 +15,20 @@ import { BottomSheetFooter, BottomSheetScrollView, BottomSheetView } from '@gorh
 import colors from '@lib/colors';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import CTAButton from '@components/CTAButton';
+import HorizontalScrollUpcomingFixtures from '@components/HorizontalScrollUpcomingFixtures';
 import { UpcomingFixtureSkeleton } from '@components/Skeletons';
 
 const Season = () => {
   const { user, player, currentRole, setCurrentRole, roles } = useUser();
-  const { data: nextMatch, isLoading } = useUpcomingFixtures(currentRole?.team?.id, {
-    nextOnly: false,
-  });
+  const { data: teamMatches, isLoading: isTeamMatchesLoading } = useUpcomingFixtures(
+    currentRole?.team?.id,
+    'team',
+    currentRole?.activeSeason?.id
+  );
   const bottomSheetRef = useRef(null);
   const colorScheme = useColorScheme();
   const themeColors = colors[colorScheme] || colors.light; // Fallback to light theme if colorScheme is undefined
-  console.log('Next Match:', nextMatch);
+  console.log('Team Matches:', teamMatches);
   const [tempRole, setTempRole] = useState(null);
   const teamRoles = roles?.filter((r) => r.type !== 'admin' && r.team);
 
@@ -66,7 +69,7 @@ const Season = () => {
             className="w-full items-center justify-center bg-brand-dark p-3">
             <DropdownFilterButton
               text={
-                `${currentRole?.team?.display_name} - ${currentRole?.district?.name}` ||
+                `${currentRole?.district?.name} - ${currentRole?.team?.display_name}` ||
                 'Select Team'
               }
               callbackFn={() => {
@@ -74,18 +77,15 @@ const Season = () => {
               }}
             />
           </View>
-          <View className="w-full items-center justify-center bg-bg-grouped-1 p-5">
-            {!isLoading ? (
-              <UpcomingFixtureCard fixture={nextMatch?.[0]} inactive cardShadow="shadow-gray" />
-            ) : (
-              <View className="w-72 rounded-2xl border border-theme-gray-5">
-                <UpcomingFixtureSkeleton />
-              </View>
-            )}
+          <View className="w-full items-center justify-center bg-bg-grouped-1 pt-5">
+            <HorizontalScrollUpcomingFixtures
+              fixtures={teamMatches}
+              isLoading={isTeamMatchesLoading}
+            />
           </View>
           <LeagueTable
             season={currentRole?.activeSeason?.id}
-            division={currentRole?.team?.division?.id}
+            division={currentRole?.division?.id}
           />
         </ScrollView>
         <NavBar type="onboarding" />

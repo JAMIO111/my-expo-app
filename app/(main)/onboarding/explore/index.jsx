@@ -253,7 +253,7 @@ const Home = () => {
           </ScrollView>
         )}
 
-        {!searchActive && <NavBar type="onboarding" />}
+        <NavBar type="onboarding" />
       </SafeViewWrapper>
 
       {/* Floating Confirmation Modal */}

@@ -2,9 +2,10 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 
-export const useUpcomingFixtures = (teamId, options = { nextOnly: false }) => {
-  const fetchUpcomingFixtures = async (teamId, nextOnly) => {
-    if (!teamId) throw new Error('Team ID is required');
+export const useUpcomingFixtures = (competitorId, competitorType, seasonId) => {
+  const fetchUpcomingFixtures = async (competitorId, competitorType, seasonId) => {
+    if (!competitorId) throw new Error('Competitor ID is required');
+    if (!seasonId) throw new Error('Season ID is required');
 
     let query = supabase
       .from('Fixtures')
@@ -12,15 +13,20 @@ export const useUpcomingFixtures = (teamId, options = { nextOnly: false }) => {
         `
         *,
         homeTeam:Teams!Fixtures_home_team_fkey(id, display_name, abbreviation, crest),
-        awayTeam:Teams!Fixtures_away_team_fkey(id, display_name, abbreviation, crest)
+        awayTeam:Teams!Fixtures_away_team_fkey(id, display_name, abbreviation, crest),
+        homePlayer:Players!Fixtures_home_player_fkey(id, first_name, surname, nickname, avatar_url),
+        awayPlayer:Players!Fixtures_away_player_fkey(id, first_name, surname, nickname, avatar_url)
       `
       )
-      .or(`home_team.eq.${teamId},away_team.eq.${teamId}`)
-      .gte('date_time', new Date().toISOString())
+      .eq('season', seasonId)
       .order('date_time', { ascending: true });
 
-    if (nextOnly) {
-      query = query.limit(1); // only fetch the next upcoming match
+    if (competitorType === 'team') {
+      query = query.or(`home_team.eq.${competitorId},away_team.eq.${competitorId}`);
+    } else if (competitorType === 'player') {
+      query = query.or(`home_player.eq.${competitorId},away_player.eq.${competitorId}`);
+    } else {
+      throw new Error('Invalid competitor type');
     }
 
     const { data, error } = await query;
@@ -38,13 +44,21 @@ export const useUpcomingFixtures = (teamId, options = { nextOnly: false }) => {
         ...fixture.awayTeam,
         abbreviation: fixture.awayTeam?.abbreviation || 'N/A',
       },
+      homePlayer: {
+        ...fixture.homePlayer,
+        nickname: fixture.homePlayer?.nickname || 'N/A',
+      },
+      awayPlayer: {
+        ...fixture.awayPlayer,
+        nickname: fixture.awayPlayer?.nickname || 'N/A',
+      },
     }));
   };
 
   return useQuery({
-    queryKey: ['upcoming-fixtures', teamId, options.nextOnly],
-    queryFn: () => fetchUpcomingFixtures(teamId, options.nextOnly),
-    enabled: !!teamId,
+    queryKey: ['upcoming-fixtures', competitorId, competitorType, seasonId],
+    queryFn: () => fetchUpcomingFixtures(competitorId, competitorType, seasonId),
+    enabled: !!competitorId && !!competitorType && !!seasonId,
     staleTime: 1000 * 60 * 5,
     retry: false,
   });

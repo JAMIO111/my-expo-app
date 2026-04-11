@@ -128,7 +128,7 @@ const SearchResultsOverlay = ({ searchActive, searchQuery, sendJoinRequest }) =>
   return (
     <>
       <View style={{ position: 'absolute', top: 67, left: 0, right: 0, bottom: 0, zIndex: 50 }}>
-        <View className="flex-1 bg-bg-grouped-1">{renderContent()}</View>
+        <View className=" flex-1 bg-bg-grouped-1">{renderContent()}</View>
       </View>
 
       <FloatingBottomSheet

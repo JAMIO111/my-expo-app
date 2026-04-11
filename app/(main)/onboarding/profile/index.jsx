@@ -35,7 +35,7 @@ const ProfilePage = () => {
                 title="My Profile"
                 showBack={false}
                 rightIcon="settings-outline"
-                onRightPress={() => router.push('/(main)/onboarding/profile/edit-profile')}
+                onRightPress={() => router.push('/settings')}
               />
             </SafeViewWrapper>
           ),

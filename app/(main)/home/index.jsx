@@ -65,7 +65,7 @@ const Home = () => {
     data: upcomingFixtures,
     isLoading: isUpcomingFixturesLoading,
     refetch: upcomingFixturesRefetch,
-  } = useUpcomingFixtures(currentRole?.team?.id);
+  } = useUpcomingFixtures(currentRole?.team?.id, 'team', currentRole?.activeSeason?.id);
 
   const {
     data: teamResultsPendingApproval,

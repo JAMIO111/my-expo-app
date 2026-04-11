@@ -54,7 +54,7 @@ const LeagueTable = ({ context, season, division }) => {
       <Text className="mb-1 mt-2 w-full pl-2 text-left font-saira-medium text-xl text-text-2">
         {standings?.division?.name} Standings
       </Text>
-      <View className="mb-16 w-full rounded-3xl border border-theme-gray-5 bg-bg-grouped-2 p-3">
+      <View className="mb-16 w-full rounded-3xl border border-theme-gray-3 bg-bg-grouped-2 p-3 shadow-sm">
         <View className="h-8 flex-row items-center justify-around border-b-[0.5px] border-separator">
           <Text className="w-18 text-center font-saira font-bold text-text-2">Pos</Text>
           <Text className="flex-1 pl-3 text-left font-saira font-bold text-text-2">Team</Text>
