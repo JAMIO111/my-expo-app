@@ -127,7 +127,9 @@ const index = () => {
                               </Text>
                             </View>
                           </View>
-                          <Ionicons name="chevron-forward-outline" size={24} color="#666" />
+                          {numberOfInstances === 0 && (
+                            <Ionicons name="chevron-forward-outline" size={24} color="#666" />
+                          )}
                         </View>
                       </View>
 

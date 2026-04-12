@@ -38,7 +38,7 @@ const BasicPaywall = () => {
     isRestoring,
     isLoading,
   } = useIAPHook();
-  const { subscription, isCore, isPro, refetch } = useSubscription();
+  const { subscription, isCore, isPro, interval, refetch } = useSubscription();
 
   console.log('Available subscription plans from useIAP:', subscriptions);
   console.log('Current subscription:', currentSubscription);
@@ -147,17 +147,19 @@ const BasicPaywall = () => {
             ? "Get Access to everyone's stats for just £1.99/month"
             : isCore
               ? 'Go Pro and unlock exclusive insights and features!'
-              : "You're on the Pro plan"}
+              : "You're on the Pro plan! Thanks for your support!"}
         </Text>
         <View className="my-6 mt-8 w-full px-6">
-          <CTAButton
-            type="yellow"
-            textColor="black"
-            text={isTrialEnabled ? 'Start Free Trial' : 'Upgrade Now!'}
-            callbackFn={() => {
-              scrollRef.current?.scrollToEnd({ animated: true });
-            }}
-          />
+          {!isPro && (
+            <CTAButton
+              type="yellow"
+              textColor="black"
+              text="Upgrade Now!"
+              callbackFn={() => {
+                scrollRef.current?.scrollToEnd({ animated: true });
+              }}
+            />
+          )}
         </View>
 
         <View className="mb-5 w-full items-start justify-start gap-4 rounded-2xl p-6">
@@ -337,13 +339,14 @@ const BasicPaywall = () => {
                           <Text className="font-saira text-sm text-theme-green">Current plan</Text>
                         )}
 
-                        {isUpgrade && (
+                        {isCore && plan.tier === 'pro' && (
                           <Text className="font-saira text-sm text-theme-blue">
                             Upgrade to Pro!
                           </Text>
                         )}
 
-                        {isDowngrade && (
+                        {((isPro && plan.tier === 'core') ||
+                          (isPro && interval === 'annual' && plan.interval === 'monthly')) && (
                           <Text
                             numberOfLines={1}
                             ellipsizeMode="tail"

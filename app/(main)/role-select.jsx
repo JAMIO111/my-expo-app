@@ -6,44 +6,13 @@ import SafeViewWrapper from '@components/SafeViewWrapper';
 import BrandHeader from '@components/BrandHeader';
 import TeamLogo from '@components/TeamLogo';
 import { ScrollView } from 'react-native-gesture-handler';
-import { useColorScheme } from 'nativewind';
 import { useSubscription } from '@hooks/useSubscription';
 
 const RoleSelect = () => {
   const router = useRouter();
   const { roles, currentRole, setCurrentRole } = useUser();
-  const {
-    subscription, // raw DB row
-    isLoading,
-    isActive, // boolean for access gates
-    isPro, // pro-tier specific features
-    isCore, // core-tier specific features
-    tier, // 'pro' | 'core' | null
-    interval, // 'monthly' | 'annual' | null
-    expiresAt, // Date object
-    daysRemaining,
-  } = useSubscription();
+  const { isActive } = useSubscription();
   console.log('Available roles:', roles);
-  console.log(
-    'Subscription:',
-    subscription,
-    'isLoading:',
-    isLoading,
-    'isActive:',
-    isActive,
-    'isPro:',
-    isPro,
-    'isCore:',
-    isCore,
-    'tier:',
-    tier,
-    'interval:',
-    interval,
-    'expiresAt:',
-    expiresAt,
-    'daysRemaining:',
-    daysRemaining
-  );
 
   // Use current role to show context-specific UI
   if (currentRole?.type === 'player') {
@@ -67,9 +36,7 @@ const RoleSelect = () => {
               key={index}
               onPress={() => {
                 setCurrentRole(role);
-                subscription && isActive
-                  ? router.replace('/home')
-                  : router.replace('/(main)/onboarding/season');
+                isActive ? router.replace('/home') : router.replace('/(main)/onboarding/season');
               }}>
               <View className="mb-3 flex-row items-center justify-between gap-2 rounded-2xl border border-theme-gray-5 bg-bg-grouped-2 px-4 py-3 shadow-sm shadow-theme-gray-5">
                 <View className="flex-1">

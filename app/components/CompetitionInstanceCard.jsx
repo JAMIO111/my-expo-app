@@ -47,6 +47,8 @@ export function getStatusColors(status) {
       return { background: '#FF000033', text: '#FF0000', border: '#FF000066' }; // Red
     case 'Closed':
       return { background: '#FF000033', text: '#FF0000', border: '#FF000066' }; // Red
+    case 'closed':
+      return { background: '#FF000033', text: '#FF0000', border: '#FF000066' }; // Red
     case 'Entered':
       return { background: '#00800033', text: '#008000', border: '#00800066' }; // Green
     case 'active':
@@ -205,7 +207,7 @@ const CompetitionInstanceCard = ({ instance }) => {
         <View className="flex-row items-center justify-center gap-2">
           <Ionicons name="calendar-outline" size={20} color={'#666'} />
           <Text className={'mt-1 font-saira text-xl text-text-2'}>
-            {formatFixtureDate(instance?.entry_deadline)}
+            {formatFixtureDate(instance?.entry_deadline) || 'No Deadline'}
           </Text>
         </View>
       </View>

@@ -1,12 +1,12 @@
 import { StyleSheet, Text, View } from 'react-native';
-import PremiumPaywall from '@components/PremiumPaywall';
 import { Stack } from 'expo-router';
 import SafeViewWrapper from '@components/SafeViewWrapper';
 import CustomHeader from '@components/CustomHeader';
+import BasicPaywall from '@components/BasicPaywall';
 
 const index = () => {
   return (
-    <SafeViewWrapper bottomColor="bg-brand-dark" topColor="bg-brand-dark">
+    <SafeViewWrapper useBottomInset={false} topColor="bg-brand-dark">
       <Stack.Screen
         options={{
           header: () => (
@@ -21,7 +21,7 @@ const index = () => {
         }}
       />
       <View className="mt-16 flex-1">
-        <PremiumPaywall />
+        <BasicPaywall />
       </View>
     </SafeViewWrapper>
   );

@@ -10,7 +10,7 @@ import { useSubscription } from '@hooks/useSubscription';
 const _layout = () => {
   const { player, user, loading } = useUser();
   const colorScheme = useColorScheme();
-  const { subscription, isLoading: subscriptionLoading } = useSubscription();
+  const { subscription, isLoading: subscriptionLoading, isActive } = useSubscription();
 
   useEffect(() => {
     if (loading || subscriptionLoading) return;
@@ -24,7 +24,7 @@ const _layout = () => {
         ? router.replace('/home')
         : router.replace('/(main)/onboarding/upgrade');
     }
-  }, [loading, player]);
+  }, [loading, player, isActive, subscriptionLoading]);
 
   return (
     <SafeViewWrapper useBottomInset={false} topColor="bg-brand">

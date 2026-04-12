@@ -1,6 +1,6 @@
-import { useState, useRef } from 'react';
-import { StyleSheet, View, Text, Image, Pressable } from 'react-native';
-import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
+import { useState, useRef, useEffect } from 'react';
+import { StyleSheet, View, Text, Image, Pressable, Animated, Easing } from 'react-native';
+import { Stack, useLocalSearchParams } from 'expo-router';
 import { useUser } from '@contexts/UserProvider';
 import CustomHeader from '@components/CustomHeader';
 import SafeViewWrapper from '@components/SafeViewWrapper';
@@ -25,6 +25,26 @@ import Toast from 'react-native-toast-message';
 import FloatingBottomSheet from '@components/FloatingBottomSheet';
 import BottomSheetWrapper from '@/components/BottomSheetWrapper';
 import { BottomSheetScrollView, BottomSheetView } from '@gorhom/bottom-sheet';
+import KnockoutBracket from '@components/KnockoutBracket';
+
+export function getStatusColors(status) {
+  switch (status) {
+    case 'removed':
+    case 'closed':
+    case 'left':
+      return { background: '#FF000033', text: '#FF0000', border: '#FF000066' }; // Red
+    case 'closed':
+      return { background: '#FF000033', text: '#FF0000', border: '#FF000066' }; // Red
+    case 'active':
+      return { background: '#00800033', text: '#008000', border: '#00800066' }; // Green
+    case 'champion':
+      return { background: '#FFA50022', text: '#ff9100', border: '#ff910066' }; // Orange
+    case 'eliminated':
+      return { background: '#FF000033', text: '#FF0000', border: '#FF000066' }; // Red
+    default:
+      return { background: '#00000033', text: '#000000', border: '#00000066' }; // Default to black
+  }
+}
 
 const index = () => {
   const bottomSheetRef = useRef(null);
@@ -33,6 +53,8 @@ const index = () => {
   const [internalSheetConfig, setInternalSheetConfig] = useState(null); // to hold content during animation
   const [selectedRewardType, setSelectedRewardType] = useState(null); // 'winner' or 'runnerUp'
   const [selectedReward, setSelectedReward] = useState(null);
+  const [showParticipants, setShowParticipants] = useState(true);
+  const [showFixtures, setShowFixtures] = useState(false);
   const queryClient = useQueryClient();
   const colorScheme = useColorScheme();
   const themeColors = colors[colorScheme];
@@ -67,17 +89,29 @@ const index = () => {
   };
 
   const visibleParticipants = competitionInstance?.CompetitionParticipants.filter((p) => {
-    const isVisibleStatus = p.status === 'active' || p.status === 'requested';
+    const isOwn = p.team_id === currentRole?.team?.id || p.player_id === player?.id;
 
-    // Admins see everything (based on status only)
-    if (currentRole?.role === 'admin') {
-      return isVisibleStatus;
-    }
+    if (currentRole?.role === 'admin') return true;
 
-    // Non-admins: restrict to own team/player
-    const isOwnEntry = p.team_id === currentRole?.team?.id || p.player_id === player?.id;
+    const publicStatuses = ['active', 'eliminated', 'champion'];
 
-    return isVisibleStatus && isOwnEntry;
+    return publicStatuses.includes(p.status) || (p.status === 'requested' && isOwn);
+  });
+
+  const rotateAnim = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    Animated.timing(rotateAnim, {
+      toValue: showFixtures ? 1 : 0,
+      duration: 250,
+      easing: Easing.out(Easing.cubic),
+      useNativeDriver: true,
+    }).start();
+  }, [showFixtures]);
+
+  const rotate = rotateAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: ['0deg', '180deg'],
   });
 
   console.log('Competition Instance Details:', competitionInstance);
@@ -197,7 +231,8 @@ const index = () => {
       const { error } = await supabase
         .from('CompetitionParticipants')
         .update({
-          status: status === 'active' ? 'left' : 'cancelled',
+          status:
+            status === 'active' ? (currentRole.role === 'admin' ? 'left' : 'removed') : 'cancelled',
           left_at: new Date().toISOString(),
         })
         .eq('competition_instance_id', instanceId)
@@ -308,7 +343,7 @@ const index = () => {
       setQueryLoading(true);
       const { error } = await supabase
         .from('CompetitionInstances')
-        .update({ status: 'active' })
+        .update({ status: 'closed' })
         .eq('id', instanceId);
 
       if (error) throw error;
@@ -337,9 +372,13 @@ const index = () => {
     if (queryLoading) return;
     try {
       setQueryLoading(true);
-      const { error } = await supabase.rpc('generate_fixtures', { comp_instance_id: instanceId });
+      const { error } = await supabase.rpc('generate_knockout_bracket', {
+        p_competition_instance_id: instanceId,
+      });
 
       if (error) throw error;
+
+      await supabase.from('CompetitionInstances').update({ status: 'active' }).eq('id', instanceId);
 
       Toast.show({
         type: 'success',
@@ -358,6 +397,45 @@ const index = () => {
       });
     } finally {
       setQueryLoading(false);
+    }
+  };
+
+  const progressStage = async (compInstanceId) => {
+    try {
+      const { error } = await supabase.rpc('progress_stage', {
+        p_competition_instance_id: compInstanceId,
+      });
+
+      if (error) {
+        // 🔥 parse backend payload
+        let details = null;
+
+        try {
+          details = error.details ? JSON.parse(error.details) : null;
+        } catch {
+          details = null;
+        }
+
+        Toast.show({
+          type: 'info',
+          text1: details?.title || error.message || 'Error',
+          text2: details?.reason || 'Something went wrong',
+        });
+
+        return;
+      }
+
+      queryClient.invalidateQueries({
+        queryKey: ['knockout-bracket', compInstanceId],
+      });
+    } catch (err) {
+      // 🔥 truly unexpected (network, runtime, etc.)
+
+      Toast.show({
+        type: 'error',
+        text1: 'Unexpected error',
+        text2: 'Please check your connection and try again.',
+      });
     }
   };
 
@@ -380,9 +458,7 @@ const index = () => {
             contentContainerStyle={{ display: 'flex', flexGrow: 1, gap: 6 }}
             className="mt-16 flex-1 bg-bg-2">
             <View className="gap-6 bg-bg-1 p-4">
-              <Text className="px-1 font-saira-medium text-2xl text-text-1">
-                Competition Details
-              </Text>
+              <Text className="font-saira-medium text-2xl text-text-1">Competition Details</Text>
               <View className="flex-row">
                 <View className="flex-1 gap-3">
                   <View>
@@ -464,44 +540,97 @@ const index = () => {
                     }
                   />
                 )}
-              {currentRole?.role === 'admin' && (
-                <CTAButton
-                  type={
-                    competitionInstance?.status === 'upcoming'
-                      ? 'error'
-                      : competitionInstance?.status === 'active'
-                        ? 'yellow'
-                        : 'yellow'
-                  }
-                  text={
-                    competitionInstance?.status === 'upcoming'
-                      ? 'Close Entries'
-                      : competitionInstance?.status === 'active'
-                        ? 'Generate Fixtures'
-                        : ''
-                  }
-                  callbackFn={
-                    competitionInstance?.status === 'upcoming'
-                      ? () =>
-                          showSheet({
-                            title: 'Close Competition Entries',
-                            message:
-                              'Are you sure you want to close the entries for this competition? No more participants will be able to join.',
-                            confirmText: 'Close Entries',
-                            confirmType: 'error',
-                            onConfirm: handleCloseEntries,
-                          })
-                      : competitionInstance?.status === 'active'
-                        ? handleGenerateFixtures
-                        : null
-                  }
-                />
-              )}
+              {currentRole?.role === 'admin' &&
+                (competitionInstance?.status === 'upcoming' ||
+                  competitionInstance?.status === 'closed') && (
+                  <CTAButton
+                    type={
+                      competitionInstance?.status === 'upcoming'
+                        ? 'error'
+                        : competitionInstance?.status === 'closed'
+                          ? 'yellow'
+                          : 'yellow'
+                    }
+                    text={
+                      competitionInstance?.status === 'upcoming'
+                        ? 'Close Entries'
+                        : competitionInstance?.status === 'closed'
+                          ? 'Generate Fixtures'
+                          : ''
+                    }
+                    callbackFn={
+                      competitionInstance?.status === 'upcoming'
+                        ? () =>
+                            showSheet({
+                              title: 'Close Competition Entries',
+                              message:
+                                'Are you sure you want to close the entries for this competition? No more participants will be able to join.',
+                              confirmText: 'Close Entries',
+                              confirmType: 'error',
+                              onConfirm: handleCloseEntries,
+                            })
+                        : competitionInstance?.status === 'closed'
+                          ? handleGenerateFixtures
+                          : null
+                    }
+                  />
+                )}
+            </View>
+            <View className="gap-2 bg-bg-1 p-4">
+              <Pressable
+                className="flex-row items-center justify-between pr-6"
+                onPress={() => setShowFixtures(!showFixtures)}>
+                <Text className="font-saira-medium text-2xl text-text-1">Fixtures</Text>
+
+                {
+                  <View className="">
+                    <Animated.View style={{ transform: [{ rotate }] }}>
+                      <Ionicons className="" name="chevron-down" size={30} />
+                    </Animated.View>
+                  </View>
+                }
+              </Pressable>
+              <View style={{ marginTop: 10, display: showFixtures ? 'flex' : 'none' }}>
+                {competitionInstance?.status === 'active' ? (
+                  (() => {
+                    switch (competitionInstance?.competition?.competition_type) {
+                      case 'knockout':
+                        return (
+                          <View className="mb-2 gap-5">
+                            <KnockoutBracket competitionInstanceId={instanceId} />
+                            {currentRole?.role === 'admin' && (
+                              <CTAButton
+                                text="Proceed to Next Round"
+                                type="yellow"
+                                callbackFn={() => progressStage(instanceId)}
+                              />
+                            )}
+                          </View>
+                        );
+                      default:
+                        return (
+                          <Text className="font-saira text-xl text-text-2">
+                            No Fixtures available yet.
+                          </Text>
+                        );
+                    }
+                  })()
+                ) : (
+                  <Text className="font-saira text-xl text-text-2">No Fixtures available yet.</Text>
+                )}
+              </View>
             </View>
             <View className="bg-bg-1 p-4">
-              <Text className="px-1 pb-4 font-saira-medium text-2xl text-text-1">
-                Competition Participants
-              </Text>
+              <View className="gap-1 pb-4">
+                <Text className="font-saira-medium text-2xl text-text-1">
+                  Competition Participants
+                </Text>
+                {competitionInstance?.CompetitionParticipants.length > 0 && (
+                  <Text className="font-saira text-xl text-text-2">
+                    {competitionInstance.CompetitionParticipants.length} participants
+                  </Text>
+                )}
+              </View>
               <View className="gap-1">
                 {visibleParticipants?.length === 0 ? (
                   <Text className="px-1 font-saira text-xl text-text-2">No participants yet</Text>
@@ -514,6 +643,7 @@ const index = () => {
                       `${participant.first_name} ${participant.surname}`;
                     const isMe = participant.id === player.id;
                     const isMyTeam = isTeam && entity.team_id === currentRole?.team?.id;
+                    const statusColors = getStatusColors(entity.status);
                     return (
                       <View
                         key={participant.id}
@@ -535,6 +665,17 @@ const index = () => {
                           className="flex-1 px-1 font-saira-medium text-lg text-text-1">
                           {participantName}
                         </Text>
+                        <Text
+                          style={{
+                            color: statusColors.text,
+                            backgroundColor: statusColors.background,
+                            borderColor: statusColors.border,
+                            borderWidth: 1,
+                            borderRadius: 10,
+                          }}
+                          className="px-2 font-saira text-sm text-text-2">
+                          {entity.status.slice(0, 1).toUpperCase() + entity.status.slice(1)}
+                        </Text>
                         {entity.status === 'requested' && (
                           <Text
                             style={{
@@ -548,33 +689,34 @@ const index = () => {
                             Requested
                           </Text>
                         )}
-                        {(isMyTeam || isMe) && currentRole?.role !== 'admin' && (
-                          <Pressable
-                            onPress={() => {
-                              showSheet({
-                                title:
-                                  entity.status === 'requested'
-                                    ? 'Cancel Join Request'
-                                    : 'Leave Competition',
-                                message:
-                                  entity.status === 'requested'
-                                    ? 'Are you sure you want to cancel your join request?'
-                                    : 'Are you sure you want to leave this competition? You will not be able to rejoin.',
-                                confirmText:
-                                  entity.status === 'requested' ? 'Cancel Request' : 'Leave',
-                                confirmType: 'error',
-                                onConfirm: () => handleWithdraw(entity.status),
-                              });
-                            }}>
-                            <Ionicons
-                              name={
-                                entity.status === 'requested' ? 'close-outline' : 'exit-outline'
-                              }
-                              size={26}
-                              color="#FF0000"
-                            />
-                          </Pressable>
-                        )}
+                        {((isMyTeam && currentRole.team?.captain === player.id) || isMe) &&
+                          currentRole?.role !== 'admin' && (
+                            <Pressable
+                              onPress={() => {
+                                showSheet({
+                                  title:
+                                    entity.status === 'requested'
+                                      ? 'Cancel Join Request'
+                                      : 'Leave Competition',
+                                  message:
+                                    entity.status === 'requested'
+                                      ? 'Are you sure you want to cancel your join request?'
+                                      : 'Are you sure you want to leave this competition? You will not be able to rejoin.',
+                                  confirmText:
+                                    entity.status === 'requested' ? 'Cancel Request' : 'Leave',
+                                  confirmType: 'error',
+                                  onConfirm: () => handleWithdraw(entity.status),
+                                });
+                              }}>
+                              <Ionicons
+                                name={
+                                  entity.status === 'requested' ? 'close-outline' : 'exit-outline'
+                                }
+                                size={26}
+                                color="#FF0000"
+                              />
+                            </Pressable>
+                          )}
                         {currentRole?.role === 'admin' && (
                           <View className="flex-row items-center gap-3">
                             {entity.status === 'requested' && (
@@ -632,7 +774,7 @@ const index = () => {
                 )}
               </View>
             </View>
-            <View className="bg-bg-1 p-4 pb-8">
+            <View style={{ minHeight: 360 }} className="bg-bg-1 p-4 pb-8">
               <Text className="px-1 pb-4 font-saira-medium text-2xl text-text-1">
                 Competition Awards
               </Text>

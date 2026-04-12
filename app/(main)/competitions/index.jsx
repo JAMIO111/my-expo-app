@@ -26,7 +26,7 @@ const index = () => {
     (instance) => instance.status === 'completed'
   );
   const upcomingCompetitions = competitionsInstances?.filter(
-    (instance) => instance.status === 'upcoming'
+    (instance) => instance.status === 'upcoming' || instance.status === 'closed'
   );
   return (
     <>
