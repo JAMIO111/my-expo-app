@@ -72,8 +72,19 @@ const Slot = ({ name, isWinner, isBye, isHome }) => {
 };
 
 // ─── Match Card ──────────────────────────────────────────
-const MatchCard = ({ fixture, teams, isFinal, animDelay }) => {
+const MatchCard = ({ fixture, teams, players, isFinal, animDelay }) => {
   const fadeAnim = useRef(new Animated.Value(0)).current;
+
+  const getParticipantName = (fixture, side) => {
+    const id =
+      side === 'home'
+        ? fixture.home_team || fixture.home_player
+        : fixture.away_team || fixture.away_player;
+
+    if (!id) return null;
+
+    return teams[id] || players[id] || null;
+  };
 
   useEffect(() => {
     Animated.timing(fadeAnim, {
@@ -84,12 +95,12 @@ const MatchCard = ({ fixture, teams, isFinal, animDelay }) => {
     }).start();
   }, []);
 
-  const homeName = fixture.home_team ? teams[fixture.home_team] : null;
-  const awayName = fixture.away_team ? teams[fixture.away_team] : null;
+  const homeName = getParticipantName(fixture, 'home');
+  const awayName = getParticipantName(fixture, 'away');
 
   const isPending = !fixture.home_team && !fixture.away_team;
-  const homeBye = !fixture.home_team && !isPending;
-  const awayBye = !fixture.away_team && !isPending;
+  const homeBye = !fixture.home_team && !fixture.home_player && !isPending;
+  const awayBye = !fixture.away_team && !fixture.away_player && !isPending;
 
   return (
     <Pressable disabled={isPending || homeBye || awayBye} style={{ opacity: isPending ? 0.7 : 1 }}>
@@ -109,10 +120,12 @@ const MatchCard = ({ fixture, teams, isFinal, animDelay }) => {
 // ─── Main Component ──────────────────────────────────────
 export default function KnockoutBracket({ competitionInstanceId }) {
   const { data, isLoading, error } = useKnockoutBracket(competitionInstanceId);
+  console.log('KnockoutBracket - data:', data);
 
   const stages = data?.stages ?? [];
   const fixtures = data?.fixtures ?? [];
   const teams = data?.teams ?? {};
+  const players = data?.players ?? {};
 
   const rounds = useMemo(() => {
     if (!stages.length || !fixtures.length) return [];
@@ -205,6 +218,7 @@ export default function KnockoutBracket({ competitionInstanceId }) {
                 <MatchCard
                   fixture={fixture}
                   teams={teams}
+                  players={players}
                   isFinal={ri === nR - 1}
                   animDelay={(ri * 3 + mi) * 55}
                 />

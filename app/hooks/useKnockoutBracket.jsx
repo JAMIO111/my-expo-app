@@ -1,7 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 
-// reuse your existing function
 async function fetchBracketData(competitionInstanceId) {
   const { data: stages } = await supabase
     .from('Stages')
@@ -15,22 +14,54 @@ async function fetchBracketData(competitionInstanceId) {
     .select('*')
     .eq('competition_instance_id', competitionInstanceId);
 
+  // =========================
+  // 1. Detect participant type
+  // =========================
+  const isIndividual = fixtures?.some((f) => f.home_player || f.away_player);
+
   const teamIds = [
     ...new Set(fixtures?.flatMap((f) => [f.home_team, f.away_team].filter(Boolean)) ?? []),
   ];
 
+  const playerIds = [
+    ...new Set(fixtures?.flatMap((f) => [f.home_player, f.away_player].filter(Boolean)) ?? []),
+  ];
+
   let teamsMap = {};
+  let playersMap = {};
 
+  // =========================
+  // 2. Fetch teams
+  // =========================
   if (teamIds.length) {
-    const { data: teams } = await supabase.from('Teams').select('id, name').in('id', teamIds);
+    const { data: teams } = await supabase
+      .from('Teams')
+      .select('id, name, display_name')
+      .in('id', teamIds);
 
-    teamsMap = Object.fromEntries(teams?.map((t) => [t.id, t.name]) ?? []);
+    teamsMap = Object.fromEntries((teams ?? []).map((t) => [t.id, t.display_name || t.name]));
+  }
+
+  // =========================
+  // 3. Fetch players (individuals)
+  // =========================
+  if (playerIds.length) {
+    const { data: players } = await supabase
+      .from('Players')
+      .select('id, first_name, surname')
+      .in('id', playerIds);
+
+    playersMap = Object.fromEntries(
+      (players ?? []).map((p) => [p.id, `${p.first_name} ${p.surname}`])
+    );
   }
 
   return {
     stages: stages ?? [],
     fixtures: fixtures ?? [],
     teams: teamsMap,
+    players: playersMap,
+    isIndividual,
   };
 }
 
@@ -39,7 +70,7 @@ export function useKnockoutBracket(competitionInstanceId) {
     queryKey: ['knockout-bracket', competitionInstanceId],
     queryFn: () => fetchBracketData(competitionInstanceId),
     enabled: !!competitionInstanceId,
-    staleTime: 1000 * 60 * 30, // 30 mins (tweak if needed)
-    cacheTime: 1000 * 60 * 60, // keep in cache 60 mins
+    staleTime: 1000 * 60 * 30,
+    cacheTime: 1000 * 60 * 60,
   });
 }
