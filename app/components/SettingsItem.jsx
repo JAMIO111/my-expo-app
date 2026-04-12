@@ -69,7 +69,8 @@ const SettingsItem = ({
               <Text
                 numberOfLines={1}
                 ellipsizeMode="tail"
-                className="ml-2 flex-1 text-right text-lg text-text-2">
+                adjustsFontSizeToFit={true}
+                className="text ml-2 flex-1 text-right text-lg text-text-2">
                 {text}
               </Text>
             )}

@@ -1,10 +1,10 @@
 import { StyleSheet, View, Text, Pressable, Image, Switch } from 'react-native';
-import { Stack, useRouter, useLocalSearchParams, useNavigation } from 'expo-router';
+import { Stack, useRouter, useLocalSearchParams, useNavigation, router } from 'expo-router';
 import CustomHeader from '@components/CustomHeader';
 import SafeViewWrapper from '@components/SafeViewWrapper';
 import { ScrollView } from 'react-native-gesture-handler';
 import CTAButton from '@components/CTAButton';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import CustomTextInput from '@components/CustomTextInput';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import Toast from 'react-native-toast-message';
@@ -12,8 +12,9 @@ import { StackActions } from '@react-navigation/native';
 import { supabase } from '@/lib/supabase';
 import { useQueryClient } from '@tanstack/react-query';
 import { useUser } from '@contexts/UserProvider';
+import { useCompetition } from '@hooks/useCompetition';
 
-const CompetitionRules = () => {
+const CompetitionRules = ({ context }) => {
   const { currentRole } = useUser();
   const navigation = useNavigation();
   const queryClient = useQueryClient();
@@ -26,7 +27,73 @@ const CompetitionRules = () => {
   const [byeRounds, setByeRounds] = useState(true);
   const [loading, setLoading] = useState(false);
 
+  const { data: competition } = useCompetition(params?.competitionId || null);
+
   console.log('Received params in CompetitionRules:', params);
+
+  useEffect(() => {
+    setBestOf(competition?.best_of ? competition.best_of.toString() : '');
+    setLegs(competition?.legs ? competition.legs.toString() : '1');
+    setMaxCompetitors(competition?.max_competitors ? competition.max_competitors.toString() : '');
+    setByeRounds(competition?.auto_bye_rounds ?? true);
+    setConsolationMatch(competition?.consolation_match ?? false);
+    setBracketGeneration(competition?.bracket_generation);
+  }, [competition]);
+
+  const handleInitiateCompetition = async () => {
+    if (!bracketGeneration) {
+      Toast.show({
+        type: 'info',
+        text1: 'Bracket Generation Method Required',
+        text2: 'Please select a bracket generation method before continuing.',
+      });
+      return;
+    }
+    if (loading) return;
+    setLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from('CompetitionInstances')
+        .insert({
+          season_id: currentRole.activeSeason.id,
+          competition_id: params.competitionId,
+          name: competition.name,
+          division_id: competition.division_id,
+          min_age: competition.min_age,
+          max_age: competition.max_age,
+          gender: competition.gender,
+          max_competitors: maxCompetitors ? parseInt(maxCompetitors) : null,
+          bracket_generation: bracketGeneration,
+          legs: legs ? parseInt(legs) : 1,
+          best_of: bestOf ? parseInt(bestOf) : null,
+          auto_bye_rounds: byeRounds,
+          consolation_match: consolationMatch,
+          status: 'upcoming',
+        })
+        .select('id')
+        .single();
+      if (error) {
+        console.error('Error inserting competition instance:', error);
+        throw error; // 👈 force it into catch
+      }
+      Toast.show({
+        type: 'success',
+        text1: 'Competition Initiated',
+        text2: 'Your competition has been successfully initiated.',
+      });
+      queryClient.invalidateQueries(['CompetitionInstances', params.competitionId]);
+      router.push(`/competitions/${data.id}`);
+    } catch (error) {
+      console.error('Error initiating competition:', error);
+      Toast.show({
+        type: 'error',
+        text1: 'Error',
+        text2: 'An error occurred while initiating the competition. Please try again.',
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleContinue = async () => {
     if (!bracketGeneration) {
@@ -108,7 +175,7 @@ const CompetitionRules = () => {
           className="mt-16 flex-1 bg-brand px-4">
           <View className="gap-1">
             <CustomTextInput
-              title={`Max No. of ${params.competitorType === 'team' ? 'Teams' : 'Players'}`}
+              title={`Max No. of ${(context === 'create' ? params.competitorType : competition?.competitor_type) === 'team' ? 'Teams' : 'Players'}`}
               value={maxCompetitors}
               onChangeText={setMaxCompetitors}
               keyboardType="numeric"
@@ -201,7 +268,7 @@ const CompetitionRules = () => {
             </Text>
           </View>
 
-          <View className="gap-4">
+          <View className="mb-4 gap-6">
             {/* Bye Rounds */}
             <View className="flex-row items-center justify-between gap-5 rounded-xl bg-bg-1 p-3">
               <View className="flex-1 items-start justify-center gap-1">
@@ -238,7 +305,11 @@ const CompetitionRules = () => {
             </View>
           </View>
 
-          <CTAButton text="Continue" type="yellow" callbackFn={handleContinue} />
+          <CTAButton
+            text={context === 'create' ? 'Continue' : 'Initiate Competition'}
+            type="yellow"
+            callbackFn={context === 'create' ? handleContinue : handleInitiateCompetition}
+          />
         </ScrollView>
       </SafeViewWrapper>
     </>

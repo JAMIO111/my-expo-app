@@ -61,7 +61,7 @@ const Requirements = () => {
       return;
     }
     router.push({
-      pathname: '/competitions/create-blueprint/competition-rules',
+      pathname: '/competitions/create-blueprint/create-competition-rules',
       params: {
         ...params,
         competitorType,

@@ -1,7 +1,6 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Platform, Alert } from 'react-native';
-import { useIAP } from 'react-native-iap';
-import { handlePurchaseError } from '@lib/helperFunctions';
+import { useIAP, ErrorCode } from 'react-native-iap';
 import { supabase } from '@/lib/supabase';
 
 // Derives tier and interval from the SKU string
@@ -62,6 +61,8 @@ const normalizeSubscriptions = (rawSubscriptions) => {
 };
 
 const useIAPHook = () => {
+  const [isRestoring, setIsRestoring] = useState(false);
+  const [isSubscribing, setIsSubscribing] = useState(false);
   const {
     connected,
     subscriptions,
@@ -146,7 +147,164 @@ const useIAPHook = () => {
           message: error.message,
         })
       );
-      handlePurchaseError(error);
+      // User dismissed the payment sheet — silent, no alert needed
+      if (error.code === ErrorCode.UserCancelled) return;
+
+      switch (error.code) {
+        // ── Network / Connectivity ─────────────────────────────────────────────
+        case ErrorCode.NetworkError:
+          Alert.alert('No Connection', 'Please check your internet connection and try again.');
+          break;
+
+        case ErrorCode.ServiceDisconnected:
+        case ErrorCode.ConnectionClosed:
+          Alert.alert('Store Disconnected', 'Lost connection to the store. Please try again.');
+          break;
+
+        case ErrorCode.RemoteError:
+          Alert.alert('Store Error', 'The store returned an error. Please try again in a moment.');
+          break;
+
+        // ── Store / Billing Availability ───────────────────────────────────────
+        case ErrorCode.BillingUnavailable:
+        case ErrorCode.IapNotAvailable:
+          Alert.alert(
+            'Store Unavailable',
+            Platform.OS === 'android'
+              ? 'Google Play billing is unavailable. Please check your Play Store account.'
+              : 'The App Store is currently unavailable. Please try again later.'
+          );
+          break;
+
+        case ErrorCode.ActivityUnavailable:
+          Alert.alert(
+            'Cannot Open Store',
+            'The payment screen could not be opened. Please try again.'
+          );
+          break;
+
+        case ErrorCode.FeatureNotSupported:
+          Alert.alert('Not Supported', 'Subscriptions are not supported on this device.');
+          break;
+
+        // ── Product / SKU Issues ───────────────────────────────────────────────
+        case ErrorCode.ItemUnavailable:
+        case ErrorCode.SkuNotFound:
+          Alert.alert(
+            'Plan Unavailable',
+            'This plan is not currently available. Please try again later.'
+          );
+          break;
+
+        case ErrorCode.EmptySkuList:
+        case ErrorCode.QueryProduct:
+          Alert.alert(
+            'Could Not Load Plans',
+            'Failed to load subscription plans. Please restart the app and try again.'
+          );
+          break;
+
+        case ErrorCode.SkuOfferMismatch:
+          Alert.alert(
+            'Plan Mismatch',
+            'There was a mismatch with the selected plan. Please try selecting it again.'
+          );
+          break;
+
+        // ── Ownership ──────────────────────────────────────────────────────────
+        case ErrorCode.AlreadyOwned:
+          Alert.alert(
+            'Already Subscribed',
+            'It looks like you already have this plan. Try restoring your purchases.',
+            [
+              { text: 'Restore Purchases', onPress: () => restorePurchases() },
+              { text: 'Dismiss', style: 'cancel' },
+            ]
+          );
+          break;
+
+        case ErrorCode.ItemNotOwned:
+          Alert.alert('Not Subscribed', 'No active subscription was found for this plan.');
+          break;
+
+        // ── Payment Flow ───────────────────────────────────────────────────────
+        case ErrorCode.DeferredPayment:
+          Alert.alert(
+            'Approval Pending',
+            'Your purchase is waiting for approval (e.g. Ask to Buy). You will be notified once confirmed.'
+          );
+          break;
+
+        case ErrorCode.Pending:
+          Alert.alert(
+            'Purchase Pending',
+            'Your purchase is being processed. Please wait and check back shortly.'
+          );
+          break;
+
+        case ErrorCode.Interrupted:
+          Alert.alert(
+            'Purchase Interrupted',
+            'Your purchase was interrupted. No payment was taken — please try again.'
+          );
+          break;
+
+        case ErrorCode.UserError:
+          Alert.alert(
+            'Payment Not Allowed',
+            'Your device is not authorised to make payments. Check your payment method or parental control settings.'
+          );
+          break;
+
+        // ── Receipt / Transaction Validation ──────────────────────────────────
+        case ErrorCode.ReceiptFailed:
+        case ErrorCode.TransactionValidationFailed:
+        case ErrorCode.PurchaseVerificationFailed:
+          Alert.alert(
+            'Verification Failed',
+            'We could not verify your purchase. Please contact support — you will not be charged.'
+          );
+          break;
+
+        case ErrorCode.NotEnded:
+        case ErrorCode.ReceiptFinishedFailed:
+        case ErrorCode.PurchaseVerificationFinishFailed:
+          Alert.alert(
+            'Transaction Incomplete',
+            'Your purchase completed but could not be finalised. Please restore purchases or contact support.',
+            [
+              { text: 'Restore Purchases', onPress: () => restorePurchases() },
+              { text: 'Dismiss', style: 'cancel' },
+            ]
+          );
+          break;
+
+        // ── Developer / Config Errors (should never surface in production) ─────
+        case ErrorCode.DeveloperError:
+        case ErrorCode.InitConnection:
+        case ErrorCode.NotPrepared:
+        case ErrorCode.AlreadyPrepared:
+        case ErrorCode.SyncError:
+          console.error('[IAP Config Error]', { code: error.code, message: error.message });
+          Alert.alert('Something Went Wrong', 'An unexpected error occurred. Please try again.');
+          break;
+
+        // ── Catch-all ──────────────────────────────────────────────────────────
+        case ErrorCode.PurchaseError:
+        case ErrorCode.ServiceError:
+        case ErrorCode.Unknown:
+        default:
+          Alert.alert(
+            'Something Went Wrong',
+            'An unexpected error occurred. Please try again or contact support if the problem persists.'
+          );
+          console.error('[IAP Error]', {
+            code: error.code,
+            message: error.message,
+            platform: Platform.OS,
+          });
+          break;
+      }
     },
   });
 
@@ -191,6 +349,7 @@ const useIAPHook = () => {
     if (!plan) return;
 
     try {
+      setIsSubscribing(true);
       await requestPurchase({
         request: {
           apple: { sku: plan.sku },
@@ -207,39 +366,35 @@ const useIAPHook = () => {
       });
     } catch (e) {
       console.log('[IAP] requestPurchase threw:', e?.message, e?.code);
+    } finally {
+      setIsSubscribing(false);
     }
   };
 
   const restorePurchases = async () => {
+    setIsRestoring(true);
     try {
-      // getAvailablePurchases populates the availablePurchases state,
-      // it doesn't return the array — read from state after calling it
-      await getAvailablePurchases();
+      const purchases = await getAvailablePurchases();
 
-      // Small delay to let state update after the call
-      await new Promise((resolve) => setTimeout(resolve, 500));
+      const list = purchases || availablePurchases || [];
 
-      if (!availablePurchases?.length) {
+      if (!list.length) {
         Alert.alert('No Purchases Found', 'No previous purchases were found for this account.');
-        return;
+        setIsRestoring(false);
+        return { restoredCount: 0, failedCount: 0 };
       }
 
       const {
         data: { session },
       } = await supabase.auth.getSession();
+
       if (!session?.user?.id) throw new Error('No active session');
 
       let restoredCount = 0;
       let failedCount = 0;
 
-      for (const purchase of availablePurchases) {
+      for (const purchase of list) {
         try {
-          console.log('[IAP] Restoring purchase:', {
-            productId: purchase.productId,
-            transactionId: purchase.transactionId,
-            platform: purchase.platform,
-          });
-
           const response = await supabase.functions.invoke('verify-receipt', {
             body: { purchase, userId: session.user.id },
           });
@@ -248,40 +403,31 @@ const useIAPHook = () => {
             typeof response.data === 'string' ? JSON.parse(response.data) : response.data;
 
           if (response.error || !data?.valid) {
-            console.warn('[IAP] Restore verify failed for:', purchase.productId, data?.error);
             failedCount++;
             continue;
           }
 
           await finishTransaction({ purchase });
           restoredCount++;
-          console.log('[IAP] Restored:', purchase.productId, data.status);
-        } catch (purchaseError) {
-          console.error('[IAP] Error restoring purchase:', purchaseError?.message);
+        } catch {
           failedCount++;
         }
       }
 
-      // Show result to user
-      if (restoredCount > 0) {
-        Alert.alert(
-          'Purchases Restored',
-          `Successfully restored ${restoredCount} purchase${restoredCount > 1 ? 's' : ''}.`
-        );
-      } else if (failedCount > 0) {
-        Alert.alert(
-          'Restore Failed',
-          'We could not restore your purchases. Please contact support if this continues.'
-        );
-      } else {
-        Alert.alert('Nothing to Restore', 'No active subscriptions were found for this account.');
-      }
+      Alert.alert(
+        'Restore Complete',
+        `Restored ${restoredCount} purchase(s). ${
+          failedCount ? `${failedCount} failed to restore.` : ''
+        }`
+      );
+
+      setIsRestoring(false);
+      return { restoredCount, failedCount };
     } catch (error) {
       console.error('[IAP] Restore failed:', error?.message);
-      Alert.alert(
-        'Restore Failed',
-        'Something went wrong while restoring your purchases. Please try again.'
-      );
+      throw error;
+    } finally {
+      setIsRestoring(false);
     }
   };
 
@@ -289,7 +435,9 @@ const useIAPHook = () => {
     subscriptions: normalizedSubscriptions, // ✅ clean, normalised array
     currentSubscription, // ✅ normalised active plan or null
     handleSubscribe,
+    isSubscribing,
     restorePurchases,
+    isRestoring,
     isLoading,
   };
 };

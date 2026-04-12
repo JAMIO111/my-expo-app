@@ -30,20 +30,25 @@ const NavBar = ({ type = 'main' }) => {
   ];
 
   const ONBOARDING_NAV_ITEMS = [
+    { name: 'My Team', href: '/onboarding/my-team', icon: TeamIcon },
     { name: 'Upgrade', href: '/onboarding/upgrade', icon: DiamondIcon },
-    { name: 'Season', href: '/onboarding/season', icon: TrophyIcon },
+    { name: 'Season', href: '/onboarding/season' },
     { name: 'Explore', href: '/onboarding/explore', icon: SearchIcon },
     { name: 'Profile', href: '/onboarding/profile', icon: UserIcon },
   ];
 
   const ACTIVE_NAV_ITEMS = type === 'onboarding' ? ONBOARDING_NAV_ITEMS : NAV_ITEMS;
 
+  const leftItems = ACTIVE_NAV_ITEMS.slice(0, 2);
+  const centerItem = ACTIVE_NAV_ITEMS[2];
+  const rightItems = ACTIVE_NAV_ITEMS.slice(3);
+
   const spinValue = useRef(new Animated.Value(0)).current;
   const opacityValue = useRef(new Animated.Value(0)).current;
   const scaleValues = useRef(NAV_ITEMS.map(() => new Animated.Value(1))).current;
 
   useEffect(() => {
-    if (pathname === '/home') {
+    if (pathname === '/home' || pathname === '/onboarding/season') {
       // On /home: fade in and spin
       Animated.parallel([
         Animated.timing(opacityValue, {
@@ -100,69 +105,68 @@ const NavBar = ({ type = 'main' }) => {
 
       <View className="absolute top-6 h-4 w-full bg-brand-light" />
 
-      {ACTIVE_NAV_ITEMS.map(({ name, href, icon: Icon }, index) => {
-        const isActive = pathname === href;
-        const isCenter = index === 2;
+      {/* LEFT SIDE */}
+      <View className="flex-1 flex-row items-center justify-evenly gap-3 pl-2">
+        {leftItems.map(({ name, href, icon: Icon }, index) => {
+          const isActive = pathname === href;
 
-        const handleNavigate = () => {
-          if (!isActive && href) {
-            router.replace(href);
-          }
-        };
-
-        const pressableProps = {
-          onPressIn: () => scaleDown(index),
-          onPressOut: () => {
-            scaleUp(index);
-            handleNavigate();
-          },
-          disabled: isActive,
-        };
-
-        if (isCenter && type !== 'onboarding') {
           return (
-            <View
-              key={href || index}
-              className="absolute h-20 items-center justify-between"
-              style={{ width: 64, top: 5, alignSelf: 'center' }}>
-              <Pressable
-                {...pressableProps}
-                className="h-16 w-16 items-center justify-center rounded-full bg-black pb-1 shadow-lg">
-                <Animated.View
-                  style={{
-                    opacity: opacityValue,
-                    transform: [{ rotate: spinInterpolate }, { scale: scaleValues[index] }],
-                  }}
-                  className="h-8 w-8 items-center justify-center rounded-full bg-white">
-                  <Text className="text-2xl text-black">8</Text>
-                </Animated.View>
-              </Pressable>
-              <Text className="font-saira text-white">{name}</Text>
-            </View>
-          );
-        }
-
-        return (
-          <View key={href} className="items-center justify-center">
             <Pressable
-              {...pressableProps}
-              className={`${
-                index === 1 && type !== 'onboarding'
-                  ? 'mr-10'
-                  : index === 3 && type !== 'onboarding'
-                    ? 'ml-10'
-                    : ''
-              } h-full flex-1 items-center justify-center`}>
+              key={href}
+              onPress={() => !isActive && router.replace(href)}
+              className="flex-1 items-center">
               <Animated.View style={{ transform: [{ scale: scaleValues[index] }] }}>
-                {Icon && (
-                  <Icon width={28} height={28} color="white" strokeWidth={isActive ? 2 : 1} />
-                )}
+                <Icon width={28} height={28} color="white" strokeWidth={isActive ? 2 : 1} />
               </Animated.View>
               <Text className="font-saira text-white">{name}</Text>
             </Pressable>
-          </View>
-        );
-      })}
+          );
+        })}
+      </View>
+
+      {/* CENTER BUTTON SPACE (fixed position) */}
+      <View style={{ paddingBottom: 70 }} className="h-40 w-20 items-center justify-center">
+        <Pressable
+          onPress={() => {
+            if (pathname !== centerItem.href) {
+              router.replace(centerItem.href);
+            }
+          }}
+          onPressIn={() => scaleDown(2)}
+          onPressOut={() => scaleUp(2)}
+          className="h-16 w-16 items-center justify-center rounded-full bg-black shadow-lg">
+          <Animated.View
+            style={{
+              opacity: opacityValue,
+              transform: [{ rotate: spinInterpolate }, { scale: scaleValues[2] }],
+            }}
+            className="h-8 w-8 items-center justify-center rounded-full bg-white">
+            <Text className="text-2xl text-black">8</Text>
+          </Animated.View>
+        </Pressable>
+
+        <Text className="font-saira text-white">{centerItem.name}</Text>
+      </View>
+
+      {/* RIGHT SIDE */}
+      <View className="flex-1 flex-row items-center justify-evenly gap-3 pr-2">
+        {rightItems.map(({ name, href, icon: Icon }, i) => {
+          const realIndex = i + 3;
+          const isActive = pathname === href;
+
+          return (
+            <Pressable
+              key={href}
+              onPress={() => !isActive && router.replace(href)}
+              className="flex-1 items-center">
+              <Animated.View style={{ transform: [{ scale: scaleValues[realIndex] }] }}>
+                <Icon width={28} height={28} color="white" strokeWidth={isActive ? 2 : 1} />
+              </Animated.View>
+              <Text className="font-saira text-white">{name}</Text>
+            </Pressable>
+          );
+        })}
+      </View>
     </View>
   );
 };

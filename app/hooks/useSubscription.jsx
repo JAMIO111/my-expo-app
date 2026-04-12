@@ -17,12 +17,10 @@ export const useSubscription = () => {
       }
 
       const { data, error } = await supabase
-        .from('UserSubscriptions')
+        .from('activesubscriptions')
         .select('*')
         .eq('user_id', session.user.id)
-        .eq('status', 'active')
-        .gt('current_period_end', new Date().toISOString()) // not expired
-        .order('current_period_end', { ascending: false }) // latest first
+        .eq('is_active', true)
         .maybeSingle();
 
       if (error) throw error;

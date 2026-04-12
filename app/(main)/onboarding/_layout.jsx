@@ -5,20 +5,24 @@ import CustomHeader from '@components/CustomNativeHeader';
 import SafeViewWrapper from '@components/SafeViewWrapper';
 import { useUser } from '@contexts/UserProvider';
 import { useEffect } from 'react';
+import { useSubscription } from '@hooks/useSubscription';
 
 const _layout = () => {
   const { player, user, loading } = useUser();
   const colorScheme = useColorScheme();
+  const { subscription, isLoading: subscriptionLoading } = useSubscription();
 
   useEffect(() => {
-    if (loading) return;
+    if (loading || subscriptionLoading) return;
 
     if (player && player.onboarding === 0) {
       router.replace('/(main)/onboarding/(profile-onboarding)/name');
     } else if (player && player.onboarding === 1) {
       router.replace('/(main)/onboarding/(entity-onboarding)/admin-or-player');
     } else if (player && player.onboarding === 9) {
-      router.replace('/(main)/onboarding/season');
+      subscription && isActive
+        ? router.replace('/home')
+        : router.replace('/(main)/onboarding/upgrade');
     }
   }, [loading, player]);
 
@@ -28,6 +32,7 @@ const _layout = () => {
         <StatusBar style={colorScheme === 'dark' ? 'light' : 'dark'} />
         <Stack
           screenOptions={{
+            animation: 'none', // 🔥 kills the slide
             headerShown: false,
             header: (props) => <CustomHeader {...props} />,
           }}>
