@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { View, Text, Pressable, StyleSheet } from 'react-native';
 import Animated, {
   runOnJS,
@@ -14,23 +14,37 @@ export default function SlidingTabButton({
   option1 = 'Option A',
   option2 = 'Option B',
 }) {
-  const padding = 3;
-  const TAB_HEIGHT = 48;
+  const isFirstRender = useRef(true);
+
+  const padding = 4;
+  const TAB_HEIGHT = 50;
+  const BORDER_WIDTH = 1;
+
+  const innerHeight = TAB_HEIGHT - padding * 2 - BORDER_WIDTH * 2;
 
   const [containerWidth, setContainerWidth] = useState(0);
 
-  const translateX = useSharedValue(padding);
+  const innerWidth = containerWidth > 0 ? containerWidth - BORDER_WIDTH * 2 : 0;
 
-  const THUMB_WIDTH = containerWidth > 0 ? containerWidth / 2 - padding * 2 : 0;
+  const halfWidth = innerWidth / 2;
+
+  const translateX = useSharedValue(0);
+
+  const THUMB_WIDTH = innerWidth > 0 ? halfWidth - padding * 2 : 0;
 
   // Sync animation with external state
   useEffect(() => {
-    if (!containerWidth) return;
+    if (!innerWidth) return;
 
-    const toValue = value === 'left' ? padding : containerWidth / 2 + padding;
+    const toValue = value === 'left' ? padding : halfWidth + padding;
 
-    translateX.value = withTiming(toValue, { duration: 200 });
-  }, [value, containerWidth]);
+    if (isFirstRender.current) {
+      translateX.value = toValue; // no animation on first render
+      isFirstRender.current = false;
+    } else {
+      translateX.value = withTiming(toValue, { duration: 200 });
+    }
+  }, [value, innerWidth]);
 
   const animatedThumbStyle = useAnimatedStyle(() => ({
     transform: [{ translateX: translateX.value }],
@@ -54,7 +68,10 @@ export default function SlidingTabButton({
     <View style={styles.wrapper} onLayout={(e) => setContainerWidth(e.nativeEvent.layout.width)}>
       <GestureDetector gesture={swipeGesture}>
         <View
-          style={[styles.container, { height: TAB_HEIGHT, borderRadius: TAB_HEIGHT / 3 }]}
+          style={[
+            styles.container,
+            { borderWidth: BORDER_WIDTH, height: TAB_HEIGHT, borderRadius: TAB_HEIGHT / 3 },
+          ]}
           className="bg-background">
           {/* Sliding thumb */}
           {containerWidth > 0 && (
@@ -63,10 +80,10 @@ export default function SlidingTabButton({
                 styles.thumb,
                 {
                   width: THUMB_WIDTH,
-                  height: TAB_HEIGHT - padding * 2,
+                  height: innerHeight,
                   top: padding,
                   left: 0,
-                  borderRadius: (TAB_HEIGHT - padding * 2) / 3,
+                  borderRadius: innerHeight / 3,
                 },
                 animatedThumbStyle,
               ]}
@@ -102,6 +119,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     overflow: 'hidden',
     position: 'relative',
+    borderColor: '#ccc',
   },
   tab: {
     flex: 1,

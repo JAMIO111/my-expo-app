@@ -56,11 +56,25 @@ async function fetchBracketData(competitionInstanceId) {
     );
   }
 
+  const { data: frames } = await supabase
+    .from('Results')
+    .select('winner_side, fixture_id')
+    .in(
+      'fixture_id',
+      fixtures.map((f) => f.id)
+    );
+
+  const framesByFixture = (frames ?? []).reduce((acc, frame) => {
+    (acc[frame.fixture_id] ??= []).push(frame);
+    return acc;
+  }, {});
+
   return {
     stages: stages ?? [],
     fixtures: fixtures ?? [],
     teams: teamsMap,
     players: playersMap,
+    frames: framesByFixture,
     isIndividual,
   };
 }

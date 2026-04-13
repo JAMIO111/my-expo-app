@@ -98,7 +98,7 @@ const UniqueCode = () => {
     id,
     name,    
     tier,
-    max_teams,
+    max_competitors,
     admin_approval_required
 
   )`

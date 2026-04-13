@@ -167,7 +167,7 @@ const TeamName = () => {
         }}
       />
       <SafeViewWrapper useTopInset={false} topColor="bg-brand" bottomColor="bg-brand-dark">
-        <View className="flex-1 justify-between gap-3 bg-brand">
+        <View className="flex-1 justify-between bg-brand">
           <StepPillGroup steps={6} currentStep={2} />
           <KeyboardAvoidingView
             style={{ flex: 1 }}
@@ -243,8 +243,8 @@ const TeamName = () => {
             </ScrollView>
           </KeyboardAvoidingView>
           <View className="gap-5 rounded-t-3xl bg-brand-dark px-5 pt-6">
-            <CTAButton callbackFn={() => router.back()} type="error" text="Go Back" />
             <CTAButton type="yellow" text="Continue" callbackFn={handleContinue} />
+            <CTAButton callbackFn={() => router.back()} type="error" text="Go Back" />
           </View>
         </View>
       </SafeViewWrapper>

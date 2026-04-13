@@ -19,13 +19,13 @@ const SeasonStats = ({ homeTeam, awayTeam, fixtureDetails }) => {
 
   if (isLoading)
     return (
-      <View className="bg-bg-grouped-2 p-8">
+      <View className="rounded-3xl bg-bg-grouped-2 p-8 shadow-sm">
         <Text className="w-full text-center font-saira text-lg text-text-2">Loading...</Text>
       </View>
     );
   if (!standings || standings.standings.length < 2)
     return (
-      <View className="bg-bg-grouped-2 p-8">
+      <View className="rounded-3xl bg-bg-grouped-2 p-8 shadow-sm">
         <Text className="w-full text-center font-saira text-lg text-text-2">
           No Seasons stats available.
         </Text>
@@ -87,7 +87,7 @@ const SeasonStats = ({ homeTeam, awayTeam, fixtureDetails }) => {
   ];
 
   return (
-    <View className="rounded-3xl bg-bg-1 p-3">
+    <View className="rounded-3xl bg-bg-1 p-3 shadow-sm">
       {/* Stat rows */}
       {statRows.map((stat, index) => (
         <StatCardCompare

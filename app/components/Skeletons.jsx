@@ -33,25 +33,24 @@ export const FixtureDetailsSkeleton = ({ fixtureDetails }) => {
           </View>
           <View className="relative mb-2 flex-row items-start justify-center p-3">
             <View className="absolute left-0 z-50">
-              <View style={{ width: 60, height: 60 }} className="rounded-full bg-bg-3"></View>
+              <View style={{ width: 60, height: 60 }} className="rounded-full bg-bg-2"></View>
             </View>
-            <View className="h-10 flex-1 items-center justify-center bg-bg-3 py-0.5"></View>
-            <View className="h-14 w-24 rounded-b-2xl border-x-2 border-bg-2 bg-bg-3"></View>
+            <View className="h-10 flex-1 items-center justify-center bg-bg-2 py-0.5"></View>
+            <View className="h-14 w-24 rounded-b-2xl border-x-2 border-bg-2 bg-bg-2"></View>
             <View className="absolute right-0 z-50">
-              <View style={{ width: 60, height: 60 }} className="rounded-full bg-bg-3"></View>
+              <View style={{ width: 60, height: 60 }} className="rounded-full bg-bg-2"></View>
             </View>
-            <View className="h-10 flex-1 items-center justify-center bg-bg-3 py-0.5"></View>
+            <View className="h-10 flex-1 items-center justify-center bg-bg-2 py-0.5"></View>
           </View>
           <View className="w-full flex-row items-center gap-2 pb-2">
-            <View className="h-6 flex-1 rounded-full bg-bg-3"></View>
+            <View className="h-6 flex-1 rounded-full bg-bg-2"></View>
             <Text className="w-6 text-text-2"> vs </Text>
-            <View className="h-6 flex-1 rounded-full bg-bg-3"></View>
+            <View className="h-6 flex-1 rounded-full bg-bg-2"></View>
           </View>
           <View className="border-t border-theme-gray-4 py-2"></View>
           <View className="w-full gap-3">
-            <View className="h-6 w-full rounded-full bg-bg-3"></View>
-            <View className="h-6 w-full rounded-full bg-bg-3"></View>
-            <View className="h-6 w-full rounded-full bg-bg-3"></View>
+            <View className="h-6 w-full rounded-full bg-bg-2"></View>
+            <View className="h-6 w-full rounded-full bg-bg-2"></View>
           </View>
         </View>
       </View>

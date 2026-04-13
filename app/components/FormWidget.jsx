@@ -31,7 +31,7 @@ const FormCircle = ({ result }) => {
             color="white"
           />
         ) : (
-          <View className="h-3 w-3 rounded-full bg-bg-grouped-2" />
+          <View style={{ height: 12, width: 12 }} className="rounded-full bg-bg-grouped-2" />
         )}
       </View>
     </View>
@@ -120,15 +120,15 @@ const FormWidget = ({
 
   if (loadingHome || loadingAway) {
     return (
-      <View className="p-4">
-        <Text className="text-center text-text-2">Loading form data...</Text>
+      <View className="items-center justify-center rounded-3xl bg-bg-1 p-10 shadow-sm">
+        <Text className="text-center font-saira text-lg text-text-2">Loading form data...</Text>
       </View>
     );
   }
 
   return (
     <Pressable onPress={handlePress} pointerEvents="box-none">
-      <View className="h-28 gap-4 rounded-3xl bg-bg-1 px-2 py-3">
+      <View className="h-28 gap-4 rounded-3xl bg-bg-1 px-2 py-3 shadow-sm">
         <View className="flex-row items-center justify-between px-2">
           <Text className="text-md flex-1 text-left font-saira font-semibold text-text-1">
             {getFormStreak(homeForm)}

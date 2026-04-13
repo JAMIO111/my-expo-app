@@ -74,7 +74,7 @@ const CrestEditor = ({ crest, handleSave, buttonText = 'Save Changes' }) => {
         type={type}
         size={150}
       />
-      <View className="w-full gap-3 rounded-2xl bg-bg-grouped-2 p-3">
+      <View className="w-full gap-3 rounded-2xl bg-bg-grouped-2 p-3 shadow-sm">
         <Pressable
           onPress={() => {
             setActiveMenu('Crest Type');
@@ -132,7 +132,7 @@ const CrestEditor = ({ crest, handleSave, buttonText = 'Save Changes' }) => {
       {hasChanges() && (
         <View className="w-full">
           <CTAButton
-            type="success"
+            type="yellow"
             text={buttonText}
             callbackFn={() => {
               console.log('Saving changes:', {

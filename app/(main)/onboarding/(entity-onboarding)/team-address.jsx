@@ -24,11 +24,13 @@ const TeamAddress = () => {
   const teamDetails = JSON.parse(params.teamDetails || '{}');
   const teams = JSON.parse(params.teams || '[]');
 
+  const [name, setName] = useState('');
   const [line1, setLine1] = useState('');
   const [line2, setLine2] = useState('');
   const [city, setCity] = useState('');
   const [county, setCounty] = useState('');
   const [postCode, setPostCode] = useState('');
+  const [tables, setTables] = useState('');
 
   console.log('Params in TeamAddressAndPhoto:', params);
 
@@ -51,7 +53,16 @@ const TeamAddress = () => {
       Toast.show({
         type: 'error',
         text1: 'Missing required fields',
-        text2: 'Please fill in at least Address Line 1, City, and Post Code.',
+        text2: 'Please fill in at least Address Line 1, Town, and Post Code.',
+      });
+      return;
+    }
+
+    if (isNaN(tables) || tables.trim() === '' || Number(tables.trim()) < 1) {
+      Toast.show({
+        type: 'error',
+        text1: 'Invalid number of tables',
+        text2: 'Venue must have at least 1 available table.',
       });
       return;
     }
@@ -59,11 +70,13 @@ const TeamAddress = () => {
     const updatedTeamDetails = {
       ...teamDetails,
       address: {
+        venue_name: name.trim(),
         line_1: line1.trim(),
         line_2: line2.trim(),
         city: city.trim(),
         county: county.trim(),
         postcode: postCode.trim(),
+        tables: Number(tables.trim()),
       },
     };
 
@@ -100,7 +113,7 @@ const TeamAddress = () => {
             <KeyboardAvoidingView
               style={{ flex: 1 }}
               behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-              keyboardVerticalOffset={140}>
+              keyboardVerticalOffset={100}>
               <ScrollView
                 style={{ flex: 1 }}
                 contentContainerStyle={{
@@ -110,6 +123,16 @@ const TeamAddress = () => {
                   gap: 12,
                 }}
                 keyboardShouldPersistTaps="handled">
+                <CustomTextInput
+                  value={name}
+                  onChangeText={setName}
+                  title="Venue Name"
+                  placeholder="e.g. 123 Main St"
+                  className="mb-4 h-12 rounded-lg border border-gray-300 bg-white px-3 font-saira text-xl"
+                  leftIconName="home-outline"
+                  iconColor="#A259FF"
+                  autoCapitalize="words"
+                />
                 <CustomTextInput
                   value={line1}
                   onChangeText={setLine1}
@@ -126,7 +149,7 @@ const TeamAddress = () => {
                   title="Address Line 2"
                   placeholder="e.g. Apt 4B"
                   className="mb-4 h-12 rounded-lg border border-gray-300 bg-white px-3 font-saira text-xl"
-                  leftIconName="home-outline"
+                  leftIconName="pin-outline"
                   iconColor="#A259FF"
                   autoCapitalize="words"
                 />
@@ -160,6 +183,17 @@ const TeamAddress = () => {
                   iconColor="#A259FF"
                   autoCapitalize="characters"
                   maxLength={8}
+                />
+                <CustomTextInput
+                  value={tables}
+                  onChangeText={setTables}
+                  title="Available Tables"
+                  placeholder="e.g. 2"
+                  className="mb-4 h-12 rounded-lg border border-gray-300 bg-white px-3 font-saira text-xl"
+                  leftIconName="apps"
+                  iconColor="#A259FF"
+                  autoCapitalize="characters"
+                  keyboardType="numeric"
                 />
               </ScrollView>
             </KeyboardAvoidingView>

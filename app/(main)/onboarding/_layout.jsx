@@ -6,6 +6,7 @@ import SafeViewWrapper from '@components/SafeViewWrapper';
 import { useUser } from '@contexts/UserProvider';
 import { useEffect } from 'react';
 import { useSubscription } from '@hooks/useSubscription';
+import LoadingScreen from '../../components/LoadingScreen';
 
 const _layout = () => {
   const { player, user, loading } = useUser();
@@ -24,7 +25,11 @@ const _layout = () => {
         ? router.replace('/home')
         : router.replace('/(main)/onboarding/upgrade');
     }
-  }, [loading, player, isActive, subscriptionLoading]);
+  }, [loading, player, isActive]);
+
+  if (loading || subscriptionLoading) {
+    return <LoadingScreen />;
+  }
 
   return (
     <SafeViewWrapper useBottomInset={false} topColor="bg-brand">

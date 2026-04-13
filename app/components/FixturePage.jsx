@@ -25,6 +25,8 @@ import SeasonStats from '@components/SeasonStats';
 import LivePulseCard from '@components/LivePulseCard';
 import { useTeamPlayers } from '@hooks/useTeamPlayers';
 import Avatar from '@components/Avatar';
+import LoadingScreen from '@components/LoadingScreen';
+import { useResultsByFixture } from '@hooks/useResultsByFixture';
 
 const FixturePage = ({ fixtureDetails, isLoading, context }) => {
   const router = useRouter();
@@ -34,6 +36,7 @@ const FixturePage = ({ fixtureDetails, isLoading, context }) => {
   const { days, hours, minutes, seconds, isPast, isOverdue } = useKickoffCountdown(
     fixtureDetails?.date_time
   );
+  const { data: frames, isLoading: isLoadingFrames } = useResultsByFixture(fixtureId);
   const [view, setView] = useState('left');
   const [team, setTeam] = useState('left');
   const [formType, setFormType] = useState('matches');
@@ -93,6 +96,10 @@ const FixturePage = ({ fixtureDetails, isLoading, context }) => {
   const awayTextColor = getContrastColor(
     fixtureDetails?.awayTeam?.crest?.color1 || themeColors.bg1
   );
+
+  if (isLoading) {
+    return <LoadingScreen />;
+  }
 
   return (
     <ScrollView className="mt-16 flex-1 bg-brand">
@@ -196,13 +203,15 @@ const FixturePage = ({ fixtureDetails, isLoading, context }) => {
                 <Text className="rounded-b-2xl border-x-2 border-bg-2 bg-bg-3 p-3 font-saira-medium text-3xl text-text-1">
                   {isPast
                     ? `${fixtureDetails?.frames.filter((frame) => frame.winner_side === 'home').length || 0} - ${fixtureDetails?.frames.filter((frame) => frame.winner_side === 'away').length || 0}`
-                    : new Date(fixtureDetails?.date_time).toLocaleString('en-GB', {
-                        timeZone: 'Europe/London',
+                    : fixtureDetails?.date_time
+                      ? new Date(fixtureDetails?.date_time).toLocaleString('en-GB', {
+                          timeZone: 'Europe/London',
 
-                        hour: '2-digit',
-                        minute: '2-digit',
-                        hour12: false, // 24-hour format
-                      })}
+                          hour: '2-digit',
+                          minute: '2-digit',
+                          hour12: false, // 24-hour format
+                        })
+                      : '0 : 0'}
                 </Text>
                 <Pressable
                   onPress={() => handleTeamPress(fixtureDetails?.awayCompetitor?.id)}
@@ -255,16 +264,20 @@ const FixturePage = ({ fixtureDetails, isLoading, context }) => {
               <View className="border-t border-theme-gray-4 py-2"></View>
               <View>
                 <Text className="mb-2 text-center font-saira-medium text-xl text-text-2">
-                  {new Date(fixtureDetails?.date_time).toLocaleString('en-GB', {
-                    timeZone: 'Europe/London',
+                  {fixtureDetails.date_time
+                    ? new Date(fixtureDetails?.date_time).toLocaleString('en-GB', {
+                        timeZone: 'Europe/London',
 
-                    weekday: 'long',
-                    day: 'numeric',
-                    month: 'long',
-                    year: 'numeric',
-                  })}
+                        weekday: 'long',
+                        day: 'numeric',
+                        month: 'long',
+                        year: 'numeric',
+                      })
+                    : 'No Date Set'}
                 </Text>
-                <Pressable onPress={openNativeMaps} className="items-center justify-center">
+                <Pressable
+                  onPress={address ? openNativeMaps : null}
+                  className="items-center justify-center">
                   <Text className="px-4 text-center font-saira text-lg text-text-2 underline">
                     {address || 'No address available'}
                   </Text>
@@ -278,13 +291,13 @@ const FixturePage = ({ fixtureDetails, isLoading, context }) => {
         <View className="p-3">
           <SlidingTabButton
             option1="Stats"
-            option2={fixtureDetails?.approved ? 'Frames' : 'Squads'}
+            option2={frames && frames.length > 0 ? 'Frames' : 'Squads'}
             onChange={handleViewChange}
             value={view}
           />
         </View>
         {view === 'right' ? (
-          fixtureDetails?.approved ? (
+          frames && frames.length > 0 ? (
             <View className="p-3">
               <FramesList fixtureId={fixtureId} />
             </View>

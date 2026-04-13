@@ -1,7 +1,9 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
-import { View, Text, ScrollView, Pressable, Animated, StyleSheet } from 'react-native';
+import { View, Text, ScrollView, Pressable, Animated, StyleSheet, Modal } from 'react-native';
+import { useRouter } from 'expo-router';
 import Svg, { Path } from 'react-native-svg';
 import { useKnockoutBracket } from '@/hooks/useKnockoutBracket';
+import CTAButton from './CTAButton';
 
 // ─── Layout constants ─────────────────────────────────────
 const CARD_H = 68;
@@ -48,7 +50,7 @@ function buildRounds(stages, fixtures) {
 }
 
 // ─── Slot ────────────────────────────────────────────────
-const Slot = ({ name, isWinner, isBye, isHome }) => {
+const Slot = ({ name, isWinner, isBye, isHome, isFrames, score }) => {
   const isEmpty = !name && !isBye;
 
   const label = isBye ? 'BYE' : isEmpty ? 'TBD' : name;
@@ -58,6 +60,7 @@ const Slot = ({ name, isWinner, isBye, isHome }) => {
       {isWinner && <View style={styles.winnerDot} />}
 
       <Text
+        className="flex-1"
         numberOfLines={1}
         style={[
           styles.slotText,
@@ -67,12 +70,26 @@ const Slot = ({ name, isWinner, isBye, isHome }) => {
         ]}>
         {label}
       </Text>
+      {isFrames && (
+        <Text style={[styles.slotText, isWinner && styles.winnerText, { marginLeft: 6 }]}>
+          {score}
+        </Text>
+      )}
     </View>
   );
 };
 
 // ─── Match Card ──────────────────────────────────────────
-const MatchCard = ({ fixture, teams, players, isFinal, animDelay }) => {
+const MatchCard = ({
+  fixture,
+  frames,
+  teams,
+  players,
+  isFinal,
+  animDelay,
+  competitionInstanceId,
+}) => {
+  const router = useRouter();
   const fadeAnim = useRef(new Animated.Value(0)).current;
 
   const getParticipantName = (fixture, side) => {
@@ -98,20 +115,54 @@ const MatchCard = ({ fixture, teams, players, isFinal, animDelay }) => {
   const homeName = getParticipantName(fixture, 'home');
   const awayName = getParticipantName(fixture, 'away');
 
-  const isPending = !fixture.home_team && !fixture.away_team;
-  const homeBye = !fixture.home_team && !fixture.home_player && !isPending;
-  const awayBye = !fixture.away_team && !fixture.away_player && !isPending;
+  const getExists = (side) => {
+    if (fixture.competitor_type === 'team') {
+      return side === 'home' ? fixture.home_team : fixture.away_team;
+    }
+
+    return side === 'home' ? fixture.home_player : fixture.away_player;
+  };
+
+  const homeExists = getExists('home');
+  const awayExists = getExists('away');
+
+  const isPending = !homeExists && !awayExists;
+  const homeBye = !homeExists && !isPending;
+  const awayBye = !awayExists && !isPending;
+
+  const isFrames = frames && frames.length > 0;
+
+  const homeScore = frames.filter((f) => f.winner_side === 'home').length;
+  const awayScore = frames.filter((f) => f.winner_side === 'away').length;
 
   return (
-    <Pressable disabled={isPending || homeBye || awayBye} style={{ opacity: isPending ? 0.7 : 1 }}>
+    <Pressable
+      onPress={() => {
+        router.push(`/competitions/${competitionInstanceId}/${fixture.id}`);
+      }}
+      disabled={isPending || homeBye || awayBye}
+      style={{ opacity: isPending ? 0.7 : 1 }}>
       <Animated.View
         style={[
           styles.card,
           isFinal ? styles.finalCard : styles.normalCard,
           { opacity: fadeAnim },
         ]}>
-        <Slot name={homeName} isWinner={fixture.winner_side === 'home'} isBye={homeBye} isHome />
-        <Slot name={awayName} isWinner={fixture.winner_side === 'away'} isBye={awayBye} />
+        <Slot
+          name={homeName}
+          isWinner={fixture.winner_side === 'home'}
+          isBye={homeBye}
+          isHome
+          isFrames={isFrames}
+          score={homeScore}
+        />
+        <Slot
+          name={awayName}
+          isWinner={fixture.winner_side === 'away'}
+          isBye={awayBye}
+          isFrames={isFrames}
+          score={awayScore}
+        />
       </Animated.View>
     </Pressable>
   );
@@ -119,6 +170,7 @@ const MatchCard = ({ fixture, teams, players, isFinal, animDelay }) => {
 
 // ─── Main Component ──────────────────────────────────────
 export default function KnockoutBracket({ competitionInstanceId }) {
+  const [stageModalVisible, setStageModalVisible] = useState(false);
   const { data, isLoading, error } = useKnockoutBracket(competitionInstanceId);
   console.log('KnockoutBracket - data:', data);
 
@@ -126,6 +178,7 @@ export default function KnockoutBracket({ competitionInstanceId }) {
   const fixtures = data?.fixtures ?? [];
   const teams = data?.teams ?? {};
   const players = data?.players ?? {};
+  const frames = data?.frames ?? {};
 
   const rounds = useMemo(() => {
     if (!stages.length || !fixtures.length) return [];
@@ -165,69 +218,98 @@ export default function KnockoutBracket({ competitionInstanceId }) {
   const w = getTotalW(nR) + 2 * HORIZONTAL_PADDING;
 
   return (
-    <ScrollView className="rounded-2xl bg-bg-2" horizontal>
-      <View style={{ width: w, paddingHorizontal: HORIZONTAL_PADDING, paddingBottom: 20 }}>
-        {/* Headers */}
-        <View className="mb-4 mt-4 flex-row">
-          {stages.map((stage, ri) => (
-            <View key={stage.id} style={{ width: ri < nR - 1 ? ROUND_W : COL_W }}>
-              <Text className="pr-8 text-center font-saira-medium text-sm uppercase text-text-2">
-                {stage.name}
-              </Text>
-            </View>
-          ))}
-        </View>
-
-        {/* Canvas */}
-        <View style={{ width: w, height: h }}>
-          {/* Lines */}
-          <Svg width={w} height={h} style={StyleSheet.absoluteFill}>
-            {rounds.map((roundFixtures, ri) => {
-              if (ri === nR - 1) return null;
-
-              return roundFixtures.map((fixture, mi) => {
-                const x1 = ri * ROUND_W + COL_W;
-                const y1 = getCenterY(ri, mi);
-                const x2 = (ri + 1) * ROUND_W;
-                const y2 = getCenterY(ri + 1, Math.floor(mi / 2));
-                const midX = x1 + COL_GAP / 2;
-
-                return (
-                  <Path
-                    key={fixture.id}
-                    d={`M ${x1} ${y1} H ${midX} V ${y2} H ${x2}`}
-                    stroke={fixture.winner_side ? '#f59e0b' : '#000000'}
-                    strokeWidth={fixture.winner_side ? 1.5 : 0.5}
-                    fill="none"
-                  />
-                );
-              });
-            })}
-          </Svg>
-
-          {/* Cards */}
-          {rounds.map((roundFixtures, ri) =>
-            roundFixtures.map((fixture, mi) => (
-              <View
-                key={fixture.id}
-                style={{
-                  position: 'absolute',
-                  left: ri * ROUND_W,
-                  top: getCenterY(ri, mi) - CARD_H / 2,
-                }}>
-                <MatchCard
-                  fixture={fixture}
-                  teams={teams}
-                  players={players}
-                  isFinal={ri === nR - 1}
-                  animDelay={(ri * 3 + mi) * 55}
-                />
+    <>
+      <ScrollView className="rounded-2xl bg-bg-2" horizontal>
+        <View style={{ width: w, paddingHorizontal: HORIZONTAL_PADDING, paddingBottom: 20 }}>
+          {/* Headers */}
+          <View className="mb-4 mt-4 flex-row">
+            {stages.map((stage, ri) => (
+              <View key={stage.id} style={{ width: ri < nR - 1 ? ROUND_W : COL_W }}>
+                <Pressable onPress={() => setStageModalVisible(true)} className="items-center">
+                  <Text className="pr-8 text-center font-saira-medium uppercase text-text-2">
+                    {stage.name}
+                  </Text>
+                </Pressable>
               </View>
-            ))
-          )}
+            ))}
+          </View>
+
+          {/* Canvas */}
+          <View style={{ width: w, height: h }}>
+            {/* Lines */}
+            <Svg width={w} height={h} style={StyleSheet.absoluteFill}>
+              {rounds.map((roundFixtures, ri) => {
+                if (ri === nR - 1) return null;
+
+                return roundFixtures.map((fixture, mi) => {
+                  const x1 = ri * ROUND_W + COL_W;
+                  const y1 = getCenterY(ri, mi);
+                  const x2 = (ri + 1) * ROUND_W;
+                  const y2 = getCenterY(ri + 1, Math.floor(mi / 2));
+                  const midX = x1 + COL_GAP / 2;
+
+                  return (
+                    <Path
+                      key={fixture.id}
+                      d={`M ${x1} ${y1} H ${midX} V ${y2} H ${x2}`}
+                      stroke={fixture.winner_side ? '#f59e0b' : '#000000'}
+                      strokeWidth={fixture.winner_side ? 1.5 : 0.5}
+                      fill="none"
+                    />
+                  );
+                });
+              })}
+            </Svg>
+
+            {/* Cards */}
+            {rounds.map((roundFixtures, ri) =>
+              roundFixtures.map((fixture, mi) => (
+                <View
+                  key={fixture.id}
+                  style={{
+                    position: 'absolute',
+                    left: ri * ROUND_W,
+                    top: getCenterY(ri, mi) - CARD_H / 2,
+                  }}>
+                  <MatchCard
+                    fixture={fixture}
+                    frames={frames[fixture.id] ?? []}
+                    teams={teams}
+                    players={players}
+                    isFinal={ri === nR - 1}
+                    animDelay={(ri * 3 + mi) * 55}
+                    competitionInstanceId={competitionInstanceId}
+                  />
+                </View>
+              ))
+            )}
+          </View>
         </View>
-      </View>
-    </ScrollView>
+      </ScrollView>
+      <Modal
+        presentationStyle="pageSheet"
+        visible={stageModalVisible}
+        onDismiss={() => setStageModalVisible(false)}
+        animationType="slide">
+        <View className="flex-1 items-center justify-center bg-white p-4">
+          <View className="flex-1 items-start justify-start gap-4">
+            <Text className="font-saira-medium text-xl text-text-1">Stage Details</Text>
+            <Text className="mt-2 font-saira text-text-2">
+              More details about the stage can go here. This is a placeholder for the stage
+              information that will be shown when a stage is tapped.
+            </Text>
+          </View>
+
+          <View className="w-full pb-8">
+            <CTAButton
+              text="Save & Exit"
+              type="success"
+              callbackFn={() => setStageModalVisible(false)}
+            />
+          </View>
+        </View>
+      </Modal>
+    </>
   );
 }
 

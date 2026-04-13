@@ -25,13 +25,13 @@ const PlayersList = ({ team, context, fixtureId, players, isLoading, error }) =>
   return (
     <View className="gap-2">
       {isLoading ? (
-        <View className="items-center justify-center rounded-3xl border border-theme-gray-5 bg-bg-2 px-4 py-7">
+        <View className="items-center justify-center rounded-3xl bg-bg-2 px-4 py-7 shadow-sm">
           <Text className="font-saira text-xl text-text-2">Loading Players...</Text>
         </View>
       ) : error ? (
         <Text>Error: {error.message}</Text>
       ) : sortedPlayers?.length === 0 ? (
-        <View className="items-center justify-center rounded-3xl border border-theme-gray-5 bg-bg-grouped-2 px-4 py-7">
+        <View className="items-center justify-center rounded-3xl bg-bg-2 px-4 py-7 shadow-sm">
           <Text className="font-saira text-xl text-text-2">
             No players registered to this team.
           </Text>

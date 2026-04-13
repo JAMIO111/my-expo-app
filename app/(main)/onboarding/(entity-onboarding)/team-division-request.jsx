@@ -41,11 +41,13 @@ const TeamDivisionRequest = () => {
 
       const { data: newTeamDetails, error } = await supabase.rpc('create_team_with_address', {
         payload: {
+          _venue_name: teamDetails.venue_name,
           _line1: teamDetails.address.line_1,
           _line2: teamDetails.address.line_2 ?? null,
           _city: teamDetails.address.city,
           _county: teamDetails.address.county ?? null,
           _post_code: teamDetails.address.postcode,
+          _tables: teamDetails.tables,
           _name: teamDetails.name,
           _display_name: teamDetails.display_name,
           _abbreviation: teamDetails.abbreviation,
@@ -118,20 +120,22 @@ const TeamDivisionRequest = () => {
           <View className="flex-1">
             <Text
               style={{ lineHeight: 40 }}
-              className={`p-3 font-delagothic text-4xl font-bold text-text-on-brand`}>
+              className={`p-4 font-delagothic text-4xl font-bold text-text-on-brand`}>
               Request to join a division in your league.
             </Text>
-            <Text className="text-md p-3 font-saira-medium text-text-on-brand-2">
+            <Text className="text-md p-3 px-4 font-saira-medium text-text-on-brand-2">
               A request to join a division will be sent to the league admin for approval. Once
               approved, your team will be added to the division and you can start adding players and
               competing in the league!
             </Text>
             <View className=" flex-1 gap-3 p-3">
               {!league.Divisions?.length ? (
-                <Text className="p-3 px-5 font-saira-medium text-lg text-text-on-brand-2">
-                  Your league doesn't have any divisions yet. Once your request is approved, the
-                  admin can create divisions for your league.
-                </Text>
+                <View className="rounded-2xl bg-bg-2 p-3">
+                  <Text className="p-3 px-5 font-saira-medium text-lg text-text-2">
+                    Your league doesn't have any divisions yet. Once your request is approved, the
+                    admin can create divisions for your league.
+                  </Text>
+                </View>
               ) : (
                 <ScrollView
                   className="flex-1"

@@ -70,6 +70,10 @@ const index = () => {
     : null;
   if (deadline) deadline.setHours(23, 59, 59, 999);
 
+  const isAdmin =
+    currentRole?.role === 'admin' &&
+    currentRole?.district?.id === competitionInstance?.competition?.district_id;
+
   const isCaptain = currentRole?.team?.captain === player.id;
 
   const isTeam = competitionInstance?.competition?.competitor_type === 'team';
@@ -91,7 +95,7 @@ const index = () => {
   const visibleParticipants = competitionInstance?.CompetitionParticipants.filter((p) => {
     const isOwn = p.team_id === currentRole?.team?.id || p.player_id === player?.id;
 
-    if (currentRole?.role === 'admin') return true;
+    if (isAdmin) return true;
 
     const publicStatuses = ['active', 'eliminated', 'champion'];
 
@@ -110,6 +114,22 @@ const index = () => {
   }, [showFixtures]);
 
   const rotate = rotateAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: ['0deg', '180deg'],
+  });
+
+  const rotateAnimParticipants = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    Animated.timing(rotateAnimParticipants, {
+      toValue: showParticipants ? 1 : 0,
+      duration: 250,
+      easing: Easing.out(Easing.cubic),
+      useNativeDriver: true,
+    }).start();
+  }, [showParticipants]);
+
+  const rotateParticipants = rotateAnimParticipants.interpolate({
     inputRange: [0, 1],
     outputRange: ['0deg', '180deg'],
   });
@@ -511,7 +531,7 @@ const index = () => {
                 </View>
               </View>
               {canJoin &&
-                currentRole?.role !== 'admin' &&
+                isAdmin &&
                 checkEligibility(player, competitionInstance, currentRole) === 'Eligible' && (
                   <CTAButton
                     callbackFn={() => {
@@ -540,7 +560,7 @@ const index = () => {
                     }
                   />
                 )}
-              {currentRole?.role === 'admin' &&
+              {isAdmin &&
                 (competitionInstance?.status === 'upcoming' ||
                   competitionInstance?.status === 'closed') && (
                   <CTAButton
@@ -598,7 +618,7 @@ const index = () => {
                         return (
                           <View className="mb-2 gap-5">
                             <KnockoutBracket competitionInstanceId={instanceId} />
-                            {currentRole?.role === 'admin' && (
+                            {isAdmin && (
                               <CTAButton
                                 text="Proceed to Next Round"
                                 type="yellow"
@@ -621,157 +641,166 @@ const index = () => {
               </View>
             </View>
             <View className="bg-bg-1 p-4">
-              <View className="gap-1 pb-4">
-                <Text className="font-saira-medium text-2xl text-text-1">
-                  Competition Participants
-                </Text>
-                {competitionInstance?.CompetitionParticipants.length > 0 && (
-                  <Text className="font-saira text-xl text-text-2">
-                    {competitionInstance.CompetitionParticipants.length} participants
+              <Pressable
+                className="flex-row items-center justify-between pr-6"
+                onPress={() => setShowParticipants(!showParticipants)}>
+                <View className="">
+                  <Text className="font-saira-medium text-2xl text-text-1">
+                    Competition Participants
                   </Text>
-                )}
-              </View>
-              <View className="gap-1">
-                {visibleParticipants?.length === 0 ? (
-                  <Text className="px-1 font-saira text-xl text-text-2">No participants yet</Text>
-                ) : (
-                  visibleParticipants?.map((entity, idx) => {
-                    const lastItem = idx === visibleParticipants.length - 1;
-                    const participant = entity.team || entity.player;
-                    const participantName =
-                      participant.display_name ||
-                      `${participant.first_name} ${participant.surname}`;
-                    const isMe = participant.id === player.id;
-                    const isMyTeam = isTeam && entity.team_id === currentRole?.team?.id;
-                    const statusColors = getStatusColors(entity.status);
-                    return (
-                      <View
-                        key={participant.id}
-                        className={`flex-row items-center gap-3 px-1 py-2 pb-3 ${!lastItem ? 'border-b border-theme-gray-5' : ''}`}>
-                        {entity.team ? (
-                          <TeamLogo
-                            type={participant.crest.type}
-                            color1={participant.crest.color1}
-                            color2={participant.crest.color2}
-                            thickness={participant.crest.thickness}
-                            size={28}
-                          />
-                        ) : (
-                          <Avatar player={participant} size={32} />
-                        )}
-                        <Text
-                          numberOfLines={1}
-                          ellipsizeMode="tail"
-                          className="flex-1 px-1 font-saira-medium text-lg text-text-1">
-                          {participantName}
-                        </Text>
-                        <Text
-                          style={{
-                            color: statusColors.text,
-                            backgroundColor: statusColors.background,
-                            borderColor: statusColors.border,
-                            borderWidth: 1,
-                            borderRadius: 10,
-                          }}
-                          className="px-2 font-saira text-sm text-text-2">
-                          {entity.status.slice(0, 1).toUpperCase() + entity.status.slice(1)}
-                        </Text>
-                        {entity.status === 'requested' && (
+                  {competitionInstance?.CompetitionParticipants.length > 0 && (
+                    <Text className="font-saira text-xl text-text-2">
+                      {competitionInstance.CompetitionParticipants.length} participants
+                    </Text>
+                  )}
+                </View>
+                <Animated.View style={{ transform: [{ rotate: rotateParticipants }] }}>
+                  <Ionicons name="chevron-down" size={30} />
+                </Animated.View>
+              </Pressable>
+              <View style={{ display: showParticipants ? 'flex' : 'none' }}>
+                <View className="gap-1 pt-4">
+                  {visibleParticipants?.length === 0 ? (
+                    <Text className="px-1 font-saira text-xl text-text-2">No participants yet</Text>
+                  ) : (
+                    visibleParticipants?.map((entity, idx) => {
+                      const lastItem = idx === visibleParticipants.length - 1;
+                      const participant = entity.team || entity.player;
+                      const participantName =
+                        participant.display_name ||
+                        `${participant.first_name} ${participant.surname}`;
+                      const isMe = participant.id === player.id;
+                      const isMyTeam = isTeam && entity.team_id === currentRole?.team?.id;
+                      const statusColors = getStatusColors(entity.status);
+                      return (
+                        <View
+                          key={participant.id}
+                          className={`flex-row items-center gap-3 px-1 py-2 pb-3 ${!lastItem ? 'border-b border-theme-gray-5' : ''}`}>
+                          {entity.team ? (
+                            <TeamLogo
+                              type={participant.crest.type}
+                              color1={participant.crest.color1}
+                              color2={participant.crest.color2}
+                              thickness={participant.crest.thickness}
+                              size={28}
+                            />
+                          ) : (
+                            <Avatar player={participant} size={32} />
+                          )}
+                          <Text
+                            numberOfLines={1}
+                            ellipsizeMode="tail"
+                            className="flex-1 px-1 font-saira-medium text-lg text-text-1">
+                            {participantName}
+                          </Text>
                           <Text
                             style={{
-                              backgroundColor: '#FFA50033',
-                              borderColor: '#FFA50066',
-                              color: '#FFA500',
+                              color: statusColors.text,
+                              backgroundColor: statusColors.background,
+                              borderColor: statusColors.border,
                               borderWidth: 1,
                               borderRadius: 10,
                             }}
-                            className="px-2 py-1 font-saira">
-                            Requested
+                            className="px-2 font-saira text-sm text-text-2">
+                            {entity.status.slice(0, 1).toUpperCase() + entity.status.slice(1)}
                           </Text>
-                        )}
-                        {((isMyTeam && currentRole.team?.captain === player.id) || isMe) &&
-                          currentRole?.role !== 'admin' && (
-                            <Pressable
-                              onPress={() => {
-                                showSheet({
-                                  title:
-                                    entity.status === 'requested'
-                                      ? 'Cancel Join Request'
-                                      : 'Leave Competition',
-                                  message:
-                                    entity.status === 'requested'
-                                      ? 'Are you sure you want to cancel your join request?'
-                                      : 'Are you sure you want to leave this competition? You will not be able to rejoin.',
-                                  confirmText:
-                                    entity.status === 'requested' ? 'Cancel Request' : 'Leave',
-                                  confirmType: 'error',
-                                  onConfirm: () => handleWithdraw(entity.status),
-                                });
-                              }}>
-                              <Ionicons
-                                name={
-                                  entity.status === 'requested' ? 'close-outline' : 'exit-outline'
-                                }
-                                size={26}
-                                color="#FF0000"
-                              />
-                            </Pressable>
+                          {entity.status === 'requested' && (
+                            <Text
+                              style={{
+                                backgroundColor: '#FFA50033',
+                                borderColor: '#FFA50066',
+                                color: '#FFA500',
+                                borderWidth: 1,
+                                borderRadius: 10,
+                              }}
+                              className="px-2 py-1 font-saira">
+                              Requested
+                            </Text>
                           )}
-                        {currentRole?.role === 'admin' && (
-                          <View className="flex-row items-center gap-3">
-                            {entity.status === 'requested' && (
-                              <>
-                                <Pressable
-                                  onPress={() => {
-                                    showSheet({
-                                      title: 'Accept Request',
-                                      message: `Approve ${participantName} into the competition?`,
-                                      confirmText: 'Accept Request',
-                                      confirmType: 'success',
-                                      onConfirm: async () =>
-                                        await handleParticipantAction(entity, 'accept'),
-                                    });
-                                  }}>
-                                  <Ionicons name="checkmark" size={28} color="#008000" />
-                                </Pressable>
-
-                                <Pressable
-                                  onPress={() => {
-                                    showSheet({
-                                      title: 'Deny Request',
-                                      message: `Are you sure you want to deny ${participantName}'s request?`,
-                                      confirmText: 'Deny Request',
-                                      confirmType: 'error',
-                                      onConfirm: async () =>
-                                        await handleParticipantAction(entity, 'deny'),
-                                    });
-                                  }}>
-                                  <Ionicons name="close" size={28} color="#FF0000" />
-                                </Pressable>
-                              </>
-                            )}
-
-                            {entity.status === 'active' && (
+                          {((isMyTeam && currentRole.team?.captain === player.id) || isMe) &&
+                            !isAdmin && (
                               <Pressable
                                 onPress={() => {
                                   showSheet({
-                                    title: 'Remove Participant',
-                                    message: `Remove ${participantName} from the competition?`,
-                                    confirmText: 'Remove',
+                                    title:
+                                      entity.status === 'requested'
+                                        ? 'Cancel Join Request'
+                                        : 'Leave Competition',
+                                    message:
+                                      entity.status === 'requested'
+                                        ? 'Are you sure you want to cancel your join request?'
+                                        : 'Are you sure you want to leave this competition? You will not be able to rejoin.',
+                                    confirmText:
+                                      entity.status === 'requested' ? 'Cancel Request' : 'Leave',
                                     confirmType: 'error',
-                                    onConfirm: async () =>
-                                      await handleParticipantAction(entity, 'remove'),
+                                    onConfirm: () => handleWithdraw(entity.status),
                                   });
                                 }}>
-                                <Ionicons name="exit-outline" size={26} color="#FF0000" />
+                                <Ionicons
+                                  name={
+                                    entity.status === 'requested' ? 'close-outline' : 'exit-outline'
+                                  }
+                                  size={26}
+                                  color="#FF0000"
+                                />
                               </Pressable>
                             )}
-                          </View>
-                        )}
-                      </View>
-                    );
-                  })
-                )}
+                          {isAdmin && (
+                            <View className="flex-row items-center gap-3">
+                              {entity.status === 'requested' && (
+                                <>
+                                  <Pressable
+                                    onPress={() => {
+                                      showSheet({
+                                        title: 'Accept Request',
+                                        message: `Approve ${participantName} into the competition?`,
+                                        confirmText: 'Accept Request',
+                                        confirmType: 'success',
+                                        onConfirm: async () =>
+                                          await handleParticipantAction(entity, 'accept'),
+                                      });
+                                    }}>
+                                    <Ionicons name="checkmark" size={28} color="#008000" />
+                                  </Pressable>
+
+                                  <Pressable
+                                    onPress={() => {
+                                      showSheet({
+                                        title: 'Deny Request',
+                                        message: `Are you sure you want to deny ${participantName}'s request?`,
+                                        confirmText: 'Deny Request',
+                                        confirmType: 'error',
+                                        onConfirm: async () =>
+                                          await handleParticipantAction(entity, 'deny'),
+                                      });
+                                    }}>
+                                    <Ionicons name="close" size={28} color="#FF0000" />
+                                  </Pressable>
+                                </>
+                              )}
+
+                              {entity.status === 'active' && (
+                                <Pressable
+                                  onPress={() => {
+                                    showSheet({
+                                      title: 'Remove Participant',
+                                      message: `Remove ${participantName} from the competition?`,
+                                      confirmText: 'Remove',
+                                      confirmType: 'error',
+                                      onConfirm: async () =>
+                                        await handleParticipantAction(entity, 'remove'),
+                                    });
+                                  }}>
+                                  <Ionicons name="exit-outline" size={26} color="#FF0000" />
+                                </Pressable>
+                              )}
+                            </View>
+                          )}
+                        </View>
+                      );
+                    })
+                  )}
+                </View>
               </View>
             </View>
             <View style={{ minHeight: 360 }} className="bg-bg-1 p-4 pb-8">
@@ -780,8 +809,8 @@ const index = () => {
               </Text>
               <View className="flex-row items-stretch justify-around gap-5">
                 <Pressable
-                  onPress={() => openSheet('winner')}
-                  className="flex-1 flex-col items-center justify-end rounded-2xl border-2 border-dashed border-theme-gray-4">
+                  onPress={() => isAdmin && openSheet('winner')}
+                  className={`flex-1 flex-col items-center justify-end rounded-2xl ${isAdmin ? 'border-2 border-dashed border-theme-gray-4' : ''}`}>
                   <View className="flex-1 flex-col items-center justify-end">
                     {competitionInstance?.winner_reward === null ? (
                       <View className="h-30 w-30 mb-4 flex-1 items-center justify-center rounded-2xl">
@@ -797,8 +826,8 @@ const index = () => {
                   </View>
                 </Pressable>
                 <Pressable
-                  onPress={() => openSheet('runnerUp')}
-                  className="flex-1 flex-col items-center justify-end rounded-2xl border-2 border-dashed border-theme-gray-4">
+                  onPress={() => isAdmin && openSheet('runnerUp')}
+                  className={`flex-1 flex-col items-center justify-end rounded-2xl ${isAdmin ? 'border-2 border-dashed border-theme-gray-4' : ''}`}>
                   <View className="flex-1 flex-col items-center justify-end">
                     {competitionInstance?.runner_up_reward === null ? (
                       <View className="mb-4 flex-1 items-center justify-center rounded-2xl">

@@ -70,7 +70,7 @@ const _layout = () => {
     prevIsActive.current = isActive;
   }, [isActive]);
 
-  if (loading || subscriptionLoading) {
+  if (loading) {
     console.log('Loading user data...');
     return <LoadingScreen />;
   }

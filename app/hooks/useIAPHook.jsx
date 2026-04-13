@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { Platform, Alert } from 'react-native';
 import { useIAP, ErrorCode } from 'react-native-iap';
 import { supabase } from '@/lib/supabase';
@@ -63,6 +63,7 @@ const normalizeSubscriptions = (rawSubscriptions) => {
 const useIAPHook = () => {
   const [isRestoring, setIsRestoring] = useState(false);
   const [isSubscribing, setIsSubscribing] = useState(false);
+  const purchaseLock = useRef(false);
   const {
     connected,
     subscriptions,
@@ -126,7 +127,9 @@ const useIAPHook = () => {
         // ✅ Verified — safe to finish
         await finishTransaction({ purchase });
         console.log('[IAP] Purchase complete:', data.productId, data.status);
+        setIsSubscribing(false);
       } catch (error) {
+        setIsSubscribing(false);
         // ❌ Don't finish — unfinished transactions replay on next launch
         console.error('[IAP] Verification error:', error?.message);
         Alert.alert(
@@ -140,6 +143,7 @@ const useIAPHook = () => {
       }
     },
     onPurchaseError: (error) => {
+      setIsSubscribing(false);
       console.log(
         'IAP onPurchaseError:',
         JSON.stringify({
@@ -348,7 +352,13 @@ const useIAPHook = () => {
     console.log('Subscribing to plan:', plan?.sku);
     if (!plan) return;
 
+    if (purchaseLock.current) {
+      Alert.alert('Purchase In Progress', 'Please wait for the current purchase to complete.');
+      return;
+    }
+
     try {
+      purchaseLock.current = true;
       setIsSubscribing(true);
       await requestPurchase({
         request: {
@@ -367,7 +377,7 @@ const useIAPHook = () => {
     } catch (e) {
       console.log('[IAP] requestPurchase threw:', e?.message, e?.code);
     } finally {
-      setIsSubscribing(false);
+      purchaseLock.current = false;
     }
   };
 

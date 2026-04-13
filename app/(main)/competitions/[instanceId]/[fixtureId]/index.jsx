@@ -10,7 +10,7 @@ import { useUser } from '@contexts/UserProvider';
 const index = () => {
   const router = useRouter();
   const { currentRole, player, loading } = useUser();
-  const { fixtureId } = useLocalSearchParams();
+  const { instanceId, fixtureId } = useLocalSearchParams();
   const { data: fixtureDetails, isLoading } = useFixtureDetails(fixtureId);
 
   console.log('Fixture Details:', fixtureDetails);
@@ -30,7 +30,7 @@ const index = () => {
                   player?.id === currentRole?.team?.captain.id &&
                   currentRole?.team?.id === fixtureDetails?.homeCompetitor?.id &&
                   fixtureDetails?.is_complete === false
-                    ? () => router.push(`home/${fixtureId}/submit-results`)
+                    ? () => router.push(`competitions/${instanceId}/${fixtureId}/submit-results`)
                     : null
                 }
                 rightIcon="clipboard-outline"
@@ -41,7 +41,7 @@ const index = () => {
       />
       <View className="flex-1 bg-brand-dark">
         <FixturePage
-          context="home/upcoming-fixture"
+          context={`competitions/${instanceId}/${fixtureId}/`}
           fixtureDetails={fixtureDetails}
           isLoading={isLoading}
         />
