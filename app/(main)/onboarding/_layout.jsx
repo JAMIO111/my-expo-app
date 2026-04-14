@@ -6,12 +6,15 @@ import SafeViewWrapper from '@components/SafeViewWrapper';
 import { useUser } from '@contexts/UserProvider';
 import { useEffect } from 'react';
 import { useSubscription } from '@hooks/useSubscription';
-import LoadingScreen from '../../components/LoadingScreen';
+import LoadingScreen from '@components/LoadingScreen';
 
 const _layout = () => {
   const { player, user, loading } = useUser();
   const colorScheme = useColorScheme();
   const { subscription, isLoading: subscriptionLoading, isActive } = useSubscription();
+  console.log('EntityOnboardingLayout');
+  console.log('Subscription:', subscription);
+  console.log('Subscription active:', isActive);
 
   useEffect(() => {
     if (loading || subscriptionLoading) return;

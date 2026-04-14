@@ -172,7 +172,7 @@ const TeamName = () => {
           <KeyboardAvoidingView
             style={{ flex: 1 }}
             behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-            keyboardVerticalOffset={100} // adjust if header exists
+            keyboardVerticalOffset={60} // adjust if header exists
           >
             <ScrollView className="flex-1 gap-3 p-5">
               <Text

@@ -11,30 +11,42 @@ export const useFixtureDetails = (fixtureId) => {
       .from('Fixtures')
       .select(
         `
-        *,
-        homeTeam:Teams!Fixtures_home_team_fkey(
-          id,
-          display_name,
-          abbreviation,
-          crest,
-          address:Addresses!Teams_address_fkey(
-            id,
-            line_1,
-            line_2,
-            city,
-            postcode
-          )
-        ),
-        awayTeam:Teams!Fixtures_away_team_fkey(
-          id,
-          display_name,
-          abbreviation,
-          crest
-        ),
-        homePlayer:Players!Fixtures_home_player_fkey(id, first_name, surname, avatar_url, nickname),
-        awayPlayer:Players!Fixtures_away_player_fkey(id, first_name, surname, avatar_url, nickname),
-        competition:CompetitionInstances!Fixtures_competition_instance_id_fkey(id, name)
-      `
+    *,
+    homeTeam:Teams!Fixtures_home_team_fkey(
+      id,
+      display_name,
+      abbreviation,
+      crest,
+      address:Addresses!Teams_address_fkey(
+        id,
+        line_1,
+        line_2,
+        city,
+        postcode
+      )
+    ),
+    awayTeam:Teams!Fixtures_away_team_fkey(
+      id,
+      display_name,
+      abbreviation,
+      crest
+    ),
+    homePlayer:Players!Fixtures_home_player_fkey(
+      id, first_name, surname, avatar_url, nickname
+    ),
+    awayPlayer:Players!Fixtures_away_player_fkey(
+      id, first_name, surname, avatar_url, nickname
+    ),
+    competition:CompetitionInstances!Fixtures_competition_instance_id_fkey(
+      id,
+      name,
+      stage:Stages!Stages_competition_instance_id_fkey(
+        id,
+        name,
+        stage_type
+      )
+    )
+  `
       )
       .eq('id', fixtureId)
       .single();

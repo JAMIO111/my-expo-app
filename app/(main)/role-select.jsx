@@ -36,7 +36,13 @@ const RoleSelect = () => {
               key={index}
               onPress={() => {
                 setCurrentRole(role);
-                isActive ? router.replace('/home') : router.replace('/(main)/onboarding/season');
+                if (role.type === 'admin') {
+                  router.replace('/(main)/home');
+                } else {
+                  if (isActive) {
+                    router.replace('/(main)/home');
+                  } else router.replace('/(main)/onboarding/upgrade');
+                }
               }}>
               <View className="mb-3 flex-row items-center justify-between gap-2 rounded-2xl border border-theme-gray-5 bg-bg-grouped-2 px-4 py-3 shadow-sm shadow-theme-gray-5">
                 <View className="flex-1">

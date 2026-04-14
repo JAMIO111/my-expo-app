@@ -284,18 +284,6 @@ const BasicPaywall = () => {
                 )
                 .map((plan, idx) => {
                   const isCurrentPlan = subscription && subscription.product_id === plan.sku;
-                  const isUpgrade =
-                    (currentSubscription &&
-                      plan.tier === 'pro' &&
-                      currentSubscription.tier === 'core') ||
-                    (currentSubscription &&
-                      plan.tier === 'annual' &&
-                      currentSubscription.interval === 'monthly');
-
-                  const isDowngrade =
-                    currentSubscription &&
-                    plan.tier === 'core' &&
-                    currentSubscription.tier === 'pro';
 
                   return (
                     <Pressable
@@ -307,7 +295,7 @@ const BasicPaywall = () => {
                         setSelectedTier(plan.tier);
                         setSelectedPlan(plan);
                       }}
-                      className={`relative w-full flex-row items-center justify-start gap-4 rounded-3xl border bg-bg-1 p-2 pr-5 ${
+                      className={`relative w-full flex-row items-center justify-start gap-4 rounded-3xl bg-bg-1 p-2 pr-5 shadow-sm ${
                         isCurrentPlan
                           ? 'opacity-50'
                           : selectedBilling === plan.interval && selectedTier === plan.tier
@@ -405,13 +393,33 @@ const BasicPaywall = () => {
                     </Pressable>
                   );
                 })
+            ) : isLoading ? (
+              Array.from({ length: 4 }, (_, idx) => (
+                <View
+                  key={idx}
+                  className="w-full animate-pulse flex-row items-center justify-center rounded-3xl bg-bg-1 p-4 pr-5 shadow-sm">
+                  <View className="h-20 w-20 rounded-2xl bg-theme-gray-3" />
+                  <View className="ml-4 flex-1 flex-row justify-center text-center">
+                    <Text className="items-center font-saira text-xl text-text-2">
+                      Loading subscriptions...
+                    </Text>
+                  </View>
+                </View>
+              ))
             ) : (
-              <Text className="text-center font-saira text-lg text-text-2">
-                No subscription plans available at the moment. Please check back later.
-              </Text>
+              <View className="w-full flex-row items-center justify-center rounded-3xl bg-bg-1 p-4 pr-5 shadow-sm">
+                <View className="items-center justify-center rounded-2xl bg-theme-red p-3">
+                  <IonIcons name="sad-outline" size={40} color={'#FFFFFF'} />
+                </View>
+                <View className="ml-4 flex-1 flex-row justify-center text-center">
+                  <Text className="items-center font-saira text-lg text-text-2">
+                    No subscription plans available at the moment. Please check back later.
+                  </Text>
+                </View>
+              </View>
             )}
           </View>
-          {!subscription && (
+          {!subscription && subscriptions && subscriptions.length > 0 && (
             <View className="mt-6 w-full flex-row items-center justify-between px-6">
               <Text className="font-saira-medium text-xl text-text-1">Enable 7-day free trial</Text>
               <Switch

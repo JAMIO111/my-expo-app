@@ -269,13 +269,14 @@ const PlayerProfile = ({ context, isLoading, playerProfile, error }) => {
               <CachedImage
                 avatarUrl={playerProfile.avatar_url}
                 userId={playerProfile.id}
-                width={120}
-                height={120}
-                borderRadius={12}
+                width={100}
+                height={100}
+                borderRadius={10}
               />
             ) : (
               <View
-                className="h-32 w-32 items-center justify-center rounded-xl
+                style={{ height: 100, width: 100, borderRadius: 10 }}
+                className="items-center justify-center
         border-2 border-brand bg-brand-light">
                 <Text className="font-michroma text-4xl text-white">
                   {playerProfile?.first_name.charAt(0)}
@@ -283,16 +284,16 @@ const PlayerProfile = ({ context, isLoading, playerProfile, error }) => {
                 </Text>
               </View>
             )}
-            <View className="h-32 justify-center gap-1">
-              <Text style={{ lineHeight: 50 }} className="font-saira-medium text-4xl text-text-1">
+            <View className="justify-center gap-1">
+              <Text style={{ lineHeight: 40 }} className="font-saira-semibold text-3xl text-text-1">
                 {playerProfile?.first_name} {playerProfile?.surname}
               </Text>
               {playerProfile?.nickname && (
-                <Text style={{ lineHeight: 30 }} className="font-saira text-3xl text-text-2">
+                <Text style={{ lineHeight: 26 }} className="font-saira-medium text-2xl text-text-1">
                   {playerProfile?.nickname.toUpperCase()}
                 </Text>
               )}
-              <Text style={{ lineHeight: 25 }} className="font-saira text-xl text-text-2">
+              <Text style={{ lineHeight: 24 }} className="font-saira text-xl text-text-2">
                 {`Since: ${
                   playerProfile?.created_at
                     ? new Date(playerProfile.created_at).toLocaleDateString('en-GB', {

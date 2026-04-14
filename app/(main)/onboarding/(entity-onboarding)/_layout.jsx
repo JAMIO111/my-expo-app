@@ -2,6 +2,7 @@ import { Stack } from 'expo-router';
 import CustomHeader from '@components/CustomNativeHeader';
 
 export default function EntityOnboardingLayout() {
+  console.log('Rendering EntityOnboardingLayout');
   return (
     <Stack
       screenOptions={{

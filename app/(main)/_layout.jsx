@@ -9,8 +9,15 @@ import { useSubscription } from '@hooks/useSubscription';
 const _layout = () => {
   const router = useRouter();
   const segments = useSegments();
-  const { user, player, loading, roles, setCurrentRole } = useUser();
+  const { user, player, loading, roles, setCurrentRole, currentRole } = useUser();
   const { isActive, isLoading: subscriptionLoading } = useSubscription();
+
+  console.log('AppLayout (main)');
+  console.log('User:', user);
+  console.log('Player:', player);
+  console.log('Current Role:', currentRole);
+  console.log('Subscription active:', isActive);
+  console.log('roles:', roles);
 
   const prevIsActive = useRef(null);
 
@@ -19,29 +26,68 @@ const _layout = () => {
 
     const inOnboarding = segments.includes('onboarding');
     const inAuth = segments.includes('auth');
+    const HOME_SEGMENTS = [
+      'home',
+      'my-leagues',
+      'teams',
+      'competitions',
+      'rankings',
+      'profile',
+      'settings',
+    ];
+
+    const inHome = HOME_SEGMENTS.some((s) => segments.includes(s));
 
     if (!user && !inAuth) {
       router.replace('/auth');
       return;
     }
+    if (player && !inOnboarding) {
+      if (player.onboarding === 0) {
+        router.replace('/(main)/onboarding/(profile-onboarding)/name');
+        return;
+      }
 
-    if (user && !player && !inOnboarding) {
-      router.replace('/(main)/onboarding');
-      return;
-    }
+      if (player.onboarding === 1) {
+        router.replace('/(main)/onboarding/(entity-onboarding)/admin-or-player');
+        return;
+      }
 
-    if (player && player.onboarding !== 9 && !inOnboarding) {
-      router.replace('/(main)/onboarding');
-      return;
-    }
-  }, [user, player, loading, segments]);
+      if (player.onboarding === 2) {
+        router.replace('/(main)/onboarding/(entity-onboarding)/some-other-step');
+        return;
+      }
 
-  useEffect(() => {
-    if (roles.length === 1) {
-      setCurrentRole(roles[0]);
-      router.replace('/(main)/home');
+      if (player.onboarding === 9) {
+        // 👇 handle role FIRST
+        if (!currentRole) {
+          if (roles.length === 1) {
+            setCurrentRole(roles[0]);
+            return; // ⚠️ STOP HERE — wait for rerender
+          }
+
+          if (roles.length > 1) {
+            router.replace('/(main)/role-select');
+            return;
+          }
+        }
+
+        // 👇 THEN handle navigation once role exists
+        if (!currentRole) return;
+
+        const canAccess = isActive || currentRole.type === 'admin';
+
+        if (canAccess && !inHome) {
+          router.replace('/(main)/home');
+          return;
+        }
+
+        if (!canAccess && !inOnboarding) {
+          router.replace('/(main)/onboarding/upgrade');
+        }
+      }
     }
-  }, [roles, isActive]);
+  }, [user, player, loading, segments, roles, isActive, currentRole]);
 
   useEffect(() => {
     // Don't act until subscription has finished its first fetch.
