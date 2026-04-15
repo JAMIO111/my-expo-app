@@ -54,15 +54,15 @@ const DivisionsList = ({ districtId }) => {
   }, [divisions]);
 
   return (
-    <View className="items-center justify-center gap-4 py-4">
+    <View className="items-center justify-center gap-4 bg-bg-1 p-4 pb-6">
       <Text className="w-full px-2 text-left font-saira-semibold text-2xl text-text-1">
         {currentRole?.district?.name} Divisions
       </Text>
 
       {groupedDivisions.map((group) => (
-        <View key={group.groupId} className="w-full gap-2">
+        <View key={group.groupId} className="w-full gap-3">
           {/* 🧠 Group Header */}
-          <View className="flex-row items-center px-2">
+          <View className="mt-2 flex-row items-center px-2">
             <Text className="font-saira-medium text-lg text-text-1">{`${group.groupName} - `}</Text>
             <Text className="font-saira-regular text-lg text-text-2">{group.competitorType}</Text>
           </View>
@@ -86,7 +86,7 @@ const DivisionsList = ({ districtId }) => {
                   },
                 });
               }}
-              className="w-full flex-row items-center justify-between rounded-2xl border border-theme-gray-5 bg-bg-grouped-2 p-2">
+              className="w-full flex-row items-center justify-between rounded-2xl bg-bg-2 p-2 shadow-sm">
               <View className="flex-row items-center gap-4">
                 {romanNumerals[division.tier] && (
                   <Image

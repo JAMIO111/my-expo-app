@@ -26,6 +26,7 @@ import FloatingBottomSheet from '@components/FloatingBottomSheet';
 import BottomSheetWrapper from '@/components/BottomSheetWrapper';
 import { BottomSheetScrollView, BottomSheetView } from '@gorhom/bottom-sheet';
 import KnockoutBracket from '@components/KnockoutBracket';
+import ExpandableView from '@components/ExpandableView';
 
 export function getStatusColors(status) {
   switch (status) {
@@ -53,6 +54,7 @@ const index = () => {
   const [internalSheetConfig, setInternalSheetConfig] = useState(null); // to hold content during animation
   const [selectedRewardType, setSelectedRewardType] = useState(null); // 'winner' or 'runnerUp'
   const [selectedReward, setSelectedReward] = useState(null);
+  const [showDetails, setShowDetails] = useState(true);
   const [showParticipants, setShowParticipants] = useState(true);
   const [showFixtures, setShowFixtures] = useState(false);
   const queryClient = useQueryClient();
@@ -100,38 +102,6 @@ const index = () => {
     const publicStatuses = ['active', 'eliminated', 'champion'];
 
     return publicStatuses.includes(p.status) || (p.status === 'requested' && isOwn);
-  });
-
-  const rotateAnim = useRef(new Animated.Value(0)).current;
-
-  useEffect(() => {
-    Animated.timing(rotateAnim, {
-      toValue: showFixtures ? 1 : 0,
-      duration: 250,
-      easing: Easing.out(Easing.cubic),
-      useNativeDriver: true,
-    }).start();
-  }, [showFixtures]);
-
-  const rotate = rotateAnim.interpolate({
-    inputRange: [0, 1],
-    outputRange: ['0deg', '180deg'],
-  });
-
-  const rotateAnimParticipants = useRef(new Animated.Value(0)).current;
-
-  useEffect(() => {
-    Animated.timing(rotateAnimParticipants, {
-      toValue: showParticipants ? 1 : 0,
-      duration: 250,
-      easing: Easing.out(Easing.cubic),
-      useNativeDriver: true,
-    }).start();
-  }, [showParticipants]);
-
-  const rotateParticipants = rotateAnimParticipants.interpolate({
-    inputRange: [0, 1],
-    outputRange: ['0deg', '180deg'],
   });
 
   console.log('Competition Instance Details:', competitionInstance);
@@ -478,58 +448,66 @@ const index = () => {
             contentContainerStyle={{ display: 'flex', flexGrow: 1, gap: 6 }}
             className="mt-16 flex-1 bg-bg-2">
             <View className="gap-6 bg-bg-1 p-4">
-              <Text className="font-saira-medium text-2xl text-text-1">Competition Details</Text>
-              <View className="flex-row">
-                <View className="flex-1 gap-3">
-                  <View>
-                    <Text className="px-1 font-saira text-lg text-text-2">Competition Format</Text>
-                    <Text className="px-1 font-saira text-xl text-text-1">
-                      {formatCompetitionType(competitionInstance?.competition?.competition_type)}
-                    </Text>
-                  </View>
-                  <View>
-                    <Text className="px-1 font-saira text-lg text-text-2">Gender</Text>
-                    <View className="flex-row items-center gap-1">
-                      <Text className="px-1 font-saira text-xl text-text-1">
-                        {competitionInstance?.gender.slice(0, 1).toUpperCase() +
-                          competitionInstance?.gender.slice(1)}
+              <ExpandableView
+                title="Competition Details"
+                show={showDetails}
+                setShow={setShowDetails}>
+                <View className="flex-row pt-2">
+                  <View className="flex-1 gap-3">
+                    <View>
+                      <Text className="px-1 font-saira text-lg text-text-2">
+                        Competition Format
                       </Text>
-                      {competitionInstance?.gender === 'male' && (
-                        <Ionicons name="male" size={20} color="#0085E5" />
-                      )}
-                      {competitionInstance?.gender === 'female' && (
-                        <Ionicons name="female" size={20} color="#FF69B4" />
-                      )}
+                      <Text className="px-1 font-saira text-xl text-text-1">
+                        {formatCompetitionType(competitionInstance?.competition?.competition_type)}
+                      </Text>
+                    </View>
+                    <View>
+                      <Text className="px-1 font-saira text-lg text-text-2">Gender</Text>
+                      <View className="flex-row items-center gap-1">
+                        <Text className="px-1 font-saira text-xl text-text-1">
+                          {competitionInstance?.gender.slice(0, 1).toUpperCase() +
+                            competitionInstance?.gender.slice(1)}
+                        </Text>
+                        {competitionInstance?.gender === 'male' && (
+                          <Ionicons name="male" size={20} color="#0085E5" />
+                        )}
+                        {competitionInstance?.gender === 'female' && (
+                          <Ionicons name="female" size={20} color="#FF69B4" />
+                        )}
+                      </View>
+                    </View>
+                    <View>
+                      <Text className="px-1 font-saira text-lg text-text-2">
+                        Division Requirement
+                      </Text>
+                      <Text className="px-1 font-saira text-xl text-text-1">
+                        {formatCompetitionType(competitionInstance?.division?.name || 'None')}
+                      </Text>
                     </View>
                   </View>
-                  <View>
-                    <Text className="px-1 font-saira text-lg text-text-2">
-                      Division Requirement
-                    </Text>
-                    <Text className="px-1 font-saira text-xl text-text-1">
-                      {formatCompetitionType(competitionInstance?.division?.name || 'None')}
-                    </Text>
+                  <View className="flex-1 gap-3">
+                    <View>
+                      <Text className="px-1 font-saira text-lg text-text-2">Competitor Type</Text>
+                      <Text className="px-1 font-saira text-xl text-text-1">
+                        {competitionInstance?.competition?.competitor_type
+                          .slice(0, 1)
+                          .toUpperCase() +
+                          competitionInstance?.competition?.competitor_type.slice(1)}
+                      </Text>
+                    </View>
+                    <View>
+                      <Text className="px-1 font-saira text-lg text-text-2">Age Restriction</Text>
+                      <Text className="px-1 font-saira text-xl text-text-1">
+                        {formatAgeRestrictions(
+                          competitionInstance?.min_age,
+                          competitionInstance?.max_age
+                        ) || 'None'}
+                      </Text>
+                    </View>
                   </View>
                 </View>
-                <View className="flex-1 gap-3">
-                  <View>
-                    <Text className="px-1 font-saira text-lg text-text-2">Competitor Type</Text>
-                    <Text className="px-1 font-saira text-xl text-text-1">
-                      {competitionInstance?.competition?.competitor_type.slice(0, 1).toUpperCase() +
-                        competitionInstance?.competition?.competitor_type.slice(1)}
-                    </Text>
-                  </View>
-                  <View>
-                    <Text className="px-1 font-saira text-lg text-text-2">Age Restriction</Text>
-                    <Text className="px-1 font-saira text-xl text-text-1">
-                      {formatAgeRestrictions(
-                        competitionInstance?.min_age,
-                        competitionInstance?.max_age
-                      ) || 'None'}
-                    </Text>
-                  </View>
-                </View>
-              </View>
+              </ExpandableView>
               {canJoin &&
                 isAdmin &&
                 checkEligibility(player, competitionInstance, currentRole) === 'Eligible' && (
@@ -597,68 +575,45 @@ const index = () => {
                 )}
             </View>
             <View className="gap-2 bg-bg-1 p-4">
-              <Pressable
-                className="flex-row items-center justify-between pr-6"
-                onPress={() => setShowFixtures(!showFixtures)}>
-                <Text className="font-saira-medium text-2xl text-text-1">Fixtures</Text>
-
-                {
-                  <View className="">
-                    <Animated.View style={{ transform: [{ rotate }] }}>
-                      <Ionicons className="" name="chevron-down" size={30} />
-                    </Animated.View>
-                  </View>
-                }
-              </Pressable>
-              <View style={{ marginTop: 10, display: showFixtures ? 'flex' : 'none' }}>
-                {competitionInstance?.status === 'active' ? (
-                  (() => {
-                    switch (competitionInstance?.competition?.competition_type) {
-                      case 'knockout':
-                        return (
-                          <View className="mb-2 gap-5">
-                            <KnockoutBracket competitionInstanceId={instanceId} />
-                            {isAdmin && (
-                              <CTAButton
-                                text="Proceed to Next Round"
-                                type="yellow"
-                                callbackFn={() => progressStage(instanceId)}
-                              />
-                            )}
-                          </View>
-                        );
-                      default:
-                        return (
-                          <Text className="font-saira text-xl text-text-2">
-                            No Fixtures available yet.
-                          </Text>
-                        );
-                    }
-                  })()
-                ) : (
-                  <Text className="font-saira text-xl text-text-2">No Fixtures available yet.</Text>
-                )}
-              </View>
-            </View>
-            <View className="bg-bg-1 p-4">
-              <Pressable
-                className="flex-row items-center justify-between pr-6"
-                onPress={() => setShowParticipants(!showParticipants)}>
-                <View className="">
-                  <Text className="font-saira-medium text-2xl text-text-1">
-                    Competition Participants
-                  </Text>
-                  {competitionInstance?.CompetitionParticipants.length > 0 && (
+              <ExpandableView title="Fixtures" show={showFixtures} setShow={setShowFixtures}>
+                <View style={{ marginTop: 10, display: showFixtures ? 'flex' : 'none' }}>
+                  {competitionInstance?.status === 'active' ? (
+                    (() => {
+                      switch (competitionInstance?.competition?.competition_type) {
+                        case 'knockout':
+                          return (
+                            <View className="mb-2 gap-5">
+                              <KnockoutBracket competitionInstanceId={instanceId} />
+                              {isAdmin && (
+                                <CTAButton
+                                  text="Proceed to Next Round"
+                                  type="yellow"
+                                  callbackFn={() => progressStage(instanceId)}
+                                />
+                              )}
+                            </View>
+                          );
+                        default:
+                          return (
+                            <Text className="font-saira text-xl text-text-2">
+                              No Fixtures available yet.
+                            </Text>
+                          );
+                      }
+                    })()
+                  ) : (
                     <Text className="font-saira text-xl text-text-2">
-                      {competitionInstance.CompetitionParticipants.length} participants
+                      No Fixtures available yet.
                     </Text>
                   )}
                 </View>
-                <Animated.View style={{ transform: [{ rotate: rotateParticipants }] }}>
-                  <Ionicons name="chevron-down" size={30} />
-                </Animated.View>
-              </Pressable>
-              <View style={{ display: showParticipants ? 'flex' : 'none' }}>
+              </ExpandableView>
+            </View>
+            <View className="bg-bg-1 p-4">
+              <ExpandableView
+                title="Competition Participants"
+                show={showParticipants}
+                setShow={setShowParticipants}>
                 <View className="gap-1 pt-4">
                   {visibleParticipants?.length === 0 ? (
                     <Text className="px-1 font-saira text-xl text-text-2">No participants yet</Text>
@@ -801,7 +756,7 @@ const index = () => {
                     })
                   )}
                 </View>
-              </View>
+              </ExpandableView>
             </View>
             <View style={{ minHeight: 360 }} className="bg-bg-1 p-4 pb-8">
               <Text className="px-1 pb-4 font-saira-medium text-2xl text-text-1">

@@ -174,7 +174,7 @@ const FixturePage = ({ fixtureDetails, isLoading, context }) => {
                     </Text>
                   </View>
                 ) : (
-                  <View className="flex-row items-center justify-around px-2">
+                  <View className="flex-row items-center justify-around">
                     <LivePulseCard fontSize={20} dotSize={12} />
                   </View>
                 )}
@@ -260,16 +260,16 @@ const FixturePage = ({ fixtureDetails, isLoading, context }) => {
                 </View>
                 <View className="flex-row items-center justify-center gap-2 pb-2">
                   <Text
+                    adjustsFontSizeToFit
                     numberOfLines={1}
-                    ellipsizeMode="middle"
-                    className="flex-1 text-right font-saira-semibold text-xl text-text-1">
+                    className="flex-1 text-right font-saira-semibold text-lg text-text-1">
                     {fixtureDetails?.homeCompetitor?.display_name}
                   </Text>
                   <Text className="w-6 text-text-2"> vs </Text>
                   <Text
+                    adjustsFontSizeToFit
                     numberOfLines={1}
-                    ellipsizeMode="middle"
-                    className="flex-1 text-left font-saira-semibold text-xl text-text-1">
+                    className="flex-1 text-left font-saira-semibold text-lg text-text-1">
                     {fixtureDetails?.awayCompetitor?.display_name}
                   </Text>
                 </View>

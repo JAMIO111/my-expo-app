@@ -105,6 +105,8 @@ const useIAPHook = () => {
           return;
         }
 
+        console.log('[IAP] Verifying receipt with edge function...', purchase);
+
         // Send full purchase object — edge function reads
         // purchase.platform, purchase.purchaseToken, purchase.productId directly
         const response = await supabase.functions.invoke('verify-receipt', {

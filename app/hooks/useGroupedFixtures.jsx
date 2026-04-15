@@ -2,8 +2,8 @@ import { useQuery } from '@tanstack/react-query';
 import { startOfMonth, endOfMonth } from 'date-fns';
 import { supabase } from '@/lib/supabase';
 
-export const useGroupedFixtures = ({ month, seasonId, divisionId }) => {
-  const fetchGroupedFixtures = async ({ month, seasonId, divisionId }) => {
+export const useGroupedFixtures = ({ month, seasonId, competitionInstanceId }) => {
+  const fetchGroupedFixtures = async ({ month, seasonId, competitionInstanceId }) => {
     let query = supabase
       .from('Fixtures')
       .select(
@@ -17,7 +17,7 @@ export const useGroupedFixtures = ({ month, seasonId, divisionId }) => {
       `
       )
       .eq('season', seasonId)
-      .eq('division', divisionId)
+      .eq('competition_instance_id', competitionInstanceId) // Only fetch unassigned fixtures
       .eq('approved', false)
       .order('date_time', { ascending: true });
 
@@ -69,11 +69,11 @@ export const useGroupedFixtures = ({ month, seasonId, divisionId }) => {
   };
 
   return useQuery({
-    queryKey: ['fixtures-grouped', month?.toISOString(), seasonId, divisionId],
-    queryFn: () => fetchGroupedFixtures({ month, seasonId, divisionId }),
+    queryKey: ['fixtures-grouped', month?.toISOString(), seasonId, competitionInstanceId],
+    queryFn: () => fetchGroupedFixtures({ month, seasonId, competitionInstanceId }),
     staleTime: 1000 * 60 * 5,
     cacheTime: 1000 * 60 * 60,
-    enabled: !!seasonId && !!divisionId, // month optional now
+    enabled: !!seasonId && !!competitionInstanceId, // month optional now
     keepPreviousData: true,
   });
 };

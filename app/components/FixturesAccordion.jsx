@@ -9,13 +9,20 @@ if (Platform.OS === 'android') {
   UIManager.setLayoutAnimationEnabledExperimental?.(true);
 }
 
-const FixturesAccordion = ({ season, division, isExpanded, onPress }) => {
+const FixturesAccordion = ({ season, competitionInstance, isExpanded, onPress }) => {
   const [expandedDate, setExpandedDate] = useState(null); // inner date toggle
+
+  console.log(
+    'FixturesAccordion Props - season:',
+    season,
+    'competitionInstance:',
+    competitionInstance
+  );
 
   const { data: fixturesGrouped, isLoading } = useGroupedFixtures({
     month: null,
     seasonId: season?.id,
-    divisionId: division?.id,
+    competitionInstanceId: competitionInstance?.id,
   });
 
   console.log('FixturesAccordion - grouped fixtures:', fixturesGrouped);
@@ -26,7 +33,7 @@ const FixturesAccordion = ({ season, division, isExpanded, onPress }) => {
   };
 
   return (
-    <View className="w-full overflow-hidden rounded-2xl border border-theme-gray-5 bg-bg-grouped-2">
+    <View className="w-full rounded-2xl bg-bg-2 shadow-sm">
       {/* Top-level header */}
       <Pressable
         onPress={onPress} // external control
@@ -36,11 +43,10 @@ const FixturesAccordion = ({ season, division, isExpanded, onPress }) => {
           {!isExpanded && (
             <Text className="font-saira-medium text-text-2">
               {Object.keys(fixturesGrouped || {}).length} matchday
-              {Object.keys(fixturesGrouped || {}).length !== 1 ? 's' : ''} Remaining
+              {Object.keys(fixturesGrouped || {}).length !== 1 ? 's' : ''}
             </Text>
           )}
         </View>
-
         <Ionicons
           name="chevron-down"
           size={22}
@@ -56,7 +62,7 @@ const FixturesAccordion = ({ season, division, isExpanded, onPress }) => {
             <Text className="text-text-2">Loading fixtures...</Text>
           ) : (
             Object.entries(fixturesGrouped || {}).map(([date, fixturesForDate]) => (
-              <View key={date} className="overflow-hidden rounded-2xl bg-bg-grouped-1">
+              <View key={date} className="rounded-2xl bg-bg-1 shadow-sm">
                 {/* Date header */}
                 <Pressable
                   onPress={() => toggleDate(date)}
@@ -82,11 +88,11 @@ const FixturesAccordion = ({ season, division, isExpanded, onPress }) => {
 
                 {/* Fixtures for this date */}
                 {expandedDate === date && (
-                  <View className="gap-2 bg-bg-grouped-1 p-3">
+                  <View className="gap-2 p-3">
                     {fixturesForDate.map((fixture) => (
                       <View
                         key={fixture.id}
-                        className="flex flex-1 flex-col items-center justify-between gap-2 rounded-2xl bg-bg-1 p-2 shadow-sm">
+                        className="flex flex-1 flex-col items-center justify-between gap-2 rounded-2xl bg-bg-2 p-2 shadow-sm">
                         <View className="flex flex-row items-center justify-between gap-2">
                           <View className="flex-1 flex-col items-center justify-between gap-2">
                             <View className="flex-1 flex-row items-center justify-between gap-2">

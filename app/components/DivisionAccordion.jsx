@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { View, Text, Pressable, LayoutAnimation, Platform, UIManager } from 'react-native';
+import { View, Text, Pressable, Platform, UIManager } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import TeamLogo from '@components/TeamLogo';
 import { useRouter } from 'expo-router';
@@ -17,7 +17,7 @@ const DivisionAccordion = ({ isExpanded, onPress, divisionName, teams = [] }) =>
   const { data: teamPlayers, isLoading } = useTeamPlayers(expandedTeam);
 
   return (
-    <View className="w-full overflow-hidden rounded-2xl border border-theme-gray-5 bg-bg-grouped-2">
+    <View className="w-full rounded-2xl bg-bg-2 shadow-sm">
       {/* Header */}
       <Pressable onPress={onPress} className="flex-row items-center justify-between p-4">
         <View>
@@ -47,7 +47,7 @@ const DivisionAccordion = ({ isExpanded, onPress, divisionName, teams = [] }) =>
             <Pressable
               onPress={() => setExpandedTeam((prev) => (prev === team.id ? null : team.id))}
               key={team.id}
-              className="gap-2 rounded-3xl bg-bg-grouped-1 px-3 py-3">
+              className="gap-2 rounded-3xl bg-bg-1 px-3 py-3 shadow-sm">
               <View className="flex-row items-center">
                 <TeamLogo
                   size={30}
@@ -71,7 +71,7 @@ const DivisionAccordion = ({ isExpanded, onPress, divisionName, teams = [] }) =>
               </View>
               {expandedTeam === team.id && (
                 <View className="gap-3">
-                  <View className="mt-3 gap-2 rounded-2xl bg-bg-grouped-2 p-3">
+                  <View className="mt-3 gap-2 rounded-2xl bg-bg-2 p-3">
                     {isLoading ? (
                       <Text className="font-saira text-text-2">Loading players...</Text>
                     ) : !teamPlayers || teamPlayers?.length === 0 ? (

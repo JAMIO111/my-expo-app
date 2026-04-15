@@ -67,11 +67,13 @@ const PlayerCard = ({ player, team, context }) => {
     }
   };
 
-  const isCaptain = player.role === 'captain';
-  const isViceCaptain = player.role === 'vice_captain';
+  console.log('PlayerCard Team', team);
+
+  const isCaptain = team.captain === player.id;
+  const isViceCaptain = team.vice_captain === player.id;
 
   return (
-    <Animated.View style={{ transform: [{ scale }] }}>
+    <Animated.View className="shadow-sm" style={{ transform: [{ scale }] }}>
       <Pressable
         onPressIn={handlePressIn}
         onPressOut={handlePressOut}

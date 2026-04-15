@@ -23,7 +23,7 @@ const PlayersList = ({ team, context, fixtureId, players, isLoading, error }) =>
   console.log('PlayersList - Sorted Players:', sortedPlayers);
 
   return (
-    <View className="gap-2">
+    <View className="gap-3">
       {isLoading ? (
         <View className="items-center justify-center rounded-3xl bg-bg-2 px-4 py-7 shadow-sm">
           <Text className="font-saira text-xl text-text-2">Loading Players...</Text>

@@ -1,15 +1,19 @@
-import { StyleSheet, View } from 'react-native';
-import { useState } from 'react';
+import { StyleSheet, View, Text, Pressable, Modal } from 'react-native';
+import { useState, useEffect } from 'react';
 import { Stack, useRouter } from 'expo-router';
-import CustomHeader from '@components/CustomHeader';
-import NavBar from '@components/NavBar2';
+import { supabase } from '@lib/supabase';
 import { useUser } from '@contexts/UserProvider';
+import CustomHeader from '@components/CustomHeader';
 import SafeViewWrapper from '@components/SafeViewWrapper';
 import { ScrollView } from 'react-native-gesture-handler';
 import { useLocalSearchParams } from 'expo-router';
 import DivisionAccordion from '@components/DivisionAccordion';
 import { useTeamsByDivision } from '@hooks/useTeamsByDivision';
 import FixturesAccordion from '@components/FixturesAccordion';
+import Heading from '@components/Heading';
+import ExpandableView from '@components/ExpandableView';
+import CTAButton from '@components/CTAButton';
+import Ionicons from 'react-native-vector-icons/Ionicons';
 
 const DivisionOverview = () => {
   const { currentRole } = useUser();
@@ -18,10 +22,23 @@ const DivisionOverview = () => {
   const division = params.divisionStr ? JSON.parse(params.divisionStr) : {};
   const { data: teams, isLoading, isError } = useTeamsByDivision(division.id);
   const [expandedAccordion, setExpandedAccordion] = useState(null);
+  const [competitionInstance, setCompetitionInstance] = useState(null);
+  const [showDetails, setShowDetails] = useState(false);
+  const [showModal, setShowModal] = useState(false);
 
   console.log('Division Overview for:', division);
   console.log('Teams in Division:', teams);
   console.log('Error loading teams:', isError);
+  console.log('Competition Instance:', competitionInstance);
+
+  const currentSeasonComp = currentRole?.competitions?.find(
+    (comp) =>
+      comp.season_id === currentRole.activeSeason?.id &&
+      comp.division_id === division.id &&
+      comp.competition_type === 'league'
+  );
+
+  console.log('Current Season Competition:', currentSeasonComp);
 
   return (
     <>
@@ -29,33 +46,128 @@ const DivisionOverview = () => {
         options={{
           header: () => (
             <SafeViewWrapper useBottomInset={false}>
-              <CustomHeader showBack={true} title={division.name || 'My Division'} />
+              <CustomHeader
+                onRightPress={() => {
+                  setShowModal(true);
+                }}
+                rightIcon="build"
+                showBack={true}
+                title={division.name || 'My Division'}
+              />
             </SafeViewWrapper>
           ),
         }}
       />
       <SafeViewWrapper useBottomInset={false} bottomColor="bg-brand" topColor="bg-brand">
         <ScrollView
-          contentContainerStyle={{ gap: 16, marginVertical: 64, paddingBottom: 32 }}
-          className="flex-1 bg-brand p-3">
-          <DivisionAccordion
-            isExpanded={expandedAccordion === 'division'}
-            onPress={() =>
-              setExpandedAccordion(expandedAccordion === 'division' ? null : 'division')
-            }
-            divisionName={division.name}
-            teams={teams || []}
-          />
-          <FixturesAccordion
-            isExpanded={expandedAccordion === 'fixtures'}
-            onPress={() =>
-              setExpandedAccordion(expandedAccordion === 'fixtures' ? null : 'fixtures')
-            }
-            season={currentRole.activeSeason}
-            division={division}
-          />
+          contentContainerStyle={{ gap: 5, marginVertical: 58, paddingBottom: 32 }}
+          className="flex-1 bg-bg-2">
+          <View className="bg-bg-1 p-3">
+            <ExpandableView title="Division Details" show={showDetails} setShow={setShowDetails}>
+              <View className="flex-row pt-2">
+                <View className="flex-1 gap-3">
+                  <View>
+                    <Text className="px-1 font-saira text-lg text-text-2">Division Name</Text>
+                    <Text className="px-1 font-saira text-xl text-text-1">{division.name}</Text>
+                  </View>
+                  <View>
+                    <Text className="px-1 font-saira text-lg text-text-2">Tier</Text>
+                    <View className="flex-row items-center gap-1">
+                      <Text className="px-1 font-saira text-xl text-text-1">
+                        {division.tier || 'N/A'}
+                      </Text>
+                    </View>
+                  </View>
+                  <View>
+                    <Text className="px-1 font-saira text-lg text-text-2">Promotion Spots</Text>
+                    <Text className="px-1 font-saira text-xl text-text-1">
+                      {division.promotions || 'No promotions'}
+                    </Text>
+                  </View>
+                </View>
+                <View className="flex-1 gap-3">
+                  <View>
+                    <Text className="px-1 font-saira text-lg text-text-2">Division Group</Text>
+                    <Text className="px-1 font-saira text-xl text-text-1">
+                      {division.group_name || 'N/A'}
+                    </Text>
+                  </View>
+                  <View>
+                    <Text className="px-1 font-saira text-lg text-text-2">Competitor Type</Text>
+                    <View className="flex-row items-center gap-1">
+                      <Text className="px-1 font-saira text-xl text-text-1">
+                        {division.competitor_type
+                          ? division.competitor_type.slice(0, 1).toUpperCase() +
+                            division.competitor_type.slice(1)
+                          : 'N/A'}
+                      </Text>
+                    </View>
+                  </View>
+                  <View>
+                    <Text className="px-1 font-saira text-lg text-text-2">Relegation Spots</Text>
+                    <Text className="px-1 font-saira text-xl text-text-1">
+                      {division.relegation_spots || 'No relegations'}
+                    </Text>
+                  </View>
+                </View>
+              </View>
+            </ExpandableView>
+          </View>
+          <View className="gap-3 bg-bg-1 p-3 py-6">
+            <View className="">
+              <Heading text="Team Management" />
+            </View>
+            <DivisionAccordion
+              isExpanded={expandedAccordion === 'division'}
+              onPress={() =>
+                setExpandedAccordion(expandedAccordion === 'division' ? null : 'division')
+              }
+              divisionName={division.name}
+              teams={teams || []}
+            />
+          </View>
+          <View className="gap-3 bg-bg-1 p-3 py-6">
+            <View className="">
+              <Heading text="Fixtures" />
+            </View>
+            <FixturesAccordion
+              isExpanded={expandedAccordion === 'fixtures'}
+              onPress={() =>
+                setExpandedAccordion(expandedAccordion === 'fixtures' ? null : 'fixtures')
+              }
+              season={currentRole.activeSeason}
+              competitionInstance={currentSeasonComp}
+            />
+          </View>
         </ScrollView>
       </SafeViewWrapper>
+      <Modal
+        visible={showModal}
+        presentationStyle="pageSheet"
+        animationType="slide"
+        onRequestClose={() => setShowModal(false)}>
+        <View className="w-full flex-1 items-stretch justify-between p-5 pb-8">
+          <View className="mb-4 flex-row items-center gap-3">
+            <Text className="flex-1 font-saira-medium text-lg text-text-1">
+              Division Management
+            </Text>
+            <Ionicons name="close" size={24} color="gray" onPress={() => setShowModal(false)} />
+          </View>
+          <ScrollView className="flex-1">
+            <Text className="font-saira text-text-2">
+              This is where you can manage your division settings, teams, fixtures, and more. This
+              feature is coming soon!
+            </Text>
+          </ScrollView>
+          <CTAButton
+            callbackFn={() => {
+              setShowModal(false);
+            }}
+            type="yellow"
+            text="Close"
+          />
+        </View>
+      </Modal>
     </>
   );
 };

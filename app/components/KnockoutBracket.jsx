@@ -289,7 +289,7 @@ export default function KnockoutBracket({ competitionInstanceId }) {
       <Modal
         presentationStyle="pageSheet"
         visible={stageModalVisible}
-        onDismiss={() => setStageModalVisible(false)}
+        onRequestClose={() => setStageModalVisible(false)}
         animationType="slide">
         <View className="flex-1 items-center justify-center bg-white p-4">
           <View className="flex-1 items-start justify-start gap-4">
@@ -301,11 +301,7 @@ export default function KnockoutBracket({ competitionInstanceId }) {
           </View>
 
           <View className="w-full pb-8">
-            <CTAButton
-              text="Save & Exit"
-              type="success"
-              callbackFn={() => setStageModalVisible(false)}
-            />
+            <CTAButton text="Close" type="yellow" callbackFn={() => setStageModalVisible(false)} />
           </View>
         </View>
       </Modal>

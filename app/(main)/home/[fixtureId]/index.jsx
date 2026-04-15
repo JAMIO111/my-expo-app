@@ -18,6 +18,20 @@ const index = () => {
 
   const competitorType = fixtureDetails?.homeCompetitor?.type;
 
+  const isOpen = !fixtureDetails?.is_complete;
+
+  const isDisputedEditable = fixtureDetails?.is_disputed && !fixtureDetails?.is_amended;
+
+  const fixtureValid = isOpen || isDisputedEditable;
+
+  const playerValid =
+    competitorType === 'team'
+      ? player?.id === currentRole?.team?.captain &&
+        currentRole?.team.id === fixtureDetails?.homeCompetitor?.id
+      : player?.id === fixtureDetails?.homeCompetitor?.id;
+
+  const canSubmit = fixtureValid && playerValid;
+
   return (
     <SafeViewWrapper useBottomInset={false} topColor="bg-brand">
       <Stack.Screen
@@ -27,11 +41,7 @@ const index = () => {
               <CustomHeader
                 title={`${competitorType === 'team' ? fixtureDetails?.homeCompetitor?.abbreviation || '' : fixtureDetails?.homeCompetitor?.nickname.toUpperCase() || ''} vs ${competitorType === 'team' ? fixtureDetails?.awayCompetitor?.abbreviation || '' : fixtureDetails?.awayCompetitor?.nickname.toUpperCase() || ''}`}
                 onRightPress={
-                  player?.id === currentRole?.team?.captain.id &&
-                  currentRole?.team?.id === fixtureDetails?.homeCompetitor?.id &&
-                  fixtureDetails?.is_complete === false
-                    ? () => router.push(`home/${fixtureId}/submit-results`)
-                    : null
+                  canSubmit ? () => router.push(`home/${fixtureId}/submit-results`) : null
                 }
                 rightIcon="clipboard-outline"
               />

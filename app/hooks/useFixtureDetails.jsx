@@ -23,13 +23,17 @@ export const useFixtureDetails = (fixtureId) => {
         line_2,
         city,
         postcode
-      )
+      ),
+      captain,
+      vice_captain
     ),
     awayTeam:Teams!Fixtures_away_team_fkey(
       id,
       display_name,
       abbreviation,
-      crest
+      crest,
+      captain,
+      vice_captain
     ),
     homePlayer:Players!Fixtures_home_player_fkey(
       id, first_name, surname, avatar_url, nickname

@@ -1,5 +1,6 @@
-import { StyleSheet, View, Text } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import { Stack, useRouter } from 'expo-router';
+import { supabase } from '@lib/supabase';
 import { useUser } from '@contexts/UserProvider';
 import CustomHeader from '@components/CustomHeader';
 import NavBar from '@components/NavBar2';
@@ -9,7 +10,8 @@ import DivisionsList from '@components/DivisionsList';
 import { ScrollView } from 'react-native-gesture-handler';
 import CircleButtonRow from '@components/CircleButtonRow';
 import CTAButton from '@components/CTAButton';
-import SeasonControlCard from '../../components/SeasonControlCard';
+import SeasonControlCard from '@components/SeasonControlCard';
+import Toast from 'react-native-toast-message';
 
 const index = () => {
   const router = useRouter();
@@ -24,9 +26,39 @@ const index = () => {
     console.log('Starting a new season...');
   };
 
-  const handleEndSeason = (seasonId) => {
-    // Logic to end the current season
-    console.log(`Ending season with ID: ${seasonId}`);
+  const handleEndSeason = async (seasonId) => {
+    const { data, error } = await supabase.rpc('end_season', {
+      p_season_id: seasonId,
+    });
+
+    if (error) {
+      Toast.show({
+        type: 'error',
+        text1: 'Error Ending Season',
+        text2: error.message,
+      });
+      return;
+    }
+
+    if (data?.success === false) {
+      const list =
+        data.incomplete_competitions?.map((c) => `• ${c.name} (${c.status})`).join('\n') ||
+        'No details available';
+
+      Toast.show({
+        type: 'info',
+        text1: 'Season Not Ended',
+        text2: `The following competitions are still active:\n\n${list}\n\nPlease complete them all before ending the season.`,
+      });
+
+      return;
+    }
+
+    Toast.show({
+      type: 'success',
+      text1: 'Season Ended',
+      text2: 'The season has been successfully ended.',
+    });
   };
 
   return (
@@ -59,9 +91,8 @@ const index = () => {
               loading={isLoading || loading}
             />
           </View>
-          <View className="bg-bg-2 p-3">
-            <DivisionsList districtId={currentRole?.district.id} />
-          </View>
+          <DivisionsList districtId={currentRole?.district.id} />
+
           <CircleButtonRow
             format={[
               { color: 'bg-brand-dark', iconColor: 'white', icon: 'add', label: 'District' },
