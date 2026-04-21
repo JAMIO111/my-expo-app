@@ -42,8 +42,8 @@ export default function SeasonName() {
     if (!seasonName.trim()) {
       Toast.show({
         type: 'error',
-        text1: 'Invalid Name',
-        text2: 'Season name cannot be empty.',
+        text1: 'Season Name Missing',
+        text2: 'Please enter a season name.',
       });
       return;
     }
@@ -51,7 +51,7 @@ export default function SeasonName() {
       Toast.show({
         type: 'error',
         text1: 'Invalid Date',
-        text2: 'Start date cannot be empty.',
+        text2: 'Please select a valid start date.',
       });
       return;
     }
@@ -152,12 +152,6 @@ export default function SeasonName() {
             textColor="text-black"
             text={loading ? 'Creating League...' : 'Create Season'}
             callbackFn={handleSubmit}
-            disabled={loading}
-          />
-          <CTAButton
-            type="error"
-            text="Go Back"
-            callbackFn={() => queryClient.invalidateQueries(['authUserProfile'])}
             disabled={loading}
           />
         </View>

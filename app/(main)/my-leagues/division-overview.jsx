@@ -13,7 +13,7 @@ import FixturesAccordion from '@components/FixturesAccordion';
 import Heading from '@components/Heading';
 import ExpandableView from '@components/ExpandableView';
 import CTAButton from '@components/CTAButton';
-import Ionicons from 'react-native-vector-icons/Ionicons';
+import BottomSheetModal from '@components/BottomSheetModal';
 
 const DivisionOverview = () => {
   const { currentRole } = useUser();
@@ -68,19 +68,21 @@ const DivisionOverview = () => {
                 <View className="flex-1 gap-3">
                   <View>
                     <Text className="px-1 font-saira text-lg text-text-2">Division Name</Text>
-                    <Text className="px-1 font-saira text-xl text-text-1">{division.name}</Text>
+                    <Text className="px-1 font-saira-medium text-xl text-text-1">
+                      {division.name}
+                    </Text>
                   </View>
                   <View>
                     <Text className="px-1 font-saira text-lg text-text-2">Tier</Text>
                     <View className="flex-row items-center gap-1">
-                      <Text className="px-1 font-saira text-xl text-text-1">
+                      <Text className="px-1 font-saira-medium text-xl text-text-1">
                         {division.tier || 'N/A'}
                       </Text>
                     </View>
                   </View>
                   <View>
                     <Text className="px-1 font-saira text-lg text-text-2">Promotion Spots</Text>
-                    <Text className="px-1 font-saira text-xl text-text-1">
+                    <Text className="px-1 font-saira-medium text-xl text-text-1">
                       {division.promotions || 'No promotions'}
                     </Text>
                   </View>
@@ -88,14 +90,14 @@ const DivisionOverview = () => {
                 <View className="flex-1 gap-3">
                   <View>
                     <Text className="px-1 font-saira text-lg text-text-2">Division Group</Text>
-                    <Text className="px-1 font-saira text-xl text-text-1">
+                    <Text className="px-1 font-saira-medium text-xl text-text-1">
                       {division.group_name || 'N/A'}
                     </Text>
                   </View>
                   <View>
                     <Text className="px-1 font-saira text-lg text-text-2">Competitor Type</Text>
                     <View className="flex-row items-center gap-1">
-                      <Text className="px-1 font-saira text-xl text-text-1">
+                      <Text className="px-1 font-saira-medium text-xl text-text-1">
                         {division.competitor_type
                           ? division.competitor_type.slice(0, 1).toUpperCase() +
                             division.competitor_type.slice(1)
@@ -105,7 +107,7 @@ const DivisionOverview = () => {
                   </View>
                   <View>
                     <Text className="px-1 font-saira text-lg text-text-2">Relegation Spots</Text>
-                    <Text className="px-1 font-saira text-xl text-text-1">
+                    <Text className="px-1 font-saira-medium text-xl text-text-1">
                       {division.relegation_spots || 'No relegations'}
                     </Text>
                   </View>
@@ -141,33 +143,17 @@ const DivisionOverview = () => {
           </View>
         </ScrollView>
       </SafeViewWrapper>
-      <Modal
-        visible={showModal}
-        presentationStyle="pageSheet"
-        animationType="slide"
-        onRequestClose={() => setShowModal(false)}>
-        <View className="w-full flex-1 items-stretch justify-between p-5 pb-8">
-          <View className="mb-4 flex-row items-center gap-3">
-            <Text className="flex-1 font-saira-medium text-lg text-text-1">
-              Division Management
-            </Text>
-            <Ionicons name="close" size={24} color="gray" onPress={() => setShowModal(false)} />
-          </View>
-          <ScrollView className="flex-1">
-            <Text className="font-saira text-text-2">
-              This is where you can manage your division settings, teams, fixtures, and more. This
-              feature is coming soon!
-            </Text>
-          </ScrollView>
-          <CTAButton
-            callbackFn={() => {
-              setShowModal(false);
-            }}
-            type="yellow"
-            text="Close"
-          />
-        </View>
-      </Modal>
+      <BottomSheetModal
+        showModal={showModal}
+        setShowModal={setShowModal}
+        title={division.name + ' settings' || 'Division Settings'}>
+        <ScrollView className="flex-1 p-5">
+          <Text className="font-saira text-text-2">
+            This is where you can manage your division settings, teams, fixtures, and more. This
+            feature is coming soon!
+          </Text>
+        </ScrollView>
+      </BottomSheetModal>
     </>
   );
 };

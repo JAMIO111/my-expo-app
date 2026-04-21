@@ -17,7 +17,7 @@ const LeagueHomeCard = ({ standings }) => {
   console.log('Standings in LeagueHomeCard:', standings);
 
   const displayTeamIndex =
-    currentRole?.role === 'admin'
+    currentRole?.type === 'admin'
       ? 0
       : standings?.standings?.findIndex((team) => team.id === currentRole?.team?.id);
 
@@ -44,7 +44,7 @@ const LeagueHomeCard = ({ standings }) => {
       <View className="mx-3 flex-row items-center justify-between border-b border-theme-gray-5 px-1 pb-1 pt-2">
         <Text className="font-saira-medium text-2xl text-text-1">
           League Table{' '}
-          {currentRole?.role === 'admin' &&
+          {currentRole?.type === 'admin' &&
             standings?.standings?.length > 0 &&
             `- ${currentRole?.competitions?.filter((comp) => comp.division_tier === 1)?.[0]?.name}`}
         </Text>

@@ -37,11 +37,11 @@ export default function CompareTeamStats() {
   console.log('Team 2 Stats:', team2Stats);
 
   const defaultDistrict =
-    currentRole?.role === 'admin'
+    currentRole?.type === 'admin'
       ? currentRole?.district
       : (currentRole?.team?.division?.district ?? null);
   const defaultDivision =
-    currentRole?.role === 'admin' ? currentRole?.divisions[0] : currentRole?.team?.division;
+    currentRole?.type === 'admin' ? currentRole?.divisions[0] : currentRole?.team?.division;
 
   const [district, setDistrict] = useState(defaultDistrict);
   const [division, setDivision] = useState(defaultDivision);

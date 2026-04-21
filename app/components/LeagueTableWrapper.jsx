@@ -29,7 +29,7 @@ const LeagueTableWrapper = ({ context }) => {
   // Default full objects from context
   const defaultDistrict = currentRole?.district || null;
   const defaultDivision =
-    currentRole?.role === 'admin'
+    currentRole?.type === 'admin'
       ? currentRole?.competitions?.filter((comp) => comp.division_tier === 1)?.[0]
       : currentRole?.division;
   const defaultSeason = currentRole?.activeSeason || null;

@@ -1,4 +1,4 @@
-import { StyleSheet, Text, View, Pressable } from 'react-native';
+import { Text, View, Pressable } from 'react-native';
 import { useUser } from '@contexts/UserProvider';
 import { useRouter } from 'expo-router';
 import IonIcon from '@expo/vector-icons/Ionicons';
@@ -31,55 +31,63 @@ const RoleSelect = () => {
           shown.
         </Text>
         <ScrollView className="px-2 py-3">
-          {roles?.map((role, index) => (
-            <Pressable
-              key={index}
-              onPress={() => {
-                setCurrentRole(role);
-                if (role.type === 'admin') {
-                  router.replace('/(main)/home');
-                } else {
-                  if (isActive) {
+          {!roles || roles.length === 0 ? (
+            <View className="items-center justify-center rounded-2xl border border-theme-gray-5 bg-bg-grouped-2 px-4 py-8 shadow-sm shadow-theme-gray-5">
+              <Text className="font-saira text-lg text-text-2">No roles available.</Text>
+            </View>
+          ) : (
+            roles &&
+            roles.length > 0 &&
+            roles.map((role, index) => (
+              <Pressable
+                key={index}
+                onPress={() => {
+                  setCurrentRole(role);
+                  if (role.type === 'admin') {
                     router.replace('/(main)/home');
-                  } else router.replace('/(main)/onboarding/upgrade');
-                }
-              }}>
-              <View className="mb-3 flex-row items-center justify-between gap-2 rounded-2xl border border-theme-gray-5 bg-bg-grouped-2 px-4 py-3 shadow-sm shadow-theme-gray-5">
-                <View className="flex-1">
-                  <Text
-                    numberOfLines={1}
-                    ellipsizeMode="tail"
-                    className="font-saira-semibold text-2xl text-text-1">
-                    {role.team?.display_name || role.district?.name}
-                  </Text>
-                  <Text
-                    numberOfLines={1}
-                    ellipsizeMode="tail"
-                    className="font-saira-medium text-xl text-text-2">
-                    {role.type.charAt(0).toUpperCase() + role.type.slice(1)}
-                  </Text>
+                  } else {
+                    if (isActive) {
+                      router.replace('/(main)/home');
+                    } else router.replace('/(main)/onboarding/upgrade');
+                  }
+                }}>
+                <View className="mb-3 flex-row items-center justify-between gap-2 rounded-2xl border border-theme-gray-5 bg-bg-grouped-2 px-4 py-3 shadow-sm shadow-theme-gray-5">
+                  <View className="flex-1">
+                    <Text
+                      numberOfLines={1}
+                      ellipsizeMode="tail"
+                      className="font-saira-semibold text-2xl text-text-1">
+                      {role.team?.display_name || role.district?.name}
+                    </Text>
+                    <Text
+                      numberOfLines={1}
+                      ellipsizeMode="tail"
+                      className="font-saira-medium text-xl text-text-2">
+                      {role.type.charAt(0).toUpperCase() + role.type.slice(1)}
+                    </Text>
+                  </View>
+                  <View className="flex-row items-center gap-2">
+                    {role?.type === 'admin' ? (
+                      <IonIcon
+                        name={role?.type === 'admin' ? 'shield-half-sharp' : 'people'}
+                        size={40}
+                        color="teal"
+                      />
+                    ) : (
+                      <TeamLogo
+                        size={40}
+                        type={role?.team?.crest?.type}
+                        color1={role?.team?.crest?.color1}
+                        color2={role?.team?.crest?.color2}
+                        thickness={role?.team?.crest?.thickness}
+                      />
+                    )}
+                    <IonIcon name="chevron-forward-outline" size={24} color="gray" />
+                  </View>
                 </View>
-                <View className="flex-row items-center gap-2">
-                  {role?.type === 'admin' ? (
-                    <IonIcon
-                      name={role?.type === 'admin' ? 'shield-half-sharp' : 'people'}
-                      size={40}
-                      color="teal"
-                    />
-                  ) : (
-                    <TeamLogo
-                      size={40}
-                      type={role?.team?.crest?.type}
-                      color1={role?.team?.crest?.color1}
-                      color2={role?.team?.crest?.color2}
-                      thickness={role?.team?.crest?.thickness}
-                    />
-                  )}
-                  <IonIcon name="chevron-forward-outline" size={24} color="gray" />
-                </View>
-              </View>
-            </Pressable>
-          ))}
+              </Pressable>
+            ))
+          )}
         </ScrollView>
         <Text className="mb-10 px-2 text-center font-saira text-lg text-text-2">
           You can easily switch views later by changing your role in the settings.
@@ -90,5 +98,3 @@ const RoleSelect = () => {
 };
 
 export default RoleSelect;
-
-const styles = StyleSheet.create({});

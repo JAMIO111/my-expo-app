@@ -46,7 +46,7 @@ const index = () => {
         <ScrollView
           contentContainerStyle={{ display: 'flex', flexGrow: 1, gap: 20, paddingVertical: 20 }}
           className="mt-16 flex-1 bg-brand px-4">
-          {currentRole?.role === 'admin' && (
+          {currentRole?.type === 'admin' && (
             <View className="gap-4">
               <Pressable
                 onPress={() => {

@@ -22,10 +22,12 @@ import HomeScreenCardLarge from '@components/HomeScreenCardLarge';
 import TransferWindowCard from '@components/TransferWindowCard';
 import ToggleTransferWindowCard from '@components/ToggleTransferWindowCard';
 import { useQueryClient } from '@tanstack/react-query';
+import BottomSheetModal from '@components/BottomSheetModal';
 
 const Home = () => {
   const [windowLoading, setWindowLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
+  const [showModal, setShowModal] = useState(false);
   const {
     user,
     player,
@@ -48,7 +50,7 @@ const Home = () => {
   console.log('index SeasonId', currentRole?.activeSeason?.id);
 
   const divisionId =
-    currentRole?.role === 'admin'
+    currentRole?.type === 'admin'
       ? currentRole?.competitions?.filter((comp) => comp.division_tier === 1)?.[0]?.division_id
       : currentRole?.division?.id;
   console.log('Division ID:', divisionId);
@@ -385,10 +387,25 @@ const Home = () => {
                     }
                   }}
                 />
+                <CTAButton text="Show Modal" callbackFn={() => setShowModal(true)} />
               </View>
             </View>
           </View>
         </ScrollView>
+        {showModal && (
+          <BottomSheetModal showModal={showModal} setShowModal={setShowModal} title="Hello World">
+            <ScrollView>
+              <View className="p-4">
+                <Text className="text-lg text-text-1">This is the content of the modal.</Text>
+                <Text className="mt-2 text-text-2">
+                  You can put anything you want here, including forms, images, or even a list of
+                  items.
+                </Text>
+                <CTAButton text="Close Modal" callbackFn={() => setShowModal(false)} />
+              </View>
+            </ScrollView>
+          </BottomSheetModal>
+        )}
         <NavBar />
       </View>
     </SafeViewWrapper>

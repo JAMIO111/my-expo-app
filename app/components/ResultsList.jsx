@@ -32,7 +32,7 @@ const ResultsList = () => {
   const [activeFilter, setActiveFilter] = useState(null);
 
   const [district, setDistrict] = useState(
-    currentRole?.role === 'admin' ? currentRole?.district : (currentRole?.district ?? null)
+    currentRole?.type === 'admin' ? currentRole?.district : (currentRole?.district ?? null)
   );
 
   // Fetch districts (no id needed)
@@ -57,7 +57,7 @@ const ResultsList = () => {
   } = useSeasons(district?.id);
 
   const [division, setDivision] = useState(
-    currentRole?.role === 'admin'
+    currentRole?.type === 'admin'
       ? (currentRole?.divisions.find((div) => div.tier === 1 && div.group_id === 1) ?? null)
       : (currentRole?.division ?? null)
   );

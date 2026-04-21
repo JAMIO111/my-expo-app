@@ -73,7 +73,7 @@ const index = () => {
   if (deadline) deadline.setHours(23, 59, 59, 999);
 
   const isAdmin =
-    currentRole?.role === 'admin' &&
+    currentRole?.type === 'admin' &&
     currentRole?.district?.id === competitionInstance?.competition?.district_id;
 
   const isCaptain = currentRole?.team?.captain === player.id;
@@ -222,7 +222,7 @@ const index = () => {
         .from('CompetitionParticipants')
         .update({
           status:
-            status === 'active' ? (currentRole.role === 'admin' ? 'left' : 'removed') : 'cancelled',
+            status === 'active' ? (currentRole.type === 'admin' ? 'removed' : 'left') : 'cancelled',
           left_at: new Date().toISOString(),
         })
         .eq('competition_instance_id', instanceId)

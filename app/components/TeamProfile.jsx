@@ -18,7 +18,7 @@ import { useTeamPlayers } from '@hooks/useTeamPlayers';
 import { useUser } from '@contexts/UserProvider';
 
 const TeamProfile = ({ context, profile, isLoading }) => {
-  const { currentRole } = useUser();
+  const { currentRole, player } = useUser();
   const router = useRouter();
   const { teamId, fixtureId } = useLocalSearchParams();
   if (isLoading || !profile)
@@ -216,11 +216,13 @@ const TeamProfile = ({ context, profile, isLoading }) => {
           />
         </View>
         <View className="flex gap-5 bg-bg-grouped-2 px-4 pb-8 pt-6">
-          <CTAButton
-            type="error"
-            text="Disband Team"
-            callbackFn={() => router.push(`/teams/${profile.id}/full-profile`)}
-          />
+          {player.id === profile.captain && (
+            <CTAButton
+              type="error"
+              text="Disband Team"
+              callbackFn={() => router.push(`/teams/${profile.id}/full-profile`)}
+            />
+          )}
           <Text className="text-center font-saira text-xs text-text-2">{`Team ID: ${profile.id}`}</Text>
         </View>
       </View>

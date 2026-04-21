@@ -212,7 +212,7 @@ const CompetitionInstanceCard = ({ instance }) => {
         </View>
       </View>
       {(instance.status === 'upcoming' || eligibility === 'Entered') &&
-        currentRole?.role !== 'admin' && (
+        currentRole?.type !== 'admin' && (
           <View
             style={{
               backgroundColor: eligibilityColors.background,

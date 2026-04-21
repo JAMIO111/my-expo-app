@@ -35,7 +35,7 @@ const ProfilePage = () => {
                 title="My Profile"
                 showBack={false}
                 rightIcon="settings-outline"
-                onRightPress={() => router.push('/settings')}
+                onRightPress={() => router.push('/(main)/settings')}
               />
             </SafeViewWrapper>
           ),

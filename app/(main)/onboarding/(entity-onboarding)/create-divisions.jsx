@@ -396,10 +396,10 @@ export default function CreateDivisions() {
             Structure your league.
           </Text>
           <Text className="pb-4 font-saira text-sm text-text-on-brand-2">
-            A group is a collection of divisions that promote/relegate to each other as a ladder.
-            Only create new group if division is unrelated to the existing one (e.g. Monday Teams,
-            and Thursday Singles) You are not creating competitions at this point - just the
-            structure.
+            A group is a set of divisions linked together in a promotion and relegation ladder.
+            Create a new group only when a division is not related to an existing one (for example,
+            Monday Teams vs Thursday Singles). At this stage, you’re defining the structure—not
+            creating competitions.
           </Text>
           <View className="flex-row gap-2">
             <View className="flex-1">
