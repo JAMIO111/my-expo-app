@@ -1,8 +1,7 @@
 import { StyleSheet, Text, View, Pressable } from 'react-native';
-import { useRouter, useLocalSearchParams, Stack } from 'expo-router';
+import { useRouter, useLocalSearchParams, Stack, useNavigation } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { useUser } from '@contexts/UserProvider';
-import { ScrollView } from 'react-native-gesture-handler';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import CTAButton from '@components/CTAButton';
@@ -10,13 +9,15 @@ import StepPillGroup from '@components/StepPillGroup';
 import SafeViewWrapper from '@components/SafeViewWrapper';
 import Avatar from '@components/Avatar';
 import { useTeamProfile } from '@hooks/useTeamProfile';
-import { useRequestToJoinTeam } from '@hooks/useRequestToJoinTeam';
 import { supabase } from '@/lib/supabase';
 import Toast from 'react-native-toast-message';
+import { useQueryClient } from '@tanstack/react-query';
 
 const ProfileClaim = () => {
   const router = useRouter();
   const params = useLocalSearchParams();
+  const queryClient = useQueryClient();
+  const navigation = useNavigation();
 
   const team = JSON.parse(params.team || '{}');
   const { player } = useUser();
@@ -25,14 +26,13 @@ const ProfileClaim = () => {
   const { data: teamProfile, isLoading: teamLoading } = useTeamProfile(team?.id);
   console.log('Onboarding Profile Claim - teamProfile:', teamProfile);
 
+  const [isRPCLoading, setIsRPCLoading] = useState(false);
   const [playersData, setPlayersData] = useState([]);
   const [playersLoading, setPlayersLoading] = useState(true);
   const [selectedPlayer, setSelectedPlayer] = useState(null);
 
   const adminApproval = teamProfile?.division?.admin_approval_required || false;
   const captainApproval = teamProfile?.private || false;
-
-  const sendJoinRequest = useRequestToJoinTeam(teamProfile, player?.id, adminApproval);
 
   useEffect(() => {
     if (!teamProfile?.id) return;
@@ -59,22 +59,71 @@ const ProfileClaim = () => {
   const noUnclaimedPlayers = !isLoading && playersData.length === 0;
 
   const handleJoinAsNew = async () => {
-    await sendJoinRequest.mutateAsync();
-    Toast.show({
-      type: 'success',
-      text1: captainApproval || adminApproval ? 'Join Request Sent' : 'Joined Team Successfully',
-      text2:
-        captainApproval && adminApproval
-          ? 'The team captain and league admin will review your request shortly.'
-          : captainApproval && !adminApproval
-            ? 'The team captain will review your request shortly.'
-            : !captainApproval && adminApproval
-              ? 'The league admin will review your request shortly.'
-              : `You are now a member of ${teamProfile?.name || 'the team'}`,
-    });
-    await supabase.from('Players').update({ onboarding: 3 }).eq('id', player?.id);
+    if (isLoading || isRPCLoading) return; // 🚫 prevents double taps
 
-    router.replace('/(main)/onboarding/upgrade');
+    if (!player?.id) {
+      Toast.show({
+        type: 'error',
+        text1: 'No Player Profile',
+        text2: 'Please try again.',
+      });
+      return;
+    }
+
+    try {
+      setIsRPCLoading(true);
+
+      const { error } = await supabase.rpc('request_join_team', {
+        p_team_id: teamProfile.id,
+        p_player_id: player.id,
+        p_captain_approval: captainApproval,
+        p_admin_approval: adminApproval,
+      });
+
+      if (error) {
+        throw new Error(error.message || 'RPC_FAILED');
+      }
+
+      Toast.show({
+        type: 'success',
+        text1: captainApproval || adminApproval ? 'Join Request Sent' : 'Joined Team Successfully',
+        text2:
+          captainApproval && adminApproval
+            ? 'The captain and admin will review your request.'
+            : captainApproval && !adminApproval
+              ? 'The captain will review your request.'
+              : !captainApproval && adminApproval
+                ? 'The admin will review your request.'
+                : `You are now a member of ${teamProfile?.name || 'the team'}`,
+      });
+      await queryClient.invalidateQueries(['playerInvitesAndRequests', player.id]);
+      if (adminApproval || captainApproval) {
+        navigation.reset({
+          index: 0,
+          routes: [{ name: 'pending-request' }],
+        });
+      } else {
+        router.push('/home');
+      }
+    } catch (err) {
+      console.error(err);
+
+      let message = 'Something went wrong. Please try again.';
+
+      if (err?.message === 'ALREADY_IN_TEAM') {
+        message = 'You are already in this team.';
+      } else if (err?.message === 'RPC_FAILED') {
+        message = 'Could not complete request.';
+      }
+
+      Toast.show({
+        type: 'error',
+        text1: 'Join Failed',
+        text2: message,
+      });
+    } finally {
+      setIsRPCLoading(false);
+    }
   };
 
   const handleClaimProfile = async () => {
@@ -100,7 +149,7 @@ const ProfileClaim = () => {
               <Text className="text-2xl text-text-on-brand">Loading team details…</Text>
             </View>
           ) : (
-            <ScrollView className="flex-1 p-5">
+            <View className="flex-1 p-5">
               <Text
                 style={{ lineHeight: 50 }}
                 className="mb-4 font-delagothic text-5xl text-text-on-brand">
@@ -108,16 +157,23 @@ const ProfileClaim = () => {
               </Text>
 
               {noUnclaimedPlayers ? (
-                <View>
+                <View className="mb-16 flex-1 justify-between gap-3">
                   <Text className="mb-6 font-saira text-2xl text-text-on-brand">
                     Proceed to join the team as a new player.
                   </Text>
 
-                  <View className="mb-10 mt-4 items-center rounded-3xl bg-bg-1 p-5">
-                    <MaterialCommunityIcons name="email-fast-outline" size={160} />
-                    <Text className="mt-4 text-center font-saira-semibold text-lg text-text-1">
-                      Your join request will be sent to the team captain for approval.
+                  <View className="mb-10 mt-4 items-stretch rounded-3xl bg-bg-1 p-5">
+                    <Text className="text-center font-saira-medium text-2xl text-text-1">
+                      Your join request will be sent to the team captain
+                      {adminApproval ? ' and league admin' : ''} for approval.
                     </Text>
+                    <View className="mx-auto rounded-full bg-bg-grouped-2">
+                      <MaterialCommunityIcons
+                        name="email-fast-outline"
+                        color="#0B6623"
+                        size={140}
+                      />
+                    </View>
 
                     <CTAButton
                       type="yellow"
@@ -168,7 +224,7 @@ const ProfileClaim = () => {
                   })}
                 </View>
               )}
-            </ScrollView>
+            </View>
           )}
 
           {!isLoading && !noUnclaimedPlayers && (

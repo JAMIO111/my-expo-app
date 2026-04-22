@@ -22,7 +22,10 @@ const _layout = () => {
 
     if (player && player.onboarding === 0) {
       router.replace('/(main)/onboarding/(profile-onboarding)/name');
-    } else if (player && player.onboarding === 1 && !pathname.includes('unique-code')) {
+    } else if (
+      (player && player.onboarding === 1 && !pathname.includes('unique-code')) ||
+      (player && player.onboarding === 1 && pathname.includes('pending-request'))
+    ) {
       router.replace('/(main)/onboarding/(entity-onboarding)/admin-or-player');
     } else if (!currentRole && player && player.onboarding === 9) {
       router.replace('/(main)/role-select');

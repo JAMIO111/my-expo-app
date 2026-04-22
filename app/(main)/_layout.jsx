@@ -53,8 +53,8 @@ const _layout = () => {
         return;
       }
 
-      if (player.onboarding === 2) {
-        router.replace('/(main)/onboarding/(entity-onboarding)/some-other-step');
+      if (player.onboarding === 3) {
+        router.replace('/(main)/onboarding/(entity-onboarding)/pending-request');
         return;
       }
 

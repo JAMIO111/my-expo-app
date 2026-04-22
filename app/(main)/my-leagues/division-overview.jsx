@@ -1,23 +1,19 @@
-import { StyleSheet, View, Text, Pressable, Modal } from 'react-native';
-import { useState, useEffect } from 'react';
-import { Stack, useRouter } from 'expo-router';
-import { supabase } from '@lib/supabase';
+import { StyleSheet, View, Text } from 'react-native';
+import { useState } from 'react';
+import { Stack, useLocalSearchParams } from 'expo-router';
 import { useUser } from '@contexts/UserProvider';
 import CustomHeader from '@components/CustomHeader';
 import SafeViewWrapper from '@components/SafeViewWrapper';
 import { ScrollView } from 'react-native-gesture-handler';
-import { useLocalSearchParams } from 'expo-router';
 import DivisionAccordion from '@components/DivisionAccordion';
 import { useTeamsByDivision } from '@hooks/useTeamsByDivision';
 import FixturesAccordion from '@components/FixturesAccordion';
 import Heading from '@components/Heading';
 import ExpandableView from '@components/ExpandableView';
-import CTAButton from '@components/CTAButton';
 import BottomSheetModal from '@components/BottomSheetModal';
 
 const DivisionOverview = () => {
   const { currentRole } = useUser();
-  const router = useRouter();
   const params = useLocalSearchParams();
   const division = params.divisionStr ? JSON.parse(params.divisionStr) : {};
   const { data: teams, isLoading, isError } = useTeamsByDivision(division.id);

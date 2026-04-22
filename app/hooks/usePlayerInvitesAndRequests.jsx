@@ -25,6 +25,16 @@ export function usePlayerInvitesAndRequests({ teamId, playerId }) {
             first_name,
             surname
           ),
+          accepted_by_captain:accepted_by_captain (
+            id,
+            first_name,
+            surname
+          ),
+          accepted_by_admin:accepted_by_admin (
+            id,
+            first_name,
+            surname
+          ),
           team:team_id (
             id,
             display_name,

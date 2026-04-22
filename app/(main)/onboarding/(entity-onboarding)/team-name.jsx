@@ -187,7 +187,7 @@ const TeamName = () => {
                 <CustomTextInput
                   value={teamName}
                   onChangeText={setTeamName}
-                  title="Team Name"
+                  title="Full Team Name"
                   placeholder="e.g. Newsham Victoria A"
                   className="mb-4 h-12 rounded-lg border border-gray-300 bg-white px-3 font-saira text-xl"
                   leftIconName="create-outline"
@@ -243,8 +243,8 @@ const TeamName = () => {
             </ScrollView>
           </KeyboardAvoidingView>
           <View className="gap-5 rounded-t-3xl bg-brand-dark px-5 pt-6">
-            <CTAButton type="yellow" text="Continue" callbackFn={handleContinue} />
             <CTAButton callbackFn={() => router.back()} type="error" text="Go Back" />
+            <CTAButton type="yellow" text="Continue" callbackFn={handleContinue} />
           </View>
         </View>
       </SafeViewWrapper>

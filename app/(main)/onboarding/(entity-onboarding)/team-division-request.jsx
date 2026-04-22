@@ -120,25 +120,25 @@ const TeamDivisionRequest = () => {
           <View className="flex-1">
             <Text
               style={{ lineHeight: 40 }}
-              className={`p-4 font-delagothic text-4xl font-bold text-text-on-brand`}>
+              className={`p-4 font-delagothic text-3xl font-bold text-text-on-brand`}>
               Request to join a division in your league.
             </Text>
-            <Text className="text-md p-3 px-4 font-saira-medium text-text-on-brand-2">
+            <Text className="px-4 font-saira-medium text-sm text-text-on-brand-2">
               A request to join a division will be sent to the league admin for approval. Once
               approved, your team will be added to the division and you can start adding players and
               competing in the league!
             </Text>
-            <View className=" flex-1 gap-3 p-3">
+            <View className="flex-1 gap-3">
               {!league.Divisions?.length ? (
-                <View className="rounded-2xl bg-bg-2 p-3">
-                  <Text className="p-3 px-5 font-saira-medium text-lg text-text-2">
-                    Your league doesn't have any divisions yet. Once your request is approved, the
-                    admin can create divisions for your league.
+                <View className="mx-3 mt-6 rounded-2xl bg-bg-2 p-2">
+                  <Text className="text-md p-3 px-5 font-saira-medium text-text-2">
+                    Your league doesn't have any divisions yet. You can still request to join the
+                    league and the admin can assign you to a division later.
                   </Text>
                 </View>
               ) : (
                 <ScrollView
-                  className="flex-1"
+                  className="flex-1 p-3"
                   contentContainerStyle={{ paddingBottom: 20, gap: 12 }}>
                   {league.Divisions?.sort((a, b) => a.tier - b.tier).map((division) => (
                     <Pressable
@@ -194,11 +194,11 @@ const TeamDivisionRequest = () => {
                 </ScrollView>
               )}
             </View>
-            <Text className="text-md p-3 font-saira-medium text-text-on-brand-2">
+            <Text className="p-3 font-saira-medium text-sm text-text-on-brand-2">
               If your league doesn't have any divisions yet, don't worry - you can still request to
               join the league and the admin can assign you to a division later.
             </Text>
-            <View className="gap-5 rounded-t-3xl bg-brand-dark px-5 pt-6">
+            <View className="gap-5 rounded-t-3xl bg-brand-dark px-5 py-6">
               <CTAButton
                 disabled={loading || uploading}
                 type="yellow"

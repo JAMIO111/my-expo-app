@@ -16,7 +16,8 @@ const TeamConfirm = () => {
   const params = useLocalSearchParams();
   const team = JSON.parse(params.team || '{}');
 
-  const { data: teamProfile } = useTeamProfile(team?.id);
+  const { data: teamProfile, isLoading: teamLoading } = useTeamProfile(team?.id);
+  const [loading, setLoading] = useState(true);
   const [playerCount, setPlayerCount] = useState(null);
   const [captainName, setCaptainName] = useState('');
 
@@ -24,26 +25,29 @@ const TeamConfirm = () => {
     if (!teamProfile?.captain || !team?.id) return;
 
     const fetchData = async () => {
-      const { data: playersData, error: playersError } = await supabase
-        .from('TeamPlayers')
-        .select('id')
-        .eq('team_id', team.id);
+      try {
+        setLoading(true);
 
-      const { data: captainData, error: captainError } = await supabase
-        .from('Players')
-        .select('first_name, surname')
-        .eq('id', teamProfile.captain)
-        .single();
+        const { data: playersData, error: playersError } = await supabase
+          .from('TeamPlayers')
+          .select('id')
+          .eq('team_id', team.id);
 
-      if (playersError || captainError) {
-        console.error({ playersError, captainError });
-      } else {
+        const { data: captainData, error: captainError } = await supabase
+          .from('Players')
+          .select('first_name, surname')
+          .eq('id', teamProfile.captain)
+          .single();
+
+        if (playersError || captainError) {
+          console.error({ playersError, captainError });
+          return;
+        }
+
         setPlayerCount(playersData.length);
         setCaptainName(`${captainData.first_name} ${captainData.surname}`);
-        console.log({
-          playerCount: playersData.length,
-          captainName: `${captainData.first_name} ${captainData.surname}`,
-        });
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -57,6 +61,8 @@ const TeamConfirm = () => {
     });
   };
 
+  const isLoading = teamLoading || loading;
+
   return (
     <>
       <Stack.Screen
@@ -64,16 +70,17 @@ const TeamConfirm = () => {
           title: 'Step 2 of 3',
         }}
       />
-      <SafeViewWrapper useTopInset={false} topColor="bg-brand" bottomColor="bg-brand-dark">
-        <View className="flex-1 justify-between gap-3 bg-brand">
-          <StepPillGroup steps={3} currentStep={2} />
-          <ScrollView className="flex-1 gap-3 p-5">
-            <Text
-              style={{ lineHeight: 50 }}
-              className="mb-4 font-delagothic text-5xl font-bold text-text-on-brand">
-              Is this your team?
-            </Text>
-            <View className="flex-row items-center gap-5 rounded-2xl bg-bg-grouped-2 px-5 py-5 ">
+
+      <View className="flex-1 justify-between bg-brand">
+        <StepPillGroup steps={3} currentStep={2} />
+        <ScrollView className="flex-1 gap-3 p-5">
+          <Text
+            style={{ lineHeight: 50 }}
+            className="mb-4 font-delagothic text-5xl font-bold text-text-on-brand">
+            Is this your team?
+          </Text>
+          <View style={{ borderRadius: 20 }} className="bg-bg-2 p-3 shadow-sm">
+            <View className="flex-row items-center gap-5 rounded-2xl bg-bg-grouped-2 px-5 py-5 shadow-sm ">
               <TeamLogo
                 size={60}
                 color1={team?.crest?.color1}
@@ -93,7 +100,7 @@ const TeamConfirm = () => {
                 </View>
               </View>
             </View>
-            <View className="mt-5 items-start justify-start gap-2 rounded-2xl bg-bg-grouped-2 p-5 shadow-[0_2px_10px_rgba(0,0,0,0.1)]">
+            <View className="mt-5 items-start justify-start gap-2 rounded-2xl bg-bg-grouped-2 p-5 shadow-sm">
               <View className="flex-row items-start gap-4">
                 <Ionicons name="location-outline" size={25} color="#6B7280" />
                 {teamProfile?.address ? (
@@ -134,16 +141,16 @@ const TeamConfirm = () => {
                 </Text>
               </View>
             </View>
-          </ScrollView>
-          <View className="gap-5 rounded-t-3xl bg-brand-dark px-5 pt-6">
-            <CTAButton callbackFn={() => router.back()} type="error" text="No - Go Back" />
-            <View>
-              <CTAButton type="yellow" text="Yes - Continue" callbackFn={handleContinue} />
-              <Text className="px-3 text-lg text-text-2"></Text>
-            </View>
+          </View>
+        </ScrollView>
+        <View className="gap-5 rounded-t-3xl bg-brand-dark px-5 py-6">
+          <CTAButton callbackFn={() => router.back()} type="error" text="No - Go Back" />
+          <View>
+            <CTAButton type="yellow" text="Yes - Continue" callbackFn={handleContinue} />
+            <Text className="px-3 text-lg text-text-2"></Text>
           </View>
         </View>
-      </SafeViewWrapper>
+      </View>
     </>
   );
 };

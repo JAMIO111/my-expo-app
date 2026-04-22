@@ -22,7 +22,7 @@ const AdminOrPlayer = () => {
             Select your role.
           </Text>
           <Text className="font-saira text-2xl text-text-on-brand-2">
-            Would you like proceed as a league admin or a player?
+            Would you like to proceed as a player or a league admin?
           </Text>
         </View>
         <View className="flex-1 items-center justify-center p-5">

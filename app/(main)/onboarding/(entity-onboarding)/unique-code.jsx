@@ -63,7 +63,12 @@ const UniqueCode = () => {
       if (leagueData.status === 'new') {
         const { error: updateError } = await supabase
           .from('Districts')
-          .update({ status: 'locked' })
+          .update({
+            status: 'locked',
+            locked_by: player.id,
+            locked_at: new Date().toISOString(),
+            lock_expires_at: new Date(Date.now() + 10 * 60 * 1000).toISOString(), // 10 min lock
+          })
           .eq('id', leagueData.id);
 
         if (updateError) {
@@ -184,19 +189,22 @@ const UniqueCode = () => {
         .from('Districts')
         .select(
           `*,
-  Divisions:Divisions!Divisions_district_fkey (
-    id,
-    name,    
-    tier,
-    max_competitors,
-    admin_approval_required,
-    status
-  )`
+          Divisions:Divisions!Divisions_district_fkey (
+          id,
+          name,  
+          group_id,
+          group_name,  
+          tier,
+          competitor_type,
+          max_competitors,
+          admin_approval_required
+          )`
         )
         .eq('code', code)
         .single();
 
       if (error) {
+        console.log('Error fetching league data:', error);
         Toast.show({
           type: 'error',
           text1: 'League could not be found',
