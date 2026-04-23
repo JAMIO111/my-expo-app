@@ -32,82 +32,85 @@ const index = () => {
         <Podium3D data={parsedData.slice(0, 3)} statKey={statKey} type={type} label={label} />
 
         {/* Leaderboard list */}
-        <View className="w-full flex-1 rounded-t-3xl bg-bg-grouped-1 px-4 pt-6 shadow-md">
-          <ScrollView
-            showsVerticalScrollIndicator={false}
-            className="w-full flex-1"
-            contentContainerStyle={{ paddingBottom: 40 }}>
-            {sortedData?.map((item, index) => (
-              <View
-                key={index}
-                className="mb-2 flex-row items-center gap-4 rounded-2xl bg-bg-1 p-3">
-                {/* Left rank bar */}
+        <View style={{ borderRadius: 24 }} className="w-full flex-1 bg-bg-2 p-2 pb-0">
+          <Text className="my-2 pl-4 font-saira-medium text-xl text-text-1">{`${title} Rankings`}</Text>
+          <View className="w-full flex-1 rounded-t-3xl border-t border-theme-gray-5 bg-bg-1 shadow-sm">
+            <ScrollView
+              showsVerticalScrollIndicator={false}
+              className="w-full flex-1 px-4"
+              contentContainerStyle={{ paddingBottom: 40, paddingTop: 16 }}>
+              {sortedData?.map((item, index) => (
                 <View
-                  style={{
-                    width: 6,
-                    alignSelf: 'stretch',
-                    borderRadius: 3,
-                    backgroundColor:
-                      index === 0
-                        ? '#FACC15' // gold
-                        : index === 1
-                          ? '#E5E7FF' // silver
-                          : index === 2
-                            ? '#B45309' // bronze
-                            : '#9CA3AF', // default gray
-                  }}
-                />
-
-                {/* Rank circle */}
-                <View
-                  className={`h-10 w-10 items-center justify-center rounded-xl ${getBgClass(
-                    index
-                  )} shadow-sm`}>
-                  <Text className={`font-saira-semibold text-lg ${getTextClass(index)}`}>
-                    {index + 1}
-                  </Text>
-                </View>
-
-                {/* Avatar / Team logo */}
-                {type === 'player' ? (
-                  <Avatar player={item} size={40} borderRadius={8} />
-                ) : (
-                  <TeamLogo
-                    thickness={2}
-                    color1={item.crest.color1}
-                    color2={item.crest.color2}
-                    size={40}
-                    type={item.crest.type}
+                  key={index}
+                  className="mb-2 flex-row items-center gap-4 rounded-2xl bg-bg-2 p-3 shadow-sm">
+                  {/* Left rank bar */}
+                  <View
+                    style={{
+                      width: 6,
+                      alignSelf: 'stretch',
+                      borderRadius: 3,
+                      backgroundColor:
+                        index === 0
+                          ? '#FACC15' // gold
+                          : index === 1
+                            ? '#E5E7FF' // silver
+                            : index === 2
+                              ? '#B45309' // bronze
+                              : '#9CA3AF', // default gray
+                    }}
                   />
-                )}
 
-                {/* Name & team */}
-                <View className="flex-1">
-                  <Text
-                    numberOfLines={1}
-                    ellipsizeMode="tail"
-                    className="font-saira-semibold text-lg text-text-1">
-                    {type === 'player' ? `${item.first_name} ${item.surname}` : item.display_name}
-                  </Text>
-                  {item.nickname && (
+                  {/* Rank circle */}
+                  <View
+                    className={`h-10 w-10 items-center justify-center rounded-xl ${getBgClass(
+                      index
+                    )} shadow-sm`}>
+                    <Text className={`font-saira-semibold text-lg ${getTextClass(index)}`}>
+                      {index + 1}
+                    </Text>
+                  </View>
+
+                  {/* Avatar / Team logo */}
+                  {type === 'player' ? (
+                    <Avatar player={item} size={40} borderRadius={8} />
+                  ) : (
+                    <TeamLogo
+                      thickness={2}
+                      color1={item.crest.color1}
+                      color2={item.crest.color2}
+                      size={40}
+                      type={item.crest.type}
+                    />
+                  )}
+
+                  {/* Name & team */}
+                  <View className="flex-1">
                     <Text
                       numberOfLines={1}
                       ellipsizeMode="tail"
-                      className="mt-0.5 font-saira-medium text-text-2">
-                      {item.nickname?.toUpperCase() || ''}
+                      className="font-saira-semibold text-lg text-text-1">
+                      {type === 'player' ? `${item.first_name} ${item.surname}` : item.display_name}
                     </Text>
-                  )}
-                </View>
+                    {item.nickname && (
+                      <Text
+                        numberOfLines={1}
+                        ellipsizeMode="tail"
+                        className="mt-0.5 font-saira-medium text-text-2">
+                        {item.nickname?.toUpperCase() || ''}
+                      </Text>
+                    )}
+                  </View>
 
-                {/* Stat */}
-                <View className="items-end pr-3">
-                  <Text className="pt-2 font-saira-bold text-2xl text-text-1">
-                    {`${getValue(item)}${percent ? ' %' : ''}`}
-                  </Text>
+                  {/* Stat */}
+                  <View className="items-end pr-3">
+                    <Text className="pt-2 font-saira-bold text-2xl text-text-1">
+                      {`${getValue(item)}${percent ? ' %' : ''}`}
+                    </Text>
+                  </View>
                 </View>
-              </View>
-            ))}
-          </ScrollView>
+              ))}
+            </ScrollView>
+          </View>
         </View>
       </View>
     </SafeViewWrapper>

@@ -137,10 +137,7 @@ const ProfileClaim = () => {
     <>
       <Stack.Screen options={{ title: 'Step 4 of 4' }} />
 
-      <SafeViewWrapper
-        useTopInset={false}
-        topColor="bg-brand"
-        bottomColor={noUnclaimedPlayers ? 'bg-brand' : 'bg-brand-dark'}>
+      <SafeViewWrapper useTopInset={false} topColor="bg-brand" bottomColor="bg-brand-dark">
         <View className="flex-1 bg-brand">
           <StepPillGroup steps={4} currentStep={4} />
 
@@ -149,44 +146,46 @@ const ProfileClaim = () => {
               <Text className="text-2xl text-text-on-brand">Loading team details…</Text>
             </View>
           ) : (
-            <View className="flex-1 p-5">
+            <View className="flex-1">
               <Text
                 style={{ lineHeight: 50 }}
-                className="mb-4 font-delagothic text-5xl text-text-on-brand">
+                className="p-5 font-delagothic text-4xl text-text-on-brand">
                 Join {teamProfile?.name || 'Unnamed Team'}?
               </Text>
 
               {noUnclaimedPlayers ? (
-                <View className="mb-16 flex-1 justify-between gap-3">
-                  <Text className="mb-6 font-saira text-2xl text-text-on-brand">
+                <View className="flex-1 justify-between">
+                  <Text className="mb-6 px-5 font-saira text-2xl text-text-on-brand">
                     Proceed to join the team as a new player.
                   </Text>
+                  <View className="p-5">
+                    <View className="items-stretch rounded-3xl bg-bg-1 p-5">
+                      <Text className="text-center font-saira-medium text-2xl text-text-1">
+                        Your join request will be sent to the team captain
+                        {adminApproval ? ' and league admin' : ''} for approval.
+                      </Text>
+                      <View className="mx-auto rounded-full bg-bg-grouped-2">
+                        <MaterialCommunityIcons
+                          name="email-fast-outline"
+                          color="#0B6623"
+                          size={140}
+                        />
+                      </View>
 
-                  <View className="mb-10 mt-4 items-stretch rounded-3xl bg-bg-1 p-5">
-                    <Text className="text-center font-saira-medium text-2xl text-text-1">
-                      Your join request will be sent to the team captain
-                      {adminApproval ? ' and league admin' : ''} for approval.
-                    </Text>
-                    <View className="mx-auto rounded-full bg-bg-grouped-2">
-                      <MaterialCommunityIcons
-                        name="email-fast-outline"
-                        color="#0B6623"
-                        size={140}
+                      <CTAButton
+                        type="yellow"
+                        text="Send Join Request"
+                        callbackFn={handleJoinAsNew}
                       />
                     </View>
-
+                  </View>
+                  <View className="gap-5 rounded-t-3xl bg-brand-dark px-5 py-6">
                     <CTAButton
-                      type="yellow"
-                      text="Send Join Request"
-                      callbackFn={handleJoinAsNew}
+                      type="error"
+                      text="Join a different team"
+                      callbackFn={() => router.back()}
                     />
                   </View>
-
-                  <CTAButton
-                    type="error"
-                    text="Join a different team"
-                    callbackFn={() => router.back()}
-                  />
                 </View>
               ) : (
                 <View>

@@ -137,7 +137,7 @@ const TeamProfile = ({ context, profile, isLoading }) => {
       <View className="gap-1 bg-bg-grouped-1">
         <View className="mt-1 bg-bg-grouped-2 px-4 py-6">
           <Heading text="Team Stats" />
-          <View className="gap-5">
+          <View className="gap-5 pt-3">
             <View className="gap-4">
               <View className="flex-row gap-4">
                 <StatCard title="MATCHES PLAYED" value="86" />
@@ -179,14 +179,14 @@ const TeamProfile = ({ context, profile, isLoading }) => {
             />
           </View>
         </View>
-        <View className={`bg-bg-grouped-2 px-4 ${viewMatches ? 'pb-6' : 'pb-0'} pt-4`}>
+        <View className={`gap-4 bg-bg-grouped-2 px-4 ${viewMatches ? 'pb-6' : 'pb-4'} pt-4`}>
           <Pressable
             className="flex-row items-center justify-between pr-6"
             onPress={() => safeMatches.length > 0 && setViewMatches(!viewMatches)}>
             <Heading text="Recent Results" />
 
             {safeMatches.length > 0 && (
-              <View className="pb-4">
+              <View className="">
                 <Animated.View style={{ transform: [{ rotate }] }}>
                   <Ionicons className="" name="chevron-down" size={30} />
                 </Animated.View>
@@ -195,13 +195,13 @@ const TeamProfile = ({ context, profile, isLoading }) => {
           </Pressable>
           {viewMatches && <Last5MatchesList matches={last5Results?.details || []} />}
         </View>
-        <View className="bg-bg-grouped-2 px-4 py-6">
+        <View className="gap-3 bg-bg-grouped-2 px-4 py-6">
           <Heading text="Team Awards" />
           <TrophyCabinet trophies={trophies || []} />
         </View>
 
         <View className="bg-bg-grouped-2 px-4 pb-8 pt-6">
-          <View className="flex flex-row items-center justify-between pr-2">
+          <View className="flex flex-row items-center justify-between pb-3 pr-2">
             <Heading text="Team Roster" />
             <Text className="mb-2 font-saira text-xl text-text-2">
               {`${players?.length || 0} Player${players?.length === 1 ? '' : 's'}`}

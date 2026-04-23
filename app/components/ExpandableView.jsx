@@ -21,7 +21,7 @@ const ExpandableView = ({ title, show, setShow, children }) => {
   });
 
   return (
-    <View>
+    <View className="bg-bg-1 p-3">
       <Pressable
         className="flex-row items-center justify-between py-2 pr-6"
         onPress={() => setShow(!show)}>

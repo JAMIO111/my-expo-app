@@ -11,6 +11,8 @@ import FixturesAccordion from '@components/FixturesAccordion';
 import Heading from '@components/Heading';
 import ExpandableView from '@components/ExpandableView';
 import BottomSheetModal from '@components/BottomSheetModal';
+import CTAButton from '@components/CTAButton';
+import EditDivisionForm from '@components/EditDivisionForm';
 
 const DivisionOverview = () => {
   const { currentRole } = useUser();
@@ -58,7 +60,7 @@ const DivisionOverview = () => {
         <ScrollView
           contentContainerStyle={{ gap: 5, marginVertical: 58, paddingBottom: 32 }}
           className="flex-1 bg-bg-2">
-          <View className="bg-bg-1 p-3">
+          <View className="bg-bg-1">
             <ExpandableView title="Division Details" show={showDetails} setShow={setShowDetails}>
               <View className="flex-row pt-2">
                 <View className="flex-1 gap-3">
@@ -136,6 +138,16 @@ const DivisionOverview = () => {
               season={currentRole.activeSeason}
               competitionInstance={currentSeasonComp}
             />
+            {currentRole?.type === 'admin' &&
+              currentSeasonComp &&
+              !currentSeasonComp?.fixtures_generated && (
+                <View className="mt-3">
+                  <CTAButton
+                    type="yellow"
+                    text={`Generate ${currentRole.activeSeason.name} fixtures`}
+                  />
+                </View>
+              )}
           </View>
         </ScrollView>
       </SafeViewWrapper>
@@ -144,10 +156,7 @@ const DivisionOverview = () => {
         setShowModal={setShowModal}
         title={division.name + ' settings' || 'Division Settings'}>
         <ScrollView className="flex-1 p-5">
-          <Text className="font-saira text-text-2">
-            This is where you can manage your division settings, teams, fixtures, and more. This
-            feature is coming soon!
-          </Text>
+          <EditDivisionForm />
         </ScrollView>
       </BottomSheetModal>
     </>

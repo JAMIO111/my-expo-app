@@ -8,10 +8,9 @@ import SafeViewWrapper from '@components/SafeViewWrapper';
 import { useTeamProfile } from '@hooks/useTeamProfile';
 import DivisionsList from '@components/DivisionsList';
 import { ScrollView } from 'react-native-gesture-handler';
-import CircleButtonRow from '@components/CircleButtonRow';
-import CTAButton from '@components/CTAButton';
 import SeasonControlCard from '@components/SeasonControlCard';
 import Toast from 'react-native-toast-message';
+import AdminRequests from '@components/AdminRequests';
 
 const index = () => {
   const router = useRouter();
@@ -81,9 +80,11 @@ const index = () => {
       />
       <SafeViewWrapper bottomColor="bg-brand" topColor="bg-brand">
         <ScrollView
-          contentContainerStyle={{ display: 'flex', flexGrow: 1, gap: 16 }}
-          className="mt-16 flex-1 bg-brand pt-6">
-          <View className="px-4">
+          contentContainerStyle={{ display: 'flex', flexGrow: 1, gap: 4 }}
+          className="mt-16 flex-1">
+          <DivisionsList districtId={currentRole?.district.id} />
+          <AdminRequests districtId={currentRole?.district.id} />
+          <View className="bg-brand p-4">
             <SeasonControlCard
               activeSeason={currentRole?.activeSeason}
               onStart={handleStartSeason}
@@ -91,16 +92,6 @@ const index = () => {
               loading={isLoading || loading}
             />
           </View>
-          <DivisionsList districtId={currentRole?.district.id} />
-
-          <CircleButtonRow
-            format={[
-              { color: 'bg-brand-dark', iconColor: 'white', icon: 'add', label: 'District' },
-              { color: 'bg-brand-dark', iconColor: 'white', icon: 'add', label: 'Label' },
-              { color: 'bg-brand-dark', iconColor: 'white', icon: 'add', label: 'Label' },
-              { color: 'bg-brand-dark', iconColor: 'white', icon: 'add', label: 'Label' },
-            ]}
-          />
         </ScrollView>
         <NavBar />
       </SafeViewWrapper>

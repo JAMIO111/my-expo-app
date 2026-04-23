@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 
-export function useDistricts(includePrivate = false) {
+export function useDistricts(includePrivate = true) {
   return useQuery({
     queryKey: ['Districts', includePrivate],
     queryFn: async () => {

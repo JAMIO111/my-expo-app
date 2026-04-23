@@ -5,7 +5,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useUser } from '@contexts/UserProvider';
 import { useRouter } from 'expo-router';
 import { romanNumerals } from '../lib/badgeIcons';
-import { slice } from 'lodash';
+import Heading from './Heading';
 
 const DivisionsList = ({ districtId }) => {
   const hasNavigated = useRef(false);
@@ -54,10 +54,8 @@ const DivisionsList = ({ districtId }) => {
   }, [divisions]);
 
   return (
-    <View className="items-center justify-center gap-4 bg-bg-1 p-4 pb-6">
-      <Text className="w-full px-2 text-left font-saira-semibold text-2xl text-text-1">
-        {currentRole?.district?.name} Divisions
-      </Text>
+    <View className="items-start justify-center gap-4 bg-bg-1 p-4 pb-6">
+      <Heading text={`${currentRole?.district?.name} Divisions`} />
 
       {groupedDivisions.map((group) => (
         <View key={group.groupId} className="w-full gap-3">

@@ -226,7 +226,7 @@ const TeamLogo = ({
         backgroundColor: color1,
         borderWidth: borderThickness,
       }}
-      className="items-center justify-center overflow-hidden rounded-full border border-theme-gray-3">
+      className="items-center justify-center overflow-hidden rounded-full border border-theme-gray-4">
       {innerView(type, color2, thickness)}
     </View>
   );

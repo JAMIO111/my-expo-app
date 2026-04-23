@@ -79,7 +79,7 @@ const ConfirmModal = ({
             transform: [{ translateY: slideAnim }],
             width: '100%',
             alignItems: 'center',
-            paddingBottom: 40,
+            paddingBottom: 30,
           }}>
           <View
             style={{ borderRadius: 40 }}

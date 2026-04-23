@@ -79,17 +79,22 @@ const LeaderboardPodium = ({ data, statKey, type, label }) => {
 
             {/* Avatar or Logo */}
             {type === 'player' ? (
-              <View style={{ marginBottom: 4 }}>
-                <Avatar player={item} size={70} borderRadius={8} />
+              <View className="z-10 rounded-xl bg-bg-2 p-0.5" style={{ marginBottom: -5 }}>
+                <View className="shadow-sm" style={{ borderRadius: 8 }}>
+                  <Avatar player={item} size={70} borderRadius={8} />
+                </View>
               </View>
             ) : (
-              <TeamLogo
-                thickness={item?.crest?.thickness}
-                color1={item?.crest?.color1}
-                color2={item?.crest?.color2}
-                size={80}
-                type={item?.crest?.type}
-              />
+              <View className="z-10" style={{ marginBottom: -5 }}>
+                <TeamLogo
+                  thickness={item?.crest?.thickness}
+                  color1={item?.crest?.color1}
+                  color2={item?.crest?.color2}
+                  size={80}
+                  type={item?.crest?.type}
+                  borderThickness={0.3}
+                />
+              </View>
             )}
 
             {/* Trapezoid */}
