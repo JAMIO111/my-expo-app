@@ -447,7 +447,7 @@ const index = () => {
           <ScrollView
             contentContainerStyle={{ display: 'flex', flexGrow: 1, gap: 6 }}
             className="mt-16 flex-1 bg-bg-2">
-            <View className="gap-6 bg-bg-1 p-4">
+            <View className="gap-2 bg-bg-1">
               <ExpandableView
                 title="Competition Details"
                 show={showDetails}
@@ -541,40 +541,42 @@ const index = () => {
               {isAdmin &&
                 (competitionInstance?.status === 'upcoming' ||
                   competitionInstance?.status === 'closed') && (
-                  <CTAButton
-                    type={
-                      competitionInstance?.status === 'upcoming'
-                        ? 'error'
-                        : competitionInstance?.status === 'closed'
-                          ? 'yellow'
-                          : 'yellow'
-                    }
-                    text={
-                      competitionInstance?.status === 'upcoming'
-                        ? 'Close Entries'
-                        : competitionInstance?.status === 'closed'
-                          ? 'Generate Fixtures'
-                          : ''
-                    }
-                    callbackFn={
-                      competitionInstance?.status === 'upcoming'
-                        ? () =>
-                            showSheet({
-                              title: 'Close Competition Entries',
-                              message:
-                                'Are you sure you want to close the entries for this competition? No more participants will be able to join.',
-                              confirmText: 'Close Entries',
-                              confirmType: 'error',
-                              onConfirm: handleCloseEntries,
-                            })
-                        : competitionInstance?.status === 'closed'
-                          ? handleGenerateFixtures
-                          : null
-                    }
-                  />
+                  <View className="p-4 pt-0">
+                    <CTAButton
+                      type={
+                        competitionInstance?.status === 'upcoming'
+                          ? 'error'
+                          : competitionInstance?.status === 'closed'
+                            ? 'yellow'
+                            : 'yellow'
+                      }
+                      text={
+                        competitionInstance?.status === 'upcoming'
+                          ? 'Close Entries'
+                          : competitionInstance?.status === 'closed'
+                            ? 'Generate Fixtures'
+                            : ''
+                      }
+                      callbackFn={
+                        competitionInstance?.status === 'upcoming'
+                          ? () =>
+                              showSheet({
+                                title: 'Close Competition Entries',
+                                message:
+                                  'Are you sure you want to close the entries for this competition? No more participants will be able to join.',
+                                confirmText: 'Close Entries',
+                                confirmType: 'error',
+                                onConfirm: handleCloseEntries,
+                              })
+                          : competitionInstance?.status === 'closed'
+                            ? handleGenerateFixtures
+                            : null
+                      }
+                    />
+                  </View>
                 )}
             </View>
-            <View className="gap-2 bg-bg-1 p-4">
+            <View className="gap-2 bg-bg-1">
               <ExpandableView title="Fixtures" show={showFixtures} setShow={setShowFixtures}>
                 <View style={{ marginTop: 10, display: showFixtures ? 'flex' : 'none' }}>
                   {competitionInstance?.status === 'active' ? (
@@ -595,7 +597,7 @@ const index = () => {
                           );
                         default:
                           return (
-                            <Text className="font-saira text-xl text-text-2">
+                            <Text className="pl-1 font-saira text-xl text-text-2">
                               No Fixtures available yet.
                             </Text>
                           );
@@ -609,7 +611,7 @@ const index = () => {
                 </View>
               </ExpandableView>
             </View>
-            <View className="bg-bg-1 p-4">
+            <View className="bg-bg-1">
               <ExpandableView
                 title="Competition Participants"
                 show={showParticipants}
@@ -759,7 +761,7 @@ const index = () => {
               </ExpandableView>
             </View>
             <View style={{ minHeight: 360 }} className="bg-bg-1 p-4 pb-8">
-              <Text className="px-1 pb-4 font-saira-medium text-2xl text-text-1">
+              <Text className="pb-4 font-saira-medium text-2xl text-text-1">
                 Competition Awards
               </Text>
               <View className="flex-row items-stretch justify-around gap-5">
