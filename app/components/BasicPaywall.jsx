@@ -295,12 +295,12 @@ const BasicPaywall = () => {
                         setSelectedTier(plan.tier);
                         setSelectedPlan(plan);
                       }}
-                      className={`relative w-full flex-row items-center justify-start gap-4 rounded-3xl bg-bg-1 p-2 pr-5 shadow-sm ${
+                      className={`relative w-full flex-row items-center justify-start gap-4 rounded-3xl border-2  bg-bg-1 p-2 pr-5 shadow-sm ${
                         isCurrentPlan
-                          ? 'opacity-50'
+                          ? 'border-brand opacity-50'
                           : selectedBilling === plan.interval && selectedTier === plan.tier
                             ? 'border-theme-purple'
-                            : 'border-theme-gray-3'
+                            : 'border-transparent'
                       }`}>
                       <Image
                         contentFit="contain"
@@ -377,7 +377,7 @@ const BasicPaywall = () => {
                           className={`rounded-full border-2 p-1 ${
                             selectedBilling === plan.interval && selectedTier === plan.tier
                               ? 'border-theme-purple'
-                              : 'border-theme-gray-3'
+                              : 'border-theme-gray-4'
                           }`}>
                           <IonIcons
                             name="checkmark"

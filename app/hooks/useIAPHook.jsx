@@ -63,6 +63,7 @@ const normalizeSubscriptions = (rawSubscriptions) => {
 const useIAPHook = () => {
   const [isRestoring, setIsRestoring] = useState(false);
   const [isSubscribing, setIsSubscribing] = useState(false);
+  const [isInitialising, setIsInitialising] = useState(false);
   const purchaseLock = useRef(false);
   const {
     connected,
@@ -90,7 +91,9 @@ const useIAPHook = () => {
         // Stale transaction guard — re-delivered unfinished transactions
         // from previous sessions fire onPurchaseSuccess on mount
         const idempotencyId =
-          purchase.platform === 'ios' ? purchase.transactionId : purchase.purchaseToken;
+          purchase.platform === 'ios'
+            ? (purchase.originalTransactionIdentifierIOS ?? purchase.transactionId)
+            : purchase.purchaseToken;
 
         const { data: existing } = await supabase
           .from('UserSubscriptions')
@@ -113,26 +116,30 @@ const useIAPHook = () => {
           body: { purchase, userId: session.user.id },
         });
 
-        // Defensive parse — supabase-js can return data as string
         const data = typeof response.data === 'string' ? JSON.parse(response.data) : response.data;
-
-        console.log('[IAP] verify-receipt response:', data);
 
         if (response.error) {
           throw new Error(`Edge function error: ${response.error.message}`);
+        }
+
+        // ✅ Handle expired separately — don't treat as an error
+        if (data?.status === 'expired') {
+          await finishTransaction({ purchase }); // finish it so it stops replaying
+          setIsSubscribing(false);
+          console.log('[IAP] Stale expired transaction finished silently');
+          return; // don't show any error
         }
 
         if (!data?.valid) {
           throw new Error(`Receipt invalid: ${data?.error ?? JSON.stringify(data)}`);
         }
 
-        // ✅ Verified — safe to finish
+        // ✅ Verified active
         await finishTransaction({ purchase });
-        console.log('[IAP] Purchase complete:', data.productId, data.status);
         setIsSubscribing(false);
+        console.log('[IAP] Purchase complete:', data.productId, data.status);
       } catch (error) {
         setIsSubscribing(false);
-        // ❌ Don't finish — unfinished transactions replay on next launch
         console.error('[IAP] Verification error:', error?.message);
         Alert.alert(
           'Activation Failed',
@@ -315,18 +322,55 @@ const useIAPHook = () => {
   });
 
   useEffect(() => {
-    if (connected) {
-      fetchProducts({
-        skus: [
-          'com.jdigital.breakroom.pro.monthly',
-          'com.jdigital.breakroom.pro.annual',
-          'com.jdigital.breakroom.core.monthly',
-          'com.jdigital.breakroom.core.annual',
-        ],
-        type: 'subs',
-      });
-      getAvailablePurchases(); // fetch what the user already owns
-    }
+    if (!connected) return;
+
+    const init = async () => {
+      setIsInitialising(true);
+      try {
+        await fetchProducts({
+          skus: [
+            'com.jdigital.breakroom.pro.monthly',
+            'com.jdigital.breakroom.pro.annual',
+            'com.jdigital.breakroom.core.monthly',
+            'com.jdigital.breakroom.core.annual',
+          ],
+          type: 'subs',
+        });
+
+        const pending = await getAvailablePurchases();
+        if (!pending?.length) return;
+
+        const {
+          data: { session },
+        } = await supabase.auth.getSession();
+        if (!session?.user?.id) return;
+
+        for (const purchase of pending) {
+          try {
+            const response = await supabase.functions.invoke('verify-receipt', {
+              body: { purchase, userId: session.user.id },
+            });
+            const data =
+              typeof response.data === 'string' ? JSON.parse(response.data) : response.data;
+
+            if (data?.status === 'active') {
+              console.log('[IAP] Active transaction, leaving in queue');
+              continue;
+            }
+
+            console.log('[IAP] Clearing stale transaction:', purchase.transactionId);
+            await finishTransaction({ purchase });
+          } catch (e) {
+            console.warn('[IAP] Could not verify, finishing anyway:', e?.message);
+            await finishTransaction({ purchase });
+          }
+        }
+      } finally {
+        setIsInitialising(false);
+      }
+    };
+
+    init();
   }, [connected]);
 
   const normalizedSubscriptions = normalizeSubscriptions(subscriptions ?? []);
@@ -351,13 +395,17 @@ const useIAPHook = () => {
     : null;
 
   const handleSubscribe = async (plan) => {
-    console.log('Subscribing to plan:', plan?.sku);
+    if (isInitialising) {
+      Alert.alert('Please Wait', 'Still loading your account. Try again in a moment.');
+      return;
+    }
     if (!plan) return;
-
     if (purchaseLock.current) {
       Alert.alert('Purchase In Progress', 'Please wait for the current purchase to complete.');
       return;
     }
+
+    console.log('Subscribing to plan:', plan?.sku);
 
     try {
       purchaseLock.current = true;
@@ -414,6 +462,12 @@ const useIAPHook = () => {
           const data =
             typeof response.data === 'string' ? JSON.parse(response.data) : response.data;
 
+          // Finish expired ones silently so they stop replaying
+          if (data?.status === 'expired') {
+            await finishTransaction({ purchase });
+            continue; // don't count as restored or failed
+          }
+
           if (response.error || !data?.valid) {
             failedCount++;
             continue;
@@ -450,7 +504,7 @@ const useIAPHook = () => {
     isSubscribing,
     restorePurchases,
     isRestoring,
-    isLoading,
+    isLoading: isLoading || isInitialising,
   };
 };
 

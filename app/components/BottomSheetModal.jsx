@@ -8,7 +8,7 @@ const BottomSheetModal = ({ showModal, setShowModal, title, children }) => {
       presentationStyle="pageSheet"
       animationType="slide"
       onRequestClose={() => setShowModal(false)}>
-      <View className="relative w-full flex-1 items-stretch justify-between pb-8">
+      <View className="relative w-full flex-1 items-stretch justify-between">
         <View className="items-center gap-2 bg-brand p-4">
           <View className="h-1 w-12 rounded-full bg-gray-400" />
           <View className="flex-row items-center py-2">
