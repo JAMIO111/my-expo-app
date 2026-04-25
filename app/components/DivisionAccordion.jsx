@@ -16,10 +16,14 @@ const DivisionAccordion = ({ isExpanded, onPress, divisionName, teams = [] }) =>
   const [expandedTeam, setExpandedTeam] = useState(null);
   const { data: teamPlayers, isLoading } = useTeamPlayers(expandedTeam);
 
+  const teamsExist = teams && teams.length > 0;
+
   return (
     <View className="w-full rounded-2xl bg-bg-2 shadow-sm">
       {/* Header */}
-      <Pressable onPress={onPress} className="flex-row items-center justify-between p-4">
+      <Pressable
+        onPress={teamsExist ? onPress : null}
+        className="flex-row items-center justify-between p-4">
         <View>
           <Text className="font-saira-semibold text-xl text-text-1">{divisionName}</Text>
 
@@ -29,15 +33,16 @@ const DivisionAccordion = ({ isExpanded, onPress, divisionName, teams = [] }) =>
             </Text>
           )}
         </View>
-
-        <Ionicons
-          name="chevron-down"
-          size={22}
-          color="gray"
-          style={{
-            transform: [{ rotate: isExpanded ? '180deg' : '0deg' }],
-          }}
-        />
+        {teamsExist && (
+          <Ionicons
+            name="chevron-down"
+            size={22}
+            color="gray"
+            style={{
+              transform: [{ rotate: isExpanded ? '180deg' : '0deg' }],
+            }}
+          />
+        )}
       </Pressable>
 
       {/* Expanded content */}
@@ -70,7 +75,7 @@ const DivisionAccordion = ({ isExpanded, onPress, divisionName, teams = [] }) =>
                 />
               </View>
               {expandedTeam === team.id && (
-                <View className="gap-3">
+                <View className="gap-3 shadow-sm">
                   <View className="mt-3 gap-2 rounded-2xl bg-bg-2 p-3">
                     {isLoading ? (
                       <Text className="font-saira text-text-2">Loading players...</Text>

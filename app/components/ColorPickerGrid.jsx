@@ -1,5 +1,11 @@
 import { useState } from 'react';
-import { View, Text, Pressable, StyleSheet } from 'react-native';
+import { View, Pressable, StyleSheet, Dimensions } from 'react-native';
+
+const SCREEN_WIDTH = Dimensions.get('window').width;
+
+const NUM_COLUMNS = 7; // control how many per row
+const GAP = 5;
+const BOX_SIZE = (SCREEN_WIDTH - GAP * (NUM_COLUMNS * 2)) / NUM_COLUMNS;
 
 // HSL → HEX helper
 const hslToHex = (h, s, l) => {
@@ -39,7 +45,7 @@ const generateColors = () => {
   }
 
   // Main color grid: hue changes by row, lightness by column
-  const rows = 16; // hues
+  const rows = 18; // hues
   const cols = 6; // match top row
   for (let row = 0; row < rows; row++) {
     for (let col = 0; col < cols; col++) {
@@ -82,13 +88,13 @@ const styles = StyleSheet.create({
   grid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    width: 7 * 50, // 8 columns * box size
+    justifyContent: 'center',
   },
   colorBox: {
-    width: 50,
-    height: 50,
-    margin: 3,
-    borderRadius: 4,
+    width: BOX_SIZE,
+    height: BOX_SIZE,
+    margin: GAP / 2,
+    borderRadius: 6,
     borderWidth: 1,
     borderColor: '#ccc',
   },

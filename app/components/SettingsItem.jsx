@@ -17,8 +17,6 @@ const SettingsItem = ({
   disabled = false,
   callbackFn,
   player,
-  value,
-  setValue,
 }) => {
   const colorScheme = useColorScheme();
   const themeColors = colors[colorScheme];

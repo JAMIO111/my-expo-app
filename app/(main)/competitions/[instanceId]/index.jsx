@@ -1,5 +1,5 @@
-import { useState, useRef, useEffect } from 'react';
-import { StyleSheet, View, Text, Image, Pressable, Animated, Easing } from 'react-native';
+import { useState, useRef } from 'react';
+import { StyleSheet, View, Text, Image, Pressable } from 'react-native';
 import { Stack, useLocalSearchParams } from 'expo-router';
 import { useUser } from '@contexts/UserProvider';
 import CustomHeader from '@components/CustomHeader';

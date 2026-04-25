@@ -16,6 +16,7 @@ import { useLast5Results } from '@hooks/useLast5Results';
 import Last5MatchesList from './Last5MatchesList';
 import { useTeamPlayers } from '@hooks/useTeamPlayers';
 import { useUser } from '@contexts/UserProvider';
+import TeamJoinRequests from './TeamJoinRequests';
 
 const TeamProfile = ({ context, profile, isLoading }) => {
   const { currentRole, player } = useUser();
@@ -215,6 +216,7 @@ const TeamProfile = ({ context, profile, isLoading }) => {
             error={playersError}
           />
         </View>
+        <TeamJoinRequests teamId={profile?.id} />
         <View className="flex gap-5 bg-bg-grouped-2 px-4 pb-8 pt-6">
           {player.id === profile.captain && (
             <CTAButton

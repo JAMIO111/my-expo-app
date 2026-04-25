@@ -27,6 +27,11 @@ export default function AppRealtimeProvider({ children }) {
       .on('postgres_changes', { event: '*', schema: 'public', table: 'TeamPlayers' }, (payload) => {
         const playerId = payload.new?.player_id ?? payload.old?.player_id;
         const teamId = payload.new?.team_id ?? payload.old?.team_id;
+        const isRequestChange =
+          ['pending_both', 'pending_captain', 'pending_admin'].includes(payload.new?.status) ||
+          ['pending_both', 'pending_captain', 'pending_admin'].includes(payload.old?.status);
+
+        if (isRequestChange) queryClient.invalidateQueries(['TeamPlayerRequest', teamId]);
 
         if (playerId) queryClient.invalidateQueries(['PlayerProfile', playerId]);
         if (teamId) queryClient.invalidateQueries(['TeamPlayers', teamId]);

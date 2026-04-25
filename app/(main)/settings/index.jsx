@@ -41,6 +41,7 @@ const index = () => {
           )}
           <SettingsItem
             lastItem={true}
+            routerPath="/settings/Notifications"
             iconBGColor="red"
             title="Notifications"
             icon="notifications-outline"
@@ -64,14 +65,8 @@ const index = () => {
 
         <MenuContainer>
           <SettingsItem title="Privacy" icon="lock-closed-outline" routerPath="/settings/Privacy" />
-          <SettingsItem title="Language" icon="language-outline" routerPath="/settings/Language" />
           <SettingsItem title="Help" icon="help-circle-outline" routerPath="/home/help" />
-          <SettingsItem
-            lastItem={true}
-            iconBGColor="blue"
-            title="About"
-            icon="information-circle-outline"
-          />
+          <SettingsItem lastItem={true} title="About" icon="information-circle-outline" />
         </MenuContainer>
       </ScrollView>
     </SafeViewWrapper>

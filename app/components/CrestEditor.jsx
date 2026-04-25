@@ -1,10 +1,9 @@
-import { StyleSheet, Text, View, Pressable, useColorScheme } from 'react-native';
-import { useState, useRef } from 'react';
+import { StyleSheet, Text, View, Pressable, useColorScheme, ScrollView } from 'react-native';
+import { useState } from 'react';
 import TeamLogo from '@components/TeamLogo';
 import CTAButton from '@components/CTAButton';
 import ColorPickerGrid from '@components/ColorPickerGrid';
-import BottomSheetWrapper from '@components/BottomSheetWrapper';
-import { BottomSheetView, BottomSheetScrollView, BottomSheetFooter } from '@gorhom/bottom-sheet';
+import BottomSheetModal from '@components/BottomSheetModal';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import colors from '@lib/colors';
 
@@ -24,6 +23,8 @@ const THICKNESSES = [
 ];
 
 const TYPES = [
+  'Stripes',
+  'Hoops',
   'Solids',
   'Horizontal Stripe',
   'Vertical Stripe',
@@ -39,7 +40,6 @@ const TYPES = [
 ];
 
 const CrestEditor = ({ crest, handleSave, buttonText = 'Save Changes' }) => {
-  const bottomSheetRef = useRef(null);
   const [primaryColor, setPrimaryColor] = useState(crest?.color1 || '#000000');
   const [secondaryColor, setSecondaryColor] = useState(crest?.color2 || '#FFFFFF'); //Yellow
   const [thickness, setThickness] = useState(crest?.thickness || '2.7');
@@ -47,14 +47,6 @@ const CrestEditor = ({ crest, handleSave, buttonText = 'Save Changes' }) => {
   const colorScheme = useColorScheme();
   const themeColors = colors[colorScheme] || colors.light; // Fallback to light theme if colorScheme is undefined
   const [activeMenu, setActiveMenu] = useState(null);
-
-  const openSheet = () => {
-    bottomSheetRef.current?.expand();
-  };
-
-  const closeSheet = () => {
-    bottomSheetRef.current?.close();
-  };
 
   const hasChanges = () => {
     return (
@@ -74,25 +66,22 @@ const CrestEditor = ({ crest, handleSave, buttonText = 'Save Changes' }) => {
         type={type}
         size={150}
       />
-      <View className="w-full gap-3 rounded-2xl bg-bg-grouped-2 p-3 shadow-sm">
+      <View style={{ borderRadius: 20 }} className="w-full gap-3 bg-bg-1 p-3 shadow-sm">
         <Pressable
           onPress={() => {
             setActiveMenu('Crest Type');
-            openSheet();
           }}
-          className="flex-row items-center justify-between py-2">
+          className="flex-row items-center justify-between rounded-2xl bg-bg-2 p-2 py-4 shadow-sm">
           <Text className="font-saira text-2xl text-text-2">Type</Text>
           <Text className="font-saira-medium text-2xl text-text-1">
             {TYPES.find((item) => item === type) || 'Horizontal Stripe'}
           </Text>
         </Pressable>
-        <View className="border-b border-theme-gray-5"></View>
         <Pressable
           onPress={() => {
             setActiveMenu('Primary Color');
-            openSheet();
           }}
-          className="flex-row items-center justify-between">
+          className="flex-row items-center justify-between rounded-2xl bg-bg-2 p-2 shadow-sm">
           <Text className="font-saira text-2xl text-text-2">Primary Team Color</Text>
           <View
             className="h-12 w-12 rounded-full border border-theme-gray-5"
@@ -100,28 +89,23 @@ const CrestEditor = ({ crest, handleSave, buttonText = 'Save Changes' }) => {
               backgroundColor: primaryColor || '#000000',
             }}></View>
         </Pressable>
-        <View className="border-b border-theme-gray-5"></View>
+
         <Pressable
           onPress={() => {
             setActiveMenu('Secondary Color');
-            openSheet();
           }}
-          className="flex-row items-center justify-between">
+          className="flex-row items-center justify-between rounded-2xl bg-bg-2 p-2 shadow-sm">
           <Text className="font-saira text-2xl text-text-2">Secondary Team Color</Text>
           <View
             className="h-12 w-12 rounded-full border border-theme-gray-5"
             style={{ backgroundColor: secondaryColor || '#FFFFFF' }}></View>
         </Pressable>
         {type !== 'Solids' && type !== 'Quartered' && (
-          <View className="border-b border-theme-gray-5"></View>
-        )}
-        {type !== 'Solids' && type !== 'Quartered' && (
           <Pressable
             onPress={() => {
               setActiveMenu('Style Weight');
-              openSheet();
             }}
-            className="flex-row items-center justify-between py-2">
+            className="flex-row items-center justify-between rounded-2xl bg-bg-2 p-2 py-4 shadow-sm">
             <Text className="font-saira text-2xl text-text-2">Thickness</Text>
             <Text className="font-saira-medium text-2xl text-text-1">
               {THICKNESSES.find((item) => item.value === thickness)?.label}
@@ -151,45 +135,37 @@ const CrestEditor = ({ crest, handleSave, buttonText = 'Save Changes' }) => {
           />
         </View>
       )}
-      <BottomSheetWrapper
-        ref={bottomSheetRef}
-        initialIndex={-1}
-        marginTop={200}
-        snapPoints={['80%']}>
-        {/* Fixed Header */}
-        <BottomSheetView
-          style={{
-            paddingHorizontal: 32,
-            paddingTop: 8,
-            paddingBottom: 8,
-            borderBottomWidth: 1,
-            borderBottomColor: '#ccc',
-            backgroundColor: themeColors.bgGrouped2,
-            zIndex: 10,
-            flexDirection: 'row',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-          }}>
-          <Text style={{ lineHeight: 40 }} className={`font-saira-medium text-3xl text-text-1`}>
-            Select {activeMenu}
-          </Text>
-          <Pressable className="p-2" onPress={closeSheet}>
-            <Ionicons name="close" size={24} color={themeColors.primaryText} />
-          </Pressable>
-        </BottomSheetView>
-
+      <BottomSheetModal
+        title={`Select a ${activeMenu}`}
+        showModal={!!activeMenu}
+        setShowModal={() => setActiveMenu(null)}>
         {/* Scrollable content with top padding to avoid overlap */}
-        <BottomSheetScrollView
-          contentContainerStyle={{ paddingBottom: 240, paddingTop: 80, paddingHorizontal: 32 }}>
+        <ScrollView
+          contentContainerStyle={{
+            paddingBottom: 240,
+            paddingTop: 40,
+            paddingHorizontal: 20,
+            gap: 8,
+          }}>
           {/* Your selectable items */}
           {activeMenu === 'Style Weight' &&
             THICKNESSES.map((item, index) => (
               <Pressable
-                className="mb-5 flex-row items-center justify-between"
+                className={`flex-row items-center justify-between pb-4 pt-2 ${index < THICKNESSES.length - 1 ? 'border-b border-theme-gray-3' : ''}`}
                 key={index}
-                onPress={() => setThickness(item.value)}>
+                onPress={() => {
+                  setThickness(item.value);
+                  setActiveMenu(null);
+                }}>
+                <TeamLogo
+                  size={30}
+                  type={type}
+                  color1={primaryColor}
+                  color2={secondaryColor}
+                  thickness={item.value}
+                />
                 <Text
-                  className={`font-saira text-2xl ${
+                  className={`flex-1 pl-5 text-left font-saira text-2xl ${
                     thickness === item.value ? 'text-text-1' : 'text-text-2'
                   }`}>
                   {item.label}
@@ -205,11 +181,21 @@ const CrestEditor = ({ crest, handleSave, buttonText = 'Save Changes' }) => {
           {activeMenu === 'Crest Type' &&
             TYPES.map((item, index) => (
               <Pressable
-                className="mb-5 flex-row items-center justify-between"
+                className={`flex-row items-center justify-between pb-4 pt-2 ${index < TYPES.length - 1 ? 'border-b border-theme-gray-3' : ''}`}
                 key={index}
-                onPress={() => setType(item)}>
+                onPress={() => {
+                  setType(item);
+                  setActiveMenu(null);
+                }}>
+                <TeamLogo
+                  size={30}
+                  type={item}
+                  color1={primaryColor}
+                  color2={secondaryColor}
+                  thickness={thickness}
+                />
                 <Text
-                  className={`font-saira text-2xl ${
+                  className={`flex-1 pl-5 text-left font-saira text-2xl ${
                     type === item ? 'text-text-1' : 'text-text-2'
                   }`}>
                   {item}
@@ -227,14 +213,16 @@ const CrestEditor = ({ crest, handleSave, buttonText = 'Save Changes' }) => {
               onSelect={(color) => {
                 if (activeMenu === 'Primary Color' && primaryColor !== color) {
                   setPrimaryColor(color);
+                  setActiveMenu(null);
                 } else if (activeMenu === 'Secondary Color' && secondaryColor !== color) {
                   setSecondaryColor(color);
+                  setActiveMenu(null);
                 }
               }}
             />
           )}
-        </BottomSheetScrollView>
-      </BottomSheetWrapper>
+        </ScrollView>
+      </BottomSheetModal>
     </View>
   );
 };

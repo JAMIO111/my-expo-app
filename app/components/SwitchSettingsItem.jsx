@@ -3,8 +3,18 @@ import { useColorScheme } from 'react-native';
 import colors from '@lib/colors';
 import { useState } from 'react';
 import { Switch } from 'react-native-gesture-handler';
+import Ionicons from '@expo/vector-icons/Ionicons';
 
-const SwitchSettingsItem = ({ title, value, setValue, defaultValue, lastItem = false }) => {
+const SwitchSettingsItem = ({
+  title,
+  icon,
+  iconBGColor = 'gray',
+  iconColor = '#fff',
+  value,
+  setValue,
+  defaultValue,
+  lastItem = false,
+}) => {
   const colorScheme = useColorScheme();
   const themeColors = colors[colorScheme];
   const [enabled, setEnabled] = useState(defaultValue);
@@ -21,7 +31,14 @@ const SwitchSettingsItem = ({ title, value, setValue, defaultValue, lastItem = f
             className={`flex-row items-center gap-5 px-4 py-3 ${
               pressed ? 'bg-theme-gray-5' : 'bg-bg-grouped-2'
             }`}>
-            <Text className="flex-1 pl-3 text-lg font-medium text-text-1">{title}</Text>
+            {icon && (
+              <View
+                className="h-9 w-9 items-center justify-center rounded-[10px]"
+                style={{ backgroundColor: iconBGColor }}>
+                <Ionicons name={icon} size={22} color={iconColor} />
+              </View>
+            )}
+            <Text className="flex-1 text-lg font-medium text-text-1">{title}</Text>
 
             <Switch
               value={enabled}

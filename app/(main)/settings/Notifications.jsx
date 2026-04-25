@@ -2,18 +2,19 @@ import { StyleSheet, View, ScrollView, useColorScheme } from 'react-native';
 import { useState } from 'react';
 import { useRouter, Stack } from 'expo-router';
 import SettingsItem from '@components/SettingsItem';
+import SwitchSettingsItem from '@components/SwitchSettingsItem';
 import MenuContainer from '@components/MenuContainer';
 import SafeViewWrapper from '@components/SafeViewWrapper';
 import CustomHeader from '@components/CustomHeader';
 
-const Privacy = () => {
+const Notifications = () => {
   return (
     <SafeViewWrapper topColor="bg-brand" useBottomInset={false}>
       <Stack.Screen
         options={{
           header: () => (
             <SafeViewWrapper useBottomInset={false}>
-              <CustomHeader title="Privacy" />
+              <CustomHeader title="Notifications" />
             </SafeViewWrapper>
           ),
         }}
@@ -26,23 +27,33 @@ const Privacy = () => {
           {/* Top Content */}
           <View>
             <MenuContainer>
-              <SettingsItem
-                routerPath="settings/PersonalPrivacy"
-                iconBGColor="green"
-                title="Personal Info"
-                icon="person-outline"
-              />
-              <SettingsItem
-                routerPath="settings/PlayerManagement"
-                iconBGColor="blue"
-                title="Visibility"
-                icon="search-outline"
-              />
-              <SettingsItem
-                routerPath="settings/ActivityPrivacy"
+              <SwitchSettingsItem
                 iconBGColor="red"
-                title="Activity"
-                icon="pulse-outline"
+                title="Match Reminders"
+                defaultValue={true}
+                setValue={() => {}}
+                icon="alarm-outline"
+              />
+              <SwitchSettingsItem
+                iconBGColor="red"
+                title="Results"
+                defaultValue={true}
+                setValue={() => {}}
+                icon="clipboard-outline"
+              />
+              <SwitchSettingsItem
+                iconBGColor="red"
+                title="Join Requests"
+                defaultValue={true}
+                setValue={() => {}}
+                icon="person-add-outline"
+              />
+              <SwitchSettingsItem
+                iconBGColor="red"
+                title="News and Updates"
+                defaultValue={true}
+                setValue={() => {}}
+                icon="chatbubbles-outline"
                 lastItem={true}
               />
             </MenuContainer>
@@ -53,6 +64,6 @@ const Privacy = () => {
   );
 };
 
-export default Privacy;
+export default Notifications;
 
 const styles = StyleSheet.create({});

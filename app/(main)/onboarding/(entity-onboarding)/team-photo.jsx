@@ -1,6 +1,6 @@
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View, ScrollView } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Stack } from 'expo-router';
 import StepPillGroup from '@components/StepPillGroup';
 import SafeViewWrapper from '@components/SafeViewWrapper';
@@ -41,9 +41,9 @@ const TeamPhoto = () => {
         }}
       />
       <SafeViewWrapper useTopInset={false} topColor="bg-brand" bottomColor="bg-brand-dark">
-        <View className={`flex-1 justify-between gap-3 bg-brand`}>
+        <View style={{ marginTop: 40 }} className={`flex-1 justify-between bg-brand`}>
           <StepPillGroup steps={6} currentStep={5} />
-          <View className="flex-1">
+          <ScrollView className="flex-1">
             <Text
               style={{ lineHeight: 40 }}
               className={`p-3 font-delagothic text-4xl font-bold text-text-on-brand`}>
@@ -62,29 +62,28 @@ const TeamPhoto = () => {
                 />
               </View>
               <Text className="p-3 px-5 font-saira-medium text-lg text-text-on-brand-2">
-                We recommend using an image with a 16:9 aspect ratio for best results.
+                We recommend using an image with a 16:9 aspect ratio.
               </Text>
             </View>
-
-            <View className="gap-5 rounded-t-3xl bg-brand-dark px-5 pt-6">
-              <CTAButton type="yellow" text="Save & Continue" callbackFn={handleContinue} />
-              <Pressable
-                className="items-center justify-center rounded-xl py-3"
-                onPress={() =>
-                  router.push({
-                    pathname: '/(main)/onboarding/(entity-onboarding)/team-division-request',
-                    params: {
-                      league: JSON.stringify(league),
-                      teamDetails: JSON.stringify(teamDetails),
-                      teams: JSON.stringify(teams),
-                    },
-                  })
-                }>
-                <Text className="text-center font-saira-medium text-xl text-text-on-brand-2 underline">
-                  Add a photo later
-                </Text>
-              </Pressable>
-            </View>
+          </ScrollView>
+          <View className="gap-5 rounded-t-3xl bg-brand-dark px-5 pt-6">
+            <CTAButton type="yellow" text="Save & Continue" callbackFn={handleContinue} />
+            <Pressable
+              className="items-center justify-center rounded-xl py-3"
+              onPress={() =>
+                router.push({
+                  pathname: '/(main)/onboarding/(entity-onboarding)/team-division-request',
+                  params: {
+                    league: JSON.stringify(league),
+                    teamDetails: JSON.stringify(teamDetails),
+                    teams: JSON.stringify(teams),
+                  },
+                })
+              }>
+              <Text className="text-center font-saira-medium text-xl text-text-on-brand-2 underline">
+                Add a photo later
+              </Text>
+            </Pressable>
           </View>
         </View>
       </SafeViewWrapper>

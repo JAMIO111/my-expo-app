@@ -52,7 +52,6 @@ const TeamDivisionRequest = () => {
           _display_name: teamDetails.display_name,
           _abbreviation: teamDetails.abbreviation,
           _crest: teamDetails.crest,
-
           _division: selectedDivision ?? null,
           _district: league.id,
           _is_private: teamDetails.is_private,
@@ -107,6 +106,21 @@ const TeamDivisionRequest = () => {
     return Math.max(division?.max_teams - activeTeamsInDivision, 0);
   };
 
+  const groupedDivisions = league.Divisions?.reduce((acc, division) => {
+    const groupId = division.group_id || 'ungrouped';
+
+    if (!acc[groupId]) {
+      acc[groupId] = {
+        groupName: division.group_name || 'Other',
+        divisions: [],
+      };
+    }
+
+    acc[groupId].divisions.push(division);
+
+    return acc;
+  }, {});
+
   return (
     <>
       <Stack.Screen
@@ -139,65 +153,84 @@ const TeamDivisionRequest = () => {
               ) : (
                 <ScrollView
                   className="flex-1 p-3"
-                  contentContainerStyle={{ paddingBottom: 20, gap: 12 }}>
-                  {league.Divisions?.sort((a, b) => a.tier - b.tier).map((division) => (
-                    <Pressable
-                      onPress={() =>
-                        selectedDivision === division.id
-                          ? setSelectedDivision(null)
-                          : setSelectedDivision(division.id)
-                      }
-                      style={{
-                        borderColor: selectedDivision === division.id ? 'blue' : 'transparent',
-                        borderWidth: 2,
-                      }}
-                      className="w-full flex-row items-center justify-between rounded-xl border border-theme-gray-5 bg-bg-grouped-2 p-2 px-3"
-                      key={division.id}>
-                      <View className="flex-row items-center gap-4">
-                        {romanNumerals[division.tier] && (
-                          <Image
-                            source={romanNumerals[division.tier]}
-                            style={{ width: 40, height: 48 }}
-                            resizeMode="contain"
-                          />
-                        )}
-                        <View>
-                          <Text className="font-saira-semibold text-xl text-text-1">
-                            {division?.name}
-                          </Text>
-                          <Text
-                            className={`text-md font-saira ${getRemainingSpaces(division) === 0 ? 'text-theme-red' : 'text-text-2'}`}>
-                            {!division?.max_teams
-                              ? 'No team limit'
-                              : `${getRemainingSpaces(division)} spaces remaining`}
-                          </Text>
-                        </View>
-                      </View>
-                      <View
-                        className={`h-8 w-8 rounded-full ${selectedDivision === division.id ? 'border-theme-blue bg-theme-blue' : 'border-theme-gray-3'} border-2`}>
-                        {selectedDivision === division.id && (
-                          <Ionicons
-                            name="checkmark"
-                            size={20}
-                            color="white"
+                  contentContainerStyle={{ paddingBottom: 20, gap: 16 }}>
+                  {Object.entries(groupedDivisions || {}).map(([groupId, group]) => (
+                    <View key={groupId} className="gap-3">
+                      {/* Group Title */}
+                      <Text className="px-1 font-saira-semibold text-lg text-text-2">
+                        {group.groupName}
+                      </Text>
+
+                      {/* Divisions in this group */}
+                      {group.divisions
+                        .sort((a, b) => a.tier - b.tier)
+                        .map((division) => (
+                          <Pressable
+                            key={division.id}
+                            onPress={() =>
+                              selectedDivision === division.id
+                                ? setSelectedDivision(null)
+                                : setSelectedDivision(division.id)
+                            }
                             style={{
-                              position: 'absolute',
-                              top: '50%',
-                              left: '50%',
-                              transform: [{ translateX: -10 }, { translateY: -10 }],
+                              borderColor:
+                                selectedDivision === division.id ? 'blue' : 'transparent',
+                              borderWidth: 2,
                             }}
-                          />
-                        )}
-                      </View>
-                    </Pressable>
+                            className="w-full flex-row items-center justify-between rounded-xl border border-theme-gray-5 bg-bg-grouped-2 p-2 px-3">
+                            <View className="flex-row items-center gap-4">
+                              {romanNumerals[division.tier] && (
+                                <Image
+                                  source={romanNumerals[division.tier]}
+                                  style={{ width: 40, height: 48 }}
+                                  resizeMode="contain"
+                                />
+                              )}
+                              <View>
+                                <Text className="font-saira-semibold text-xl text-text-1">
+                                  {division?.name}
+                                </Text>
+                                <Text
+                                  className={`text-md font-saira ${
+                                    getRemainingSpaces(division) === 0
+                                      ? 'text-theme-red'
+                                      : 'text-text-2'
+                                  }`}>
+                                  {!division?.max_teams
+                                    ? 'No team limit'
+                                    : `${getRemainingSpaces(division)} spaces remaining`}
+                                </Text>
+                              </View>
+                            </View>
+
+                            <View
+                              className={`h-8 w-8 rounded-full ${
+                                selectedDivision === division.id
+                                  ? 'border-theme-blue bg-theme-blue'
+                                  : 'border-theme-gray-3'
+                              } border-2`}>
+                              {selectedDivision === division.id && (
+                                <Ionicons
+                                  name="checkmark"
+                                  size={20}
+                                  color="white"
+                                  style={{
+                                    position: 'absolute',
+                                    top: '50%',
+                                    left: '50%',
+                                    transform: [{ translateX: -10 }, { translateY: -10 }],
+                                  }}
+                                />
+                              )}
+                            </View>
+                          </Pressable>
+                        ))}
+                    </View>
                   ))}
                 </ScrollView>
               )}
             </View>
-            <Text className="p-3 font-saira-medium text-sm text-text-on-brand-2">
-              If your league doesn't have any divisions yet, don't worry - you can still request to
-              join the league and the admin can assign you to a division later.
-            </Text>
+
             <View className="gap-5 rounded-t-3xl bg-brand-dark px-5 py-6">
               <CTAButton
                 disabled={loading || uploading}
@@ -211,6 +244,10 @@ const TeamDivisionRequest = () => {
                 }
                 callbackFn={handleContinue}
               />
+              <Text className="font-saira-medium text-sm text-text-on-brand-2">
+                If your league doesn't have any divisions yet, don't worry - you can still request
+                to join the league and the admin can assign you to a division later.
+              </Text>
             </View>
           </View>
         </View>

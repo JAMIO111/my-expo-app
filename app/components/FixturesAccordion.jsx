@@ -32,11 +32,13 @@ const FixturesAccordion = ({ season, competitionInstance, isExpanded, onPress })
     setExpandedDate((prev) => (prev === date ? null : date));
   };
 
+  const hasFixtures = fixturesGrouped && Object.keys(fixturesGrouped).length > 0;
+
   return (
     <View className="w-full rounded-2xl bg-bg-2 shadow-sm">
       {/* Top-level header */}
       <Pressable
-        onPress={onPress} // external control
+        onPress={hasFixtures ? onPress : null} // external control
         className="flex-row items-center justify-between p-4">
         <View>
           <Text className="font-saira-semibold text-xl text-text-1">{season?.name} Fixtures</Text>
@@ -47,12 +49,14 @@ const FixturesAccordion = ({ season, competitionInstance, isExpanded, onPress })
             </Text>
           )}
         </View>
-        <Ionicons
-          name="chevron-down"
-          size={22}
-          color="gray"
-          style={{ transform: [{ rotate: isExpanded ? '180deg' : '0deg' }] }}
-        />
+        {hasFixtures && (
+          <Ionicons
+            name="chevron-down"
+            size={22}
+            color="gray"
+            style={{ transform: [{ rotate: isExpanded ? '180deg' : '0deg' }] }}
+          />
+        )}
       </Pressable>
 
       {/* Expanded content */}

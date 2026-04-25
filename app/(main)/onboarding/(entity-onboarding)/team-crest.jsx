@@ -1,4 +1,4 @@
-import { StyleSheet, Text, View, Alert } from 'react-native';
+import { StyleSheet, Text, View, Alert, ScrollView } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Stack } from 'expo-router';
 import StepPillGroup from '@components/StepPillGroup';
@@ -56,27 +56,25 @@ const TeamCrest = () => {
           title: 'Step 3 of 6',
         }}
       />
-      <SafeViewWrapper
-        useTopInset={false}
-        useBottomInset={false}
-        topColor="bg-brand"
-        bottomColor="bg-brand-dark">
-        <View className={`flex-1 justify-between gap-3 bg-brand`}>
-          <StepPillGroup steps={6} currentStep={3} />
-          <View className="flex-1 gap-3">
-            <Text
-              style={{ lineHeight: 40 }}
-              className={`p-3 font-delagothic text-4xl font-bold text-text-on-brand`}>
-              Create your team crest.
-            </Text>
-            <CrestEditor
-              crest={teamDetails.crest || {}}
-              buttonText="Save & Continue"
-              handleSave={handleContinue}
-            />
+      <View className="flex-1 justify-between gap-3 bg-brand">
+        <StepPillGroup steps={6} currentStep={3} />
+        <Text
+          style={{ lineHeight: 40 }}
+          className={`p-3 font-delagothic text-4xl font-bold text-text-on-brand`}>
+          Create your team crest.
+        </Text>
+        <ScrollView className={`flex-1 bg-brand p-4`}>
+          <View className="rounded-3xl shadow-md">
+            <View className="flex-1 gap-3 overflow-hidden rounded-3xl bg-bg-2">
+              <CrestEditor
+                crest={teamDetails.crest || {}}
+                buttonText="Save & Continue"
+                handleSave={handleContinue}
+              />
+            </View>
           </View>
-        </View>
-      </SafeViewWrapper>
+        </ScrollView>
+      </View>
     </>
   );
 };

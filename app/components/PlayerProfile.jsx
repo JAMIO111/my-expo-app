@@ -44,10 +44,10 @@ const PlayerProfile = ({ context, isLoading, playerProfile, error }) => {
   console.log('Current Teams:', playerProfile.teams);
   const inMyTeam = currentTeam?.team_id === currentRole?.team.id;
   const isMe = playerProfile.id === player.id;
-  const iAmCaptain = currentRole?.role === 'captain';
-  const iAmViceCaptain = currentRole?.role === 'vice_captain';
-  const playerIsCaptain = currentTeam?.role === 'captain';
-  const playerIsViceCaptain = currentTeam?.role === 'vice_captain';
+  const iAmCaptain = currentRole?.team?.captain === player.id;
+  const iAmViceCaptain = currentRole?.team?.vice_captain === player.id;
+  const playerIsCaptain = currentTeam?.captain === playerProfile.id;
+  const playerIsViceCaptain = currentTeam?.vice_captain === playerProfile.id;
 
   console.log('Current Team:', currentTeam);
   console.log('In My Team:', inMyTeam);

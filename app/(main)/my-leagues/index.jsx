@@ -10,7 +10,7 @@ import DivisionsList from '@components/DivisionsList';
 import { ScrollView } from 'react-native-gesture-handler';
 import SeasonControlCard from '@components/SeasonControlCard';
 import Toast from 'react-native-toast-message';
-import AdminRequests from '@components/AdminRequests';
+import TeamJoinRequests from '@components/TeamJoinRequests';
 
 const index = () => {
   const router = useRouter();
@@ -83,7 +83,7 @@ const index = () => {
           contentContainerStyle={{ display: 'flex', flexGrow: 1, gap: 4 }}
           className="mt-16 flex-1">
           <DivisionsList districtId={currentRole?.district.id} />
-          <AdminRequests districtId={currentRole?.district.id} />
+          <TeamJoinRequests districtId={currentRole?.district.id} />
           <View className="bg-brand p-4">
             <SeasonControlCard
               activeSeason={currentRole?.activeSeason}

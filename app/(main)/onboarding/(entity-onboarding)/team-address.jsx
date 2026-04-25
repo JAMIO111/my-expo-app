@@ -16,6 +16,7 @@ import SafeViewWrapper from '@components/SafeViewWrapper';
 import CustomTextInput from '@components/CustomTextInput';
 import CTAButton from '@components/CTAButton';
 import Toast from 'react-native-toast-message';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 
 const TeamAddress = () => {
   const router = useRouter();
@@ -98,7 +99,7 @@ const TeamAddress = () => {
         }}
       />
       <SafeViewWrapper useTopInset={false} topColor="bg-brand" bottomColor="bg-brand-dark">
-        <View className={`flex-1 justify-between gap-3 bg-brand`}>
+        <View style={{ marginTop: 40 }} className={`flex-1 justify-between gap-3 bg-brand`}>
           <StepPillGroup steps={6} currentStep={4} />
           <View className="flex-1">
             <Text
@@ -110,93 +111,89 @@ const TeamAddress = () => {
               This will help players find your venue.
             </Text>
 
-            <KeyboardAvoidingView
+            <KeyboardAwareScrollView
               style={{ flex: 1 }}
-              behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-              keyboardVerticalOffset={100}>
-              <ScrollView
-                style={{ flex: 1 }}
-                contentContainerStyle={{
-                  padding: 16,
-                  paddingBottom: 20,
-                  flexGrow: 1,
-                  gap: 12,
-                }}
-                keyboardShouldPersistTaps="handled">
-                <CustomTextInput
-                  value={name}
-                  onChangeText={setName}
-                  title="Venue Name"
-                  placeholder="e.g. 123 Main St"
-                  className="mb-4 h-12 rounded-lg border border-gray-300 bg-white px-3 font-saira text-xl"
-                  leftIconName="home-outline"
-                  iconColor="#A259FF"
-                  autoCapitalize="words"
-                />
-                <CustomTextInput
-                  value={line1}
-                  onChangeText={setLine1}
-                  title="Address Line 1"
-                  placeholder="e.g. 123 Main St"
-                  className="mb-4 h-12 rounded-lg border border-gray-300 bg-white px-3 font-saira text-xl"
-                  leftIconName="pin-outline"
-                  iconColor="#A259FF"
-                  autoCapitalize="words"
-                />
-                <CustomTextInput
-                  value={line2}
-                  onChangeText={setLine2}
-                  title="Address Line 2"
-                  placeholder="e.g. Apt 4B"
-                  className="mb-4 h-12 rounded-lg border border-gray-300 bg-white px-3 font-saira text-xl"
-                  leftIconName="pin-outline"
-                  iconColor="#A259FF"
-                  autoCapitalize="words"
-                />
-                <CustomTextInput
-                  value={city}
-                  onChangeText={setCity}
-                  title="City/Town"
-                  placeholder="e.g. Blyth"
-                  className="mb-4 h-12 rounded-lg border border-gray-300 bg-white px-3 font-saira text-xl"
-                  leftIconName="business-outline"
-                  iconColor="#A259FF"
-                  autoCapitalize="words"
-                />
-                <CustomTextInput
-                  value={county}
-                  onChangeText={setCounty}
-                  title="County"
-                  placeholder="e.g. Northumberland"
-                  className="mb-4 h-12 rounded-lg border border-gray-300 bg-white px-3 font-saira text-xl"
-                  leftIconName="map-outline"
-                  iconColor="#A259FF"
-                  autoCapitalize="words"
-                />
-                <CustomTextInput
-                  value={postCode}
-                  onChangeText={setPostCode}
-                  title="Post Code"
-                  placeholder="e.g. NE24 3AB"
-                  className="mb-4 h-12 rounded-lg border border-gray-300 bg-white px-3 font-saira text-xl"
-                  leftIconName="mail-outline"
-                  iconColor="#A259FF"
-                  autoCapitalize="characters"
-                  maxLength={8}
-                />
-                <CustomTextInput
-                  value={tables}
-                  onChangeText={setTables}
-                  title="Available Tables"
-                  placeholder="e.g. 2"
-                  className="mb-4 h-12 rounded-lg border border-gray-300 bg-white px-3 font-saira text-xl"
-                  leftIconName="apps"
-                  iconColor="#A259FF"
-                  autoCapitalize="characters"
-                  keyboardType="numeric"
-                />
-              </ScrollView>
-            </KeyboardAvoidingView>
+              contentContainerStyle={{
+                padding: 16,
+                gap: 12,
+              }}
+              enableOnAndroid
+              keyboardShouldPersistTaps="handled"
+              extraScrollHeight={20}
+              showsVerticalScrollIndicator={false}>
+              <CustomTextInput
+                value={name}
+                onChangeText={setName}
+                title="Venue Name"
+                placeholder="e.g. 123 Main St"
+                className="mb-4 h-12 rounded-lg border border-gray-300 bg-white px-3 font-saira text-xl"
+                leftIconName="home-outline"
+                iconColor="#A259FF"
+                autoCapitalize="words"
+              />
+              <CustomTextInput
+                value={line1}
+                onChangeText={setLine1}
+                title="Address Line 1"
+                placeholder="e.g. 123 Main St"
+                className="mb-4 h-12 rounded-lg border border-gray-300 bg-white px-3 font-saira text-xl"
+                leftIconName="pin-outline"
+                iconColor="#A259FF"
+                autoCapitalize="words"
+              />
+              <CustomTextInput
+                value={line2}
+                onChangeText={setLine2}
+                title="Address Line 2"
+                placeholder="e.g. Apt 4B"
+                className="mb-4 h-12 rounded-lg border border-gray-300 bg-white px-3 font-saira text-xl"
+                leftIconName="pin-outline"
+                iconColor="#A259FF"
+                autoCapitalize="words"
+              />
+              <CustomTextInput
+                value={city}
+                onChangeText={setCity}
+                title="City/Town"
+                placeholder="e.g. Blyth"
+                className="mb-4 h-12 rounded-lg border border-gray-300 bg-white px-3 font-saira text-xl"
+                leftIconName="business-outline"
+                iconColor="#A259FF"
+                autoCapitalize="words"
+              />
+              <CustomTextInput
+                value={county}
+                onChangeText={setCounty}
+                title="County"
+                placeholder="e.g. Northumberland"
+                className="mb-4 h-12 rounded-lg border border-gray-300 bg-white px-3 font-saira text-xl"
+                leftIconName="map-outline"
+                iconColor="#A259FF"
+                autoCapitalize="words"
+              />
+              <CustomTextInput
+                value={postCode}
+                onChangeText={setPostCode}
+                title="Post Code"
+                placeholder="e.g. NE24 3AB"
+                className="mb-4 h-12 rounded-lg border border-gray-300 bg-white px-3 font-saira text-xl"
+                leftIconName="mail-outline"
+                iconColor="#A259FF"
+                autoCapitalize="characters"
+                maxLength={8}
+              />
+              <CustomTextInput
+                value={tables}
+                onChangeText={setTables}
+                title="Available Tables"
+                placeholder="e.g. 2"
+                className="mb-4 h-12 rounded-lg border border-gray-300 bg-white px-3 font-saira text-xl"
+                leftIconName="apps"
+                iconColor="#A259FF"
+                autoCapitalize="characters"
+                keyboardType="numeric"
+              />
+            </KeyboardAwareScrollView>
             <View className="gap-5 rounded-t-3xl bg-brand-dark px-5 pt-6">
               <CTAButton callbackFn={openNativeMaps} type="white" text="Test Address" />
               <CTAButton type="yellow" text="Save & Continue" callbackFn={handleContinue} />
