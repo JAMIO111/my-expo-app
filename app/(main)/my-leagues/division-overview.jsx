@@ -13,16 +13,21 @@ import ExpandableView from '@components/ExpandableView';
 import BottomSheetModal from '@components/BottomSheetModal';
 import CTAButton from '@components/CTAButton';
 import EditDivisionForm from '@components/EditDivisionForm';
+import GenerateFixturesForm from '@components/GenerateFixturesForm';
+import { useDivisions } from '@hooks/useDivisions';
 
 const DivisionOverview = () => {
   const { currentRole } = useUser();
-  const params = useLocalSearchParams();
-  const division = params.divisionStr ? JSON.parse(params.divisionStr) : {};
-  const { data: teams, isLoading, isError } = useTeamsByDivision(division.id);
+  const { divisionId } = useLocalSearchParams();
+  const { data: divisions } = useDivisions(currentRole?.district?.id);
+  const { data: teams, isLoading, isError } = useTeamsByDivision(divisionId);
   const [expandedAccordion, setExpandedAccordion] = useState(null);
   const [competitionInstance, setCompetitionInstance] = useState(null);
   const [showDetails, setShowDetails] = useState(false);
+  const [modalType, setModalType] = useState(null);
   const [showModal, setShowModal] = useState(false);
+
+  const division = divisions?.find((d) => d.id === divisionId) || {};
 
   console.log('Division Overview for:', division);
   console.log('Teams in Division:', teams);
@@ -46,6 +51,7 @@ const DivisionOverview = () => {
             <SafeViewWrapper useBottomInset={false}>
               <CustomHeader
                 onRightPress={() => {
+                  setModalType('edit-division');
                   setShowModal(true);
                 }}
                 rightIcon="build"
@@ -145,6 +151,10 @@ const DivisionOverview = () => {
                   <CTAButton
                     type="yellow"
                     text={`Generate ${currentRole.activeSeason.name} fixtures`}
+                    callbackFn={() => {
+                      setModalType('generate-fixtures');
+                      setShowModal(true);
+                    }}
                   />
                 </View>
               )}
@@ -154,10 +164,19 @@ const DivisionOverview = () => {
       <BottomSheetModal
         showModal={showModal}
         setShowModal={setShowModal}
-        title={division.name + ' settings' || 'Division Settings'}>
-        <ScrollView className="flex-1 p-5">
-          <EditDivisionForm />
-        </ScrollView>
+        title={
+          modalType === 'generate-fixtures'
+            ? `Generate ${currentRole.activeSeason.name} Fixtures`
+            : `${division.name} Settings`
+        }>
+        {modalType === 'generate-fixtures' ? (
+          <GenerateFixturesForm
+            competitionInstanceId={currentSeasonComp.id}
+            closeModal={() => setShowModal(false)}
+          />
+        ) : (
+          <EditDivisionForm division={division} closeModal={() => setShowModal(false)} />
+        )}
       </BottomSheetModal>
     </>
   );

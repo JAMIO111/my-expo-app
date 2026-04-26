@@ -20,150 +20,77 @@ const EntityStats = ({ entityId, entityType }) => {
   } else {
     console.log('Stats Data:', data);
   }
-  return (
-    <View
-      contentContainerStyle={{ alignItems: 'center', justifyContent: 'center' }}
-      className="w-full gap-1">
+
+  const StatSection = ({ title, stats, type }) => {
+    const prefix = type; // "frames" or "matches"
+
+    const won = stats?.[`${prefix}_won`] ?? 0;
+    const drawn = stats?.[`${prefix}_drawn`] ?? 0;
+    const lost = stats?.[`${prefix}_lost`] ?? 0;
+    const winPercent = stats?.[`${prefix.slice(0, -1)}_win_percent`] ?? 0;
+    const bestStreak = stats?.[`best_${prefix.slice(0, -1)}_streak`] ?? 0;
+    const currentStreak = stats?.[`current_${prefix.slice(0, -1)}_streak`] ?? 0;
+
+    return (
       <View className="bg-bg-grouped-2 px-6 py-8">
-        <Text className="mb-2 font-saira-semibold text-3xl text-text-1">Frames</Text>
-        <View className="mb-8 w-full flex-row items-center justify-between">
-          <DonutChart
-            wins={data?.totalStats?.frames_won ?? 0}
-            draws={data?.totalStats?.frames_drawn ?? 0}
-            losses={data?.totalStats?.frames_lost ?? 0}
-            statTitle="Frames Played"
-          />
-          <View className="flex-1 gap-3 pl-8 pr-2">
-            <View className="flex flex-row items-center gap-2">
-              <View className="h-3 w-3 rounded-full bg-green-700"></View>
-              <Text className="flex-1 font-saira-medium text-lg text-text-2">Won</Text>
-              <Text className="pr-4 font-saira-semibold text-2xl text-text-1">
-                {data?.totalStats?.frames_won ?? 0}
-              </Text>
-            </View>
-            <View className="border-b border-theme-gray-5"></View>
-            <View className="flex flex-row items-center gap-2">
-              <View className="h-3 w-3 rounded-full bg-yellow-500"></View>
-              <Text className="flex-1 font-saira-medium text-lg text-text-2">Drawn</Text>
-              <Text className="pr-4 font-saira-semibold text-2xl text-text-1">
-                {data?.totalStats?.frames_drawn ?? 0}
-              </Text>
-            </View>
-            <View className="border-b border-theme-gray-5"></View>
-            <View className="flex flex-row items-center gap-2">
-              <View className="h-3 w-3 rounded-full bg-red-500"></View>
-              <Text className="flex-1 font-saira-medium text-lg text-text-2">Lost</Text>
-              <Text className="pr-4 font-saira-semibold text-2xl text-text-1">
-                {data?.totalStats?.frames_lost ?? 0}
-              </Text>
-            </View>
+        <Text className="mb-2 font-saira-semibold text-3xl text-text-1">{title}</Text>
+
+        <View className="mb-8 w-full flex-row items-center justify-between gap-8">
+          <View className="gap-3 rounded-full border border-theme-gray-5 bg-bg-2 p-2 shadow-sm">
+            <DonutChart wins={won} draws={drawn} losses={lost} statTitle={`${title} Played`} />
+          </View>
+
+          <View className="flex-1 gap-3 rounded-2xl border border-theme-gray-5 bg-bg-2 px-4 py-3 shadow-sm">
+            <StatRow label="Won" value={won} color="bg-green-700" />
+            <Divider />
+            <StatRow label="Drawn" value={drawn} color="bg-yellow-500" />
+            <Divider />
+            <StatRow label="Lost" value={lost} color="bg-red-500" />
           </View>
         </View>
-        <View className="mt-6 flex flex-row gap-2 pl-4">
-          <View className="flex-1 gap-8">
-            <View>
-              <Text className="font-saira-semibold text-3xl text-text-1">
-                {data?.totalStats?.frame_win_percent ?? 0}%
-              </Text>
-              <Text style={{ lineHeight: 18 }} className="text-lg font-semibold text-text-2">
-                Win Rate
-              </Text>
-            </View>
-          </View>
-          <View className="flex-1 gap-8">
-            <View>
-              <Text className="font-saira-semibold text-3xl text-text-1">
-                {data?.totalStats?.best_frame_streak ?? 0}
-              </Text>
-              <Text style={{ lineHeight: 18 }} className="text-lg font-semibold text-text-2">
-                Best Win Streak
-              </Text>
-            </View>
-            <View>
-              <Text className="font-saira-semibold text-3xl text-text-1">
-                {data?.totalStats?.current_frame_streak ?? 0}
-                {data?.totalStats?.current_frame_streak > 0 &&
-                data?.totalStats?.current_frame_streak === data?.totalStats?.best_frame_streak
-                  ? ' 🔥'
-                  : ''}
-              </Text>
-              <Text style={{ lineHeight: 18 }} className="text-lg font-semibold text-text-2">
-                Current Win Streak
-              </Text>
-            </View>
-          </View>
+
+        <View className="mt-2 flex flex-row gap-8 rounded-2xl border border-theme-gray-5 bg-bg-2 px-2 py-6 shadow-sm">
+          <StatBlock label="Win Rate" value={`${winPercent}%`} />
+          <StatBlock label="Best Win Streak" value={bestStreak} />
+          <StatBlock
+            label="Current Win Streak"
+            value={
+              currentStreak > 0 && currentStreak === bestStreak
+                ? `${currentStreak} 🔥`
+                : currentStreak
+            }
+          />
         </View>
       </View>
-      <View className="bg-bg-grouped-2 px-4 py-8">
-        <Text className="mb-2 font-saira-semibold text-3xl text-text-1">Matches</Text>
-        <View className="mb-8 w-full flex-row items-center justify-between">
-          <DonutChart
-            wins={data?.totalStats?.matches_won ?? 0}
-            draws={data?.totalStats?.matches_drawn ?? 0}
-            losses={data?.totalStats?.matches_lost ?? 0}
-            statTitle="Matches Played"
-          />
-          <View className="flex-1 gap-3 pl-8 pr-2">
-            <View className="flex flex-row items-center gap-2">
-              <View className="h-3 w-3 rounded-full bg-green-700"></View>
-              <Text className="flex-1 font-saira-medium text-lg text-text-2">Won</Text>
-              <Text className="pr-4 font-saira-semibold text-2xl text-text-1">
-                {data?.totalStats?.matches_won ?? 0}
-              </Text>
-            </View>
-            <View className="border-b border-theme-gray-5"></View>
-            <View className="flex flex-row items-center gap-2">
-              <View className="h-3 w-3 rounded-full bg-yellow-500"></View>
-              <Text className="flex-1 font-saira-medium text-lg text-text-2">Drawn</Text>
-              <Text className="pr-4 font-saira-semibold text-2xl text-text-1">
-                {data?.totalStats?.matches_drawn ?? 0}
-              </Text>
-            </View>
-            <View className="border-b border-theme-gray-5"></View>
-            <View className="flex flex-row items-center gap-2">
-              <View className="h-3 w-3 rounded-full bg-red-500"></View>
-              <Text className="flex-1 font-saira-medium text-lg text-text-2">Lost</Text>
-              <Text className="pr-4 font-saira-semibold text-2xl text-text-1">
-                {data?.totalStats?.matches_lost ?? 0}
-              </Text>
-            </View>
-          </View>
-        </View>
-        <View className="mb-8 mt-6 flex flex-row gap-2 pl-4">
-          <View className="flex-1 gap-8">
-            <View>
-              <Text className="font-saira-semibold text-3xl text-text-1">
-                {data?.totalStats?.match_win_percent ?? 0}%
-              </Text>
-              <Text style={{ lineHeight: 18 }} className="text-lg font-semibold text-text-2">
-                Win Rate
-              </Text>
-            </View>
-          </View>
-          <View className="flex-1 gap-8">
-            <View>
-              <Text className="font-saira-semibold text-3xl text-text-1">
-                {data?.totalStats?.best_match_streak ?? 0}
-              </Text>
-              <Text style={{ lineHeight: 18 }} className="text-lg font-semibold text-text-2">
-                Best Win Streak
-              </Text>
-            </View>
-            <View>
-              <Text className="font-saira-semibold text-3xl text-text-1">
-                {data?.totalStats?.current_match_streak ?? 0}
-                {data?.totalStats?.current_match_streak > 0 &&
-                data?.totalStats?.current_match_streak === data?.totalStats?.best_match_streak
-                  ? ' 🔥'
-                  : ''}
-              </Text>
-              <Text style={{ lineHeight: 18 }} className="text-lg font-semibold text-text-2">
-                Current Win Streak
-              </Text>
-            </View>
-          </View>
-        </View>
-      </View>
+    );
+  };
+
+  const StatRow = ({ label, value, color }) => (
+    <View className="flex flex-row items-center gap-2">
+      <View className={`h-3 w-3 rounded-full ${color}`} />
+      <Text className="flex-1 font-saira-medium text-xl text-text-2">{label}</Text>
+      <Text className="pr-4 font-saira-semibold text-2xl text-text-1">{value}</Text>
+    </View>
+  );
+
+  const StatBlock = ({ label, value }) => (
+    <View className="flex-1 items-center justify-center">
+      <Text className="flex-1 font-saira-semibold text-3xl text-text-1">{value}</Text>
+      <Text
+        style={{ lineHeight: 18 }}
+        className="flex-1 text-center text-lg font-semibold text-text-2">
+        {label}
+      </Text>
+    </View>
+  );
+
+  const Divider = () => <View className="border-b border-theme-gray-5" />;
+
+  return (
+    <View className="w-full gap-1">
+      <StatSection title="Frames" stats={data?.totalStats} type="frames" />
+
+      <StatSection title="Matches" stats={data?.totalStats} type="matches" />
     </View>
   );
 };

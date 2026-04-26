@@ -113,7 +113,7 @@ const TrophyCabinet = ({ trophies = [] }) => {
             style={{
               marginBottom: 16,
               alignItems: 'center',
-              borderRadius: 8,
+              borderRadius: 4,
               backgroundColor: '#fde68a',
               paddingVertical: 6,
               paddingHorizontal: 12,
@@ -303,9 +303,9 @@ const styles = StyleSheet.create({
     alignItems: 'flex-end',
     backgroundColor: '#5a3c2d',
     height: 140,
-    borderRadius: 8,
+    borderRadius: 4,
     gap: 8,
-    paddingHorizontal: 8,
+    overflow: 'hidden',
   },
   trophyCard: {
     height: 120,
@@ -324,7 +324,7 @@ const styles = StyleSheet.create({
     bottom: 8,
     left: 8,
     right: 8,
-    borderRadius: 8,
+    borderRadius: 14,
     backgroundColor: 'rgba(255,255,255,0.15)',
   },
   title: {

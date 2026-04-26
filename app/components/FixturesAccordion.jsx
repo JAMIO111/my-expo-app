@@ -4,6 +4,8 @@ import { Ionicons } from '@expo/vector-icons';
 import { useGroupedFixtures } from '@hooks/useGroupedFixtures';
 import TeamLogo from '@components/TeamLogo';
 import Avatar from '@components/Avatar';
+import BottomSheetModal from '@components/BottomSheetModal';
+import FixtureManagement from './FixtureManagement';
 
 if (Platform.OS === 'android') {
   UIManager.setLayoutAnimationEnabledExperimental?.(true);
@@ -11,6 +13,7 @@ if (Platform.OS === 'android') {
 
 const FixturesAccordion = ({ season, competitionInstance, isExpanded, onPress }) => {
   const [expandedDate, setExpandedDate] = useState(null); // inner date toggle
+  const [showModal, setShowModal] = useState(false);
 
   console.log(
     'FixturesAccordion Props - season:',
@@ -94,73 +97,89 @@ const FixturesAccordion = ({ season, competitionInstance, isExpanded, onPress })
                 {expandedDate === date && (
                   <View className="gap-2 p-3">
                     {fixturesForDate.map((fixture) => (
-                      <View
-                        key={fixture.id}
-                        className="flex flex-1 flex-col items-center justify-between gap-2 rounded-2xl bg-bg-2 p-2 shadow-sm">
-                        <View className="flex flex-row items-center justify-between gap-2">
-                          <View className="flex-1 flex-col items-center justify-between gap-2">
-                            <View className="flex-1 flex-row items-center justify-between gap-2">
-                              {fixture?.competitor_type === 'team' ? (
-                                <TeamLogo
-                                  size={20}
-                                  type={fixture?.home_team?.crest?.type}
-                                  color1={fixture?.home_team?.crest?.color1}
-                                  color2={fixture?.home_team?.crest?.color2}
-                                  thickness={fixture?.home_team?.crest?.thickness}
-                                />
-                              ) : (
-                                <Avatar size={20} borderRadius={10} player={fixture?.home_player} />
-                              )}
-                              <Text className="font-saira-semibold text-lg text-text-1">
-                                {fixture?.competitor_type === 'team'
-                                  ? fixture?.home_team?.abbreviation || 'Home Team'
-                                  : `(${fixture?.home_player?.nickname})` || 'Home Player'}
-                              </Text>
-                              <Text
-                                numberOfLines={1}
-                                ellipsizeMode="tail"
-                                className={`flex-1 text-left font-saira text-lg text-text-2`}>
-                                {fixture?.competitor_type === 'team'
-                                  ? fixture?.home_team?.display_name || 'Home Team'
-                                  : `${fixture?.home_player?.first_name || 'Home'} ${fixture?.home_player?.surname || 'Player'}`}
-                              </Text>
+                      <View key={fixture.id}>
+                        <BottomSheetModal
+                          title="Fixture Details"
+                          showModal={showModal}
+                          setShowModal={setShowModal}>
+                          <FixtureManagement fixtureId={fixture?.id} />
+                        </BottomSheetModal>
+                        <Pressable
+                          onPress={() => setShowModal(true)}
+                          className="flex flex-1 flex-col items-center justify-between gap-2 rounded-2xl bg-bg-2 p-2 shadow-sm">
+                          <View className="flex flex-row items-center justify-between gap-2">
+                            <View className="flex-1 flex-col items-center justify-between gap-2">
+                              <View className="flex-1 flex-row items-center justify-between gap-2">
+                                {fixture?.competitor_type === 'team' ? (
+                                  <TeamLogo
+                                    size={20}
+                                    type={fixture?.home_team?.crest?.type}
+                                    color1={fixture?.home_team?.crest?.color1}
+                                    color2={fixture?.home_team?.crest?.color2}
+                                    thickness={fixture?.home_team?.crest?.thickness}
+                                  />
+                                ) : (
+                                  <Avatar
+                                    size={20}
+                                    borderRadius={10}
+                                    player={fixture?.home_player}
+                                  />
+                                )}
+                                <Text className="font-saira-semibold text-lg text-text-1">
+                                  {fixture?.competitor_type === 'team'
+                                    ? fixture?.home_team?.abbreviation || 'Home Team'
+                                    : `(${fixture?.home_player?.nickname})` || 'Home Player'}
+                                </Text>
+                                <Text
+                                  numberOfLines={1}
+                                  ellipsizeMode="tail"
+                                  className={`flex-1 text-left font-saira text-lg text-text-2`}>
+                                  {fixture?.competitor_type === 'team'
+                                    ? fixture?.home_team?.display_name || 'Home Team'
+                                    : `${fixture?.home_player?.first_name || 'Home'} ${fixture?.home_player?.surname || 'Player'}`}
+                                </Text>
+                              </View>
+                              <View className="flex-1 flex-row items-center justify-between gap-2">
+                                {fixture?.competitor_type === 'team' ? (
+                                  <TeamLogo
+                                    size={20}
+                                    type={fixture?.away_team?.crest?.type}
+                                    color1={fixture?.away_team?.crest?.color1}
+                                    color2={fixture?.away_team?.crest?.color2}
+                                    thickness={fixture?.away_team?.crest?.thickness}
+                                  />
+                                ) : (
+                                  <Avatar
+                                    size={20}
+                                    borderRadius={10}
+                                    player={fixture?.away_player}
+                                  />
+                                )}
+                                <Text className="font-saira-semibold text-lg text-text-1">
+                                  {fixture?.competitor_type === 'team'
+                                    ? fixture?.away_team?.abbreviation || 'Away Team'
+                                    : `(${fixture?.away_player?.nickname})` || 'Away Player'}
+                                </Text>
+                                <Text
+                                  numberOfLines={1}
+                                  ellipsizeMode="tail"
+                                  className={`flex-1 text-left font-saira text-lg text-text-2`}>
+                                  {fixture?.competitor_type === 'team'
+                                    ? fixture?.away_team?.display_name || 'Away Team'
+                                    : `${fixture?.away_player?.first_name || 'Away'} ${fixture?.away_player?.surname || 'Player'}`}
+                                </Text>
+                              </View>
                             </View>
-                            <View className="flex-1 flex-row items-center justify-between gap-2">
-                              {fixture?.competitor_type === 'team' ? (
-                                <TeamLogo
-                                  size={20}
-                                  type={fixture?.away_team?.crest?.type}
-                                  color1={fixture?.away_team?.crest?.color1}
-                                  color2={fixture?.away_team?.crest?.color2}
-                                  thickness={fixture?.away_team?.crest?.thickness}
-                                />
-                              ) : (
-                                <Avatar size={20} borderRadius={10} player={fixture?.away_player} />
-                              )}
-                              <Text className="font-saira-semibold text-lg text-text-1">
-                                {fixture?.competitor_type === 'team'
-                                  ? fixture?.away_team?.abbreviation || 'Away Team'
-                                  : `(${fixture?.away_player?.nickname})` || 'Away Player'}
-                              </Text>
-                              <Text
-                                numberOfLines={1}
-                                ellipsizeMode="tail"
-                                className={`flex-1 text-left font-saira text-lg text-text-2`}>
-                                {fixture?.competitor_type === 'team'
-                                  ? fixture?.away_team?.display_name || 'Away Team'
-                                  : `${fixture?.away_player?.first_name || 'Away'} ${fixture?.away_player?.surname || 'Player'}`}
+                            <View className="flex-row items-center justify-end gap-2">
+                              <Text className="font-saira-medium text-lg text-text-2">
+                                {new Date(fixture.date_time).toLocaleTimeString('en-GB', {
+                                  hour: '2-digit',
+                                  minute: '2-digit',
+                                })}
                               </Text>
                             </View>
                           </View>
-                          <View className="flex-row items-center justify-end gap-2">
-                            <Text className="font-saira-medium text-lg text-text-2">
-                              {new Date(fixture.date_time).toLocaleTimeString('en-GB', {
-                                hour: '2-digit',
-                                minute: '2-digit',
-                              })}
-                            </Text>
-                          </View>
-                        </View>
+                        </Pressable>
                       </View>
                     ))}
                   </View>

@@ -80,7 +80,7 @@ const DivisionsList = ({ districtId }) => {
                 router.push({
                   pathname: '/(main)/my-leagues/division-overview',
                   params: {
-                    divisionStr: JSON.stringify(division),
+                    divisionId: division.id,
                   },
                 });
               }}

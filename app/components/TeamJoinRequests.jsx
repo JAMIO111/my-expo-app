@@ -1,6 +1,7 @@
 import { useState } from 'react';
-import { View, Text, ActivityIndicator, Pressable } from 'react-native';
+import { View, Text, ActivityIndicator, Pressable, Image } from 'react-native';
 import { useJoinTeamRequests } from '@hooks/useJoinTeamRequests';
+import { useJoinDivisionRequests } from '@hooks/useJoinDivisionRequests';
 import TeamLogo from '@components/TeamLogo';
 import Avatar from '@components/Avatar';
 import { supabase } from '@/lib/supabase';
@@ -10,11 +11,49 @@ import FloatingBottomSheet from '@components/FloatingBottomSheet';
 import { useUser } from '@contexts/UserProvider';
 import ExpandableView from './ExpandableView';
 import { useQueryClient } from '@tanstack/react-query';
+import { romanNumerals } from '../lib/badgeIcons';
 
 const TeamJoinRequests = ({ districtId, teamId }) => {
   const queryClient = useQueryClient();
   const { player } = useUser();
-  const { data: requests, isLoading, error, refetch } = useJoinTeamRequests({ districtId, teamId });
+  const {
+    data: teamRequests,
+    isLoading: isLoadingTeamRequests,
+    error: teamError,
+    refetch: refetchTeamRequests,
+  } = useJoinTeamRequests({ districtId, teamId });
+  const {
+    data: divisionRequests,
+    isLoading: isLoadingDivisionRequests,
+    error: divisionError,
+    refetch: refetchDivisionRequests,
+  } = useJoinDivisionRequests({
+    districtId,
+  });
+
+  console.log('Team Join Requests:', teamRequests);
+  console.log('Division Join Requests:', divisionRequests);
+
+  const requests = [
+    ...(teamRequests || []).map((r) => ({
+      ...r,
+      requester_type: 'player',
+      request_type: 'team',
+      requester_name: `${r.player.first_name} ${r.player.surname}`,
+      request_target: r.team.display_name,
+      crest: r.team.crest,
+    })),
+    ...(divisionRequests || []).map((r) => ({
+      ...r,
+      requester_type: r.player_id ? 'player' : 'team',
+      request_type: 'division',
+      requester_name: r.player_id
+        ? `${r.player?.first_name || ''} ${r.player?.surname || ''}`
+        : r.team?.display_name,
+      request_target: r.division_name,
+      crest: r.team?.crest,
+    })),
+  ];
 
   const pendingCount = requests?.filter(
     (req) =>
@@ -104,31 +143,81 @@ const TeamJoinRequests = ({ districtId, teamId }) => {
     setModalVisible(false);
   };
 
-  const openConfirmModal = (request, action) => {
+  const openConfirmModal = (request, action, request_type, requester_type, subject, target) => {
     setModalConfig({
       requestId: request.id,
       action,
       title: action === 'approve' ? 'Approve Request?' : 'Reject Request?',
       message:
         action === 'approve'
-          ? 'This will add the player to the team.'
-          : 'This will reject the join request.',
+          ? `Are you sure you want to accept ${subject} into ${target}?`
+          : `Are you sure you want to reject ${subject}'s request to join ${target}?`,
 
       topButtonText: 'Cancel',
-      topButtonType: action === 'approve' ? 'error' : 'default',
+      topButtonType: action === 'approve' ? 'default' : 'default',
       bottomButtonText: action === 'approve' ? 'Approve' : 'Reject',
 
       bottomButtonType: action === 'approve' ? 'success' : 'error',
 
       bottomButtonFn: () => {
         if (!modalConfig) return;
-        handleAction(modalConfig.requestId, modalConfig.action);
+        modalConfig.request_type === 'team'
+          ? handlePlayerJoinTeam(modalConfig.requestId, modalConfig.action)
+          : handleJoinDivision(modalConfig.requestId, modalConfig.action);
       },
+      request_type,
+      requester_type,
     });
     setModalVisible(true);
   };
 
-  const handleAction = async (requestId, action) => {
+  const handleJoinDivision = async (requestId, action) => {
+    setModalVisible(false);
+    try {
+      const request = requests.find((r) => r.id === requestId);
+
+      if (!request) {
+        throw new Error('Request not found (probably stale state)');
+      }
+
+      setProcessingId(requestId);
+
+      const { error } = await supabase.rpc('handle_join_division_request', {
+        p_request_id: requestId,
+        p_action: action,
+        p_admin_id: districtId ? player.id : null,
+      });
+
+      if (error) throw error;
+
+      queryClient.invalidateQueries(['TeamPlayers', teamId]);
+
+      Toast.show({
+        type: 'success',
+        text1: action === 'approve' ? 'Request Approved' : 'Request Rejected',
+        text2:
+          action === 'approve'
+            ? `${request.requester_name} has been added to ${
+                teamId ? 'your team' : request.team.display_name
+              }.`
+            : `${request.requester_name}'s request was rejected.`,
+      });
+
+      refetchTeamRequests();
+      refetchDivisionRequests();
+    } catch (err) {
+      console.error('Error handling join request:', err);
+      Toast.show({
+        type: 'error',
+        text1: 'Action failed',
+        text2: err.message,
+      });
+    } finally {
+      setProcessingId(null);
+    }
+  };
+
+  const handlePlayerJoinTeam = async (requestId, action) => {
     setModalVisible(false);
     try {
       const request = requests.find((r) => r.id === requestId);
@@ -155,13 +244,14 @@ const TeamJoinRequests = ({ districtId, teamId }) => {
         text1: action === 'approve' ? 'Request Approved' : 'Request Rejected',
         text2:
           action === 'approve'
-            ? `${request.player.first_name} ${request.player.surname} has been added to ${
+            ? `${request.requester_name} has been added to ${
                 teamId ? 'your team' : request.team.display_name
               }.`
-            : `${request.player.first_name} ${request.player.surname}'s request was rejected.`,
+            : `${request.requester_name}'s request was rejected.`,
       });
 
-      refetch();
+      refetchTeamRequests();
+      refetchDivisionRequests();
     } catch (err) {
       console.error('Error handling join request:', err);
       Toast.show({
@@ -174,7 +264,7 @@ const TeamJoinRequests = ({ districtId, teamId }) => {
     }
   };
 
-  if (isLoading) {
+  if (isLoadingTeamRequests || isLoadingDivisionRequests) {
     return (
       <View className="flex-1 items-center justify-center bg-bg-1 py-4">
         <ActivityIndicator size="large" color="#555555" />
@@ -183,7 +273,7 @@ const TeamJoinRequests = ({ districtId, teamId }) => {
     );
   }
 
-  if (error) {
+  if (teamError || divisionError) {
     return (
       <View className="flex-1 items-center justify-center bg-bg-1 py-4">
         <Text className="text-center font-saira-medium text-theme-red">
@@ -216,21 +306,33 @@ const TeamJoinRequests = ({ districtId, teamId }) => {
                 {/* LEFT */}
                 <View className="flex-1 flex-row items-center gap-3">
                   <View className="flex-1 gap-3">
-                    <View className="flex-row items-center gap-3">
-                      <Avatar player={req.player} size={26} borderRadius={6} />
-                      <Text className="font-saira-semibold text-base text-text-1">
-                        {req.player.first_name} {req.player.surname}
+                    <View className="flex-row items-center gap-4">
+                      {req.requester_type === 'player' ? (
+                        <Avatar player={req.player} size={28} borderRadius={6} />
+                      ) : (
+                        <TeamLogo size={30} {...req.crest} />
+                      )}
+                      <Text className="font-saira-semibold text-lg text-text-1">
+                        {req.requester_name}
                       </Text>
                     </View>
 
-                    <View className="flex-row items-center gap-3">
-                      <TeamLogo size={28} {...req.team.crest} />
+                    <View className="flex-row items-center gap-4">
+                      {req.request_type === 'team' ? (
+                        <TeamLogo size={30} {...req.crest} />
+                      ) : (
+                        <Image
+                          source={romanNumerals[req.tier]}
+                          style={{ width: 32, height: 34 }}
+                          resizeMode="contain"
+                        />
+                      )}
                       <View>
-                        <Text className="font-saira-semibold text-sm text-text-1">
-                          To Join → {req.team.display_name}
+                        <Text className="font-saira-semibold text-text-1">
+                          To Join → {req.request_target}
                         </Text>
 
-                        <Text className="mt-1 font-saira text-xs text-text-2">
+                        <Text className="mt-1 font-saira text-sm text-text-2">
                           {`Requested - ${new Date(req.requested_at).toLocaleDateString('en-GB', {
                             year: 'numeric',
                             month: 'long',
@@ -255,14 +357,32 @@ const TeamJoinRequests = ({ districtId, teamId }) => {
                   {showActions && (
                     <View className="flex-row items-center gap-1 px-2">
                       <Pressable
-                        onPress={() => openConfirmModal(req, 'reject')}
+                        onPress={() =>
+                          openConfirmModal(
+                            req,
+                            'reject',
+                            req.request_type,
+                            req.requester_type,
+                            req.requester_name,
+                            req.request_target
+                          )
+                        }
                         disabled={isProcessing}
                         className="p-2">
                         <Ionicons name="close" size={34} color={isProcessing ? 'gray' : 'red'} />
                       </Pressable>
 
                       <Pressable
-                        onPress={() => openConfirmModal(req, 'approve')}
+                        onPress={() =>
+                          openConfirmModal(
+                            req,
+                            'approve',
+                            req.request_type,
+                            req.requester_type,
+                            req.requester_name,
+                            req.request_target
+                          )
+                        }
                         disabled={isProcessing}
                         className="p-2">
                         <Ionicons
@@ -289,7 +409,7 @@ const TeamJoinRequests = ({ districtId, teamId }) => {
         topButtonType={modalConfig?.topButtonType}
         bottomButtonText={modalConfig?.action === 'approve' ? 'Approve' : 'Reject'}
         bottomButtonType={modalConfig?.bottomButtonType}
-        bottomButtonFn={() => handleAction(modalConfig.requestId, modalConfig.action)}
+        bottomButtonFn={modalConfig?.bottomButtonFn}
         onAnimationEnd={handleAnimationEnd}
       />
     </>

@@ -6,21 +6,46 @@ export const useTeamsByDivision = (divisionId) => {
     if (!divisionId) throw new Error('Division ID is required');
 
     const { data, error } = await supabase
-      .from('Teams')
-      .select('*')
-      .eq('division', divisionId)
-      .order('display_name', { ascending: true });
+      .from('DivisionMembers')
+      .select(
+        `
+        id,
+        team_id,
+        status,
+        joined_at,
+        Teams (
+          id,
+          name,
+          display_name,
+          crest,
+          abbreviation,
+          district,
+          captain,
+          vice_captain
+        )
+      `
+      )
+      .eq('division_id', divisionId)
+      .eq('status', 'active')
+      .not('team_id', 'is', null)
+      .order('joined_at', { ascending: true });
+
     if (error) {
       throw new Error(error.message);
     }
-    return data;
+
+    // flatten to just teams if that’s what your UI expects
+    return data.map((row) => ({
+      ...row.Teams,
+      joined_at: row.joined_at,
+    }));
   };
 
   return useQuery({
-    queryKey: ['teams', divisionId],
+    queryKey: ['division-teams', divisionId],
     queryFn: () => fetchTeamsByDivision(divisionId),
     enabled: !!divisionId,
-    staleTime: 1000 * 60 * 5, // 5 minutes
+    staleTime: 1000 * 60 * 5,
     retry: false,
   });
 };

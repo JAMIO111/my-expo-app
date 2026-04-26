@@ -12,6 +12,7 @@ import { useState } from 'react';
 import { badgeIcons } from '@lib/badgeIcons';
 import BadgeTierScrollView from './BadgeTierScrollView';
 import Ionicons from 'react-native-vector-icons/Ionicons';
+import BottomSheetModal from './BottomSheetModal';
 
 const NUM_COLUMNS = 3;
 const ITEM_MARGIN = 10;
@@ -56,22 +57,26 @@ const BadgeList = ({ badges }) => {
     return (
       <Pressable
         onPress={() => handleBadgePress(badge)}
-        className="gap-3 rounded-xl border border-theme-gray-4 bg-bg-grouped-3"
+        className="rounded-2xl border border-theme-gray-4 bg-bg-grouped-3 p-1"
         style={[styles.badgeContainer, { width: itemWidth, marginHorizontal: ITEM_MARGIN / 2 }]}>
-        <View className="w-full border-theme-gray-4 bg-theme-gray-4" style={styles.labelWrapper}>
-          <Text
-            className="text-center font-saira-semibold text-xl text-text-1"
-            style={{ lineHeight: 20 }}
-            numberOfLines={2}
-            ellipsizeMode="tail">
-            {badge?.key
-              .split('-')
-              .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-              .join(' ')}
-          </Text>
-        </View>
-        <View style={styles.badgeBG}>
-          <Image source={iconSource} style={styles.badgeImage} resizeMode="contain" />
+        <View className="w-full items-center gap-3 rounded-xl bg-bg-1 pb-3 shadow-sm">
+          <View
+            className="w-full border-b border-theme-gray-2 bg-theme-gray-4"
+            style={styles.labelWrapper}>
+            <Text
+              className="text-center font-saira-semibold text-xl text-text-1"
+              style={{ lineHeight: 20 }}
+              numberOfLines={2}
+              ellipsizeMode="tail">
+              {badge?.key
+                .split('-')
+                .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+                .join(' ')}
+            </Text>
+          </View>
+          <View style={styles.badgeBG}>
+            <Image source={iconSource} style={styles.badgeImage} resizeMode="contain" />
+          </View>
         </View>
       </Pressable>
     );
@@ -90,30 +95,18 @@ const BadgeList = ({ badges }) => {
         />
       )}
       {/* Modal */}
-      <Modal
-        animationType="fade"
-        transparent={true}
-        visible={modalVisible}
-        onRequestClose={closeModal}>
-        <View style={styles.modalOverlay}>
-          <View
-            className="overflow-hidden border border-theme-gray-5 bg-bg-grouped-2"
-            style={styles.modalContent}>
-            <View className="mb-8 w-full flex-row items-center justify-between border-b border-theme-gray-4 bg-bg-2 px-3">
-              <Text className="flex-1 p-2 pt-4 text-center font-saira-medium text-3xl text-text-1">
-                {selectedBadge?.key
-                  .split('-')
-                  .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-                  .join(' ')}
-              </Text>
-              <Pressable onPress={closeModal} className="">
-                <Ionicons name="close" size={32} color="#555" />
-              </Pressable>
-            </View>
-            <BadgeTierScrollView selectedBadge={selectedBadge} />
-          </View>
-        </View>
-      </Modal>
+      <BottomSheetModal
+        showModal={modalVisible}
+        setShowModal={setModalVisible}
+        title={
+          `${selectedBadge?.meta_data?.[0]?.title
+            ?.split(' ')
+            ?.slice(0, -1) // remove last word
+            ?.map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+            ?.join(' ')} Progress` || 'Badge Progress'
+        }>
+        <BadgeTierScrollView selectedBadge={selectedBadge} />
+      </BottomSheetModal>
     </View>
   );
 };
@@ -128,7 +121,6 @@ const styles = StyleSheet.create({
   badgeContainer: {
     justifyContent: 'center',
     alignItems: 'center',
-    paddingBottom: 16,
     marginBottom: ITEM_MARGIN * 2,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },

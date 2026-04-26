@@ -18,6 +18,8 @@ const DivisionAccordion = ({ isExpanded, onPress, divisionName, teams = [] }) =>
 
   const teamsExist = teams && teams.length > 0;
 
+  console.log('DivisionAccordion Props - divisionName:', divisionName, 'teams:', teams);
+
   return (
     <View className="w-full rounded-2xl bg-bg-2 shadow-sm">
       {/* Header */}

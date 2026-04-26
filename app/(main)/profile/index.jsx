@@ -12,7 +12,7 @@ import { getAgeInYearsAndDays } from '@lib/helperFunctions';
 import BadgeList from '@components/BadgeList';
 import { usePlayerStats } from '@hooks/usePlayerStats';
 import { calculateLevel } from '@lib/helperFunctions';
-import EntityStats from '../../components/EntityStats';
+import EntityStats from '@components/EntityStats';
 import CachedImage from '@components/CachedImage';
 import usePlayerBadges from '@hooks/usePlayerBadges';
 

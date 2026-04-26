@@ -28,7 +28,9 @@ const ExpandableView = ({ title, show, setShow, notificationCount, children }) =
         <View className="flex-row items-center gap-3">
           <Heading text={title} />
           {notificationCount > 0 && (
-            <View className="h-8 w-8 items-center justify-center rounded-full bg-theme-red shadow-sm">
+            <View
+              style={{ height: 26, width: 26, marginBottom: 4 }}
+              className="items-center justify-center rounded-full border border-theme-red bg-theme-red/80 shadow-sm">
               <Text className="font-saira-semibold text-white">{notificationCount}</Text>
             </View>
           )}

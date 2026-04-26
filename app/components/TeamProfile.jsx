@@ -22,19 +22,7 @@ const TeamProfile = ({ context, profile, isLoading }) => {
   const { currentRole, player } = useUser();
   const router = useRouter();
   const { teamId, fixtureId } = useLocalSearchParams();
-  if (isLoading || !profile)
-    return (
-      <>
-        <Stack.Screen
-          options={{
-            header: () => (
-              <View className="h-16 flex-row items-center justify-center bg-brand"></View>
-            ),
-          }}
-        />
-      </>
-    );
-  console.log('Team Profile Component - profile prop:', profile.id);
+  console.log('Team Profile Component - profile prop:', profile?.id);
   const { data: teamAwards } = useTeamAwards(profile?.id);
   const { data: last5Results } = useLast5Results(profile?.id, 'team', 'matches');
   console.log('Last 5 Results in TeamProfile:', last5Results);
@@ -89,6 +77,19 @@ const TeamProfile = ({ context, profile, isLoading }) => {
       router.push(`home/${fixtureId}/${teamId}/team-stats`);
     }
   };
+
+  if (isLoading || !profile)
+    return (
+      <>
+        <Stack.Screen
+          options={{
+            header: () => (
+              <View className="h-16 flex-row items-center justify-center bg-brand"></View>
+            ),
+          }}
+        />
+      </>
+    );
 
   return (
     <ScrollView className="flex-1 bg-bg-1" contentContainerStyle={{ flexGrow: 1 }}>
