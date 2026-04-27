@@ -22,7 +22,7 @@ const RoleSelect = () => {
   return (
     <SafeViewWrapper topColor="bg-brand" useBottomInset={false}>
       <BrandHeader />
-      <View className="flex-1 items-stretch justify-start border-t-2 border-brand-dark bg-bg-grouped-1 p-5">
+      <View className="flex-1 items-stretch justify-start border-t-2 border-brand-dark bg-bg-1 p-5">
         <Text style={{ lineHeight: 40 }} className="my-2 px-2 font-saira-bold text-4xl text-text-1">
           Select Your Role.
         </Text>
@@ -32,7 +32,7 @@ const RoleSelect = () => {
         </Text>
         <ScrollView className="px-2 py-3">
           {!roles || roles.length === 0 ? (
-            <View className="items-center justify-center rounded-2xl border border-theme-gray-5 bg-bg-grouped-2 px-4 py-8 shadow-sm shadow-theme-gray-5">
+            <View className="items-center justify-center rounded-2xl bg-bg-2 px-4 py-8 shadow-sm">
               <Text className="font-saira text-lg text-text-2">No roles available.</Text>
             </View>
           ) : (
@@ -51,7 +51,7 @@ const RoleSelect = () => {
                     } else router.replace('/(main)/onboarding/upgrade');
                   }
                 }}>
-                <View className="mb-3 flex-row items-center justify-between gap-2 rounded-2xl border border-theme-gray-5 bg-bg-grouped-2 px-4 py-3 shadow-sm shadow-theme-gray-5">
+                <View className="mb-3 flex-row items-center justify-between gap-2 rounded-2xl bg-bg-2 px-4 py-3 shadow-sm">
                   <View className="flex-1">
                     <Text
                       numberOfLines={1}

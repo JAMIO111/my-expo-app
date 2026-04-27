@@ -5,10 +5,10 @@ const Last5MatchesList = ({ matches = [] }) => {
   const safeMatches = (matches ?? []).filter(Boolean);
 
   return (
-    <View className="gap-2">
+    <View className="gap-3">
       {safeMatches.length > 0 ? (
         safeMatches.map((match, index) => (
-          <View className="gap-2 rounded-2xl bg-bg-2 p-4 py-2" key={index}>
+          <View className="gap-2 rounded-2xl bg-bg-2 p-4 py-2 shadow-sm" key={index}>
             <View className="mb-1 border-b border-theme-gray-5 pb-2">
               <Text className="text-md font-saira-medium text-text-1">
                 {new Date(match?.date_time).toLocaleDateString('en-GB', {
@@ -58,7 +58,7 @@ const Last5MatchesList = ({ matches = [] }) => {
           </View>
         ))
       ) : (
-        <View className="items-center justify-center rounded-2xl bg-bg-2 py-8">
+        <View className="items-center justify-center rounded-2xl bg-bg-2 py-8 shadow-sm">
           <Text className="font-saira text-text-2">No recent matches available.</Text>
         </View>
       )}

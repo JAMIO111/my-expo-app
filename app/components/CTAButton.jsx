@@ -19,6 +19,8 @@ const CTAButton = ({
   const buttonTheme = themeColors[type] || themeColors.default;
   const hasNavigated = useRef(false);
 
+  type === 'yellow' ? (iconColor = 'black') : iconColor;
+
   const scale = useRef(new Animated.Value(1)).current;
 
   const handleCallbackFn = () => {
@@ -67,16 +69,20 @@ const CTAButton = ({
           borderRadius: borderRadius,
         }}>
         {loading ? (
-          <View className="flex-row items-center justify-center gap-3">
+          <View className="flex-row items-center justify-center gap-3 px-2">
             <ActivityIndicator size="small" color={iconColor} />
-            <Text style={{ color: buttonTheme.text }} className={`py-1 ${fontWeight} ${textSize}`}>
+            <Text
+              style={{ color: buttonTheme.text }}
+              className={`flex-1 py-1 text-center ${fontWeight} ${textSize}`}>
               {text}
             </Text>
           </View>
         ) : (
-          <View className="flex-row items-center justify-center gap-3">
+          <View className="flex-row items-center justify-center gap-3 px-2">
             {icon && icon}
-            <Text style={{ color: buttonTheme.text }} className={`py-1 ${fontWeight} ${textSize}`}>
+            <Text
+              style={{ color: buttonTheme.text }}
+              className={`flex-1 py-1 text-center ${fontWeight} ${textSize}`}>
               {text}
             </Text>
           </View>

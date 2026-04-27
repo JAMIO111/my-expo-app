@@ -104,7 +104,6 @@ const EditDivisionForm = ({ division, closeModal }) => {
           onChangeText={setName}
           title="Division Name"
           placeholder="e.g. Super League"
-          className="mb-4 h-12 rounded-lg border border-gray-300 bg-white px-3 font-saira text-xl"
           leftIconName="trophy-outline"
           iconColor="purple"
           autoCapitalize="words"
@@ -115,7 +114,6 @@ const EditDivisionForm = ({ division, closeModal }) => {
           onChangeText={setGroupName}
           title="Group Name"
           placeholder="e.g. Thursday Teams"
-          className="mb-4 h-12 rounded-lg border border-gray-300 bg-white px-3 font-saira text-xl"
           leftIconName="layers-outline"
           iconColor="purple"
           autoCapitalize="words"
@@ -127,7 +125,6 @@ const EditDivisionForm = ({ division, closeModal }) => {
           title="Max Competitors"
           keyboardType="numeric"
           placeholder="e.g. 20"
-          className="mb-4 h-12 rounded-lg border border-gray-300 bg-white px-3 font-saira text-xl"
           leftIconName="people-outline"
           iconColor="purple"
           autoCapitalize="words"

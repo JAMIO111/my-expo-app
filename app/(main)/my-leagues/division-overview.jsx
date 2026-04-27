@@ -15,6 +15,7 @@ import CTAButton from '@components/CTAButton';
 import EditDivisionForm from '@components/EditDivisionForm';
 import GenerateFixturesForm from '@components/GenerateFixturesForm';
 import { useDivisions } from '@hooks/useDivisions';
+import InitiateCompetitionForm from '@components/InitiateCompetitionForm';
 
 const DivisionOverview = () => {
   const { currentRole } = useUser();
@@ -23,7 +24,8 @@ const DivisionOverview = () => {
   const { data: teams, isLoading, isError } = useTeamsByDivision(divisionId);
   const [expandedAccordion, setExpandedAccordion] = useState(null);
   const [competitionInstance, setCompetitionInstance] = useState(null);
-  const [showDetails, setShowDetails] = useState(false);
+  const [showDetails, setShowDetails] = useState(true);
+  const [showActiveCompetition, setShowActiveCompetition] = useState(false);
   const [modalType, setModalType] = useState(null);
   const [showModal, setShowModal] = useState(false);
 
@@ -121,7 +123,7 @@ const DivisionOverview = () => {
           </View>
           <View className="gap-3 bg-bg-1 p-3 py-6">
             <View className="">
-              <Heading text="Team Management" />
+              <Heading text="Division Members" />
             </View>
             <DivisionAccordion
               isExpanded={expandedAccordion === 'division'}
@@ -159,6 +161,54 @@ const DivisionOverview = () => {
                 </View>
               )}
           </View>
+          {currentRole?.activeSeason && (
+            <ExpandableView
+              title="Active Competition"
+              show={showActiveCompetition}
+              setShow={setShowActiveCompetition}
+              fixedOpen={!currentSeasonComp}>
+              {!currentSeasonComp ? (
+                <View className="mx-2 my-4">
+                  <CTAButton
+                    type="yellow"
+                    text={`Initiate ${currentRole?.activeSeason?.name} competition`}
+                    callbackFn={() => {
+                      setShowModal(true);
+                      setModalType('initiate-competition');
+                    }}
+                  />
+                </View>
+              ) : (
+                <View className="mx-2 my-4 gap-3">
+                  <Text className="font-saira-medium text-xl text-text-1">
+                    {`${currentRole?.activeSeason?.name} ${currentSeasonComp?.name || 'Competition'} - ${currentSeasonComp?.status
+
+                      .charAt(0)
+                      .toUpperCase()}${currentSeasonComp?.status.slice(1)}`}
+                  </Text>
+                  <Text className="font-saira text-lg text-text-2">{`Initiated ${new Date(
+                    currentSeasonComp?.created_at
+                  ).toLocaleDateString('en-GB', {
+                    weekday: 'short',
+                    day: 'numeric',
+                    month: 'short',
+                    year: '2-digit',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                  })}`}</Text>
+                  <View className="my-4">
+                    <CTAButton
+                      type="yellow"
+                      text="Seed Teams into Competition"
+                      callbackFn={() =>
+                        router.push(`/competitions/${currentSeasonComp?.id}/seed-teams`)
+                      }
+                    />
+                  </View>
+                </View>
+              )}
+            </ExpandableView>
+          )}
         </ScrollView>
       </SafeViewWrapper>
       <BottomSheetModal
@@ -167,15 +217,23 @@ const DivisionOverview = () => {
         title={
           modalType === 'generate-fixtures'
             ? `Generate ${currentRole.activeSeason.name} Fixtures`
-            : `${division.name} Settings`
+            : modalType === 'edit-division'
+              ? `${division.name} Settings`
+              : `Initiate ${division.name} Competition`
         }>
         {modalType === 'generate-fixtures' ? (
           <GenerateFixturesForm
             competitionInstanceId={currentSeasonComp.id}
             closeModal={() => setShowModal(false)}
           />
-        ) : (
+        ) : modalType === 'edit-division' ? (
           <EditDivisionForm division={division} closeModal={() => setShowModal(false)} />
+        ) : (
+          <InitiateCompetitionForm
+            division={division}
+            participants={teams}
+            closeModal={() => setShowModal(false)}
+          />
         )}
       </BottomSheetModal>
     </>

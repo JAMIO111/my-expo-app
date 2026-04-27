@@ -147,95 +147,98 @@ const CompetitionInstanceCard = ({ instance }) => {
         router.push(`/competitions/${instance.id}`);
       }}
       key={instance.id}
-      className="relative rounded-2xl bg-bg-1 shadow-md">
-      <View className="p-4">
-        <Text className="font-saira-medium text-2xl text-text-1">{instance.name}</Text>
-        <Text className="font-saira text-lg text-text-2">
-          {`${instance.competition.competitor_type.slice(0, 1).toUpperCase() + instance.competition.competitor_type.slice(1)} ${formatCompetitionType(instance.competition.competition_type)} Format`}
-        </Text>
-        <View className="mt-3 flex-row items-center justify-start gap-3">
-          <View
-            style={{
-              backgroundColor: statusColors.background,
-              borderColor: statusColors.border,
-              borderWidth: 1,
-            }}
-            className="w-fit flex-row items-center justify-center rounded-xl px-3 py-1">
-            <Text
-              style={{ color: statusColors.text }}
-              className="text-md text-center font-saira-medium">
-              {instance.status.slice(0, 1).toUpperCase() + instance.status.slice(1)}
-            </Text>
-          </View>
-
-          {instance.division && (
+      style={{ borderRadius: 18 }}
+      className="relative bg-bg-2 p-2 shadow-md">
+      <View className="relative rounded-2xl bg-bg-1 shadow-sm">
+        <View className="p-4">
+          <Text className="font-saira-medium text-2xl text-text-1">{instance.name}</Text>
+          <Text className="font-saira text-lg text-text-2">
+            {`${instance.competition.competitor_type.slice(0, 1).toUpperCase() + instance.competition.competitor_type.slice(1)} ${formatCompetitionType(instance.competition.competition_type)} Format`}
+          </Text>
+          <View className="mt-3 flex-row items-center justify-start gap-3">
             <View
               style={{
-                backgroundColor: divisionColors.background,
-                borderColor: divisionColors.border,
+                backgroundColor: statusColors.background,
+                borderColor: statusColors.border,
                 borderWidth: 1,
               }}
               className="w-fit flex-row items-center justify-center rounded-xl px-3 py-1">
               <Text
-                style={{ color: divisionColors.text }}
+                style={{ color: statusColors.text }}
                 className="text-md text-center font-saira-medium">
-                {instance.division?.name}
+                {instance.status.slice(0, 1).toUpperCase() + instance.status.slice(1)}
               </Text>
             </View>
-          )}
+
+            {instance.division && (
+              <View
+                style={{
+                  backgroundColor: divisionColors.background,
+                  borderColor: divisionColors.border,
+                  borderWidth: 1,
+                }}
+                className="w-fit flex-row items-center justify-center rounded-xl px-3 py-1">
+                <Text
+                  style={{ color: divisionColors.text }}
+                  className="text-md text-center font-saira-medium">
+                  {instance.division?.name}
+                </Text>
+              </View>
+            )}
+          </View>
         </View>
-      </View>
-      <View className="flex flex-row items-center justify-between border-t border-theme-gray-4 px-4 py-2">
-        <View className="flex-row items-center justify-center gap-3">
+        <View className="flex flex-row items-center justify-between border-t border-theme-gray-4 px-4 py-2">
+          <View className="flex-row items-center justify-center gap-3">
+            <View className="flex-row items-center justify-center gap-2">
+              <Ionicons name="people-outline" size={20} color="#666" />
+              <Text className="mt-1 font-saira text-xl text-text-2">
+                {instance.CompetitionParticipants.filter((p) => p.status === 'active').length}
+              </Text>
+            </View>
+            {instance.gender === 'male' && <Ionicons name="male" size={20} color="#0085E5" />}
+            {instance.gender === 'female' && <Ionicons name="female" size={20} color="#FF69B4" />}
+            {(instance.max_age || instance.min_age) && (
+              <View className="flex-row items-center justify-center gap-1">
+                <MaterialCommunityIcons name="cake-variant-outline" size={20} color="#777" />
+                <Text className="mt-2 font-saira text-xl text-text-2">
+                  {formatAgeRestrictions(instance?.min_age, instance?.max_age)}
+                </Text>
+              </View>
+            )}
+          </View>
           <View className="flex-row items-center justify-center gap-2">
-            <Ionicons name="people-outline" size={20} color="#666" />
-            <Text className="mt-1 font-saira text-xl text-text-2">
-              {instance.CompetitionParticipants.filter((p) => p.status === 'active').length}
+            <Ionicons name="calendar-outline" size={20} color={'#666'} />
+            <Text className={'mt-1 font-saira text-xl text-text-2'}>
+              {formatFixtureDate(instance?.entry_deadline) || 'No Deadline'}
             </Text>
           </View>
-          {instance.gender === 'male' && <Ionicons name="male" size={20} color="#0085E5" />}
-          {instance.gender === 'female' && <Ionicons name="female" size={20} color="#FF69B4" />}
-          {(instance.max_age || instance.min_age) && (
-            <View className="flex-row items-center justify-center gap-1">
-              <MaterialCommunityIcons name="cake-variant-outline" size={20} color="#777" />
-              <Text className="mt-2 font-saira text-xl text-text-2">
-                {formatAgeRestrictions(instance?.min_age, instance?.max_age)}
+        </View>
+        {(instance.status === 'upcoming' || eligibility === 'Entered') &&
+          currentRole?.type !== 'admin' && (
+            <View
+              style={{
+                backgroundColor: eligibilityColors.background,
+                borderColor: eligibilityColors.border,
+                borderWidth: 1,
+              }}
+              className="absolute right-3 top-3 w-fit flex-row items-center justify-center gap-1 rounded-xl px-3 py-1">
+              <Ionicons
+                name={
+                  eligibility === 'Ineligible' || eligibility === 'Closed'
+                    ? 'close-circle-outline'
+                    : 'checkmark-circle-outline'
+                }
+                size={16}
+                color={eligibilityColors.text}
+              />
+              <Text
+                style={{ color: eligibilityColors.text }}
+                className="text-md text-center font-saira-medium">
+                {eligibility}
               </Text>
             </View>
           )}
-        </View>
-        <View className="flex-row items-center justify-center gap-2">
-          <Ionicons name="calendar-outline" size={20} color={'#666'} />
-          <Text className={'mt-1 font-saira text-xl text-text-2'}>
-            {formatFixtureDate(instance?.entry_deadline) || 'No Deadline'}
-          </Text>
-        </View>
       </View>
-      {(instance.status === 'upcoming' || eligibility === 'Entered') &&
-        currentRole?.type !== 'admin' && (
-          <View
-            style={{
-              backgroundColor: eligibilityColors.background,
-              borderColor: eligibilityColors.border,
-              borderWidth: 1,
-            }}
-            className="absolute right-3 top-3 w-fit flex-row items-center justify-center gap-1 rounded-xl px-3 py-1">
-            <Ionicons
-              name={
-                eligibility === 'Ineligible' || eligibility === 'Closed'
-                  ? 'close-circle-outline'
-                  : 'checkmark-circle-outline'
-              }
-              size={16}
-              color={eligibilityColors.text}
-            />
-            <Text
-              style={{ color: eligibilityColors.text }}
-              className="text-md text-center font-saira-medium">
-              {eligibility}
-            </Text>
-          </View>
-        )}
     </Pressable>
   );
 };

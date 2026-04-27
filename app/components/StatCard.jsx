@@ -1,4 +1,4 @@
-import { StyleSheet, Text, View, Pressable } from 'react-native';
+import { Text, View, Pressable, ActivityIndicator } from 'react-native';
 import '../../global.css';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 
@@ -10,41 +10,66 @@ const StatCard = ({
   backgroundColor = 'bg-bg-grouped-3',
   onPress,
   disabled = true,
+  isLoading = false,
 }) => {
-  // format value if the title ends with %
   const displayValue =
-    title.endsWith('%') && typeof value === 'number' ? `${value.toFixed(1)}%` : value;
+    !isLoading && title?.endsWith('%') && typeof value === 'number'
+      ? `${value.toFixed(1)}%`
+      : value;
+
+  const Skeleton = ({ width, height, className }) => (
+    <View
+      style={{ width, height }}
+      className={`animate-pulse rounded-md bg-theme-gray-4 ${className}`}
+    />
+  );
 
   const Content = (
     <View
-      className={`relative flex-1 flex-row items-center overflow-hidden rounded-2xl border-0 border-brand-light ${backgroundColor} shadow-[0_2px_4px_rgba(0,0,0,0.1)]`}>
-      <View className="h-full w-0 bg-brand-light" />
+      className={`relative flex-1 flex-row items-center rounded-2xl p-1 shadow-sm ${backgroundColor}`}>
+      {/* TOP RIGHT ACTION */}
+      <View className="absolute right-3 top-3">
+        {isLoading ? (
+          <ActivityIndicator size="small" color="#999" />
+        ) : (
+          !disabled && <Ionicons name="sync-outline" size={20} className="text-text-2" />
+        )}
+      </View>
 
-      <View className="flex-1 px-4 pt-2">
-        <Text className="pt-4 font-saira-semibold text-5xl text-text-1">{displayValue}</Text>
+      <View className="flex-1 px-4 pb-4 pt-2">
+        {/* VALUE */}
+        {isLoading ? (
+          <Skeleton width={50} height={42} className="mb-6" />
+        ) : (
+          <Text
+            style={{ lineHeight: 10, fontSize: 46, paddingTop: 46 }}
+            className="font-saira-semibold text-text-1">
+            {displayValue}
+          </Text>
+        )}
+
+        {/* LABEL ROW */}
         <View className="flex-row items-center gap-3">
+          {/* ICON OR SPINNER PLACEHOLDER (KEEPS ALIGNMENT CONSISTENT) */}
           {icon && (
             <View className={`${iconBgColor} rounded-lg p-1`}>
               <Ionicons name={icon} size={24} color="#fff" />
             </View>
           )}
-          <Text
-            className="pb-4 font-saira text-lg text-text-2"
-            numberOfLines={1}
-            ellipsizeMode="tail">
-            {title}
-          </Text>
+
+          {isLoading ? (
+            <Skeleton width={110} height={18} />
+          ) : (
+            <Text className="font-saira-medium text-lg text-text-2" numberOfLines={1}>
+              {title}
+            </Text>
+          )}
         </View>
       </View>
-      {!disabled && (
-        <Ionicons name="sync-outline" size={20} className="absolute right-3 top-3 text-text-2" />
-      )}
     </View>
   );
 
-  if (disabled || !onPress) {
-    return Content;
-  }
+  if (disabled || !onPress) return Content;
 
   return (
     <Pressable className="flex-1" onPress={onPress}>

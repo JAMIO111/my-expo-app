@@ -3,7 +3,14 @@ import { Text, View, Pressable, Animated, Easing } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import Heading from './Heading';
 
-const ExpandableView = ({ title, show, setShow, notificationCount, children }) => {
+const ExpandableView = ({
+  title,
+  show,
+  setShow,
+  fixedOpen = false,
+  notificationCount,
+  children,
+}) => {
   const rotateAnim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
@@ -24,7 +31,7 @@ const ExpandableView = ({ title, show, setShow, notificationCount, children }) =
     <View className="bg-bg-1 p-3">
       <Pressable
         className="flex-row items-center justify-between py-2 pr-6"
-        onPress={() => setShow(!show)}>
+        onPress={() => !fixedOpen && setShow(!show)}>
         <View className="flex-row items-center gap-3">
           <Heading text={title} />
           {notificationCount > 0 && (
@@ -35,12 +42,14 @@ const ExpandableView = ({ title, show, setShow, notificationCount, children }) =
             </View>
           )}
         </View>
-        <Animated.View style={{ transform: [{ rotate }] }}>
-          <Ionicons name="chevron-down" size={30} />
-        </Animated.View>
+        {!fixedOpen && (
+          <Animated.View style={{ transform: [{ rotate }] }}>
+            <Ionicons name="chevron-down" size={30} />
+          </Animated.View>
+        )}
       </Pressable>
 
-      {show && <View className="pt-2">{children}</View>}
+      {(show || fixedOpen) && <View className="pt-2">{children}</View>}
     </View>
   );
 };

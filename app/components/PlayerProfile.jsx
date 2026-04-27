@@ -1,5 +1,5 @@
 import ConfirmModal from '@components/ConfirmModal';
-import { ScrollView, View, Text, useColorScheme, Pressable } from 'react-native';
+import { ScrollView, View, Text, useColorScheme } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useState, useEffect } from 'react';
 import { useUser } from '@contexts/UserProvider';
@@ -17,6 +17,7 @@ import TrophyCabinet from './TrophyCabinet';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useQueryClient } from '@tanstack/react-query';
 import BottomSheetModal from '@components/BottomSheetModal';
+import SelectStatMenu from './SelectStatMenu';
 
 const PlayerProfile = ({ context, isLoading, playerProfile, error }) => {
   const router = useRouter();
@@ -28,9 +29,13 @@ const PlayerProfile = ({ context, isLoading, playerProfile, error }) => {
   const [viceCaptainModalVisible, setViceCaptainModalVisible] = useState(false);
   const [removePlayerModalVisible, setRemovePlayerModalVisible] = useState(false);
   const { refetch, loading, currentRole, player } = useUser();
-  const { data: playerStats, error: playerStatsError } = usePlayerStats(playerProfile?.id);
-
-  const [statSlots, setStatSlots] = useState(playerStats?.playerMeta?.displayed_stats || []);
+  const {
+    data: playerStats,
+    isLoading: isLoadingPlayerStats,
+    error: playerStatsError,
+  } = usePlayerStats(playerProfile?.id);
+  const EMPTY_SLOTS = [null, null, null, null];
+  const [statSlots, setStatSlots] = useState(EMPTY_SLOTS);
   const [editingSlotIndex, setEditingSlotIndex] = useState(null);
   const [statModalVisible, setStatModalVisible] = useState(false);
 
@@ -57,7 +62,7 @@ const PlayerProfile = ({ context, isLoading, playerProfile, error }) => {
   console.log('Player is Vice Captain:', playerIsViceCaptain);
 
   useEffect(() => {
-    if (playerStats?.playerMeta?.displayed_stats) {
+    if (playerStats?.playerMeta?.displayed_stats.length) {
       setStatSlots(playerStats.playerMeta.displayed_stats);
     }
   }, [playerStats?.playerMeta?.displayed_stats]);
@@ -251,9 +256,7 @@ const PlayerProfile = ({ context, isLoading, playerProfile, error }) => {
       <ScrollView
         contentContainerStyle={{ alignItems: 'center', justifyContent: 'center' }}
         className="w-full bg-bg-grouped-1">
-        <View
-          className="w-full p-4
-       px-2">
+        <View className="w-full p-4 px-2">
           <View className="w-full flex-row items-center justify-start gap-6 rounded-2xl border border-theme-gray-5 bg-bg-grouped-2 p-2 shadow-[0_2px_4px_rgba(0,0,0,0.1)]">
             {playerProfile?.avatar_url ? (
               <CachedImage
@@ -266,8 +269,7 @@ const PlayerProfile = ({ context, isLoading, playerProfile, error }) => {
             ) : (
               <View
                 style={{ height: 100, width: 100, borderRadius: 10 }}
-                className="items-center justify-center
-        border-2 border-brand bg-brand-light">
+                className="items-center justify-center border-2 border-brand bg-brand-light">
                 <Text className="font-michroma text-4xl text-white">
                   {playerProfile?.first_name.charAt(0)}
                   {playerProfile?.surname.charAt(0)}
@@ -346,8 +348,8 @@ const PlayerProfile = ({ context, isLoading, playerProfile, error }) => {
         </View>
 
         <View className="w-full bg-bg-grouped-2 px-2 py-6">
-          <Heading text="Statistics" />
-          <View className="gap-4 px-2">
+          <Heading className="pl-3" text="Statistics" />
+          <View className="mt-2 gap-4 px-2">
             <View className="flex-row gap-4">
               {statSlots.slice(0, 2).map((slotKey, index) => {
                 const stat = statOptions.find((s) => s.key === slotKey);
@@ -359,6 +361,7 @@ const PlayerProfile = ({ context, isLoading, playerProfile, error }) => {
                     value={stat?.value ?? 0}
                     onPress={() => openStatSelector(index)}
                     disabled={!isMe}
+                    isLoading={isLoadingPlayerStats}
                   />
                 );
               })}
@@ -375,6 +378,7 @@ const PlayerProfile = ({ context, isLoading, playerProfile, error }) => {
                     value={stat?.value ?? 0}
                     onPress={() => openStatSelector(index + 2)}
                     disabled={!isMe}
+                    isLoading={isLoadingPlayerStats}
                   />
                 );
               })}
@@ -502,80 +506,15 @@ const PlayerProfile = ({ context, isLoading, playerProfile, error }) => {
         showModal={statModalVisible}
         setShowModal={setStatModalVisible}
         title={`Editing Slot ${editingSlotIndex !== null ? editingSlotIndex + 1 : ''}`}>
-        <View className="flex-1 rounded-3xl bg-bg-grouped-2">
-          <ScrollView
-            contentContainerStyle={{ paddingHorizontal: 8, paddingBottom: 32, paddingTop: 16 }}>
-            <View className="flex-row flex-wrap">
-              {statOptions.map((stat) => {
-                const isSelected = statSlots.includes(stat.key);
-                const slotIndexes = statSlots
-                  .map((k, i) => (k === stat.key ? i : -1))
-                  .filter((i) => i !== -1);
-                return (
-                  <Pressable
-                    key={stat.key}
-                    onPress={async () => {
-                      const updated = [...statSlots];
-                      updated[editingSlotIndex] = stat.key;
-                      setStatSlots(updated);
-                      setStatModalVisible(false);
-
-                      try {
-                        const { error } = await supabase
-                          .from('Players')
-                          .update({ displayed_stats: updated })
-                          .eq('id', playerProfile.id);
-
-                        if (error) throw error;
-
-                        Toast.show({
-                          type: 'success',
-                          text1: 'Stats Updated',
-                          text2: 'Your displayed stats have been saved successfully.',
-                          props: { colorScheme },
-                        });
-
-                        queryClient.invalidateQueries(['PlayerStats', playerProfile.id]);
-                      } catch (err) {
-                        console.error('Error updating displayed stats:', err);
-                        Toast.show({
-                          type: 'error',
-                          text1: 'Update Failed',
-                          text2: 'There was a problem saving your stats. Please try again.',
-                          props: { colorScheme },
-                        });
-                      }
-                    }}
-                    className="w-1/2 p-2">
-                    <View
-                      className={`relative items-center justify-center rounded-2xl border-2 bg-bg-2 py-6 shadow-sm ${
-                        isSelected ? 'border-brand' : 'border-transparent'
-                      }`}>
-                      {/* SLOT BADGES */}
-                      {slotIndexes.map((slotIdx) => (
-                        <View
-                          key={slotIdx}
-                          className="absolute right-2 top-2 h-8 w-8 items-center justify-center rounded-full bg-brand">
-                          <Text className="font-saira-bold text-sm text-white">{slotIdx + 1}</Text>
-                        </View>
-                      ))}
-                      {/* BIG STAT VALUE */}
-                      <Text className="font-saira-bold text-4xl text-text-1">
-                        {stat.value}
-                        {stat.label.includes('%') ? '%' : ''}
-                      </Text>
-
-                      {/* LABEL UNDERNEATH */}
-                      <Text className="mt-1 text-center font-saira-medium text-text-2">
-                        {stat.label}
-                      </Text>
-                    </View>
-                  </Pressable>
-                );
-              })}
-            </View>
-          </ScrollView>
-        </View>
+        <SelectStatMenu
+          context="player"
+          statOptions={statOptions}
+          statSlots={statSlots}
+          editingSlotIndex={editingSlotIndex}
+          setStatSlots={setStatSlots}
+          setStatModalVisible={setStatModalVisible}
+          profile={playerProfile}
+        />
       </BottomSheetModal>
     </>
   );

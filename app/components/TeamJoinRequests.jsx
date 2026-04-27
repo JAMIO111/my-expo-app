@@ -121,16 +121,33 @@ const TeamJoinRequests = ({ districtId, teamId }) => {
 
   const StatusBadge = ({ text, color }) => {
     const colorMap = {
-      orange: 'theme-orange',
-      green: 'theme-green',
-      red: 'theme-red',
+      orange: {
+        bg: 'bg-theme-orange/10',
+        border: 'border-theme-orange/50',
+        dot: 'bg-theme-orange',
+        text: 'text-theme-orange',
+      },
+      green: {
+        bg: 'bg-theme-green/10',
+        border: 'border-theme-green/50',
+        dot: 'bg-theme-green',
+        text: 'text-theme-green',
+      },
+      red: {
+        bg: 'bg-theme-red/10',
+        border: 'border-theme-red/50',
+        dot: 'bg-theme-red',
+        text: 'text-theme-red',
+      },
     };
+
+    const styles = colorMap[color] || colorMap.green;
 
     return (
       <View
-        className={`padding flex-row items-center gap-2 rounded-lg border border-${colorMap[color]}/50 bg-${colorMap[color]}/10 px-2 py-1`}>
-        <View className={`h-3 w-3 rounded-full bg-${colorMap[color]}`} />
-        <Text className={`font-saira-medium text-xs text-${colorMap[color]}`}>{text}</Text>
+        className={`flex-row items-center gap-2 rounded-lg border px-2 py-1 ${styles.bg} ${styles.border}`}>
+        <View className={`h-3 w-3 rounded-full ${styles.dot}`} />
+        <Text className={`font-saira-medium text-xs ${styles.text}`}>{text}</Text>
       </View>
     );
   };

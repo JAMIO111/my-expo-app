@@ -48,6 +48,8 @@ export const useFixtureDetails = (fixtureId) => {
       special_match_abbreviation,
       draws_allowed,
       best_of,
+      competition_type:Competitions!CompetitionInstances_competition_id_fkey(competition_type),
+      season:Seasons!CompetitionInstances_season_id_fkey(name),
       stage:Stages!Stages_competition_instance_id_fkey(
         id,
         name,

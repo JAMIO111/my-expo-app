@@ -62,7 +62,7 @@ const FramesList = ({ fixtureId }) => {
   return (
     <View className="flex gap-3 pb-8">
       {frames.map((f, index) => (
-        <View key={f.id || index} className="rounded-3xl bg-bg-1 px-2 py-4">
+        <View key={f.id || index} className="rounded-3xl bg-bg-1 px-2 py-4 shadow-sm">
           <View className="mb-2 flex-row items-center justify-between px-4">
             <Text className="font-saira-medium text-sm uppercase tracking-widest text-text-2">
               Frame {f.frame_number}

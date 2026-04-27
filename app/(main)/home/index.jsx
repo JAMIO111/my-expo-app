@@ -277,7 +277,7 @@ const Home = () => {
                 <LeagueHomeCard standings={standings} isLoading={isStandingsLoading} />
               </View>
             </View>
-            <View className="w-full bg-bg-grouped-2 pb-24">
+            <View className="w-full bg-bg-1 pb-24">
               {(currentRole?.team?.captain === player?.id ||
                 currentRole?.team?.vice_captain === player?.id) && (
                 <View className="w-full bg-bg-grouped-1">

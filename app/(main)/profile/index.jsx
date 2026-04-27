@@ -91,33 +91,37 @@ const ProfilePage = () => {
             </Text>
             <Text className="text-center font-saira text-xl text-text-2">
               {player?.nickname} | {getAgeInYearsAndDays(player?.dob).years} |{' '}
-              {currentRole?.team?.display_name || 'No Team'}
+              {currentRole.type === 'admin'
+                ? `${currentRole.district?.name} Admin` || 'Admin'
+                : currentRole?.team?.display_name || 'No Team'}
             </Text>
           </View>
           <View className="px-5">
-            <View className="mb-6 flex-row items-center justify-around gap-2 rounded-2xl bg-brand p-4 shadow">
-              <View className="flex-1 items-center">
-                <Ionicons name="trophy-outline" size={24} color="white" />
-                <Text className="text-center font-saira text-xl text-gray-300">Level</Text>
-                <Text className="text-center font-saira-semibold text-2xl text-white">
-                  {calculateLevel(player?.xp).level}
-                </Text>
-              </View>
-              <View className="flex-1 items-center">
-                <Ionicons name="star-outline" size={24} color="white" />
-                <Text className="text-center font-saira text-xl text-gray-300">Points</Text>
-                <Text className="text-center font-saira-semibold text-2xl text-white">
-                  {player?.xp}
-                </Text>
-              </View>
-              <View className="flex-1 items-center">
-                <Ionicons name="globe-outline" size={24} color="white" />
-                <Text className="text-center font-saira text-xl text-gray-300">Rank</Text>
-                <Text className="text-center font-saira-semibold text-2xl text-white">#23</Text>
+            <View style={{ borderRadius: 18 }} className="mb-8 bg-brand-dark p-2 shadow-sm">
+              <View className="flex-row items-center justify-around gap-2 rounded-2xl bg-brand p-4 shadow">
+                <View className="flex-1 items-center">
+                  <Ionicons name="star-outline" size={24} color="white" />
+                  <Text className="text-center font-saira text-xl text-gray-300">XP</Text>
+                  <Text className="text-center font-saira-semibold text-2xl text-white">
+                    {player?.xp}
+                  </Text>
+                </View>
+                <View className="flex-1 items-center">
+                  <Ionicons name="trophy-outline" size={24} color="white" />
+                  <Text className="text-center font-saira text-xl text-gray-300">Level</Text>
+                  <Text className="text-center font-saira-semibold text-2xl text-white">
+                    {calculateLevel(player?.xp).level}
+                  </Text>
+                </View>
+                <View className="flex-1 items-center">
+                  <Ionicons name="globe-outline" size={24} color="white" />
+                  <Text className="text-center font-saira text-xl text-gray-300">Rank</Text>
+                  <Text className="text-center font-saira-semibold text-2xl text-white">#23</Text>
+                </View>
               </View>
             </View>
           </View>
-          <View className="rounded-t-3xl bg-bg-grouped-2 pt-4">
+          <View className="rounded-t-3xl bg-bg-grouped-2 pt-4 shadow-md">
             <View className="px-5">
               <SlidingTabButton option1="Badges" option2="Stats" onChange={setView} value={view} />
             </View>

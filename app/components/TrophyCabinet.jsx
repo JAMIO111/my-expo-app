@@ -324,7 +324,7 @@ const styles = StyleSheet.create({
     bottom: 8,
     left: 8,
     right: 8,
-    borderRadius: 14,
+    borderRadius: 8,
     backgroundColor: 'rgba(255,255,255,0.15)',
   },
   title: {

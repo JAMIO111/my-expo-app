@@ -115,10 +115,14 @@ const FixturePage = ({ fixtureDetails, isLoading, context }) => {
             <View className="overflow-hidden rounded-3xl bg-bg-2">
               <View className=" flex-row items-center justify-between gap-2 border-b border-theme-gray-4 bg-bg-1 px-4 py-2">
                 <Text className="text-left font-saira-medium text-lg text-text-1">
-                  {`${fixtureDetails?.competition?.name} - ${stage.stage_type.charAt(0).toUpperCase() + stage.stage_type.slice(1)}`}
+                  {`${fixtureDetails?.competition?.season?.name} ${fixtureDetails?.competition?.name}${
+                    fixtureDetails?.competition?.competition_type?.competition_type !== 'league'
+                      ? ` - ${stage.stage_type.charAt(0).toUpperCase() + stage.stage_type.slice(1)}`
+                      : ''
+                  }`}
                 </Text>
                 <Text className="text-right font-saira-medium text-lg text-text-1">
-                  {stage?.name}
+                  {stage?.name} Match
                 </Text>
               </View>
               <View className="p-5">
