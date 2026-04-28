@@ -19,7 +19,7 @@ const index = () => {
     data: competitions = [],
     isLoading,
     isError,
-  } = useCompetitions(currentRole?.district?.id);
+  } = useCompetitions({ districtId: currentRole?.district?.id });
 
   const { data: competitionsInstances, isLoading: isCompetitionsInstancesLoading } =
     useCompetitionInstances(currentRole?.activeSeason?.id);

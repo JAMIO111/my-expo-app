@@ -14,6 +14,7 @@ if (Platform.OS === 'android') {
 const FixturesAccordion = ({ season, competitionInstance, isExpanded, onPress }) => {
   const [expandedDate, setExpandedDate] = useState(null); // inner date toggle
   const [showModal, setShowModal] = useState(false);
+  const [selectedFixture, setSelectedFixture] = useState(null);
 
   console.log(
     'FixturesAccordion Props - season:',
@@ -98,14 +99,11 @@ const FixturesAccordion = ({ season, competitionInstance, isExpanded, onPress })
                   <View className="gap-2 p-3">
                     {fixturesForDate.map((fixture) => (
                       <View key={fixture.id}>
-                        <BottomSheetModal
-                          title="Fixture Details"
-                          showModal={showModal}
-                          setShowModal={setShowModal}>
-                          <FixtureManagement fixtureId={fixture?.id} />
-                        </BottomSheetModal>
                         <Pressable
-                          onPress={() => setShowModal(true)}
+                          onPress={() => {
+                            setSelectedFixture(fixture);
+                            setShowModal(true);
+                          }}
                           className="flex flex-1 flex-col items-center justify-between gap-2 rounded-2xl bg-bg-2 p-2 shadow-sm">
                           <View className="flex flex-row items-center justify-between gap-2">
                             <View className="flex-1 flex-col items-center justify-between gap-2">
@@ -189,6 +187,9 @@ const FixturesAccordion = ({ season, competitionInstance, isExpanded, onPress })
           )}
         </View>
       )}
+      <BottomSheetModal title="Fixture Details" showModal={showModal} setShowModal={setShowModal}>
+        <FixtureManagement fixtureId={selectedFixture?.id} />
+      </BottomSheetModal>
     </View>
   );
 };

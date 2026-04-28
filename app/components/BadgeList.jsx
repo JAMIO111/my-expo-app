@@ -1,17 +1,7 @@
-import {
-  StyleSheet,
-  View,
-  Text,
-  FlatList,
-  Dimensions,
-  Image,
-  Modal,
-  Pressable,
-} from 'react-native';
+import { StyleSheet, View, Text, FlatList, Dimensions, Image, Pressable } from 'react-native';
 import { useState } from 'react';
 import { badgeIcons } from '@lib/badgeIcons';
 import BadgeTierScrollView from './BadgeTierScrollView';
-import Ionicons from 'react-native-vector-icons/Ionicons';
 import BottomSheetModal from './BottomSheetModal';
 
 const NUM_COLUMNS = 3;
@@ -19,9 +9,6 @@ const ITEM_MARGIN = 10;
 const BADGE_SIZE = Dimensions.get('window').width / 3 - ITEM_MARGIN * 3; // Adjust size based on screen width
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const BADGE_ITEM_WIDTH = SCREEN_WIDTH * 0.6; // 60% of screen width
-const BADGE_ITEM_SPACING = 16;
-const SNAP_INTERVAL = BADGE_ITEM_WIDTH + BADGE_ITEM_SPACING;
-const SIDE_PADDING = (SCREEN_WIDTH - BADGE_ITEM_WIDTH) / 2;
 
 const BadgeList = ({ badges }) => {
   const [parentWidth, setParentWidth] = useState(null);

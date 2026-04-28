@@ -16,12 +16,18 @@ import EditDivisionForm from '@components/EditDivisionForm';
 import GenerateFixturesForm from '@components/GenerateFixturesForm';
 import { useDivisions } from '@hooks/useDivisions';
 import InitiateCompetitionForm from '@components/InitiateCompetitionForm';
+import { useCompetitions } from '@hooks/useCompetitions';
 
 const DivisionOverview = () => {
   const { currentRole } = useUser();
   const { divisionId } = useLocalSearchParams();
   const { data: divisions } = useDivisions(currentRole?.district?.id);
   const { data: teams, isLoading, isError } = useTeamsByDivision(divisionId);
+  const { data: LeagueCompetition } = useCompetitions({
+    divisionId: divisionId,
+    competitionType: 'league',
+  });
+  console.log('Competitions in Division Overview:', LeagueCompetition);
   const [expandedAccordion, setExpandedAccordion] = useState(null);
   const [competitionInstance, setCompetitionInstance] = useState(null);
   const [showDetails, setShowDetails] = useState(true);
@@ -38,9 +44,8 @@ const DivisionOverview = () => {
 
   const currentSeasonComp = currentRole?.competitions?.find(
     (comp) =>
-      comp.season_id === currentRole.activeSeason?.id &&
-      comp.division_id === division.id &&
-      comp.competition_type === 'league'
+      LeagueCompetition?.[0]?.id === comp.competition_id &&
+      comp.season_id === currentRole.activeSeason.id
   );
 
   console.log('Current Season Competition:', currentSeasonComp);
@@ -89,7 +94,7 @@ const DivisionOverview = () => {
                   <View>
                     <Text className="px-1 font-saira text-lg text-text-2">Promotion Spots</Text>
                     <Text className="px-1 font-saira-medium text-xl text-text-1">
-                      {division.promotions || 'No promotions'}
+                      {division.promotion_spots || 'No promotions'}
                     </Text>
                   </View>
                 </View>
@@ -167,7 +172,7 @@ const DivisionOverview = () => {
               show={showActiveCompetition}
               setShow={setShowActiveCompetition}
               fixedOpen={!currentSeasonComp}>
-              {!currentSeasonComp ? (
+              {currentSeasonComp ? (
                 <View className="mx-2 my-4">
                   <CTAButton
                     type="yellow"
@@ -196,15 +201,7 @@ const DivisionOverview = () => {
                     hour: '2-digit',
                     minute: '2-digit',
                   })}`}</Text>
-                  <View className="my-4">
-                    <CTAButton
-                      type="yellow"
-                      text="Seed Teams into Competition"
-                      callbackFn={() =>
-                        router.push(`/competitions/${currentSeasonComp?.id}/seed-teams`)
-                      }
-                    />
-                  </View>
+                  <View className="my-4"></View>
                 </View>
               )}
             </ExpandableView>
@@ -227,7 +224,11 @@ const DivisionOverview = () => {
             closeModal={() => setShowModal(false)}
           />
         ) : modalType === 'edit-division' ? (
-          <EditDivisionForm division={division} closeModal={() => setShowModal(false)} />
+          <EditDivisionForm
+            competition={LeagueCompetition?.[0]}
+            division={division}
+            closeModal={() => setShowModal(false)}
+          />
         ) : (
           <InitiateCompetitionForm
             division={division}

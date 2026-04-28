@@ -69,7 +69,7 @@ const OptionRow = ({ item, isSelected, onPress, index }) => {
 /* ─── Main component ─────────────────────────────────────────── */
 const CustomDropdown = ({
   title,
-  titleColor,
+  titleColor = 'text-text-on-brand',
   placeholder = 'Select option',
   value,
   options = [],
@@ -142,9 +142,7 @@ const CustomDropdown = ({
     <View>
       {/* Label */}
       {title && (
-        <Text className={`pb-1 pl-2 font-saira-medium text-xl text-text-on-brand ${titleColor}`}>
-          {title}
-        </Text>
+        <Text className={`pb-1 pl-2 font-saira-medium text-xl ${titleColor}`}>{title}</Text>
       )}
 
       {/* Trigger */}

@@ -19,6 +19,7 @@ export const useFixtureDetails = (fixtureId) => {
       crest,
       address:Addresses!Teams_address_fkey(
         id,
+        name,
         line_1,
         line_2,
         city,
@@ -74,7 +75,7 @@ export const useFixtureDetails = (fixtureId) => {
     return {
       ...data,
       date: new Date(data.date_time),
-      address: data.homeTeam?.address,
+      address: data?.venue_id ? null : data.homeTeam?.address,
       homeCompetitor:
         data.competitor_type === 'team'
           ? { ...data.homeTeam, type: 'team' }
