@@ -11,13 +11,18 @@ import BottomSheetWrapper from '@/components/BottomSheetWrapper';
 import { BottomSheetScrollView, BottomSheetView } from '@gorhom/bottom-sheet';
 import colors from '@lib/colors';
 import Heading from './Heading';
+import { useUser } from '@contexts/UserProvider';
 import CustomDropdown from './CustomDropdown';
+import ExpandableView from './ExpandableView';
+import TeamLogo from './TeamLogo';
+import Avatar from './Avatar';
 
-const EditDivisionForm = ({ competition, division, closeModal }) => {
-  console.log('Editing Division:', division);
+const EditDivisionForm = ({ competition, division, participants, closeModal, context }) => {
   const bottomSheetRef = useRef();
   const colorScheme = useColorScheme();
+  const { currentRole } = useUser();
   const themeColors = colors[colorScheme] || colors.light; // Fallback to light theme if colorScheme is undefined
+  const [showParticipants, setShowParticipants] = useState(true);
   const [selectedRewardType, setSelectedRewardType] = useState(null); // 'winner' or 'runnerUp'
   const [winnerReward, setWinnerReward] = useState(null);
   const [runnerUpReward, setRunnerUpReward] = useState(null);
@@ -48,6 +53,7 @@ const EditDivisionForm = ({ competition, division, closeModal }) => {
   const [bonusMatchAbbreviation, setBonusMatchAbbreviation] = useState(
     competition?.bonus_match_abbreviation || ''
   );
+  const [selectedParticipants, setSelectedParticipants] = useState(participants?.map((p) => p.id));
 
   const queryClient = useQueryClient();
 
@@ -86,6 +92,25 @@ const EditDivisionForm = ({ competition, division, closeModal }) => {
     setWinnerReward(competition.winner_reward || null);
     setRunnerUpReward(competition.runner_up_reward || null);
   }, [competition]);
+
+  const isSelected = (id) => selectedParticipants.includes(id);
+
+  const toggleParticipant = (id) => {
+    setSelectedParticipants((prev) =>
+      prev.includes(id) ? prev.filter((p) => p !== id) : [...prev, id]
+    );
+  };
+
+  const allSelected =
+    participants.length > 0 && selectedParticipants.length === participants.length;
+
+  const toggleSelectAll = () => {
+    if (allSelected) {
+      setSelectedParticipants([]);
+    } else {
+      setSelectedParticipants(participants.map((p) => p.id));
+    }
+  };
 
   const handleSave = async () => {
     if (!scoringSystem) {
@@ -200,8 +225,13 @@ const EditDivisionForm = ({ competition, division, closeModal }) => {
           break;
 
         case 'DIVISION_NOT_FOUND':
-          text2 = 'Division not found';
+          text1 = 'Division not found';
+          text2 = 'No active division found';
           break;
+
+        case 'COMPETITION_NOT_FOUND':
+          text1 = 'Competition not found';
+          text2 = 'No active competition found for this division';
       }
 
       Toast.show({
@@ -214,6 +244,85 @@ const EditDivisionForm = ({ competition, division, closeModal }) => {
     }
   };
 
+  const handleInitiateCompetition = async () => {
+    if (!selectedParticipants || selectedParticipants.length < 2) {
+      Toast.show({
+        type: 'info',
+        text1: 'Not Enough Participants',
+        text2: 'At least two participants must be selected to initiate competition',
+      });
+      closeModal();
+      return;
+    }
+    try {
+      const { data, error } = await supabase.rpc('initiate_league_competition_instance', {
+        p_competition_id: competition.id,
+        p_active_season_id: currentRole?.activeSeason?.id,
+        p_division_id: division.id,
+        p_promotion: Number(promotions),
+        p_relegation: Number(relegations),
+        p_max_competitors: Number(maxCompetitors),
+        p_best_of: Number(bestOf),
+        p_draws_allowed: drawsAllowed,
+        p_points_for_win: scoringSystem === 'points' ? Number(pointsForWin) : null,
+        p_points_for_draw: scoringSystem === 'points' ? Number(pointsForDraw) : null,
+        p_points_for_loss: scoringSystem === 'points' ? Number(pointsForLoss) : null,
+        p_round_robin_cycles: Number(legs),
+        p_special_match: bonusMatch,
+        p_special_match_name: bonusMatch ? bonusMatchName : null,
+        p_special_match_abbreviation: bonusMatch ? bonusMatchAbbreviation : null,
+        p_winner_reward: winnerReward,
+        p_runner_up_reward: runnerUpReward,
+        p_scoring_system: scoringSystem,
+        p_participant_ids: selectedParticipants,
+      });
+
+      if (error) throw error;
+
+      Toast.show({
+        type: 'success',
+        text1: 'Competition Created',
+        text2: 'Competition instance successfully initiated',
+      });
+
+      return data; // this is your new instance_id
+    } catch (err) {
+      closeModal();
+      console.log('INIT COMP ERROR:', err);
+
+      let text1 = 'Error';
+      let text2 = 'Failed to create competition';
+      let type = 'error';
+
+      switch (err?.message) {
+        case 'COMPETITION_NOT_FOUND':
+          text2 = 'Competition not found';
+          break;
+
+        case 'INVALID_COMPETITOR_TYPE':
+          text2 = 'Invalid competitor type';
+          break;
+
+        case 'COMPETITION_INSTANCE_ALREADY_EXISTS':
+          text1 = 'Duplicate Competition';
+          text2 = 'An active competition for this division already exists';
+          break;
+
+        default:
+          text2 = err?.message || text2;
+          break;
+      }
+
+      Toast.show({
+        type,
+        text1,
+        text2,
+      });
+
+      return null;
+    }
+  };
+
   const openSheet = (type) => {
     setSelectedRewardType(type);
     bottomSheetRef.current?.expand();
@@ -221,11 +330,6 @@ const EditDivisionForm = ({ competition, division, closeModal }) => {
 
   const closeSheet = () => {
     bottomSheetRef.current?.close();
-  };
-
-  const selectReward = (reward) => {
-    setSelectedReward(reward);
-    closeSheet();
   };
 
   const updateReward = (reward) => {
@@ -243,26 +347,30 @@ const EditDivisionForm = ({ competition, division, closeModal }) => {
       <ScrollView contentContainerStyle={{ gap: 8 }} className="flex-1 gap-4 bg-bg-2">
         <View className="gap-4 bg-bg-1 p-5">
           <Heading text="Division Settings" />
-          <CustomTextInput
-            value={name}
-            onChangeText={setName}
-            title="Division Name"
-            placeholder="e.g. Super League"
-            leftIconName="trophy-outline"
-            iconColor="purple"
-            autoCapitalize="words"
-            titleColor="text-text-1"
-          />
-          <CustomTextInput
-            value={groupName}
-            onChangeText={setGroupName}
-            title="Group Name"
-            placeholder="e.g. Thursday Teams"
-            leftIconName="layers-outline"
-            iconColor="purple"
-            autoCapitalize="words"
-            titleColor="text-text-1"
-          />
+          {context === 'edit-division' && (
+            <>
+              <CustomTextInput
+                value={name}
+                onChangeText={setName}
+                title="Division Name"
+                placeholder="e.g. Super League"
+                leftIconName="trophy-outline"
+                iconColor="purple"
+                autoCapitalize="words"
+                titleColor="text-text-1"
+              />
+              <CustomTextInput
+                value={groupName}
+                onChangeText={setGroupName}
+                title="Group Name"
+                placeholder="e.g. Thursday Teams"
+                leftIconName="layers-outline"
+                iconColor="purple"
+                autoCapitalize="words"
+                titleColor="text-text-1"
+              />
+            </>
+          )}
           <CustomTextInput
             value={maxCompetitors}
             onChangeText={setMaxCompetitors}
@@ -302,46 +410,60 @@ const EditDivisionForm = ({ competition, division, closeModal }) => {
               />
             </View>
           </View>
-          <View className="flex-row items-center justify-between gap-5 rounded-xl bg-bg-1 px-1 py-3">
-            <View className="flex-1 items-start justify-center gap-1">
-              <Text className="font-saira-medium text-xl text-text-1">Mid-Season Transfers</Text>
-              <Text className="font-saira text-xs text-text-2">
-                If disabled, players will not be able to join teams in this division after the
-                season has started.
-              </Text>
-            </View>
-            <Switch
-              className="w-16"
-              value={midSeasonTransfers}
-              onValueChange={setMidSeasonTransfers}
-              trackColor={{ false: '#E5E7EB', true: '#800080' }}
-              thumbColor={midSeasonTransfers ? '#ffffff' : '#f4f3f4'}
-            />
-          </View>
-          <View className="flex-row items-center justify-between gap-5 rounded-xl bg-bg-1 px-1 py-3">
-            <View className="flex-1 items-start justify-center gap-1">
-              <Text className="font-saira-medium text-xl text-text-1">Admin Approval Required</Text>
-              <Text className="font-saira text-xs text-text-2">
-                If enabled, all join requests for teams in this division will require admin
-                approval.
-              </Text>
-            </View>
-            <Switch
-              className="w-16"
-              value={adminApprovalRequired}
-              onValueChange={setAdminApprovalRequired}
-              trackColor={{ false: '#E5E7EB', true: '#800080' }}
-              thumbColor={adminApprovalRequired ? '#ffffff' : '#f4f3f4'}
-            />
-          </View>
+          {context === 'edit-division' && (
+            <>
+              <View className="flex-row items-center justify-between gap-5 rounded-xl bg-bg-1 px-1 py-3">
+                <View className="flex-1 items-start justify-center gap-1">
+                  <Text className="font-saira-medium text-xl text-text-1">
+                    Mid-Season Transfers
+                  </Text>
+                  <Text className="font-saira text-xs text-text-2">
+                    If disabled, players will not be able to join teams in this division after the
+                    season has started.
+                  </Text>
+                </View>
+                <Switch
+                  className="w-16"
+                  value={midSeasonTransfers}
+                  onValueChange={setMidSeasonTransfers}
+                  trackColor={{ false: '#E5E7EB', true: '#800080' }}
+                  thumbColor={midSeasonTransfers ? '#ffffff' : '#f4f3f4'}
+                />
+              </View>
+              <View className="flex-row items-center justify-between gap-5 rounded-xl bg-bg-1 px-1 py-3">
+                <View className="flex-1 items-start justify-center gap-1">
+                  <Text className="font-saira-medium text-xl text-text-1">
+                    Admin Approval Required
+                  </Text>
+                  <Text className="font-saira text-xs text-text-2">
+                    If enabled, all join requests for teams in this division will require admin
+                    approval.
+                  </Text>
+                </View>
+                <Switch
+                  className="w-16"
+                  value={adminApprovalRequired}
+                  onValueChange={setAdminApprovalRequired}
+                  trackColor={{ false: '#E5E7EB', true: '#800080' }}
+                  thumbColor={adminApprovalRequired ? '#ffffff' : '#f4f3f4'}
+                />
+              </View>
+            </>
+          )}
         </View>
 
         <View className="gap-4 bg-bg-1 p-5">
-          <Heading text="Default League Settings" />
+          <Heading
+            text={
+              context === 'edit-division'
+                ? 'Default League Settings'
+                : 'League Competition Settings'
+            }
+          />
           <Text className="pb-2 pl-1 font-saira text-xs italic text-text-2">
-            These are the default settings for this division's league competitions. They will be
-            applied to any future competitions initiated for this division. Adjusting these settings
-            will not affect existing competitions for this division.
+            {context === 'edit-division'
+              ? "These are the default settings for this division's league competitions. They will be applied to any future competitions initiated for this division. Adjusting these settings will not affect existing competitions for this division."
+              : "These are the settings for this season's competition. They will be applied to this current competition only. Adjusting these settings will not affect future or past competitions for this league."}
           </Text>
 
           <CustomTextInput
@@ -528,9 +650,74 @@ const EditDivisionForm = ({ competition, division, closeModal }) => {
             </Pressable>
           </View>
         </View>
+        {context === 'initiate-competition' && (
+          <ExpandableView
+            title="Participants"
+            show={showParticipants}
+            setShow={setShowParticipants}>
+            <View className="my-4 flex-1 items-center justify-center gap-4 rounded-lg pl-2 pr-3">
+              {participants.length === 0 ? (
+                <View className="w-full rounded-2xl bg-bg-2 py-8 shadow-sm">
+                  <Text className="text-center font-saira text-lg text-text-2">
+                    No teams in this division.
+                  </Text>
+                </View>
+              ) : (
+                <View className="w-full flex-1 gap-3 pr-3">
+                  {/* SELECT ALL */}
+                  <View className="flex-row items-center gap-3 border-b border-theme-gray-4 pb-4">
+                    <Text className="flex-1 font-saira-medium text-xl text-text-1">Select All</Text>
+                    <Pressable
+                      className={`h-8 w-8 items-center justify-center rounded-lg border ${
+                        allSelected ? 'border-brand bg-brand' : 'border-theme-gray-4'
+                      }`}
+                      onPress={toggleSelectAll}>
+                      <Ionicons
+                        name={allSelected ? 'checkmark' : ''}
+                        size={20}
+                        color="white"
+                        style={{ opacity: allSelected ? 1 : 0 }}
+                      />
+                    </Pressable>
+                  </View>
+
+                  {/* PARTICIPANTS */}
+
+                  {participants.map((participant) => (
+                    <View key={participant.id} className="flex-row items-center gap-3">
+                      <TeamLogo {...participant?.crest} size={30} />
+                      <Text className="flex-1 font-saira-medium text-lg text-text-1">
+                        {participant.display_name}
+                      </Text>
+
+                      <Pressable
+                        className={`h-8 w-8 items-center justify-center rounded-lg border ${
+                          isSelected(participant.id)
+                            ? 'border-brand bg-brand'
+                            : 'border-theme-gray-4'
+                        }`}
+                        onPress={() => toggleParticipant(participant.id)}>
+                        <Ionicons
+                          name={isSelected(participant.id) ? 'checkmark' : ''}
+                          size={20}
+                          color="white"
+                          style={{ opacity: isSelected(participant.id) ? 1 : 0 }}
+                        />
+                      </Pressable>
+                    </View>
+                  ))}
+                </View>
+              )}
+            </View>
+          </ExpandableView>
+        )}
       </ScrollView>
       <View className="px-5">
-        <CTAButton type="yellow" text="Save Changes" callbackFn={handleSave} />
+        <CTAButton
+          type="yellow"
+          text={context === 'edit-division' ? 'Save Changes' : 'Initiate Competition'}
+          callbackFn={context === 'edit-division' ? handleSave : handleInitiateCompetition}
+        />
       </View>
       <BottomSheetWrapper
         marginTop={50}

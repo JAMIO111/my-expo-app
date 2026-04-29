@@ -5,12 +5,13 @@ import MenuContainer from '@components/MenuContainer';
 import SafeViewWrapper from '@components/SafeViewWrapper';
 import CustomHeader from '@components/CustomHeader';
 import { useUser } from '@contexts/UserProvider';
+import NavBar from '@components/NavBar2';
 
 const index = () => {
   const { currentRole, player } = useUser();
 
   return (
-    <SafeViewWrapper topColor="bg-brand" useBottomInset={false}>
+    <SafeViewWrapper topColor="bg-brand" bottomColor="bg-brand" useBottomInset={true}>
       <Stack.Screen
         options={{
           header: () => (
@@ -69,6 +70,7 @@ const index = () => {
           <SettingsItem lastItem={true} title="About" icon="information-circle-outline" />
         </MenuContainer>
       </ScrollView>
+      <NavBar />
     </SafeViewWrapper>
   );
 };

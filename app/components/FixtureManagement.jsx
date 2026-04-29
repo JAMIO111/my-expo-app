@@ -9,42 +9,40 @@ import CTAButton from './CTAButton';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import Heading from './Heading';
 import Ionicons from '@expo/vector-icons/Ionicons';
+import CustomDropdown from './CustomDropdown';
+import { useAddresses } from '@hooks/useAddresses';
+import { useUser } from '@contexts/UserProvider';
 
-/* ─────────────────────────────────────────────
-   Picker Row
-───────────────────────────────────────────── */
 const PickerRow = ({ icon, label, displayValue, mode, value, onChange, isExpanded, onToggle }) => (
-  <View className="w-full rounded-2xl bg-bg-2 shadow-sm">
+  <View className="w-full items-center justify-center rounded-2xl bg-bg-2 shadow-sm">
     <Pressable
       onPress={onToggle}
-      className={`flex-row items-center gap-2 p-4 ${
-        isExpanded ? 'border-b border-theme-gray-4' : ''
-      }`}>
+      className={`flex-row items-center gap-2 p-4 ${isExpanded ? 'border-b border-theme-gray-4' : ''}`}>
       <Ionicons name={icon} size={20} color="purple" />
       <Text className="pl-2 font-saira text-xl text-text-1">{label}</Text>
-
       <Text className="flex-1 text-right font-saira-medium text-xl text-text-1">
         {displayValue}
       </Text>
-
-      <Ionicons name={isExpanded ? 'chevron-up' : 'chevron-down'} size={16} color="#9CA3AF" />
+      <Ionicons
+        name={isExpanded ? 'chevron-up' : 'chevron-down'}
+        size={16}
+        color="#9CA3AF"
+        style={{ marginLeft: 6 }}
+      />
     </Pressable>
 
     {isExpanded && (
       <DateTimePicker
-        key={mode} // ✅ CRITICAL FIX (prevents crash)
         value={value}
         mode={mode}
-        is24Hour
         display={Platform.OS === 'ios' ? (mode === 'date' ? 'inline' : 'spinner') : 'default'}
-        minimumDate={mode === 'date' ? new Date(2000, 0, 1) : undefined}
-        maximumDate={mode === 'date' ? new Date(2100, 11, 31) : undefined}
+        is24Hour
         onChange={(event, selected) => {
-          // Android behaves like modal → close after interaction
           if (Platform.OS === 'android') {
+            // Always close the picker on Android (dialog auto-dismisses)
             onToggle();
           }
-
+          // Only update state on a real selection
           if (selected && event.type !== 'dismissed') {
             onChange(selected);
           }
@@ -54,27 +52,77 @@ const PickerRow = ({ icon, label, displayValue, mode, value, onChange, isExpande
   </View>
 );
 
-/* ─────────────────────────────────────────────
-   Main Component
-───────────────────────────────────────────── */
+/* ─────────────────────────────────────────────────────────────
+   Main component
+───────────────────────────────────────────────────────────── */
 const FixtureManagement = ({ fixtureId }) => {
+  const { currentRole } = useUser();
   const { data: fixture, isLoading } = useFixtureDetails(fixtureId);
 
+  const { data: addresses } = useAddresses(currentRole?.district?.id);
+  console.log('Addresses for district', currentRole?.district?.id, addresses);
+
   const [dateTime, setDateTime] = useState(new Date());
-  const [openPicker, setOpenPicker] = useState(null); // 'date' | 'time' | null
+  const [venueId, setVenueId] = useState(null);
+  const selectedVenue = addresses?.find((a) => a.id === venueId);
+  const selectedVenueLabel = selectedVenue
+    ? [
+        selectedVenue.name,
+        selectedVenue.line_1,
+        selectedVenue.line_2,
+        selectedVenue.city,
+        selectedVenue.postcode,
+      ]
+        .filter(Boolean)
+        .join(', ')
+    : 'Select Venue';
+
+  const [openPicker, setOpenPicker] = useState(null);
+
+  const venueOptions =
+    addresses?.map((addr) => ({
+      label: addr.name,
+      value: addr.id,
+      subLabel: [addr.line_1, addr.line_2, addr.city, addr.postcode].filter(Boolean).join(', '),
+    })) || [];
+
+  // Only set default when BOTH fixture + options exist
+  useEffect(() => {
+    if (!addresses?.length) return;
+    if (!fixture?.address?.id) return;
+
+    const exists = venueOptions.some((o) => o.value === fixture.address.id);
+
+    if (exists) {
+      setVenueId(fixture.address.id);
+    }
+  }, [addresses, fixture?.address?.id]);
+
+  const togglePicker = useCallback((type) => {
+    setOpenPicker((prev) => {
+      if (prev === type) return null; // closing same — fine
+      if (prev !== null) {
+        // A different picker is open: close it first, then open the new one
+        // after the native module has had a tick to clean up.
+        setTimeout(() => setOpenPicker(type), 50);
+        return null;
+      }
+      return type;
+    });
+  }, []);
 
   useEffect(() => {
     if (fixture?.date_time) {
       setDateTime(new Date(fixture.date_time));
     }
-  }, [fixture?.date_time]);
+    if (fixture?.address?.id) {
+      setVenueId(fixture.address.id);
+    }
+  }, [fixture?.date_time, fixture?.address?.id]);
 
-  const togglePicker = (type) => {
-    setOpenPicker((prev) => (prev === type ? null : type));
-  };
-
-  /* ───────────── Date / Time Handling ───────────── */
-
+  // When the DATE portion changes: keep the existing hours/minutes.
+  // This is what previously broke — iOS returned midnight UTC and
+  // we were storing that raw, wiping out the time component.
   const handleDateChange = useCallback(
     (selected) => {
       const updated = new Date(selected);
@@ -84,6 +132,7 @@ const FixtureManagement = ({ fixtureId }) => {
     [dateTime]
   );
 
+  // When the TIME portion changes: keep the existing date.
   const handleTimeChange = useCallback(
     (selected) => {
       const updated = new Date(dateTime);
@@ -101,61 +150,176 @@ const FixtureManagement = ({ fixtureId }) => {
       year: 'numeric',
     });
 
-  const formatTime = (d) =>
-    d.toLocaleTimeString('en-GB', {
-      hour: '2-digit',
-      minute: '2-digit',
-    });
+  const formatTime = (d) => d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
 
   if (isLoading) return <LoadingScreen />;
 
   const isIndividual = fixture?.competitor_type === 'individual';
 
+  const isComplete = fixture?.is_complete;
+  const isApproved = fixture?.approved;
+  const isAmended = fixture?.is_amended;
+  const isDisputed = fixture?.is_disputed;
+  const isEscalated = fixture?.is_escalated;
+
+  const getStatus = () => {
+    let status1 = 'Error';
+    let status2 = 'Unknown Status';
+    let color = '#9CA3AF'; // default gray
+
+    if (isComplete && !isApproved && isDisputed && !isAmended) {
+      status1 = 'Disputed';
+      status2 = 'Pending Home Amendment';
+      color = '#F59E0B'; // orange
+    }
+    if (isComplete && !isApproved && !isDisputed && !isAmended) {
+      status1 = 'Complete';
+      status2 = 'Pending Away Approval';
+      color = '#F59E0B';
+    }
+    if (isComplete && !isApproved && isAmended) {
+      status1 = 'Amended';
+      status2 = 'Pending Approval';
+      color = '#F59E0B';
+    }
+    if (!isComplete && !isApproved) {
+      status1 = 'Scheduled';
+      status2 = 'Awaiting Results';
+      color = '#3B82F6'; // blue
+    }
+    if (isEscalated && !isApproved) {
+      status1 = 'Escalated';
+      status2 = 'Requires Admin Intervention';
+      color = '#EF4444'; // red
+    }
+    if (isComplete && isApproved) {
+      status1 = 'Approved';
+      status2 = 'Match Complete';
+      color = '#10B981'; // green
+    }
+
+    return { status1, status2, color };
+  };
+
+  const status = getStatus();
+
   return (
     <View className="flex-1">
-      {/* Header */}
+      {/* Match header */}
       <View className="flex-row items-center justify-between gap-10 rounded-t-2xl bg-bg-3 p-3 shadow-sm">
         {/* Home */}
-        <View>
-          <View className="flex-row items-center gap-4">
+        <View className="items-start">
+          <View className="flex-row items-center justify-start gap-4">
             {isIndividual ? (
               <Avatar size={40} player={fixture?.homeCompetitor} />
             ) : (
               <TeamLogo size={40} {...fixture?.homeCompetitor?.crest} />
             )}
-            <Text className="font-saira-semibold text-3xl text-text-1">
+            <Text
+              style={{ lineHeight: 50 }}
+              className={`font-saira-semibold ${isIndividual ? 'text-3xl' : 'text-4xl'}`}>
               {isIndividual
                 ? fixture?.homeCompetitor?.nickname?.toUpperCase() ||
                   `(${fixture?.homeCompetitor?.first_name})`
                 : fixture?.homeCompetitor?.abbreviation}
             </Text>
           </View>
-          <Text className="text-text-2">{fixture?.homeCompetitor?.display_name}</Text>
+          <Text className="pl-1 font-saira-medium text-lg text-text-2">
+            {fixture?.homeCompetitor?.display_name}
+          </Text>
         </View>
 
         {/* Away */}
         <View className="items-end">
-          <View className="flex-row items-center gap-4">
-            <Text className="font-saira-semibold text-3xl text-text-1">
+          <View className="flex-row items-center justify-start gap-4">
+            <Text
+              style={{ lineHeight: 50 }}
+              className={`font-saira-semibold ${isIndividual ? 'text-3xl' : 'text-4xl'}`}>
               {isIndividual
                 ? fixture?.awayCompetitor?.nickname?.toUpperCase() ||
                   `(${fixture?.awayCompetitor?.first_name})`
                 : fixture?.awayCompetitor?.abbreviation}
             </Text>
-
             {isIndividual ? (
               <Avatar size={40} player={fixture?.awayCompetitor} />
             ) : (
               <TeamLogo size={40} {...fixture?.awayCompetitor?.crest} />
             )}
           </View>
-          <Text className="text-text-2">{fixture?.awayCompetitor?.display_name}</Text>
+          <Text className="pr-1 font-saira-medium text-lg text-text-2">
+            {fixture?.awayCompetitor?.display_name}
+          </Text>
         </View>
       </View>
 
-      {/* Content */}
-      <ScrollView className="flex-1 bg-bg-2">
-        <View className="gap-5 bg-bg-1 p-5">
+      <ScrollView
+        className="flex-1 bg-bg-2"
+        contentContainerStyle={{ flexGrow: 1, paddingTop: 8, gap: 8 }}
+        keyboardShouldPersistTaps="handled">
+        <View className="gap-2 bg-bg-1 p-5">
+          {/* Fixture details summary */}
+          <Heading text="Fixture Details" />
+
+          <View className="gap-3 rounded-2xl bg-bg-2 p-4 shadow-sm">
+            <View className="flex-row items-center gap-3">
+              <Ionicons name="calendar-outline" size={22} color="purple" />
+              <Text className="font-saira text-lg text-text-1">Date & Time</Text>
+              <Text className="flex-1 text-right font-saira-medium text-lg text-text-1">
+                {dateTime.toLocaleString('en-GB', {
+                  weekday: 'short',
+                  day: 'numeric',
+                  month: 'short',
+                  year: '2-digit',
+                  hour: '2-digit',
+                  minute: '2-digit',
+                })}
+              </Text>
+            </View>
+
+            <View className="h-px bg-theme-gray-4" />
+
+            <View className="flex-row items-start gap-3">
+              <View className=" flex-row items-center gap-3">
+                <Ionicons name="location-outline" size={22} color="purple" />
+                <Text className="font-saira text-lg text-text-1">Location</Text>
+              </View>
+              <Text
+                className={`flex-1 text-right font-saira-medium text-lg ${selectedVenueLabel === 'Select Venue' ? 'text-text-2' : 'text-text-1'}`}>
+                {selectedVenueLabel}
+              </Text>
+            </View>
+
+            <View className="h-px bg-theme-gray-4" />
+
+            <View className="flex-row items-start gap-3">
+              <View className=" flex-row items-center gap-3">
+                <Ionicons name="radio-button-on-outline" size={22} color="purple" />
+                <Text className="font-saira text-lg text-text-1">Status</Text>
+              </View>
+              <View className="flex-1 gap-1">
+                <View className="flex-row items-center justify-end gap-2">
+                  <View
+                    className="rounded-full"
+                    style={{
+                      backgroundColor: status.color,
+                      marginBottom: 2,
+                      width: 14,
+                      height: 14,
+                    }}
+                  />
+
+                  <Text className="text-right font-saira-medium text-lg text-text-1">
+                    {status.status1}
+                  </Text>
+                </View>
+                <Text className="flex-1 text-right font-saira text-sm text-text-2">
+                  {status.status2}
+                </Text>
+              </View>
+            </View>
+          </View>
+        </View>
+        <View className="w-full gap-5 bg-bg-1 p-5">
           <Heading text="Fixture Scheduling" />
 
           <PickerRow
@@ -179,47 +343,23 @@ const FixtureManagement = ({ fixtureId }) => {
             isExpanded={openPicker === 'time'}
             onToggle={() => togglePicker('time')}
           />
-
-          {/* Summary */}
-          <Heading text="Fixture Details" />
-
-          <View className="gap-3 rounded-2xl bg-bg-2 p-4">
-            <Text>
-              {dateTime.toLocaleString('en-GB', {
-                day: '2-digit',
-                month: 'short',
-                year: 'numeric',
-                hour: '2-digit',
-                minute: '2-digit',
-              })}
-            </Text>
-
-            <Text>
-              {[
-                fixture?.address?.name,
-                fixture?.address?.line1,
-                fixture?.address?.line2,
-                fixture?.address?.city,
-                fixture?.address?.postcode,
-              ]
-                .filter(Boolean)
-                .join(', ') || 'TBD'}
-            </Text>
-
-            <Text>{fixture?.status || 'TBD'}</Text>
-          </View>
+        </View>
+        <View className="w-full gap-5 bg-bg-1 p-5">
+          <Heading text="Fixture Venue" />
+          <CustomDropdown
+            options={venueOptions}
+            value={venueId}
+            onChange={(val) => setVenueId(val)}
+            leftIconName="location-outline"
+            iconColor="purple"
+            label="Select Venue"
+            placeholder="Select a Venue..."
+          />
         </View>
       </ScrollView>
 
-      {/* Save */}
       <View className="p-3 pb-16">
-        <CTAButton
-          text="Save Changes"
-          type="yellow"
-          callbackFn={() => {
-            console.log('Saving:', dateTime);
-          }}
-        />
+        <CTAButton text="Save Changes" type="yellow" callbackFn={() => dateTime} />
       </View>
     </View>
   );

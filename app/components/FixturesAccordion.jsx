@@ -1,5 +1,13 @@
 import { useState } from 'react';
-import { View, Text, Pressable, LayoutAnimation, Platform, UIManager } from 'react-native';
+import {
+  View,
+  Text,
+  Pressable,
+  LayoutAnimation,
+  Platform,
+  UIManager,
+  ActivityIndicator,
+} from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useGroupedFixtures } from '@hooks/useGroupedFixtures';
 import TeamLogo from '@components/TeamLogo';
@@ -47,10 +55,14 @@ const FixturesAccordion = ({ season, competitionInstance, isExpanded, onPress })
         <View>
           <Text className="font-saira-semibold text-xl text-text-1">{season?.name} Fixtures</Text>
           {!isExpanded && (
-            <Text className="font-saira-medium text-text-2">
-              {Object.keys(fixturesGrouped || {}).length} matchday
-              {Object.keys(fixturesGrouped || {}).length !== 1 ? 's' : ''}
-            </Text>
+            <View className="mt-1 flex-row items-center gap-2">
+              {isLoading && <ActivityIndicator size="small" color="gray" animating={isLoading} />}
+              <Text className="font-saira-medium text-text-2">
+                {isLoading
+                  ? 'Loading Fixtures...'
+                  : `${Object.keys(fixturesGrouped || {}).length} matchday${Object.keys(fixturesGrouped || {}).length !== 1 ? 's' : ''}`}
+              </Text>
+            </View>
           )}
         </View>
         {hasFixtures && (

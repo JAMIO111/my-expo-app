@@ -15,7 +15,6 @@ import CTAButton from '@components/CTAButton';
 import EditDivisionForm from '@components/EditDivisionForm';
 import GenerateFixturesForm from '@components/GenerateFixturesForm';
 import { useDivisions } from '@hooks/useDivisions';
-import InitiateCompetitionForm from '@components/InitiateCompetitionForm';
 import { useCompetitions } from '@hooks/useCompetitions';
 
 const DivisionOverview = () => {
@@ -223,19 +222,15 @@ const DivisionOverview = () => {
             competitionInstanceId={currentSeasonComp.id}
             closeModal={() => setShowModal(false)}
           />
-        ) : modalType === 'edit-division' ? (
+        ) : modalType === 'edit-division' || modalType === 'initiate-competition' ? (
           <EditDivisionForm
             competition={LeagueCompetition?.[0]}
             division={division}
-            closeModal={() => setShowModal(false)}
-          />
-        ) : (
-          <InitiateCompetitionForm
-            division={division}
             participants={teams}
             closeModal={() => setShowModal(false)}
+            context={modalType}
           />
-        )}
+        ) : null}
       </BottomSheetModal>
     </>
   );

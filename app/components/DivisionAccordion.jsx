@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { View, Text, Pressable, Platform, UIManager } from 'react-native';
+import { View, Text, Pressable, Platform, UIManager, ActivityIndicator } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import TeamLogo from '@components/TeamLogo';
 import { useRouter } from 'expo-router';
@@ -30,9 +30,14 @@ const DivisionAccordion = ({ isExpanded, onPress, divisionName, teams = [] }) =>
           <Text className="font-saira-semibold text-xl text-text-1">{divisionName}</Text>
 
           {!isExpanded && (
-            <Text className="font-saira-medium text-text-2">
-              {teams.length} team{teams.length !== 1 ? 's' : ''}
-            </Text>
+            <View className="mt-1 flex-row items-center gap-2">
+              {isLoading && <ActivityIndicator size="small" color="gray" animating={isLoading} />}
+              <Text className="font-saira-medium text-text-2">
+                {isLoading
+                  ? 'Loading teams...'
+                  : `${teams.length} team${teams.length !== 1 ? 's' : ''}`}
+              </Text>
+            </View>
           )}
         </View>
         {teamsExist && (

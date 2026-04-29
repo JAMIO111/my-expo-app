@@ -1,5 +1,5 @@
 import { useState, useRef } from 'react';
-import { StyleSheet, View, Text, Image, Pressable } from 'react-native';
+import { StyleSheet, View, Text, Image, Pressable, useColorScheme } from 'react-native';
 import { Stack, useLocalSearchParams } from 'expo-router';
 import { useUser } from '@contexts/UserProvider';
 import CustomHeader from '@components/CustomHeader';
@@ -14,7 +14,6 @@ import CTAButton from '@components/CTAButton';
 import { supabase } from '@lib/supabase';
 import { useQueryClient } from '@tanstack/react-query';
 import colors from '@lib/colors';
-import { useColorScheme } from 'react-native';
 import {
   checkEligibility,
   formatCompetitionType,

@@ -283,19 +283,24 @@ const TeamJoinRequests = ({ districtId, teamId }) => {
 
   if (isLoadingTeamRequests || isLoadingDivisionRequests) {
     return (
-      <View className="flex-1 items-center justify-center bg-bg-1 py-4">
-        <ActivityIndicator size="large" color="#555555" />
-        <Text className="mt-2 font-saira text-text-1">Loading requests...</Text>
+      <View className="flex-1 bg-bg-1 p-4">
+        <View className="flex-row items-center justify-center gap-5 rounded-2xl bg-bg-2 p-8 shadow-sm">
+          <ActivityIndicator size="small" color="#555555" />
+          <Text className="font-saira text-text-1">Loading Team Join Requests...</Text>
+        </View>
       </View>
     );
   }
 
   if (teamError || divisionError) {
     return (
-      <View className="flex-1 items-center justify-center bg-bg-1 py-4">
-        <Text className="text-center font-saira-medium text-theme-red">
-          Failed to load requests
-        </Text>
+      <View className="flex-1 bg-bg-1 p-4">
+        <View className="flex-row items-center justify-center gap-5 rounded-2xl bg-bg-2 p-8 shadow-sm">
+          <Ionicons name="warning" size={24} color="#E53E3E" />
+          <Text className="text-center font-saira-medium text-theme-red">
+            Failed to load requests
+          </Text>
+        </View>
       </View>
     );
   }
