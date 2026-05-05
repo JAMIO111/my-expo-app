@@ -1114,7 +1114,7 @@ const SubmitResultsScreen = () => {
                         text={submitting ? 'Submitting...' : 'Submit Final Result'}
                         type="success"
                         callbackFn={handleSubmit}
-                        disabled={submitting}
+                        disabled={saving || submitting}
                         loading={submitting}
                       />
                     </View>

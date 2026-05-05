@@ -200,7 +200,7 @@ const FixturesAccordion = ({ season, competitionInstance, isExpanded, onPress })
         </View>
       )}
       <BottomSheetModal title="Fixture Details" showModal={showModal} setShowModal={setShowModal}>
-        <FixtureManagement fixtureId={selectedFixture?.id} />
+        <FixtureManagement closeModal={() => setShowModal(false)} fixtureId={selectedFixture?.id} />
       </BottomSheetModal>
     </View>
   );

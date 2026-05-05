@@ -22,45 +22,30 @@ import { ScrollView } from 'react-native-gesture-handler';
 import LoadingScreen from './LoadingScreen';
 
 const LeagueTableWrapper = ({ context }) => {
+  const bottomSheetRef = useRef(null);
+  const { player, currentRole } = useUser();
   const colorScheme = useColorScheme();
   const themeColors = colors[colorScheme] || colors.light; // Fallback to light theme if colorScheme is undefined
-  const { player, currentRole } = useUser();
 
   // Default full objects from context
   const defaultDistrict = currentRole?.district || null;
-  const defaultDivision =
-    currentRole?.type === 'admin'
-      ? currentRole?.competitions?.filter((comp) => comp.division_tier === 1)?.[0]
-      : currentRole?.division;
   const defaultSeason = currentRole?.activeSeason || null;
   const defaultCompetitionInstance =
     currentRole?.competitions
       .filter((comp) => comp.competition_type === 'league')
       .sort((a, b) => a.division_tier - b.division_tier)?.[0] || null;
 
+  console.log('Default Competition Instance:', defaultCompetitionInstance);
+
+  const [activeFilter, setActiveFilter] = useState(null);
   const [district, setDistrict] = useState(defaultDistrict);
-  const [division, setDivision] = useState(defaultDivision);
-  const [season, setSeason] = useState(defaultSeason);
   const [tempDistrict, setTempDistrict] = useState(defaultDistrict);
-  const [tempDivision, setTempDivision] = useState(defaultDivision);
+  const [season, setSeason] = useState(defaultSeason);
   const [tempSeason, setTempSeason] = useState(defaultSeason);
+  const [competitionInstance, setCompetitionInstance] = useState(defaultCompetitionInstance);
   const [tempCompetitionInstance, setTempCompetitionInstance] = useState(
     defaultCompetitionInstance
   );
-  const [competitionInstance, setCompetitionInstance] = useState(defaultCompetitionInstance);
-
-  const [activeFilter, setActiveFilter] = useState(null);
-
-  const bottomSheetRef = useRef(null);
-
-  const openSheet = () => {
-    bottomSheetRef.current?.expand();
-  };
-
-  const closeSheet = () => {
-    console.log('Closing sheet...'); // Add this
-    bottomSheetRef.current?.close();
-  };
 
   // Fetch districts (no id needed)
   const {
@@ -82,24 +67,20 @@ const LeagueTableWrapper = ({ context }) => {
     error: competitionInstancesError,
   } = useCompetitionInstances(season?.id);
 
+  const leagueCompetitions = competitionInstances.filter(
+    (comp) => comp?.competition?.competition_type === 'league'
+  );
+
   // When district changes: reset division + season, fetch active season object
   useEffect(() => {
-    if (!district) {
-      setCompetitionInstance(null);
-      setSeason(null);
-      return;
-    }
+    if (!district) return;
 
     const init = async () => {
-      const active = await getActiveSeason(district?.id); // assume returns full season object
+      const active = await getActiveSeason(district?.id);
       setSeason(active);
       setTempSeason(active);
     };
 
-    setCompetitionInstance(null);
-    setTempCompetitionInstance(null);
-    setTempSeason(null);
-    setSeason(null);
     init();
   }, [district]);
 
@@ -109,7 +90,26 @@ const LeagueTableWrapper = ({ context }) => {
       const found = seasons.find((s) => s.id === defaultSeason.id);
       if (found) setSeason(found);
     }
+    if (competitionInstance?.season_id !== season.id) {
+      setCompetitionInstance(null); // 💥 Wipes the default
+      setTempCompetitionInstance(null);
+    }
   }, [seasons, defaultSeason, season]);
+
+  useEffect(() => {
+    if (defaultCompetitionInstance && !competitionInstance) {
+      setCompetitionInstance(defaultCompetitionInstance);
+      setTempCompetitionInstance(defaultCompetitionInstance);
+    }
+  }, [defaultCompetitionInstance]);
+
+  const openSheet = () => {
+    bottomSheetRef.current?.expand();
+  };
+
+  const closeSheet = () => {
+    bottomSheetRef.current?.close();
+  };
 
   // Loading or error fallback
   if (isDistrictsLoading || isSeasonsLoading || isCompetitionInstancesLoading) {
@@ -125,9 +125,6 @@ const LeagueTableWrapper = ({ context }) => {
     switch (activeFilter) {
       case 'district':
         setDistrict(tempDistrict);
-        break;
-      case 'division':
-        setDivision(tempDivision);
         break;
       case 'season':
         setSeason(tempSeason);
@@ -240,26 +237,6 @@ const LeagueTableWrapper = ({ context }) => {
               </Pressable>
             ))}
 
-          {activeFilter === 'division' &&
-            divisions.map((d) => (
-              <Pressable
-                className="mb-3 flex-row items-center justify-between"
-                key={d.id}
-                onPress={() => setTempDivision(d)}>
-                <Text
-                  className={`font-saira text-2xl ${
-                    tempDivision?.id === d.id ? 'text-text-1' : 'text-text-2'
-                  }`}>
-                  {d.name}
-                </Text>
-                <Ionicons
-                  size={24}
-                  color={themeColors.primaryText}
-                  name={tempDivision?.id === d.id ? 'checkbox' : 'square-outline'}
-                />
-              </Pressable>
-            ))}
-
           {activeFilter === 'season' &&
             seasons.map((s) => (
               <Pressable
@@ -280,26 +257,24 @@ const LeagueTableWrapper = ({ context }) => {
               </Pressable>
             ))}
           {activeFilter === 'competition' &&
-            competitionInstances
-              .filter((c) => c.status === 'active')
-              .map((c) => (
-                <Pressable
-                  className="mb-3 flex-row items-center justify-between"
-                  key={c.id}
-                  onPress={() => setTempCompetitionInstance(c)}>
-                  <Text
-                    className={`font-saira text-2xl ${
-                      tempCompetitionInstance?.id === c.id ? 'text-text-1' : 'text-text-2'
-                    }`}>
-                    {c.name}
-                  </Text>
-                  <Ionicons
-                    size={24}
-                    color={themeColors.primaryText}
-                    name={tempCompetitionInstance?.id === c.id ? 'checkbox' : 'square-outline'}
-                  />
-                </Pressable>
-              ))}
+            leagueCompetitions.map((c) => (
+              <Pressable
+                className="mb-3 flex-row items-center justify-between"
+                key={c.id}
+                onPress={() => setTempCompetitionInstance(c)}>
+                <Text
+                  className={`font-saira text-2xl ${
+                    tempCompetitionInstance?.id === c.id ? 'text-text-1' : 'text-text-2'
+                  }`}>
+                  {c.name}
+                </Text>
+                <Ionicons
+                  size={24}
+                  color={themeColors.primaryText}
+                  name={tempCompetitionInstance?.id === c.id ? 'checkbox' : 'square-outline'}
+                />
+              </Pressable>
+            ))}
         </BottomSheetScrollView>
       </BottomSheetWrapper>
     </View>

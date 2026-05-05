@@ -1,4 +1,4 @@
-import FixtureList from '@components/FixturesList';
+import FixturesList from '@components/FixturesList';
 import CustomHeader from '@components/CustomHeader';
 import SafeViewWrapper from '@components/SafeViewWrapper';
 import { Stack } from 'expo-router';
@@ -17,7 +17,7 @@ const Fixtures = () => {
         }}
       />
       <View className="mt-16 flex-1 bg-brand-dark">
-        <FixtureList />
+        <FixturesList />
       </View>
     </SafeViewWrapper>
   );

@@ -55,13 +55,13 @@ export function useSaveMatchResults(fixtureId, existingResults) {
         setSaving(false);
         return false;
       } else {
+        await queryClient.invalidateQueries(['results', fixtureId]);
+
         Toast.show({
           type: 'success',
           text1: 'Results Saved',
           text2: 'All frames have been successfully saved.',
         });
-
-        queryClient.invalidateQueries(['results', fixtureId]);
 
         setSaving(false);
         return true;

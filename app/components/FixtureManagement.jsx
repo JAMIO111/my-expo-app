@@ -12,8 +12,20 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import CustomDropdown from './CustomDropdown';
 import { useAddresses } from '@hooks/useAddresses';
 import { useUser } from '@contexts/UserProvider';
+import Toast from 'react-native-toast-message';
+import { supabase } from '@/lib/supabase';
+import { useQueryClient } from '@tanstack/react-query';
 
-const PickerRow = ({ icon, label, displayValue, mode, value, onChange, isExpanded, onToggle }) => (
+export const PickerRow = ({
+  icon,
+  label,
+  displayValue,
+  mode,
+  value,
+  onChange,
+  isExpanded,
+  onToggle,
+}) => (
   <View className="w-full items-center justify-center rounded-2xl bg-bg-2 shadow-sm">
     <Pressable
       onPress={onToggle}
@@ -55,15 +67,20 @@ const PickerRow = ({ icon, label, displayValue, mode, value, onChange, isExpande
 /* ─────────────────────────────────────────────────────────────
    Main component
 ───────────────────────────────────────────────────────────── */
-const FixtureManagement = ({ fixtureId }) => {
+const FixtureManagement = ({ fixtureId, closeModal }) => {
+  const queryClient = useQueryClient();
   const { currentRole } = useUser();
   const { data: fixture, isLoading } = useFixtureDetails(fixtureId);
 
   const { data: addresses } = useAddresses(currentRole?.district?.id);
   console.log('Addresses for district', currentRole?.district?.id, addresses);
 
+  const isHomeVenue = fixture?.venue_id === null;
+  const venueIdToUse = isHomeVenue ? fixture?.address?.id : fixture?.venue_id;
+
   const [dateTime, setDateTime] = useState(new Date());
-  const [venueId, setVenueId] = useState(null);
+  const [isSaving, setIsSaving] = useState(false);
+  const [venueId, setVenueId] = useState(venueIdToUse);
   const selectedVenue = addresses?.find((a) => a.id === venueId);
   const selectedVenueLabel = selectedVenue
     ? [
@@ -86,18 +103,6 @@ const FixtureManagement = ({ fixtureId }) => {
       subLabel: [addr.line_1, addr.line_2, addr.city, addr.postcode].filter(Boolean).join(', '),
     })) || [];
 
-  // Only set default when BOTH fixture + options exist
-  useEffect(() => {
-    if (!addresses?.length) return;
-    if (!fixture?.address?.id) return;
-
-    const exists = venueOptions.some((o) => o.value === fixture.address.id);
-
-    if (exists) {
-      setVenueId(fixture.address.id);
-    }
-  }, [addresses, fixture?.address?.id]);
-
   const togglePicker = useCallback((type) => {
     setOpenPicker((prev) => {
       if (prev === type) return null; // closing same — fine
@@ -112,13 +117,12 @@ const FixtureManagement = ({ fixtureId }) => {
   }, []);
 
   useEffect(() => {
-    if (fixture?.date_time) {
-      setDateTime(new Date(fixture.date_time));
-    }
-    if (fixture?.address?.id) {
+    if (!fixture) return;
+    if (fixture.date_time) setDateTime(new Date(fixture.date_time));
+    if (fixture.address?.id && addresses?.some((a) => a.id === fixture.address.id)) {
       setVenueId(fixture.address.id);
     }
-  }, [fixture?.date_time, fixture?.address?.id]);
+  }, [fixture, addresses]);
 
   // When the DATE portion changes: keep the existing hours/minutes.
   // This is what previously broke — iOS returned midnight UTC and
@@ -152,7 +156,11 @@ const FixtureManagement = ({ fixtureId }) => {
 
   const formatTime = (d) => d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
 
-  if (isLoading) return <LoadingScreen />;
+  const fixtureVenueId = fixture?.venue_id ?? fixture?.address?.id ?? null;
+
+  const isDirty =
+    (fixture?.date_time && new Date(fixture.date_time).getTime() !== dateTime.getTime()) ||
+    (venueId ?? null) !== fixtureVenueId;
 
   const isIndividual = fixture?.competitor_type === 'individual';
 
@@ -202,6 +210,55 @@ const FixtureManagement = ({ fixtureId }) => {
   };
 
   const status = getStatus();
+
+  console.log('venueId:', venueId);
+
+  const handleSave = async () => {
+    setIsSaving(true);
+    try {
+      const { error } = await supabase.rpc('update_fixture_schedule', {
+        p_fixture_id: fixtureId,
+        p_date_time: dateTime.toISOString(),
+        p_venue_id: venueId ?? null,
+      });
+
+      if (error) throw error;
+
+      await Promise.all([
+        queryClient.invalidateQueries(['fixture-details', fixtureId]),
+        queryClient.invalidateQueries([
+          'fixtures-grouped',
+          new Date(fixture?.date_time).getMonth(),
+          fixture.season,
+          fixture.competition_instance_id,
+        ]),
+        queryClient.invalidateQueries([
+          'fixtures-grouped',
+          new Date(dateTime).getMonth(),
+          fixture.season,
+          fixture.competition_instance_id,
+        ]),
+      ]);
+      Toast.show({
+        type: 'success',
+        text1: 'Fixture Updated',
+        text2: "The fixture's details have been successfully updated.",
+      });
+    } catch (error) {
+      console.error('Error saving fixture:', error);
+
+      Toast.show({
+        type: 'error',
+        text1: 'Error Updating Fixture',
+        text2: error?.message || 'Something went wrong while updating the fixture.',
+      });
+    } finally {
+      setIsSaving(false);
+      closeModal();
+    }
+  };
+
+  if (isLoading) return <LoadingScreen />;
 
   return (
     <View className="flex-1">
@@ -254,7 +311,7 @@ const FixtureManagement = ({ fixtureId }) => {
 
       <ScrollView
         className="flex-1 bg-bg-2"
-        contentContainerStyle={{ flexGrow: 1, paddingTop: 8, gap: 8 }}
+        contentContainerStyle={{ flexGrow: 1, paddingTop: 8, gap: 8, paddingBottom: 160 }}
         keyboardShouldPersistTaps="handled">
         <View className="gap-2 bg-bg-1 p-5">
           {/* Fixture details summary */}
@@ -357,9 +414,18 @@ const FixtureManagement = ({ fixtureId }) => {
           />
         </View>
       </ScrollView>
-
-      <View className="p-3 pb-16">
-        <CTAButton text="Save Changes" type="yellow" callbackFn={() => dateTime} />
+      <View className="absolute bottom-0 left-0 right-0 p-5 pb-8">
+        <View
+          style={{ borderRadius: 28 }}
+          className="border border-theme-gray-3 bg-bg-1/80 p-5 shadow-md backdrop-blur-lg">
+          <CTAButton
+            text="Save Changes"
+            disabled={!isDirty}
+            type="yellow"
+            loading={isSaving}
+            callbackFn={handleSave}
+          />
+        </View>
       </View>
     </View>
   );

@@ -165,7 +165,7 @@ const FixturePage = ({ fixtureDetails, isLoading, context }) => {
                   <View className="flex-row items-center justify-around px-2">
                     <Text
                       style={{ lineHeight: 32 }}
-                      className="items-center justify-center gap-2 rounded-xl bg-theme-gray-5 px-4 py-1 text-center font-saira-medium text-lg text-text-1 shadow-sm">
+                      className="items-center justify-center gap-2 rounded-xl border border-theme-orange/40 bg-theme-orange/20 px-2 text-center font-saira-medium text-lg text-theme-orange">
                       Pending Confirmation
                     </Text>
                   </View>
@@ -173,7 +173,7 @@ const FixturePage = ({ fixtureDetails, isLoading, context }) => {
                   <View className="flex-row items-center justify-around px-2">
                     <Text
                       style={{ lineHeight: 32 }}
-                      className="items-center justify-center gap-2 rounded-xl border border-theme-red px-3 py-0.5 text-center font-saira-medium text-lg text-theme-red shadow-sm">
+                      className="items-center justify-center gap-2 rounded-xl border border-theme-red/40 bg-theme-red/20 px-2 text-center font-saira-medium text-lg text-theme-red">
                       Awaiting Results
                     </Text>
                   </View>

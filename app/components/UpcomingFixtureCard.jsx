@@ -60,8 +60,8 @@ const UpcomingFixtureCard = ({ fixture, inactive = false, cardShadow }) => {
           </Text>
         </View>
       </View>
-      <View className="flex-row items-center justify-center gap-2">
-        <Text className="font-saira text-text-2">
+      <View className="flex-row items-center justify-center gap-3 px-2">
+        <Text className="flex-1 text-center font-saira text-sm text-text-2">
           {new Date(fixture?.date_time)?.toLocaleString('en-GB', {
             timeZone: 'Europe/London',
             weekday: 'short',
@@ -74,9 +74,9 @@ const UpcomingFixtureCard = ({ fixture, inactive = false, cardShadow }) => {
           })}
         </Text>
         {new Date(fixture?.date_time) < new Date() && !fixture?.is_complete && (
-          <View className="flex-row items-center gap-1">
-            <View className="h-3 w-3 rounded-full bg-theme-red"></View>
-            <Text className="font-saira text-theme-red">Live</Text>
+          <View className="flex-row items-center gap-1 rounded-lg bg-theme-red/10 px-2 py-1">
+            <View className="h-2.5 w-2.5 rounded-full bg-theme-red"></View>
+            <Text className="font-saira text-sm text-theme-red">Live</Text>
           </View>
         )}
       </View>

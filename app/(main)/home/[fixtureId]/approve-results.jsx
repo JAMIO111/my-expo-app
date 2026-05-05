@@ -72,7 +72,7 @@ const ApproveResults = () => {
         throw error;
       }
       console.log('Results approved successfully'); // Show success toast or redirect
-      queryClient.invalidateQueries([
+      await queryClient.invalidateQueries([
         'FixturesAwaitingResults',
         type,
         competitorId,
@@ -106,7 +106,7 @@ const ApproveResults = () => {
       if (error) {
         throw error;
       }
-      queryClient.invalidateQueries(['results', fixtureId]);
+      await queryClient.invalidateQueries(['results', fixtureId]);
       Toast.show({
         type: 'success',
         text1: 'Results Disputed',

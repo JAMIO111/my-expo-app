@@ -21,8 +21,16 @@ const DivisionOverview = () => {
   const { currentRole } = useUser();
   const { divisionId } = useLocalSearchParams();
   const { data: divisions } = useDivisions(currentRole?.district?.id);
-  const { data: teams, isLoading, isError } = useTeamsByDivision(divisionId);
-  const { data: LeagueCompetition } = useCompetitions({
+  const {
+    data: teams,
+    isLoading: isTeamsLoading,
+    isError: isTeamsError,
+  } = useTeamsByDivision(divisionId);
+  const {
+    data: LeagueCompetition,
+    isLoading: isCompetitionsLoading,
+    isError: isCompetitionsError,
+  } = useCompetitions({
     divisionId: divisionId,
     competitionType: 'league',
   });
@@ -35,11 +43,6 @@ const DivisionOverview = () => {
   const [showModal, setShowModal] = useState(false);
 
   const division = divisions?.find((d) => d.id === divisionId) || {};
-
-  console.log('Division Overview for:', division);
-  console.log('Teams in Division:', teams);
-  console.log('Error loading teams:', isError);
-  console.log('Competition Instance:', competitionInstance);
 
   const currentSeasonComp = currentRole?.competitions?.find(
     (comp) =>
@@ -125,6 +128,83 @@ const DivisionOverview = () => {
               </View>
             </ExpandableView>
           </View>
+          <ExpandableView
+            title="Active Competition"
+            show={showActiveCompetition}
+            setShow={setShowActiveCompetition}
+            fixedOpen={!currentSeasonComp && !isCompetitionsLoading}>
+            {!currentRole?.activeSeason ? (
+              <View className="mb-4 rounded-2xl bg-bg-2 px-4 py-1 shadow-sm">
+                <Text className="px-1 py-3 text-center font-saira text-lg text-text-2">
+                  There is no active season. Please come back once the new season has been
+                  initiated.
+                </Text>
+              </View>
+            ) : !currentSeasonComp && !isCompetitionsLoading ? (
+              <View className="mx-2 my-2">
+                <CTAButton
+                  type="yellow"
+                  text={`Initiate ${currentRole?.activeSeason?.name} competition`}
+                  callbackFn={() => {
+                    setShowModal(true);
+                    setModalType('initiate-competition');
+                  }}
+                />
+                <Text className="mt-4 px-2 font-saira text-sm text-text-2">
+                  You haven't initiated a competition for the {currentRole.activeSeason.name} season
+                  yet. Please initiate a competition to start adding fixtures and teams.
+                </Text>
+              </View>
+            ) : (
+              <View className="mb-4 gap-2 rounded-2xl bg-bg-2 p-4 shadow-sm">
+                <Text className="font-saira-semibold text-xl text-text-1">
+                  {`${currentRole?.activeSeason?.name} ${currentSeasonComp?.name || 'Competition'} - ${currentSeasonComp?.status
+
+                    .charAt(0)
+                    .toUpperCase()}${currentSeasonComp?.status.slice(1)}`}
+                </Text>
+                <Text className="font-saira-medium text-text-2">{`Initiated ${new Date(
+                  currentSeasonComp?.created_at
+                ).toLocaleDateString('en-GB', {
+                  weekday: 'short',
+                  day: 'numeric',
+                  month: 'short',
+                  year: '2-digit',
+                  hour: '2-digit',
+                  minute: '2-digit',
+                })}`}</Text>
+              </View>
+            )}
+          </ExpandableView>
+          {currentSeasonComp && (
+            <View className="gap-3 bg-bg-1 p-3 py-6">
+              <View className="">
+                <Heading text="Fixtures" />
+              </View>
+              <FixturesAccordion
+                isExpanded={expandedAccordion === 'fixtures'}
+                onPress={() =>
+                  setExpandedAccordion(expandedAccordion === 'fixtures' ? null : 'fixtures')
+                }
+                season={currentRole.activeSeason}
+                competitionInstance={currentSeasonComp}
+              />
+              {currentRole?.type === 'admin' &&
+                currentSeasonComp &&
+                !currentSeasonComp?.fixtures_generated && (
+                  <View className="mt-3">
+                    <CTAButton
+                      type="yellow"
+                      text={`Generate ${currentRole.activeSeason.name} fixtures`}
+                      callbackFn={() => {
+                        setModalType('generate-fixtures');
+                        setShowModal(true);
+                      }}
+                    />
+                  </View>
+                )}
+            </View>
+          )}
           <View className="gap-3 bg-bg-1 p-3 py-6">
             <View className="">
               <Heading text="Division Members" />
@@ -138,73 +218,6 @@ const DivisionOverview = () => {
               teams={teams || []}
             />
           </View>
-          <View className="gap-3 bg-bg-1 p-3 py-6">
-            <View className="">
-              <Heading text="Fixtures" />
-            </View>
-            <FixturesAccordion
-              isExpanded={expandedAccordion === 'fixtures'}
-              onPress={() =>
-                setExpandedAccordion(expandedAccordion === 'fixtures' ? null : 'fixtures')
-              }
-              season={currentRole.activeSeason}
-              competitionInstance={currentSeasonComp}
-            />
-            {currentRole?.type === 'admin' &&
-              currentSeasonComp &&
-              !currentSeasonComp?.fixtures_generated && (
-                <View className="mt-3">
-                  <CTAButton
-                    type="yellow"
-                    text={`Generate ${currentRole.activeSeason.name} fixtures`}
-                    callbackFn={() => {
-                      setModalType('generate-fixtures');
-                      setShowModal(true);
-                    }}
-                  />
-                </View>
-              )}
-          </View>
-          {currentRole?.activeSeason && (
-            <ExpandableView
-              title="Active Competition"
-              show={showActiveCompetition}
-              setShow={setShowActiveCompetition}
-              fixedOpen={!currentSeasonComp}>
-              {currentSeasonComp ? (
-                <View className="mx-2 my-4">
-                  <CTAButton
-                    type="yellow"
-                    text={`Initiate ${currentRole?.activeSeason?.name} competition`}
-                    callbackFn={() => {
-                      setShowModal(true);
-                      setModalType('initiate-competition');
-                    }}
-                  />
-                </View>
-              ) : (
-                <View className="mx-2 my-4 gap-3">
-                  <Text className="font-saira-medium text-xl text-text-1">
-                    {`${currentRole?.activeSeason?.name} ${currentSeasonComp?.name || 'Competition'} - ${currentSeasonComp?.status
-
-                      .charAt(0)
-                      .toUpperCase()}${currentSeasonComp?.status.slice(1)}`}
-                  </Text>
-                  <Text className="font-saira text-lg text-text-2">{`Initiated ${new Date(
-                    currentSeasonComp?.created_at
-                  ).toLocaleDateString('en-GB', {
-                    weekday: 'short',
-                    day: 'numeric',
-                    month: 'short',
-                    year: '2-digit',
-                    hour: '2-digit',
-                    minute: '2-digit',
-                  })}`}</Text>
-                  <View className="my-4"></View>
-                </View>
-              )}
-            </ExpandableView>
-          )}
         </ScrollView>
       </SafeViewWrapper>
       <BottomSheetModal

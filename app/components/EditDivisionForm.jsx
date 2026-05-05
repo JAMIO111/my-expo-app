@@ -102,13 +102,13 @@ const EditDivisionForm = ({ competition, division, participants, closeModal, con
   };
 
   const allSelected =
-    participants.length > 0 && selectedParticipants.length === participants.length;
+    participants?.length > 0 && selectedParticipants?.length === participants?.length;
 
   const toggleSelectAll = () => {
     if (allSelected) {
       setSelectedParticipants([]);
     } else {
-      setSelectedParticipants(participants.map((p) => p.id));
+      setSelectedParticipants(participants?.map((p) => p.id) || []);
     }
   };
 
@@ -245,7 +245,7 @@ const EditDivisionForm = ({ competition, division, participants, closeModal, con
   };
 
   const handleInitiateCompetition = async () => {
-    if (!selectedParticipants || selectedParticipants.length < 2) {
+    if (!selectedParticipants || selectedParticipants?.length < 2) {
       Toast.show({
         type: 'info',
         text1: 'Not Enough Participants',
@@ -343,8 +343,10 @@ const EditDivisionForm = ({ competition, division, participants, closeModal, con
   };
 
   return (
-    <View className="flex-1 gap-4 bg-bg-1 pb-16">
-      <ScrollView contentContainerStyle={{ gap: 8 }} className="flex-1 gap-4 bg-bg-2">
+    <View className="flex-1 gap-4 bg-bg-1">
+      <ScrollView
+        contentContainerStyle={{ gap: 8, paddingBottom: 140 }}
+        className="flex-1 gap-4 bg-bg-2">
         <View className="gap-4 bg-bg-1 p-5">
           <Heading text="Division Settings" />
           {context === 'edit-division' && (
@@ -656,7 +658,7 @@ const EditDivisionForm = ({ competition, division, participants, closeModal, con
             show={showParticipants}
             setShow={setShowParticipants}>
             <View className="my-4 flex-1 items-center justify-center gap-4 rounded-lg pl-2 pr-3">
-              {participants.length === 0 ? (
+              {participants?.length === 0 ? (
                 <View className="w-full rounded-2xl bg-bg-2 py-8 shadow-sm">
                   <Text className="text-center font-saira text-lg text-text-2">
                     No teams in this division.
@@ -712,12 +714,16 @@ const EditDivisionForm = ({ competition, division, participants, closeModal, con
           </ExpandableView>
         )}
       </ScrollView>
-      <View className="px-5">
-        <CTAButton
-          type="yellow"
-          text={context === 'edit-division' ? 'Save Changes' : 'Initiate Competition'}
-          callbackFn={context === 'edit-division' ? handleSave : handleInitiateCompetition}
-        />
+      <View className="absolute bottom-0 left-0 right-0 p-5">
+        <View
+          style={{ borderRadius: 28 }}
+          className="border border-theme-gray-3 bg-bg-1/80 p-5 shadow-md backdrop-blur-lg">
+          <CTAButton
+            type="yellow"
+            text={context === 'edit-division' ? 'Save Changes' : 'Initiate Competition'}
+            callbackFn={context === 'edit-division' ? handleSave : handleInitiateCompetition}
+          />
+        </View>
       </View>
       <BottomSheetWrapper
         marginTop={50}

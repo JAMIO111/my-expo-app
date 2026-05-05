@@ -13,7 +13,7 @@ export default function AppRealtimeProvider({ children }) {
   const appState = useRef(AppState.currentState);
 
   const subscribe = () => {
-    if (!currentRole?.team?.id) return;
+    if (currentRole) return;
     if (isSubscribedRef.current) return; // 🛑 prevent duplicates
 
     console.log('Subscribing to realtime channels...');
@@ -79,13 +79,46 @@ export default function AppRealtimeProvider({ children }) {
     const fixtures = supabase
       .channel('fixtures-channel')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'Fixtures' }, (payload) => {
-        const month = payload.new ? new Date(payload.new.date_time).getMonth() : null;
+        const oldMonth = payload.old?.date_time ? new Date(payload.old.date_time).getMonth() : null;
+        const newMonth = payload.new?.date_time ? new Date(payload.new.date_time).getMonth() : null;
         const seasonId = payload.new?.season ?? payload.old?.season;
         const divisionId = payload.new?.division ?? payload.old?.division;
+        const fixtureId = payload.new?.id ?? payload.old?.id;
+        const competitionInstanceId =
+          payload.new?.competition_instance_id ?? payload.old?.competition_instance_id;
+        const oldVenue = payload.old?.venue_id;
+        const newVenue = payload.new?.venue_id;
 
-        if (month != null && seasonId && divisionId) {
-          queryClient.invalidateQueries(['fixtures-grouped', month, seasonId, divisionId]);
-          queryClient.invalidateQueries(['results-grouped', month, seasonId, divisionId]);
+        queryClient.invalidateQueries(['fixture-details', fixtureId]);
+
+        if (newMonth !== oldMonth || newVenue !== oldVenue) {
+          queryClient.invalidateQueries([
+            'fixtures-grouped',
+            oldMonth,
+            seasonId,
+            competitionInstanceId,
+          ]);
+          queryClient.invalidateQueries([
+            'fixtures-grouped',
+            newMonth,
+            seasonId,
+            competitionInstanceId,
+          ]);
+        }
+
+        if (newMonth && oldMonth && seasonId && divisionId) {
+          queryClient.invalidateQueries([
+            'results-grouped',
+            newMonth,
+            seasonId,
+            competitionInstanceId,
+          ]);
+          queryClient.invalidateQueries([
+            'results-grouped',
+            oldMonth,
+            seasonId,
+            competitionInstanceId,
+          ]);
         }
       })
       .subscribe((status) => console.log('Fixtures:', status));
@@ -128,7 +161,7 @@ export default function AppRealtimeProvider({ children }) {
       unsubscribe();
       sub.remove();
     };
-  }, [currentRole?.team?.id]);
+  }, [currentRole]);
 
   return children;
 }

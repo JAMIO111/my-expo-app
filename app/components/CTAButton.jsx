@@ -73,16 +73,16 @@ const CTAButton = ({
             <ActivityIndicator size="small" color={iconColor} />
             <Text
               style={{ color: buttonTheme.text }}
-              className={`flex-1 py-1 text-center ${fontWeight} ${textSize}`}>
+              className={`py-1 text-center ${fontWeight} ${textSize}`}>
               {text}
             </Text>
           </View>
         ) : (
-          <View className="flex-row items-center justify-center gap-3 px-2">
+          <View className="flex-row items-center justify-center gap-5 px-2">
             {icon && icon}
             <Text
               style={{ color: buttonTheme.text }}
-              className={`flex-1 py-1 text-center ${fontWeight} ${textSize}`}>
+              className={`py-1 text-center ${fontWeight} ${textSize}`}>
               {text}
             </Text>
           </View>
