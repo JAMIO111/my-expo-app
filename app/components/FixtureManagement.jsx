@@ -25,19 +25,31 @@ export const PickerRow = ({
   onChange,
   isExpanded,
   onToggle,
+  backgroundColor = 'bg-bg-2',
 }) => (
-  <View className="w-full items-center justify-center rounded-2xl bg-bg-2 shadow-sm">
+  <View className={`w-full items-center justify-center rounded-xl shadow-sm ${backgroundColor}`}>
     <Pressable
       onPress={onToggle}
-      className={`flex-row items-center gap-2 p-4 ${isExpanded ? 'border-b border-theme-gray-4' : ''}`}>
-      <Ionicons name={icon} size={20} color="purple" />
-      <Text className="pl-2 font-saira text-xl text-text-1">{label}</Text>
-      <Text className="flex-1 text-right font-saira-medium text-xl text-text-1">
-        {displayValue}
-      </Text>
+      className={`flex-row items-center gap-2 p-4 pr-3 ${isExpanded ? 'border-b border-theme-gray-4' : ''}`}>
+      <Ionicons name={icon} size={24} color="#8B5CF6" />
+
+      <View className="flex-1 flex-row items-center justify-between gap-3">
+        <Text
+          adjustsFontSizeToFit
+          numberOfLines={1}
+          className="flex-1 pl-2 font-saira text-xl text-text-1">
+          {label}
+        </Text>
+        <Text
+          adjustsFontSizeToFit
+          numberOfLines={1}
+          className="flex-1 text-right font-saira-medium text-xl text-text-1">
+          {displayValue}
+        </Text>
+      </View>
       <Ionicons
         name={isExpanded ? 'chevron-up' : 'chevron-down'}
-        size={16}
+        size={20}
         color="#9CA3AF"
         style={{ marginLeft: 6 }}
       />

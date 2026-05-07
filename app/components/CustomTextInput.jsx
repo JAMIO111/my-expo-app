@@ -11,7 +11,7 @@ const CustomTextInput = forwardRef((props, ref) => {
     title,
     leftIconName,
     leftIconSize = 24,
-    iconColor = '#9CA3AF',
+    iconColor = '#8B5CF6',
     keyboardType = 'default',
     clearButtonMode = 'while-editing',
     editable = true,
@@ -23,6 +23,7 @@ const CustomTextInput = forwardRef((props, ref) => {
     autoCapitalize = 'none',
     autoCorrect = false,
     textContentType = 'none',
+    onBlur,
   } = props;
 
   // Handles numeric input enforcement
@@ -69,6 +70,7 @@ const CustomTextInput = forwardRef((props, ref) => {
           textContentType={textContentType}
           autoCapitalize={autoCapitalize}
           autoCorrect={autoCorrect}
+          onBlur={onBlur}
         />
       </View>
     </View>

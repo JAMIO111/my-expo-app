@@ -165,7 +165,9 @@ const CustomDropdown = ({
         </View>
 
         <Text
-          className={`flex-1 pl-5 font-saira text-xl ${
+          numberOfLines={1}
+          adjustsFontSizeToFit
+          className={`flex-1 pl-3 pr-2 font-saira text-xl ${
             value ? 'font-saira-medium text-text-1' : 'text-gray-400'
           }`}>
           {selectedLabel ?? placeholder}
@@ -217,7 +219,7 @@ const CustomDropdown = ({
 
               {/* Search bar — only shown when searchable and enough options */}
               {searchable && options.length > 4 && (
-                <View className="mx-3 mb-1 mt-3 h-10 flex-row items-center rounded-xl border border-theme-gray-3 bg-input-background px-3">
+                <View className="mx-3 mb-1 mt-3 h-12 flex-row items-center rounded-xl border border-theme-gray-3 bg-input-background px-3">
                   <Ionicons name="search" size={16} color="#9CA3AF" style={{ marginRight: 8 }} />
                   <TextInput
                     value={query}

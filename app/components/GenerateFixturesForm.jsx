@@ -1,25 +1,201 @@
-import { View, Text, Switch, ScrollView } from 'react-native';
-import { useState } from 'react';
+import { View, Text, ScrollView } from 'react-native';
+import { useState, useEffect } from 'react';
 import CustomTextInput from './CustomTextInput';
 import CTAButton from './CTAButton';
 import { supabase } from '@lib/supabase';
 import Toast from 'react-native-toast-message';
 import { PickerRow } from './FixtureManagement';
 import Heading from './Heading';
+import CustomDropdown from './CustomDropdown';
+
+// ─── Constants ───────────────────────────────────────────────────────────────
+
+const DAY_OPTIONS = [
+  { label: 'Sunday', value: 0 },
+  { label: 'Monday', value: 1 },
+  { label: 'Tuesday', value: 2 },
+  { label: 'Wednesday', value: 3 },
+  { label: 'Thursday', value: 4 },
+  { label: 'Friday', value: 5 },
+  { label: 'Saturday', value: 6 },
+];
+
+const OCCURRENCE_OPTIONS = [
+  { label: '1st', value: 1 },
+  { label: '2nd', value: 2 },
+  { label: '3rd', value: 3 },
+  { label: '4th', value: 4 },
+  { label: 'Last', value: -1 },
+];
+
+const FREQUENCY_OPTIONS = [
+  { label: 'Weekly', value: 'weeks' },
+  { label: 'Monthly', value: 'months' },
+];
+
+// ─── Helpers ─────────────────────────────────────────────────────────────────
+
+const ordinal = (n) => {
+  if (n === -1) return 'Last';
+  const s = ['th', 'st', 'nd', 'rd'];
+  const v = n % 100;
+  return n + (s[(v - 20) % 10] || s[v] || s[0]);
+};
+
+const makeDefaultSlot = (frequencyType) =>
+  frequencyType === 'months'
+    ? { occurrence: 1, dayOfWeek: 4, time: '20:00' }
+    : { dayOfWeek: 4, time: '20:00' };
+
+const resizeSlots = (current, nextCount, frequencyType) => {
+  const slots = [...current];
+  while (slots.length < nextCount) {
+    slots.push(makeDefaultSlot(frequencyType));
+  }
+  return slots.slice(0, nextCount);
+};
+
+const slotLabel = (slot, index, frequencyType) => {
+  const day = DAY_OPTIONS.find((d) => d.value === slot.dayOfWeek)?.label ?? '—';
+  if (frequencyType === 'months') {
+    const occ = ordinal(slot.occurrence);
+    return `Slot ${index + 1} · ${occ} ${day} at ${slot.time}`;
+  }
+  return `Slot ${index + 1} · ${day} at ${slot.time}`;
+};
+
+const timeToDate = (timeStr) => {
+  const [hours, minutes] = timeStr.split(':').map(Number);
+  const d = new Date();
+  d.setHours(hours, minutes, 0, 0);
+  return d;
+};
+
+// This was fine, but explicit is safer
+const dateToTime = (date) => {
+  const h = date.getHours().toString().padStart(2, '0');
+  const m = date.getMinutes().toString().padStart(2, '0');
+  return `${h}:${m}`;
+};
+
+const formatDate = (d) =>
+  d.toLocaleDateString('en-GB', {
+    weekday: 'short',
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric',
+  });
+
+// ─── SlotEditor ──────────────────────────────────────────────────────────────
+
+const SlotEditor = ({ slot, index, frequencyType, openPicker, onTogglePicker, onChange }) => {
+  const timePickerKey = `slot-time-${index}`;
+
+  const handleTimeChange = (selected) => {
+    onChange('time', dateToTime(selected));
+  };
+
+  return (
+    <View className="gap-3 rounded-2xl border-theme-gray-3 bg-bg-2 p-4 shadow-sm">
+      {/* Slot header */}
+      <Text className="px-1 font-saira-medium text-text-1">
+        {slotLabel(slot, index, frequencyType)}
+      </Text>
+
+      {/* Monthly-only: occurrence picker */}
+      {frequencyType === 'months' && (
+        <CustomDropdown
+          leftIconName="layers-outline"
+          iconColor="#8B5CF6"
+          title="Week of month"
+          titleColor="text-text-1"
+          placeholder="Select occurrence"
+          options={OCCURRENCE_OPTIONS}
+          value={slot.occurrence}
+          onChange={(value) => onChange('occurrence', value)}
+        />
+      )}
+
+      {/* Day of week */}
+      <CustomDropdown
+        leftIconName="calendar-outline"
+        iconColor="#8B5CF6"
+        title="Day of week"
+        titleColor="text-text-1"
+        placeholder="Select day"
+        options={DAY_OPTIONS}
+        value={slot.dayOfWeek}
+        onChange={(value) => onChange('dayOfWeek', value)}
+      />
+
+      {/* Time */}
+      <PickerRow
+        icon="time-outline"
+        label="Match time"
+        displayValue={slot.time}
+        mode="time"
+        value={timeToDate(slot.time)}
+        onChange={handleTimeChange}
+        isExpanded={openPicker === timePickerKey}
+        onToggle={() => onTogglePicker(timePickerKey)}
+        backgroundColor="bg-bg-1"
+      />
+    </View>
+  );
+};
+
+// ─── Main component ───────────────────────────────────────────────────────────
 
 const GenerateFixturesForm = ({
   competitionInstanceId,
   startDate = new Date(),
-  matchTime = '20:00',
-  frequencyType = 'days',
-  interval = 7,
-  selectedDays = [4],
+  frequencyType = 'weeks',
+  interval = 1,
 }) => {
   const [fixturePreview, setFixturePreview] = useState([]);
+  const [generatingPreview, setGeneratingPreview] = useState(false);
   const [generatingFixtures, setGeneratingFixtures] = useState(false);
   const [openPicker, setOpenPicker] = useState(null);
   const [startDateState, setStartDateState] = useState(startDate);
   const [excludedRanges, setExcludedRanges] = useState([]);
+  const [frequencyTypeState, setFrequencyTypeState] = useState(frequencyType);
+  const [intervalState, setIntervalState] = useState(interval);
+  const [intervalInput, setIntervalInput] = useState(interval.toString());
+  const [roundsState, setRoundsState] = useState(2); // For simplicity, fixed at 2 rounds for now
+
+  // Each slot holds the schedule config for one matchday per period
+  const [slots, setSlots] = useState(() =>
+    Array.from({ length: interval }, () => makeDefaultSlot(frequencyType))
+  );
+
+  // Keep slots in sync when frequency type or interval changes
+  useEffect(() => {
+    setSlots((prev) => {
+      // Re-shape existing slots to match new frequency type (add/remove occurrence field)
+      const reshaped = prev.map((s) =>
+        frequencyTypeState === 'months'
+          ? { occurrence: s.occurrence ?? 1, dayOfWeek: s.dayOfWeek, time: s.time }
+          : { dayOfWeek: s.dayOfWeek, time: s.time }
+      );
+      return resizeSlots(reshaped, Math.max(1, intervalState || 1), frequencyTypeState);
+    });
+  }, [frequencyTypeState, intervalState]);
+
+  useEffect(() => {
+    const max = frequencyTypeState === 'weeks' ? 7 : 4;
+    const clamped = Math.min(intervalState, max);
+    if (clamped !== intervalState) {
+      setIntervalState(clamped);
+      setIntervalInput(clamped.toString());
+    }
+    setSlots((prev) => resizeSlots(prev, Math.max(1, clamped), frequencyTypeState));
+  }, [frequencyTypeState, intervalState]);
+
+  const updateSlot = (index, field, value) => {
+    setSlots((prev) => prev.map((s, i) => (i === index ? { ...s, [field]: value } : s)));
+  };
+
+  // ── Excluded ranges ──────────────────────────────────────────────────────
 
   const updateRange = (id, field, value) => {
     setExcludedRanges((prev) => prev.map((r) => (r.id === id ? { ...r, [field]: value } : r)));
@@ -36,61 +212,85 @@ const GenerateFixturesForm = ({
     setExcludedRanges((prev) => prev.filter((r) => r.id !== id));
   };
 
-  const formatDate = (d) =>
-    d.toLocaleDateString('en-GB', {
-      weekday: 'short',
-      day: '2-digit',
-      month: 'short',
-      year: 'numeric',
-    });
+  const formatLocalDate = (date) => {
+    const d = new Date(date);
+    const yyyy = d.getFullYear();
+    const mm = String(d.getMonth() + 1).padStart(2, '0');
+    const dd = String(d.getDate()).padStart(2, '0');
+    return `${yyyy}-${mm}-${dd}`;
+  };
 
   const formattedRanges = excludedRanges
     .filter((r) => r.start && r.end)
     .map((r) => ({
-      start_date: r.start,
-      end_date: r.end,
+      start_date: formatLocalDate(r.start),
+      end_date: formatLocalDate(r.end),
     }));
 
-  const togglePicker = (picker) => {
-    if (openPicker === picker) {
-      setOpenPicker(null);
-    } else {
-      setOpenPicker(picker);
-    }
-  };
+  // ── Pickers ──────────────────────────────────────────────────────────────
 
-  const handleDateChange = (event, selected) => {
-    const currentDate = selected || startDateState;
-    setStartDateState(currentDate);
+  const togglePicker = (picker) => setOpenPicker((prev) => (prev === picker ? null : picker));
+
+  const handleStartDateChange = (selected) => {
+    setStartDateState(selected);
     setOpenPicker(null);
   };
 
+  // ── Summary label ─────────────────────────────────────────────────────────
+
+  const getSummaryLabel = () => {
+    const n = intervalState;
+    if (!n || n < 1) return null;
+    if (frequencyTypeState === 'weeks') {
+      if (n === 1) return 'One match per week';
+      return `${n} matches per week`;
+    }
+    if (frequencyTypeState === 'months') {
+      if (n === 1) return 'One match per month';
+      return `${n} matches per month`;
+    }
+    return null;
+  };
+
+  const summaryLabel = getSummaryLabel();
+
+  // ── Generate preview ──────────────────────────────────────────────────────
+
   const handleGeneratePreview = async () => {
-    setGeneratingFixtures(true);
+    setGeneratingPreview(true);
+    setFixturePreview([]);
 
     try {
-      const { data, error } = await supabase.rpc('generate_league_fixtures_preview', {
+      const scheduleSlots = slots.map((s) => ({
+        day_of_week: s.dayOfWeek,
+        match_time: s.time,
+        ...(frequencyTypeState === 'months' ? { occurrence: s.occurrence } : {}),
+      }));
+
+      const payload = {
         p_competition_instance_id: competitionInstanceId,
-        p_start_date: startDateState,
-        p_match_time: matchTime,
-        p_frequency_type: frequencyType,
-        p_frequency_interval: interval,
-        p_days_of_week: selectedDays,
-        p_rounds: 2,
+        p_start_date: formatLocalDate(startDateState),
+        p_frequency_type: frequencyTypeState,
+        p_frequency_interval: intervalState,
+        p_schedule_slots: scheduleSlots,
+        p_rounds: roundsState,
         p_excluded_ranges: formattedRanges,
-      });
+      };
+
+      console.log('RPC payload:', payload);
+
+      const { data, error } = await supabase.rpc('generate_league_fixtures_preview', payload);
+
+      setFixturePreview(data?.fixtures_by_date ?? []);
+      console.log('RPC response:', data, error);
 
       if (error) {
-        console.error('Error generating fixture preview:', error);
-        Toast.show({
-          type: 'error',
-          text1: 'Error',
-          text2: error.message,
-        });
+        Toast.show({ type: 'error', text1: 'Error', text2: error.message });
+        console.error('RPC Error:', error);
         return;
       }
 
-      setFixturePreview(data?.fixtures ?? []);
+      setFixturePreview(data?.fixtures_by_date ?? []);
     } catch (err) {
       console.error('Error generating fixture preview:', err);
       Toast.show({
@@ -99,108 +299,294 @@ const GenerateFixturesForm = ({
         text2: 'An unexpected error occurred while generating the fixture preview.',
       });
     } finally {
+      setGeneratingPreview(false);
+    }
+  };
+
+  // ── Generate fixtures ─────────────────────────────────────────────────────
+
+  const handleGenerateFixtures = async () => {
+    setGeneratingFixtures(true);
+
+    try {
+      const payload = {
+        p_competition_instance_id: competitionInstanceId,
+        p_start_date: formatLocalDate(startDateState),
+        p_frequency_type: frequencyTypeState,
+        p_frequency_interval: intervalState,
+        p_schedule_slots: slots.map((s) => ({
+          day_of_week: s.dayOfWeek,
+          match_time: s.time,
+          ...(frequencyTypeState === 'months' ? { occurrence: s.occurrence } : {}),
+        })),
+        p_rounds: roundsState,
+        p_excluded_ranges: formattedRanges,
+      };
+
+      console.log('RPC payload for fixture generation:', payload);
+
+      const { data, error } = await supabase.rpc('generate_league_fixtures', payload);
+      console.log('RPC response for fixture generation:', data, error);
+      if (error) {
+        Toast.show({ type: 'error', text1: 'Error', text2: error.message });
+        console.error('RPC Error:', error);
+        return;
+      }
+      Toast.show({
+        type: 'success',
+        text1: 'Fixtures Generated',
+        text2: 'The fixtures have been successfully generated.',
+      });
+      setFixturePreview([]);
+    } catch (err) {
+      console.error('Error generating fixtures:', err);
+      Toast.show({
+        type: 'error',
+
+        text1: 'Error',
+        text2: 'An unexpected error occurred while generating the fixtures.',
+      });
+    } finally {
       setGeneratingFixtures(false);
     }
   };
 
+  // ── Render ────────────────────────────────────────────────────────────────
+
   return (
     <View className="flex-1 gap-4">
       <ScrollView
-        contentContainerStyle={{ gap: 8, paddingBottom: 140 }}
-        className="flex-1 gap-4 bg-bg-2">
+        contentContainerStyle={{ gap: 8, paddingBottom: fixturePreview?.length > 0 ? 200 : 120 }}
+        className="flex-1 bg-bg-2">
+        {/* ── Matchday Schedule section ── */}
         <View className="gap-4 bg-bg-1 p-5">
-          <Heading text="Schedule" />
+          <Heading text="Matchday Schedule" />
+
+          {/* Frequency type + interval row */}
+          <View className="flex-row gap-2">
+            <View style={{ flex: 3 }}>
+              <CustomDropdown
+                leftIconName="pulse-outline"
+                iconColor="#8B5CF6"
+                title="Frequency"
+                titleColor="text-text-1"
+                placeholder="Select frequency"
+                options={FREQUENCY_OPTIONS}
+                value={frequencyTypeState}
+                onChange={(value) => setFrequencyTypeState(value)}
+              />
+            </View>
+            <View style={{ flex: 2 }}>
+              <CustomTextInput
+                leftIconName="repeat-outline"
+                title="Times per period"
+                placeholder="e.g. 1, 2"
+                titleColor="text-text-1"
+                value={intervalInput}
+                onChangeText={(text) => {
+                  // allow free typing — only strip non-numeric chars
+                  setIntervalInput(text.replace(/[^0-9]/g, ''));
+                }}
+                onBlur={() => {
+                  const max = frequencyTypeState === 'weeks' ? 7 : 4;
+                  const n = Math.min(Math.max(parseInt(intervalInput, 10) || 1, 1), max);
+                  setIntervalInput(n.toString());
+                  setIntervalState(n);
+                }}
+                keyboardType="numeric"
+              />
+            </View>
+          </View>
+
+          {/* Summary label */}
+          {summaryLabel ? (
+            <View className="rounded-xl bg-theme-blue/20 p-3">
+              <Text className="text-md px-1 font-saira-medium text-theme-blue">{summaryLabel}</Text>
+            </View>
+          ) : (
+            <View className="rounded-lg bg-theme-red/20 p-3">
+              <Text className="text-md font-saira-medium text-theme-red">
+                Please select both frequency and interval.
+              </Text>
+            </View>
+          )}
+
+          {/* Start date */}
           <PickerRow
             icon="calendar-outline"
-            label="Start Date"
+            label="Season start date"
             displayValue={formatDate(startDateState)}
             mode="date"
             value={startDateState}
-            onChange={handleDateChange}
-            isExpanded={openPicker === 'date'}
-            onToggle={() => togglePicker('date')}
+            onChange={handleStartDateChange}
+            isExpanded={openPicker === 'start-date'}
+            onToggle={() => togglePicker('start-date')}
           />
-          <PickerRow
-            icon="time-outline"
-            label="Match Time"
-            displayValue={matchTime}
-            mode="time"
-            value={new Date(`1970-01-01T${matchTime}:00`)}
-            onChange={handleDateChange}
-            isExpanded={openPicker === 'time'}
-            onToggle={() => togglePicker('time')}
+          <CustomTextInput
+            leftIconName="repeat-outline"
+            title="Rounds"
+            placeholder="e.g. 1, 2"
+            titleColor="text-text-1"
+            value={roundsState.toString()}
+            onChangeText={(text) => {
+              // allow free typing — only strip non-numeric chars
+              setRoundsState(parseInt(text.replace(/[^0-9]/g, ''), 10) || '');
+            }}
+            onBlur={() => {
+              let n = roundsState || 2;
+              n = Math.max(n, 1);
+              setRoundsState(n);
+            }}
+            keyboardType="numeric"
           />
         </View>
+
+        {/* ── Per-slot schedule config section ── */}
         <View className="gap-4 bg-bg-1 p-5">
-          <Heading text="Excluded Dates" />
-
-          <Text className="px-1 text-sm text-text-2">
-            If there are specific date ranges where you don't want any fixtures to be scheduled, you
-            can add them here. This is useful for avoiding holidays, venue unavailability, or any
-            other conflicts.
+          <Heading
+            text={frequencyTypeState === 'weeks' ? 'Matchday Slots' : 'Monthly Matchday Slots'}
+          />
+          <Text className="px-1 font-saira text-sm text-text-2">
+            {frequencyTypeState === 'weeks'
+              ? 'Configure the day and kick-off time for each weekly matchday slot.'
+              : 'Choose which week of the month, which day, and what time each slot kicks off.'}
           </Text>
-          <View className="gap-6">
-            {excludedRanges.map((range, index) => (
-              <View key={range.id} className="gap-3">
-                <View className="flex-row items-center justify-between gap-2 px-2">
-                  <Text className="font-saira-medium text-text-2">
-                    Range {index + 1} -{' '}
-                    {Math.round((range.end - range.start) / (1000 * 60 * 60 * 24)) + 1} day
-                    {Math.round((range.end - range.start) / (1000 * 60 * 60 * 24)) !== 0 ? 's' : ''}
-                  </Text>
-                  {/* Remove button */}
 
-                  <Text
-                    className="rounded-lg bg-theme-red/20 px-2 py-1 text-right text-theme-red"
-                    onPress={() => removeRange(range.id)}>
-                    Remove
-                  </Text>
-                </View>
-                {/* Start Date */}
-                <PickerRow
-                  icon="calendar-outline"
-                  label="Start Date"
-                  displayValue={range.start ? formatDate(range.start) : 'Select start'}
-                  mode="date"
-                  value={range.start instanceof Date ? range.start : new Date()}
-                  onChange={(date) => updateRange(range.id, 'start', date)}
-                  isExpanded={openPicker === `start-${range.id}`}
-                  onToggle={() => togglePicker(`start-${range.id}`)}
-                />
-
-                {/* End Date */}
-                <PickerRow
-                  icon="calendar-outline"
-                  label="End Date"
-                  displayValue={range.end ? formatDate(range.end) : 'Select end'}
-                  mode="date"
-                  value={range.end instanceof Date ? range.end : new Date()}
-                  onChange={(date) => updateRange(range.id, 'end', date)}
-                  isExpanded={openPicker === `end-${range.id}`}
-                  onToggle={() => togglePicker(`end-${range.id}`)}
-                />
-              </View>
+          <View className="gap-4">
+            {slots.map((slot, index) => (
+              <SlotEditor
+                key={index}
+                slot={slot}
+                index={index}
+                frequencyType={frequencyTypeState}
+                openPicker={openPicker}
+                onTogglePicker={togglePicker}
+                onChange={(field, value) => updateSlot(index, field, value)}
+              />
             ))}
           </View>
+        </View>
 
-          {/* Add button */}
+        {/* ── Excluded Dates section ── */}
+        <View className="gap-4 bg-bg-1 p-5">
+          <Heading text="Excluded Dates" />
+          <Text className="px-1 font-saira text-sm text-text-2">
+            Add date ranges where no fixtures should be scheduled — useful for holidays, venue
+            closures, or other conflicts.
+          </Text>
+
+          <View className="gap-6 pb-2">
+            {excludedRanges.map((range, index) => {
+              const days = Math.round((range.end - range.start) / (1000 * 60 * 60 * 24));
+              return (
+                <View key={range.id} className="gap-3">
+                  <View className="flex-row items-center justify-between gap-2 px-2">
+                    <Text className="font-saira-medium text-text-2">
+                      Range {index + 1} · {days + 1} day{days !== 0 ? 's' : ''}
+                    </Text>
+                    <Text
+                      className="rounded-lg bg-theme-red/20 px-2 py-1 text-right text-theme-red"
+                      onPress={() => removeRange(range.id)}>
+                      Remove
+                    </Text>
+                  </View>
+
+                  <PickerRow
+                    icon="calendar-outline"
+                    label="Start Date"
+                    displayValue={range.start ? formatDate(range.start) : 'Select start'}
+                    mode="date"
+                    value={range.start instanceof Date ? range.start : new Date()}
+                    onChange={(selected) => updateRange(range.id, 'start', selected)}
+                    isExpanded={openPicker === `ex-start-${range.id}`}
+                    onToggle={() => togglePicker(`ex-start-${range.id}`)}
+                  />
+
+                  <PickerRow
+                    icon="calendar-outline"
+                    label="End Date"
+                    displayValue={range.end ? formatDate(range.end) : 'Select end'}
+                    mode="date"
+                    value={range.end instanceof Date ? range.end : new Date()}
+                    onChange={(selected) => updateRange(range.id, 'end', selected)}
+                    isExpanded={openPicker === `ex-end-${range.id}`}
+                    onToggle={() => togglePicker(`ex-end-${range.id}`)}
+                  />
+                </View>
+              );
+            })}
+          </View>
+
           <CTAButton
             type="yellow"
             text={excludedRanges.length === 0 ? 'Add Date Range' : 'Add Another Range'}
             callbackFn={addRange}
           />
         </View>
+        {fixturePreview.length > 0 && (
+          <View className="gap-4 bg-bg-1 p-5">
+            <Heading text="Fixture Preview" />
+            <Text className="px-1 font-saira text-sm text-text-2">
+              This is a preview of the generated fixture list based on your current settings. Please
+              review it carefully before confirming. Note that this is just a preview — no fixtures
+              have been created yet.
+            </Text>
+            <View className="gap-3">
+              {fixturePreview.map((f, index) => (
+                <View
+                  key={index}
+                  className="flex-row items-center justify-between rounded-xl bg-bg-2 p-3 shadow-sm">
+                  <View className="flex-1 flex-col">
+                    <Text className="font-saira-medium text-lg text-text-2">Round {index + 1}</Text>
+                    <Text className="font-saira text-lg text-text-2">
+                      {f.fixtures.length} fixture{f.fixtures.length !== 1 ? 's' : ''}
+                    </Text>
+                  </View>
+                  <Text className="font-saira text-lg text-text-1">
+                    {f.fixture_date
+                      ? new Date(f.fixture_date).toLocaleString('en-GB', {
+                          timeZone: 'Europe/London',
+                          weekday: 'short',
+                          year: '2-digit',
+                          month: 'short',
+                          day: 'numeric',
+                          hour: '2-digit',
+                          minute: '2-digit',
+                        })
+                      : 'TBD'}
+                  </Text>
+                </View>
+              ))}
+            </View>
+          </View>
+        )}
       </ScrollView>
+
+      {/* ── Sticky footer ── */}
       <View className="absolute bottom-0 left-0 right-0 p-5">
         <View
           style={{ borderRadius: 28 }}
-          className="border border-theme-gray-3 bg-bg-1/80 p-5 shadow-md backdrop-blur-lg">
-          <CTAButton
-            type="yellow"
-            text={generatingFixtures ? 'Generating...' : 'Preview Fixtures'}
-            disabled={generatingFixtures}
-            callbackFn={handleGeneratePreview}
-          />
+          className="gap-4 border border-theme-gray-3 bg-bg-1/80 p-5 shadow-md backdrop-blur-lg">
+          {fixturePreview.length > 0 && (
+            <>
+              <CTAButton type="error" text="Reset Form" callbackFn={() => setFixturePreview([])} />
+
+              <CTAButton
+                type="success"
+                text="Generate Fixtures"
+                disabled={generatingFixtures}
+                callbackFn={handleGenerateFixtures}
+              />
+            </>
+          )}
+          {fixturePreview.length === 0 && (
+            <CTAButton
+              type="yellow"
+              text={generatingPreview ? 'Generating…' : 'Preview Fixtures'}
+              disabled={generatingPreview}
+              callbackFn={handleGeneratePreview}
+            />
+          )}
         </View>
       </View>
     </View>
