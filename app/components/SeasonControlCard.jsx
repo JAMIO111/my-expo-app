@@ -60,8 +60,8 @@ const SeasonControlCard = ({ activeSeason, onStart, onEnd, loading }) => {
 
   return (
     <>
-      <View style={{ borderRadius: 24 }} className="bg-bg-2 p-2 shadow-sm">
-        <View className="rounded-3xl bg-bg-1 shadow-sm">
+      <View style={{ borderRadius: 24 }} className="bg-brand-dark p-2 shadow-sm">
+        <View className="rounded-3xl bg-brand shadow-sm">
           <View className="p-3">
             <View className="flex-row justify-between">
               <View className="flex-1 pr-4">
@@ -71,28 +71,28 @@ const SeasonControlCard = ({ activeSeason, onStart, onEnd, loading }) => {
                     style={{ backgroundColor: statusColor }}
                     className={`${isOpen ? 'animate-pulse' : ''} h-3 w-3 rounded-full`}
                   />
-                  <Text className="font-saira-bold text-[10px] uppercase tracking-widest text-black">
+                  <Text className="font-saira-bold text-[10px] uppercase tracking-widest text-text-on-brand">
                     {isOpen ? 'Season Active' : 'Off-Season'}
                   </Text>
                 </View>
 
-                <Text className="pl-2 pt-2 font-saira-bold text-3xl leading-8 text-black">
+                <Text className="pl-2 pt-2 font-saira-bold text-3xl leading-8 text-text-on-brand">
                   {isOpen ? activeSeason.name : `Start New Season`}
                 </Text>
               </View>
 
               {/* Status Icon Container */}
               <View
-                className={`h-14 w-14 items-center justify-center rounded-2xl border ${isOpen ? 'bg-brand' : 'bg-gray-800'}`}>
+                className={`h-14 w-14 items-center justify-center rounded-2xl border border-[#004000] shadow-sm ${isOpen ? 'bg-brand-light' : 'bg-brand-light'}`}>
                 <Ionicons
-                  name={isOpen ? 'calendar' : 'calendar-outline'}
+                  name={isOpen ? 'calendar-outline' : 'calendar-outline'}
                   size={28}
-                  color={isOpen ? '#FFFFFF' : '#FFFFFF'}
+                  color={isOpen ? '#ffffff' : '#ffffff'} //super dark green
                 />
               </View>
             </View>
 
-            <Text className="mt-2 pl-2 font-saira text-base text-black/80">
+            <Text className="mt-2 pl-2 font-saira text-base text-text-on-brand-2">
               {isOpen
                 ? 'Currently managing fixtures and teams.'
                 : 'No active season. Start one to begin league operations.'}

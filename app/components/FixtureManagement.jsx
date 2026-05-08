@@ -26,11 +26,14 @@ export const PickerRow = ({
   isExpanded,
   onToggle,
   backgroundColor = 'bg-bg-2',
+  disabled = false,
 }) => (
-  <View className={`w-full items-center justify-center rounded-xl shadow-sm ${backgroundColor}`}>
+  <View
+    className={`w-full items-center justify-center rounded-xl shadow-sm ${backgroundColor} ${disabled ? 'opacity-50' : ''}`}>
     <Pressable
       onPress={onToggle}
-      className={`flex-row items-center gap-2 p-4 pr-3 ${isExpanded ? 'border-b border-theme-gray-4' : ''}`}>
+      className={`flex-row items-center gap-2 p-4 pr-3 ${isExpanded && !disabled ? 'border-b border-theme-gray-4' : ''}`}
+      disabled={disabled}>
       <Ionicons name={icon} size={24} color="#8B5CF6" />
 
       <View className="flex-1 flex-row items-center justify-between gap-3">
@@ -48,14 +51,14 @@ export const PickerRow = ({
         </Text>
       </View>
       <Ionicons
-        name={isExpanded ? 'chevron-up' : 'chevron-down'}
+        name={isExpanded && !disabled ? 'chevron-up' : 'chevron-down'}
         size={20}
         color="#9CA3AF"
         style={{ marginLeft: 6 }}
       />
     </Pressable>
 
-    {isExpanded && (
+    {isExpanded && !disabled && (
       <DateTimePicker
         value={value}
         mode={mode}

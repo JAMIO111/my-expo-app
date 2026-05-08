@@ -24,6 +24,7 @@ const CustomTextInput = forwardRef((props, ref) => {
     autoCorrect = false,
     textContentType = 'none',
     onBlur,
+    disabled = false,
   } = props;
 
   // Handles numeric input enforcement
@@ -48,12 +49,13 @@ const CustomTextInput = forwardRef((props, ref) => {
   return (
     <View>
       <Text className={`pb-1 pl-2 font-saira-medium text-xl ${titleColor}`}>{title}</Text>
-      <View className="h-14 flex-row items-center rounded-xl border border-theme-gray-3 bg-input-background pr-3">
+      <View
+        className={` ${disabled ? 'opacity-50' : ''} h-14 flex-row items-center rounded-xl border border-theme-gray-3 bg-input-background pr-3`}>
         <View className="h-full justify-center rounded-l-xl border-r border-theme-gray-3 bg-bg-grouped-1 pl-3 pr-4">
           <Ionicons name={leftIconName} size={leftIconSize} color={iconColor} />
         </View>
         <TextInput
-          editable={editable}
+          editable={editable && !disabled}
           keyboardType={keyboardType}
           style={{ lineHeight: 28 }}
           clearButtonMode={clearButtonMode}
@@ -71,6 +73,7 @@ const CustomTextInput = forwardRef((props, ref) => {
           autoCapitalize={autoCapitalize}
           autoCorrect={autoCorrect}
           onBlur={onBlur}
+          disabled={disabled}
         />
       </View>
     </View>

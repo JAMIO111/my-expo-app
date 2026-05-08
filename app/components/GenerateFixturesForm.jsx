@@ -1,5 +1,5 @@
-import { View, Text, ScrollView } from 'react-native';
-import { useState, useEffect } from 'react';
+import { View, Text, ScrollView, Pressable } from 'react-native';
+import { useState, useEffect, useRef } from 'react';
 import CustomTextInput from './CustomTextInput';
 import CTAButton from './CTAButton';
 import { supabase } from '@lib/supabase';
@@ -7,6 +7,8 @@ import Toast from 'react-native-toast-message';
 import { PickerRow } from './FixtureManagement';
 import Heading from './Heading';
 import CustomDropdown from './CustomDropdown';
+import TeamLogo from './TeamLogo';
+import Avatar from './Avatar';
 
 // ─── Constants ───────────────────────────────────────────────────────────────
 
@@ -88,7 +90,15 @@ const formatDate = (d) =>
 
 // ─── SlotEditor ──────────────────────────────────────────────────────────────
 
-const SlotEditor = ({ slot, index, frequencyType, openPicker, onTogglePicker, onChange }) => {
+const SlotEditor = ({
+  slot,
+  index,
+  frequencyType,
+  openPicker,
+  onTogglePicker,
+  onChange,
+  disabled,
+}) => {
   const timePickerKey = `slot-time-${index}`;
 
   const handleTimeChange = (selected) => {
@@ -96,7 +106,8 @@ const SlotEditor = ({ slot, index, frequencyType, openPicker, onTogglePicker, on
   };
 
   return (
-    <View className="gap-3 rounded-2xl border-theme-gray-3 bg-bg-2 p-4 shadow-sm">
+    <View
+      className={`gap-3 rounded-2xl border-theme-gray-3 bg-bg-2 p-4 shadow-sm ${disabled ? 'opacity-50' : ''}`}>
       {/* Slot header */}
       <Text className="px-1 font-saira-medium text-text-1">
         {slotLabel(slot, index, frequencyType)}
@@ -113,6 +124,7 @@ const SlotEditor = ({ slot, index, frequencyType, openPicker, onTogglePicker, on
           options={OCCURRENCE_OPTIONS}
           value={slot.occurrence}
           onChange={(value) => onChange('occurrence', value)}
+          disabled={disabled}
         />
       )}
 
@@ -126,6 +138,7 @@ const SlotEditor = ({ slot, index, frequencyType, openPicker, onTogglePicker, on
         options={DAY_OPTIONS}
         value={slot.dayOfWeek}
         onChange={(value) => onChange('dayOfWeek', value)}
+        disabled={disabled}
       />
 
       {/* Time */}
@@ -139,6 +152,7 @@ const SlotEditor = ({ slot, index, frequencyType, openPicker, onTogglePicker, on
         isExpanded={openPicker === timePickerKey}
         onToggle={() => onTogglePicker(timePickerKey)}
         backgroundColor="bg-bg-1"
+        disabled={disabled}
       />
     </View>
   );
@@ -151,6 +165,7 @@ const GenerateFixturesForm = ({
   startDate = new Date(),
   frequencyType = 'weeks',
   interval = 1,
+  closeModal,
 }) => {
   const [fixturePreview, setFixturePreview] = useState([]);
   const [generatingPreview, setGeneratingPreview] = useState(false);
@@ -162,6 +177,10 @@ const GenerateFixturesForm = ({
   const [intervalState, setIntervalState] = useState(interval);
   const [intervalInput, setIntervalInput] = useState(interval.toString());
   const [roundsState, setRoundsState] = useState(2); // For simplicity, fixed at 2 rounds for now
+
+  const scrollRef = useRef(null);
+  const previewRef = useRef(null);
+  const topRef = useRef(null);
 
   // Each slot holds the schedule config for one matchday per period
   const [slots, setSlots] = useState(() =>
@@ -277,27 +296,36 @@ const GenerateFixturesForm = ({
         p_excluded_ranges: formattedRanges,
       };
 
-      console.log('RPC payload:', payload);
-
-      const { data, error } = await supabase.rpc('generate_league_fixtures_preview', payload);
-
-      setFixturePreview(data?.fixtures_by_date ?? []);
-      console.log('RPC response:', data, error);
+      const { data, error } = await supabase.rpc('generate_schedule_dates_preview', payload);
 
       if (error) {
-        Toast.show({ type: 'error', text1: 'Error', text2: error.message });
-        console.error('RPC Error:', error);
-        return;
+        console.log('RPC error:', error);
+        throw new Error(error.message);
       }
 
-      setFixturePreview(data?.fixtures_by_date ?? []);
+      if (!data) {
+        throw new Error('No data returned from preview function');
+      }
+
+      setFixturePreview(data);
+
+      requestAnimationFrame(() => {
+        previewRef.current?.measureLayout(
+          scrollRef.current,
+          (_, y) => {
+            scrollRef.current?.scrollTo({ y, animated: true });
+          },
+          () => {}
+        );
+      });
     } catch (err) {
-      console.error('Error generating fixture preview:', err);
       Toast.show({
         type: 'error',
         text1: 'Error',
-        text2: 'An unexpected error occurred while generating the fixture preview.',
+        text2: err.message || 'Failed to generate preview',
       });
+
+      closeModal(); // now actually reachable
     } finally {
       setGeneratingPreview(false);
     }
@@ -323,10 +351,15 @@ const GenerateFixturesForm = ({
         p_excluded_ranges: formattedRanges,
       };
 
-      console.log('RPC payload for fixture generation:', payload);
+      const { data, error } = await supabase.rpc('generate_league_fixtures_from_dates', {
+        p_competition_instance_id: competitionInstanceId,
+        p_dates: fixturePreview?.dates?.map((d) => ({ datetime: d.datetime })),
+        p_rounds: roundsState,
+      });
 
-      const { data, error } = await supabase.rpc('generate_league_fixtures', payload);
       console.log('RPC response for fixture generation:', data, error);
+      setFixturePreview(data);
+
       if (error) {
         Toast.show({ type: 'error', text1: 'Error', text2: error.message });
         console.error('RPC Error:', error);
@@ -337,7 +370,6 @@ const GenerateFixturesForm = ({
         text1: 'Fixtures Generated',
         text2: 'The fixtures have been successfully generated.',
       });
-      setFixturePreview([]);
     } catch (err) {
       console.error('Error generating fixtures:', err);
       Toast.show({
@@ -356,10 +388,14 @@ const GenerateFixturesForm = ({
   return (
     <View className="flex-1 gap-4">
       <ScrollView
-        contentContainerStyle={{ gap: 8, paddingBottom: fixturePreview?.length > 0 ? 200 : 120 }}
+        ref={scrollRef}
+        contentContainerStyle={{
+          gap: 8,
+          paddingBottom: fixturePreview?.dates?.length > 0 ? 200 : 120,
+        }}
         className="flex-1 bg-bg-2">
         {/* ── Matchday Schedule section ── */}
-        <View className="gap-4 bg-bg-1 p-5">
+        <View ref={topRef} className="gap-4 bg-bg-1 p-5">
           <Heading text="Matchday Schedule" />
 
           {/* Frequency type + interval row */}
@@ -374,6 +410,7 @@ const GenerateFixturesForm = ({
                 options={FREQUENCY_OPTIONS}
                 value={frequencyTypeState}
                 onChange={(value) => setFrequencyTypeState(value)}
+                disabled={fixturePreview?.dates?.length > 0}
               />
             </View>
             <View style={{ flex: 2 }}>
@@ -394,6 +431,7 @@ const GenerateFixturesForm = ({
                   setIntervalState(n);
                 }}
                 keyboardType="numeric"
+                disabled={fixturePreview?.dates?.length > 0}
               />
             </View>
           </View>
@@ -421,6 +459,7 @@ const GenerateFixturesForm = ({
             onChange={handleStartDateChange}
             isExpanded={openPicker === 'start-date'}
             onToggle={() => togglePicker('start-date')}
+            disabled={fixturePreview?.dates?.length > 0}
           />
           <CustomTextInput
             leftIconName="repeat-outline"
@@ -438,7 +477,11 @@ const GenerateFixturesForm = ({
               setRoundsState(n);
             }}
             keyboardType="numeric"
+            disabled={fixturePreview?.dates?.length > 0}
           />
+          <Text className="px-2 font-saira text-sm text-text-2">
+            1 round = Each team plays every other team once.{'\n'}2 rounds = Home and away fixtures.
+          </Text>
         </View>
 
         {/* ── Per-slot schedule config section ── */}
@@ -462,6 +505,7 @@ const GenerateFixturesForm = ({
                 openPicker={openPicker}
                 onTogglePicker={togglePicker}
                 onChange={(field, value) => updateSlot(index, field, value)}
+                disabled={fixturePreview?.dates?.length > 0}
               />
             ))}
           </View>
@@ -484,11 +528,12 @@ const GenerateFixturesForm = ({
                     <Text className="font-saira-medium text-text-2">
                       Range {index + 1} · {days + 1} day{days !== 0 ? 's' : ''}
                     </Text>
-                    <Text
-                      className="rounded-lg bg-theme-red/20 px-2 py-1 text-right text-theme-red"
+                    <Pressable
+                      disabled={fixturePreview?.dates?.length > 0}
+                      className={`${fixturePreview?.dates?.length > 0 ? 'opacity-50' : ''} rounded-lg bg-theme-red/20 px-2 py-1 text-right text-theme-red`}
                       onPress={() => removeRange(range.id)}>
-                      Remove
-                    </Text>
+                      <Text className="font-saira-medium text-theme-red">Remove</Text>
+                    </Pressable>
                   </View>
 
                   <PickerRow
@@ -500,6 +545,7 @@ const GenerateFixturesForm = ({
                     onChange={(selected) => updateRange(range.id, 'start', selected)}
                     isExpanded={openPicker === `ex-start-${range.id}`}
                     onToggle={() => togglePicker(`ex-start-${range.id}`)}
+                    disabled={fixturePreview?.dates?.length > 0}
                   />
 
                   <PickerRow
@@ -511,6 +557,7 @@ const GenerateFixturesForm = ({
                     onChange={(selected) => updateRange(range.id, 'end', selected)}
                     isExpanded={openPicker === `ex-end-${range.id}`}
                     onToggle={() => togglePicker(`ex-end-${range.id}`)}
+                    disabled={fixturePreview?.dates?.length > 0}
                   />
                 </View>
               );
@@ -521,10 +568,11 @@ const GenerateFixturesForm = ({
             type="yellow"
             text={excludedRanges.length === 0 ? 'Add Date Range' : 'Add Another Range'}
             callbackFn={addRange}
+            disabled={fixturePreview?.dates?.length > 0}
           />
         </View>
-        {fixturePreview.length > 0 && (
-          <View className="gap-4 bg-bg-1 p-5">
+        {fixturePreview?.dates?.length > 0 && (
+          <View ref={previewRef} className="gap-4 bg-bg-1 p-5">
             <Heading text="Fixture Preview" />
             <Text className="px-1 font-saira text-sm text-text-2">
               This is a preview of the generated fixture list based on your current settings. Please
@@ -532,29 +580,71 @@ const GenerateFixturesForm = ({
               have been created yet.
             </Text>
             <View className="gap-3">
-              {fixturePreview.map((f, index) => (
-                <View
-                  key={index}
-                  className="flex-row items-center justify-between rounded-xl bg-bg-2 p-3 shadow-sm">
-                  <View className="flex-1 flex-col">
-                    <Text className="font-saira-medium text-lg text-text-2">Round {index + 1}</Text>
-                    <Text className="font-saira text-lg text-text-2">
-                      {f.fixtures.length} fixture{f.fixtures.length !== 1 ? 's' : ''}
+              {fixturePreview?.dates?.map((date, index) => (
+                <View key={index} className="gap-2 rounded-xl bg-bg-2 p-3 shadow-sm">
+                  <View className="flex-row items-center justify-between">
+                    <View className="flex-1 flex-col">
+                      <Text className="font-saira-medium text-lg text-text-2">
+                        Round {index + 1}
+                      </Text>
+                    </View>
+                    <Text className="font-saira text-lg text-text-1">
+                      {date.datetime
+                        ? new Date(date.datetime).toLocaleString('en-GB', {
+                            timeZone: 'Europe/London',
+                            weekday: 'short',
+                            year: '2-digit',
+                            month: 'short',
+                            day: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit',
+                          })
+                        : 'TBD'}
                     </Text>
                   </View>
-                  <Text className="font-saira text-lg text-text-1">
-                    {f.fixture_date
-                      ? new Date(f.fixture_date).toLocaleString('en-GB', {
-                          timeZone: 'Europe/London',
-                          weekday: 'short',
-                          year: '2-digit',
-                          month: 'short',
-                          day: 'numeric',
-                          hour: '2-digit',
-                          minute: '2-digit',
-                        })
-                      : 'TBD'}
-                  </Text>
+                  {date?.fixtures?.length > 0 && (
+                    <>
+                      <View className="h-px bg-theme-gray-4" />
+                      <View className="gap-2">
+                        {date?.fixtures.map((fixture, fixtureIndex) => {
+                          const homeTeam = fixturePreview.participants.find(
+                            (p) => p.id === fixture.home_id
+                          );
+                          const awayTeam = fixturePreview.participants.find(
+                            (p) => p.id === fixture.away_id
+                          );
+                          return (
+                            <View
+                              key={fixtureIndex}
+                              className="flex-row items-center justify-between">
+                              <View className="flex-1 flex-row items-center gap-2">
+                                {homeTeam.type === 'team' ? (
+                                  <TeamLogo {...homeTeam?.avatar_or_logo} size={20} />
+                                ) : (
+                                  <Avatar {...homeTeam?.avatar_or_logo} size={20} />
+                                )}
+
+                                <Text className="font-saira text-text-1">
+                                  {homeTeam?.name || 'TBD'}
+                                </Text>
+                              </View>
+                              <Text className="font-saira text-text-2">vs</Text>
+                              <View className="flex-1 flex-row items-center justify-end gap-2">
+                                <Text className="font-saira text-text-1">
+                                  {awayTeam?.name || 'TBD'}
+                                </Text>
+                                {awayTeam.type === 'team' ? (
+                                  <TeamLogo {...awayTeam?.avatar_or_logo} size={20} />
+                                ) : (
+                                  <Avatar {...awayTeam?.avatar_or_logo} size={20} />
+                                )}
+                              </View>
+                            </View>
+                          );
+                        })}
+                      </View>
+                    </>
+                  )}
                 </View>
               ))}
             </View>
@@ -567,22 +657,40 @@ const GenerateFixturesForm = ({
         <View
           style={{ borderRadius: 28 }}
           className="gap-4 border border-theme-gray-3 bg-bg-1/80 p-5 shadow-md backdrop-blur-lg">
-          {fixturePreview.length > 0 && (
+          {fixturePreview?.dates?.length > 0 && (
             <>
-              <CTAButton type="error" text="Reset Form" callbackFn={() => setFixturePreview([])} />
+              <CTAButton
+                type="error"
+                text="Make Changes"
+                callbackFn={() => {
+                  setFixturePreview([]);
+                  requestAnimationFrame(() => {
+                    topRef.current?.measureLayout(
+                      scrollRef.current,
+                      (x, y) => {
+                        scrollRef.current?.scrollTo({
+                          y,
+                          animated: true,
+                        });
+                      },
+                      () => {}
+                    );
+                  });
+                }}
+              />
 
               <CTAButton
                 type="success"
-                text="Generate Fixtures"
+                text={generatingFixtures ? 'Generating…' : 'Generate Fixtures'}
                 disabled={generatingFixtures}
                 callbackFn={handleGenerateFixtures}
               />
             </>
           )}
-          {fixturePreview.length === 0 && (
+          {(!fixturePreview?.dates || fixturePreview?.dates?.length === 0) && (
             <CTAButton
               type="yellow"
-              text={generatingPreview ? 'Generating…' : 'Preview Fixtures'}
+              text={generatingPreview ? 'Generating…' : 'Preview Schedule'}
               disabled={generatingPreview}
               callbackFn={handleGeneratePreview}
             />

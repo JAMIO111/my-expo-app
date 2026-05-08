@@ -279,6 +279,8 @@ const EditDivisionForm = ({ competition, division, participants, closeModal, con
 
       if (error) throw error;
 
+      await queryClient.invalidateQueries(['authUserProfile']);
+      closeModal();
       Toast.show({
         type: 'success',
         text1: 'Competition Created',
@@ -661,7 +663,7 @@ const EditDivisionForm = ({ competition, division, participants, closeModal, con
               {participants?.length === 0 ? (
                 <View className="w-full rounded-2xl bg-bg-2 py-8 shadow-sm">
                   <Text className="text-center font-saira text-lg text-text-2">
-                    No teams in this division.
+                    No participants in this division.
                   </Text>
                 </View>
               ) : (

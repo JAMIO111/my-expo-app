@@ -80,11 +80,11 @@ const index = () => {
       />
       <SafeViewWrapper bottomColor="bg-brand" topColor="bg-brand">
         <ScrollView
-          contentContainerStyle={{ display: 'flex', flexGrow: 1, gap: 4 }}
+          contentContainerStyle={{ display: 'flex', flexGrow: 1, gap: 5 }}
           className="mt-16 flex-1">
           <DivisionsList districtId={currentRole?.district.id} />
           <TeamJoinRequests districtId={currentRole?.district.id} />
-          <View className="bg-brand p-4">
+          <View className="bg-bg-1 p-4">
             <SeasonControlCard
               activeSeason={currentRole?.activeSeason}
               onStart={handleStartSeason}
