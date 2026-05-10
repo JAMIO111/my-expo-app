@@ -31,9 +31,7 @@ const ResultsList = () => {
   const bottomSheetRef = useRef(null);
   const [activeFilter, setActiveFilter] = useState(null);
 
-  const [district, setDistrict] = useState(
-    currentRole?.type === 'admin' ? currentRole?.district : (currentRole?.district ?? null)
-  );
+  const [district, setDistrict] = useState(currentRole?.district ?? null);
 
   // Fetch districts (no id needed)
   const {

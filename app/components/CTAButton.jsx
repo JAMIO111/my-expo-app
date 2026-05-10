@@ -10,6 +10,7 @@ const CTAButton = ({
   callbackFn,
   disabled,
   loading = false,
+  loadingText = 'Loading…',
   borderRadius = 16,
   textSize = 'text-xl',
   fontWeight = 'font-saira-medium',
@@ -68,25 +69,14 @@ const CTAButton = ({
           opacity: disabled || loading ? 0.6 : 1,
           borderRadius: borderRadius,
         }}>
-        {loading ? (
-          <View className="flex-row items-center justify-center gap-3 px-2">
-            <ActivityIndicator size="small" color={iconColor} />
-            <Text
-              style={{ color: buttonTheme.text }}
-              className={`py-1 text-center ${fontWeight} ${textSize}`}>
-              {text}
-            </Text>
-          </View>
-        ) : (
-          <View className="flex-row items-center justify-center gap-5 px-2">
-            {icon && icon}
-            <Text
-              style={{ color: buttonTheme.text }}
-              className={`py-1 text-center ${fontWeight} ${textSize}`}>
-              {text}
-            </Text>
-          </View>
-        )}
+        <View className="flex-row items-center justify-center gap-3 px-2">
+          {loading ? <ActivityIndicator size="small" color={iconColor} /> : icon ? icon : null}
+          <Text
+            style={{ color: buttonTheme.text }}
+            className={`py-1 text-center ${fontWeight} ${textSize}`}>
+            {loading ? loadingText : text}
+          </Text>
+        </View>
       </Pressable>
     </Animated.View>
   );

@@ -13,7 +13,7 @@ export function useCompetitionInstances(seasonId) {
           *,
           CompetitionParticipants(*, player:Players(id, first_name, surname, avatar_url), team:Teams(id, display_name, crest)),
           competition:Competitions(competitor_type, competition_type),
-          division:Divisions(name)
+          division:Divisions(name, group_name, tier)
         `
         )
         .eq('season_id', seasonId)

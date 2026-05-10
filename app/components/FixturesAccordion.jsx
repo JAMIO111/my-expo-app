@@ -32,9 +32,8 @@ const FixturesAccordion = ({ season, competitionInstance, isExpanded, onPress })
   );
 
   const { data: fixturesGrouped, isLoading } = useGroupedFixtures({
-    month: null,
-    seasonId: season?.id,
     competitionInstanceId: competitionInstance?.id,
+    month: null,
   });
 
   console.log('FixturesAccordion - grouped fixtures:', fixturesGrouped);

@@ -1,4 +1,4 @@
-import { View, Text, ScrollView, Pressable } from 'react-native';
+import { View, Text, ScrollView, Pressable, Alert } from 'react-native';
 import { useState, useEffect, useRef } from 'react';
 import CustomTextInput from './CustomTextInput';
 import CTAButton from './CTAButton';
@@ -9,6 +9,8 @@ import Heading from './Heading';
 import CustomDropdown from './CustomDropdown';
 import TeamLogo from './TeamLogo';
 import Avatar from './Avatar';
+import Ionicons from '@expo/vector-icons/Ionicons';
+import { useQueryClient } from '@tanstack/react-query';
 
 // ─── Constants ───────────────────────────────────────────────────────────────
 
@@ -169,6 +171,7 @@ const GenerateFixturesForm = ({
 }) => {
   const [fixturePreview, setFixturePreview] = useState([]);
   const [generatingPreview, setGeneratingPreview] = useState(false);
+  const [generatingFixturesPreview, setGeneratingFixturesPreview] = useState(false);
   const [generatingFixtures, setGeneratingFixtures] = useState(false);
   const [openPicker, setOpenPicker] = useState(null);
   const [startDateState, setStartDateState] = useState(startDate);
@@ -177,6 +180,8 @@ const GenerateFixturesForm = ({
   const [intervalState, setIntervalState] = useState(interval);
   const [intervalInput, setIntervalInput] = useState(interval.toString());
   const [roundsState, setRoundsState] = useState(2); // For simplicity, fixed at 2 rounds for now
+
+  const queryClient = useQueryClient();
 
   const scrollRef = useRef(null);
   const previewRef = useRef(null);
@@ -223,7 +228,7 @@ const GenerateFixturesForm = ({
   const addRange = () => {
     setExcludedRanges((prev) => [
       ...prev,
-      { id: Date.now() + Math.random(), start: new Date(), end: new Date() },
+      { id: Date.now() + Math.random(), start: startDateState, end: startDateState },
     ]);
   };
 
@@ -261,17 +266,29 @@ const GenerateFixturesForm = ({
     const n = intervalState;
     if (!n || n < 1) return null;
     if (frequencyTypeState === 'weeks') {
-      if (n === 1) return 'One match per week';
-      return `${n} matches per week`;
+      if (n === 1) return 'One match round per week';
+      return `${n} match rounds per week`;
     }
     if (frequencyTypeState === 'months') {
-      if (n === 1) return 'One match per month';
-      return `${n} matches per month`;
+      if (n === 1) return 'One match round per month';
+      return `${n} match rounds per month`;
     }
     return null;
   };
 
   const summaryLabel = getSummaryLabel();
+
+  const handleScrollToTop = () => {
+    requestAnimationFrame(() => {
+      previewRef.current?.measureLayout(
+        scrollRef.current,
+        (_, y) => {
+          scrollRef.current?.scrollTo({ y, animated: true });
+        },
+        () => {}
+      );
+    });
+  };
 
   // ── Generate preview ──────────────────────────────────────────────────────
 
@@ -297,7 +314,7 @@ const GenerateFixturesForm = ({
       };
 
       const { data, error } = await supabase.rpc('generate_schedule_dates_preview', payload);
-
+      console.log('RPC response for preview generation:', data, error);
       if (error) {
         console.log('RPC error:', error);
         throw new Error(error.message);
@@ -308,16 +325,7 @@ const GenerateFixturesForm = ({
       }
 
       setFixturePreview(data);
-
-      requestAnimationFrame(() => {
-        previewRef.current?.measureLayout(
-          scrollRef.current,
-          (_, y) => {
-            scrollRef.current?.scrollTo({ y, animated: true });
-          },
-          () => {}
-        );
-      });
+      handleScrollToTop();
     } catch (err) {
       Toast.show({
         type: 'error',
@@ -333,8 +341,8 @@ const GenerateFixturesForm = ({
 
   // ── Generate fixtures ─────────────────────────────────────────────────────
 
-  const handleGenerateFixtures = async () => {
-    setGeneratingFixtures(true);
+  const handleGenerateFixturesPreview = async () => {
+    setGeneratingFixturesPreview(true);
 
     try {
       const payload = {
@@ -358,26 +366,48 @@ const GenerateFixturesForm = ({
       });
 
       console.log('RPC response for fixture generation:', data, error);
-      setFixturePreview(data);
-
       if (error) {
-        Toast.show({ type: 'error', text1: 'Error', text2: error.message });
-        console.error('RPC Error:', error);
+        Alert.alert('Error', error.message || 'Failed to generate fixtures');
         return;
       }
+
+      setFixturePreview(data);
+      handleScrollToTop();
+    } catch (err) {
+      Alert.alert('Error', 'An unexpected error occurred while generating the fixtures.');
+    } finally {
+      setGeneratingFixturesPreview(false);
+    }
+  };
+
+  const handleSaveFixtures = async () => {
+    setGeneratingFixtures(true);
+    try {
+      const { data, error } = await supabase.rpc('save_league_fixtures', {
+        p_competition_instance_id: competitionInstanceId,
+        p_fixtures: fixturePreview?.dates ?? [],
+      });
+
+      if (error) {
+        Alert.alert('Error', error.message || 'Failed to save fixtures');
+        return;
+      }
+
+      await queryClient.invalidateQueries({
+        queryKey: ['fixtures-grouped', competitionInstanceId],
+      });
+      await queryClient.invalidateQueries(['authUserProfile']);
+
       Toast.show({
         type: 'success',
-        text1: 'Fixtures Generated',
-        text2: 'The fixtures have been successfully generated.',
+        text1: 'Success',
+        text2: 'Fixtures have been generated and saved successfully.',
       });
-    } catch (err) {
-      console.error('Error generating fixtures:', err);
-      Toast.show({
-        type: 'error',
 
-        text1: 'Error',
-        text2: 'An unexpected error occurred while generating the fixtures.',
-      });
+      closeModal();
+    } catch (err) {
+      console.error('Unexpected error during fixture generation:', err);
+      Alert.alert('Error', 'An unexpected error occurred while saving the fixtures.');
     } finally {
       setGeneratingFixtures(false);
     }
@@ -452,7 +482,7 @@ const GenerateFixturesForm = ({
           {/* Start date */}
           <PickerRow
             icon="calendar-outline"
-            label="Season start date"
+            label="Season start"
             displayValue={formatDate(startDateState)}
             mode="date"
             value={startDateState}
@@ -460,10 +490,11 @@ const GenerateFixturesForm = ({
             isExpanded={openPicker === 'start-date'}
             onToggle={() => togglePicker('start-date')}
             disabled={fixturePreview?.dates?.length > 0}
+            minimumDate={new Date()}
           />
           <CustomTextInput
             leftIconName="repeat-outline"
-            title="Rounds"
+            title="Round Robin Cycles"
             placeholder="e.g. 1, 2"
             titleColor="text-text-1"
             value={roundsState.toString()}
@@ -480,7 +511,7 @@ const GenerateFixturesForm = ({
             disabled={fixturePreview?.dates?.length > 0}
           />
           <Text className="px-2 font-saira text-sm text-text-2">
-            1 round = Each team plays every other team once.{'\n'}2 rounds = Home and away fixtures.
+            1 cycle = Each team plays every other team once.{'\n'}2 cycles = Home and away fixtures.
           </Text>
         </View>
 
@@ -541,8 +572,14 @@ const GenerateFixturesForm = ({
                     label="Start Date"
                     displayValue={range.start ? formatDate(range.start) : 'Select start'}
                     mode="date"
-                    value={range.start instanceof Date ? range.start : new Date()}
-                    onChange={(selected) => updateRange(range.id, 'start', selected)}
+                    value={range.start instanceof Date ? range.start : startDateState}
+                    minimumDate={startDateState}
+                    onChange={(selected) => {
+                      updateRange(range.id, 'start', selected);
+                      if (range.end && selected > range.end) {
+                        updateRange(range.id, 'end', selected);
+                      }
+                    }}
                     isExpanded={openPicker === `ex-start-${range.id}`}
                     onToggle={() => togglePicker(`ex-start-${range.id}`)}
                     disabled={fixturePreview?.dates?.length > 0}
@@ -551,10 +588,16 @@ const GenerateFixturesForm = ({
                   <PickerRow
                     icon="calendar-outline"
                     label="End Date"
+                    minimumDate={range.start || startDateState}
                     displayValue={range.end ? formatDate(range.end) : 'Select end'}
                     mode="date"
-                    value={range.end instanceof Date ? range.end : new Date()}
-                    onChange={(selected) => updateRange(range.id, 'end', selected)}
+                    value={range.end instanceof Date ? range.end : startDateState}
+                    onChange={(selected) => {
+                      updateRange(range.id, 'end', selected);
+                      if (range.start && selected < range.start) {
+                        updateRange(range.id, 'start', selected);
+                      }
+                    }}
                     isExpanded={openPicker === `ex-end-${range.id}`}
                     onToggle={() => togglePicker(`ex-end-${range.id}`)}
                     disabled={fixturePreview?.dates?.length > 0}
@@ -565,7 +608,8 @@ const GenerateFixturesForm = ({
           </View>
 
           <CTAButton
-            type="yellow"
+            icon={<Ionicons className="mb-1" name="add" size={28} color="#FFFFFF" />}
+            type="default"
             text={excludedRanges.length === 0 ? 'Add Date Range' : 'Add Another Range'}
             callbackFn={addRange}
             disabled={fixturePreview?.dates?.length > 0}
@@ -581,7 +625,7 @@ const GenerateFixturesForm = ({
             </Text>
             <View className="gap-3">
               {fixturePreview?.dates?.map((date, index) => (
-                <View key={index} className="gap-2 rounded-xl bg-bg-2 p-3 shadow-sm">
+                <View key={index} className="gap-2 rounded-2xl bg-bg-2 p-3 shadow-sm">
                   <View className="flex-row items-center justify-between">
                     <View className="flex-1 flex-col">
                       <Text className="font-saira-medium text-lg text-text-2">
@@ -590,7 +634,7 @@ const GenerateFixturesForm = ({
                     </View>
                     <Text className="font-saira text-lg text-text-1">
                       {date.datetime
-                        ? new Date(date.datetime).toLocaleString('en-GB', {
+                        ? new Date(date.datetime).toLocaleDateString('en-GB', {
                             timeZone: 'Europe/London',
                             weekday: 'short',
                             year: '2-digit',
@@ -662,6 +706,7 @@ const GenerateFixturesForm = ({
               <CTAButton
                 type="error"
                 text="Make Changes"
+                icon={<Ionicons className="mb-1" name="pencil" size={24} color="#FFFFFF" />}
                 callbackFn={() => {
                   setFixturePreview([]);
                   requestAnimationFrame(() => {
@@ -678,21 +723,41 @@ const GenerateFixturesForm = ({
                   });
                 }}
               />
-
-              <CTAButton
-                type="success"
-                text={generatingFixtures ? 'Generating…' : 'Generate Fixtures'}
-                disabled={generatingFixtures}
-                callbackFn={handleGenerateFixtures}
-              />
+              {fixturePreview?.participants?.length > 0 ? (
+                <CTAButton
+                  type="success"
+                  icon={
+                    <Ionicons className="mb-1" name="document-text" size={24} color="#FFFFFF" />
+                  }
+                  text={generatingFixtures ? 'Generating…' : 'Generate Fixtures'}
+                  disabled={generatingFixtures}
+                  callbackFn={handleSaveFixtures}
+                  loading={generatingFixtures}
+                />
+              ) : (
+                <CTAButton
+                  type="success"
+                  icon={
+                    <Ionicons className="mb-1" name="document-text" size={24} color="#FFFFFF" />
+                  }
+                  text={generatingFixturesPreview ? 'Generating…' : 'Preview Fixtures'}
+                  disabled={generatingFixturesPreview}
+                  callbackFn={handleGenerateFixturesPreview}
+                  loading={generatingFixturesPreview}
+                />
+              )}
             </>
           )}
           {(!fixturePreview?.dates || fixturePreview?.dates?.length === 0) && (
             <CTAButton
               type="yellow"
+              icon={
+                <Ionicons className="mb-1" name="document-text-outline" size={24} color="#000000" />
+              }
               text={generatingPreview ? 'Generating…' : 'Preview Schedule'}
               disabled={generatingPreview}
               callbackFn={handleGeneratePreview}
+              loading={generatingPreview}
             />
           )}
         </View>

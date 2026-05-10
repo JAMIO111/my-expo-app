@@ -1,4 +1,13 @@
-import { View, Text, Switch, ScrollView, Pressable, Image, useColorScheme } from 'react-native';
+import {
+  View,
+  Text,
+  Switch,
+  ScrollView,
+  Pressable,
+  Image,
+  useColorScheme,
+  Alert,
+} from 'react-native';
 import { useState, useEffect, useRef } from 'react';
 import CustomTextInput from './CustomTextInput';
 import CTAButton from './CTAButton';
@@ -45,7 +54,9 @@ const EditDivisionForm = ({ competition, division, participants, closeModal, con
     competition?.points_for_loss?.toString() || ''
   );
   const [legs, setLegs] = useState(competition?.round_robin_cycles?.toString() || '');
-  const [bestOf, setBestOf] = useState(competition?.best_of?.toString() || '');
+  const [bestOf, setBestOf] = useState(
+    competition?.best_of != null ? String(competition.best_of) : ''
+  );
   const [promotions, setPromotions] = useState(division?.promotion_spots?.toString() || '');
   const [relegations, setRelegations] = useState(division?.relegation_spots?.toString() || '');
   const [bonusMatch, setBonusMatch] = useState(competition?.special_match || false);
@@ -54,6 +65,8 @@ const EditDivisionForm = ({ competition, division, participants, closeModal, con
     competition?.bonus_match_abbreviation || ''
   );
   const [selectedParticipants, setSelectedParticipants] = useState(participants?.map((p) => p.id));
+  const [inititatingCompetition, setInititatingCompetition] = useState(false);
+  const [saving, setSaving] = useState(false);
 
   const queryClient = useQueryClient();
 
@@ -83,7 +96,7 @@ const EditDivisionForm = ({ competition, division, participants, closeModal, con
     setPointsForLoss(competition.points_for_loss?.toString() || '');
 
     setLegs(competition.round_robin_cycles?.toString() || '');
-    setBestOf(competition.best_of?.toString() || '');
+    setBestOf(competition.best_of != null ? String(competition.best_of) : '');
 
     setBonusMatch(competition.special_match || false);
     setBonusMatchName(competition.special_match_name || '');
@@ -113,6 +126,7 @@ const EditDivisionForm = ({ competition, division, participants, closeModal, con
   };
 
   const handleSave = async () => {
+    setSaving(true);
     if (!scoringSystem) {
       closeModal();
       Toast.show({
@@ -122,7 +136,9 @@ const EditDivisionForm = ({ competition, division, participants, closeModal, con
       });
       return;
     }
+
     try {
+      console.log('max competitors value:', maxCompetitors);
       const { error } = await supabase.rpc('update_division_and_propagate', {
         // --- division ---
         p_division_id: division.id,
@@ -130,14 +146,14 @@ const EditDivisionForm = ({ competition, division, participants, closeModal, con
         p_group_name: groupName,
         p_promotion_spots: Number(promotions),
         p_relegation_spots: Number(relegations),
-        p_max_competitors: Number(maxCompetitors),
+        p_max_competitors: maxCompetitors.trim() === '' ? null : Number(maxCompetitors),
         p_admin_approval_required: adminApprovalRequired,
         p_mid_season_transfers: midSeasonTransfers,
 
         // --- competition ---
         p_competition_id: competition.id,
         p_round_robin_cycles: Number(legs),
-        p_best_of: Number(bestOf),
+        p_best_of: bestOf === '' ? null : Number(bestOf),
         p_special_match: bonusMatch,
         p_special_match_name: bonusMatch ? bonusMatchName : null,
         p_special_match_abbreviation: bonusMatch ? bonusMatchAbbreviation : null,
@@ -241,10 +257,12 @@ const EditDivisionForm = ({ competition, division, participants, closeModal, con
       });
     } finally {
       closeModal();
+      setSaving(false);
     }
   };
 
   const handleInitiateCompetition = async () => {
+    setInititatingCompetition(true);
     if (!selectedParticipants || selectedParticipants?.length < 2) {
       Toast.show({
         type: 'info',
@@ -252,6 +270,7 @@ const EditDivisionForm = ({ competition, division, participants, closeModal, con
         text2: 'At least two participants must be selected to initiate competition',
       });
       closeModal();
+      setInititatingCompetition(false);
       return;
     }
     try {
@@ -261,8 +280,8 @@ const EditDivisionForm = ({ competition, division, participants, closeModal, con
         p_division_id: division.id,
         p_promotion: Number(promotions),
         p_relegation: Number(relegations),
-        p_max_competitors: Number(maxCompetitors),
-        p_best_of: Number(bestOf),
+        p_max_competitors: maxCompetitors === '' ? null : Number(maxCompetitors),
+        p_best_of: bestOf === '' ? null : Number(bestOf),
         p_draws_allowed: drawsAllowed,
         p_points_for_win: scoringSystem === 'points' ? Number(pointsForWin) : null,
         p_points_for_draw: scoringSystem === 'points' ? Number(pointsForDraw) : null,
@@ -284,7 +303,7 @@ const EditDivisionForm = ({ competition, division, participants, closeModal, con
       Toast.show({
         type: 'success',
         text1: 'Competition Created',
-        text2: 'Competition instance successfully initiated',
+        text2: 'League competition successfully initiated',
       });
 
       return data; // this is your new instance_id
@@ -307,7 +326,7 @@ const EditDivisionForm = ({ competition, division, participants, closeModal, con
 
         case 'COMPETITION_INSTANCE_ALREADY_EXISTS':
           text1 = 'Duplicate Competition';
-          text2 = 'An active competition for this division already exists';
+          text2 = 'An active league competition for this division already exists';
           break;
 
         default:
@@ -322,6 +341,8 @@ const EditDivisionForm = ({ competition, division, participants, closeModal, con
       });
 
       return null;
+    } finally {
+      setInititatingCompetition(false);
     }
   };
 
@@ -349,112 +370,125 @@ const EditDivisionForm = ({ competition, division, participants, closeModal, con
       <ScrollView
         contentContainerStyle={{ gap: 8, paddingBottom: 140 }}
         className="flex-1 gap-4 bg-bg-2">
-        <View className="gap-4 bg-bg-1 p-5">
-          <Heading text="Division Settings" />
-          {context === 'edit-division' && (
-            <>
-              <CustomTextInput
-                value={name}
-                onChangeText={setName}
-                title="Division Name"
-                placeholder="e.g. Super League"
-                leftIconName="trophy-outline"
-                iconColor="purple"
-                autoCapitalize="words"
-                titleColor="text-text-1"
-              />
-              <CustomTextInput
-                value={groupName}
-                onChangeText={setGroupName}
-                title="Group Name"
-                placeholder="e.g. Thursday Teams"
-                leftIconName="layers-outline"
-                iconColor="purple"
-                autoCapitalize="words"
-                titleColor="text-text-1"
-              />
-            </>
-          )}
-          <CustomTextInput
-            value={maxCompetitors}
-            onChangeText={setMaxCompetitors}
-            title="Max Competitors"
-            keyboardType="numeric"
-            placeholder="e.g. 20"
-            leftIconName="people-outline"
-            iconColor="purple"
-            autoCapitalize="words"
-            titleColor="text-text-1"
-          />
-          <View className="flex-row items-center gap-4">
-            <View className="flex-1">
-              <CustomTextInput
-                title="Promotions"
-                value={promotions}
-                onChangeText={setPromotions}
-                keyboardType="numeric"
-                titleColor="text-text-1"
-                placeholder="e.g. 3"
-                leftIconName="caret-up-outline"
-                iconColor="#34C757"
-                clearButtonMode="never"
+        {context === 'edit-division' && (
+          <View className="gap-4 bg-bg-1 p-5">
+            <Heading text="Division Settings" />
+
+            <CustomTextInput
+              value={name}
+              onChangeText={setName}
+              title="Division Name"
+              placeholder="e.g. Super League"
+              leftIconName="trophy-outline"
+              iconColor="purple"
+              autoCapitalize="words"
+              titleColor="text-text-1"
+            />
+            <CustomTextInput
+              value={groupName}
+              onChangeText={setGroupName}
+              title="Group Name"
+              placeholder="e.g. Thursday Teams"
+              leftIconName="layers-outline"
+              iconColor="purple"
+              autoCapitalize="words"
+              titleColor="text-text-1"
+            />
+
+            <CustomTextInput
+              value={maxCompetitors}
+              onChangeText={(text) => {
+                // allow blank + numbers only
+                const cleaned = text.replace(/[^0-9]/g, '');
+                setMaxCompetitors(cleaned);
+              }}
+              onBlur={() => {
+                // keep blank as blank
+                if (maxCompetitors.trim() === '') {
+                  setMaxCompetitors('');
+                  return;
+                }
+
+                const num = Number(maxCompetitors);
+
+                // optional minimum validation
+                if (num < 1) {
+                  setMaxCompetitors('1');
+                }
+              }}
+              title="Max Competitors"
+              keyboardType="numeric"
+              placeholder="e.g. 20"
+              leftIconName="people-outline"
+              iconColor="purple"
+              autoCapitalize="words"
+              titleColor="text-text-1"
+            />
+            <View className="flex-row items-center gap-4">
+              <View className="flex-1">
+                <CustomTextInput
+                  title="Promotions"
+                  value={promotions}
+                  onChangeText={setPromotions}
+                  keyboardType="numeric"
+                  titleColor="text-text-1"
+                  placeholder="e.g. 3"
+                  leftIconName="caret-up-outline"
+                  iconColor="#34C757"
+                  clearButtonMode="never"
+                />
+              </View>
+              <View className="flex-1">
+                <CustomTextInput
+                  value={relegations}
+                  onChangeText={setRelegations}
+                  title="Relegations"
+                  placeholder="e.g. 3"
+                  iconColor="#FF3B30"
+                  leftIconName="caret-down-outline"
+                  titleColor="text-text-1"
+                  keyboardType="numeric"
+                  clearButtonMode="never"
+                />
+              </View>
+            </View>
+
+            <View className="flex-row items-center justify-between gap-5 rounded-xl bg-bg-1 px-1 py-3">
+              <View className="flex-1 items-start justify-center gap-1">
+                <Text className="font-saira-medium text-xl text-text-1">Mid-Season Transfers</Text>
+                <Text className="font-saira text-xs text-text-2">
+                  If disabled, players will not be able to join teams in this division after the
+                  season has started.
+                </Text>
+              </View>
+              <Switch
+                className="w-16"
+                value={midSeasonTransfers}
+                onValueChange={setMidSeasonTransfers}
+                trackColor={{ false: '#E5E7EB', true: '#800080' }}
+                thumbColor={midSeasonTransfers ? '#ffffff' : '#f4f3f4'}
               />
             </View>
-            <View className="flex-1">
-              <CustomTextInput
-                value={relegations}
-                onChangeText={setRelegations}
-                title="Relegations"
-                placeholder="e.g. 3"
-                iconColor="#FF3B30"
-                leftIconName="caret-down-outline"
-                titleColor="text-text-1"
-                keyboardType="numeric"
-                clearButtonMode="never"
+            <View className="flex-row items-center justify-between gap-5 rounded-xl bg-bg-1 px-1 py-3">
+              <View className="flex-1 items-start justify-center gap-1">
+                <Text className="font-saira-medium text-xl text-text-1">
+                  Admin Approval Required
+                </Text>
+                <Text className="font-saira text-xs text-text-2">
+                  If enabled, all join requests for teams in this division will require admin
+                  approval.
+                </Text>
+              </View>
+              <Switch
+                className="w-16"
+                value={adminApprovalRequired}
+                onValueChange={setAdminApprovalRequired}
+                trackColor={{ false: '#E5E7EB', true: '#800080' }}
+                thumbColor={adminApprovalRequired ? '#ffffff' : '#f4f3f4'}
               />
             </View>
           </View>
-          {context === 'edit-division' && (
-            <>
-              <View className="flex-row items-center justify-between gap-5 rounded-xl bg-bg-1 px-1 py-3">
-                <View className="flex-1 items-start justify-center gap-1">
-                  <Text className="font-saira-medium text-xl text-text-1">
-                    Mid-Season Transfers
-                  </Text>
-                  <Text className="font-saira text-xs text-text-2">
-                    If disabled, players will not be able to join teams in this division after the
-                    season has started.
-                  </Text>
-                </View>
-                <Switch
-                  className="w-16"
-                  value={midSeasonTransfers}
-                  onValueChange={setMidSeasonTransfers}
-                  trackColor={{ false: '#E5E7EB', true: '#800080' }}
-                  thumbColor={midSeasonTransfers ? '#ffffff' : '#f4f3f4'}
-                />
-              </View>
-              <View className="flex-row items-center justify-between gap-5 rounded-xl bg-bg-1 px-1 py-3">
-                <View className="flex-1 items-start justify-center gap-1">
-                  <Text className="font-saira-medium text-xl text-text-1">
-                    Admin Approval Required
-                  </Text>
-                  <Text className="font-saira text-xs text-text-2">
-                    If enabled, all join requests for teams in this division will require admin
-                    approval.
-                  </Text>
-                </View>
-                <Switch
-                  className="w-16"
-                  value={adminApprovalRequired}
-                  onValueChange={setAdminApprovalRequired}
-                  trackColor={{ false: '#E5E7EB', true: '#800080' }}
-                  thumbColor={adminApprovalRequired ? '#ffffff' : '#f4f3f4'}
-                />
-              </View>
-            </>
-          )}
-        </View>
+        )}
 
         <View className="gap-4 bg-bg-1 p-5">
           <Heading
@@ -472,26 +506,64 @@ const EditDivisionForm = ({ competition, division, participants, closeModal, con
 
           <CustomTextInput
             value={legs.toString()}
-            onChangeText={(text) => setLegs(Number(text))}
-            title="Number of Legs"
+            onChangeText={(text) => {
+              // allow only digits or blank
+              const cleaned = text.replace(/[^0-9]/g, '');
+              setLegs(cleaned);
+            }}
+            title="Round Robin Cycles"
             keyboardType="numeric"
-            placeholder="e.g. 20"
+            placeholder="e.g. 2"
             leftIconName="repeat-outline"
             iconColor="purple"
             autoCapitalize="words"
             titleColor="text-text-1"
+            onBlur={() => {
+              // allow blank
+              if (legs === '') {
+                setLegs(2);
+                return;
+              }
+            }}
           />
+          <Text className="px-2 font-saira text-xs text-text-2">
+            2 cycles is a double round robin where every team plays each other twice (home and
+            away).
+          </Text>
           <CustomTextInput
-            value={bestOf.toString()}
-            onChangeText={(text) => setBestOf(Number(text))}
+            value={bestOf}
+            onChangeText={(text) => {
+              // allow only digits or blank
+              const cleaned = text.replace(/[^0-9]/g, '');
+              setBestOf(cleaned);
+            }}
+            onBlur={() => {
+              // allow blank
+              if (bestOf.trim() === '') {
+                setBestOf('');
+                return;
+              }
+
+              const num = Number(bestOf);
+
+              // force odd numbers only
+              if (num % 2 === 0) {
+                Alert.alert('Invalid Format', 'Best of frames must be an odd number');
+                setBestOf('');
+              }
+            }}
             title="Best of X Frames"
             keyboardType="numeric"
-            placeholder="e.g. 20"
+            placeholder="e.g. 5, 7, 9, etc."
             leftIconName="layers-outline"
             iconColor="purple"
             autoCapitalize="words"
             titleColor="text-text-1"
           />
+          <Text className="px-2 font-saira text-xs text-text-2">
+            This is the maximum number of frames playable in a fixture. Leave empty for open ended
+            fixtures.
+          </Text>
           <View className="flex-row items-center justify-between gap-5 rounded-xl bg-bg-1 px-1 py-3">
             <View className="flex-1 items-start justify-center gap-1">
               <Text className="font-saira-medium text-xl text-text-1">Draws Allowed</Text>
@@ -510,7 +582,7 @@ const EditDivisionForm = ({ competition, division, participants, closeModal, con
           <CustomDropdown
             title="Point Scoring System"
             titleColor="text-text-1"
-            leftIconName="layers-outline"
+            leftIconName="calculator-outline"
             iconColor="purple"
             placeholder="Select Scoring System"
             value={scoringSystem}
@@ -519,17 +591,17 @@ const EditDivisionForm = ({ competition, division, participants, closeModal, con
               {
                 label: 'Frames Won',
                 value: 'frames_won',
-                subLabel: 'League table ordered by total frames won',
+                subLabel: 'League table ordered by total frames won across all fixtures',
               },
               {
                 label: 'Points for Result',
                 value: 'points',
-                subLabel: 'Points rewarded for win/draw/loss',
+                subLabel: 'Points rewarded for win/draw/loss as in football',
               },
               {
                 label: 'Frame Difference',
                 value: 'frame_diff',
-                subLabel: 'League table ordered by frame difference',
+                subLabel: 'League table ordered by difference in frames won vs lost',
               },
             ]}
           />
@@ -574,7 +646,7 @@ const EditDivisionForm = ({ competition, division, participants, closeModal, con
             <View className="flex-1 items-start justify-center gap-1">
               <Text className="font-saira-medium text-xl text-text-1">Enable Bonus Frame</Text>
               <Text className="font-saira text-xs text-text-2">
-                1 frame per fixture seperate from the league standings e.g. Captain's Cup, Bonus
+                1 frame per fixture separate from the league standings e.g. Captain's Cup, Bonus
                 Round, etc.
               </Text>
             </View>
@@ -659,6 +731,10 @@ const EditDivisionForm = ({ competition, division, participants, closeModal, con
             title="Participants"
             show={showParticipants}
             setShow={setShowParticipants}>
+            <Text className="px-2 font-saira text-sm italic text-text-2">
+              Select the participants from this division that will be competing in this season's
+              league.
+            </Text>
             <View className="my-4 flex-1 items-center justify-center gap-4 rounded-lg pl-2 pr-3">
               {participants?.length === 0 ? (
                 <View className="w-full rounded-2xl bg-bg-2 py-8 shadow-sm">
@@ -724,6 +800,7 @@ const EditDivisionForm = ({ competition, division, participants, closeModal, con
             type="yellow"
             text={context === 'edit-division' ? 'Save Changes' : 'Initiate Competition'}
             callbackFn={context === 'edit-division' ? handleSave : handleInitiateCompetition}
+            loading={inititatingCompetition || saving}
           />
         </View>
       </View>

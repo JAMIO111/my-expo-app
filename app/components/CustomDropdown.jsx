@@ -41,7 +41,7 @@ const OptionRow = ({ item, isSelected, onPress, index }) => {
         onPress={onPress}
         onPressIn={handlePressIn}
         onPressOut={handlePressOut}
-        className={`mb-1.5 flex-row items-center rounded-xl border-2 px-4 py-3 shadow-sm ${
+        className={`mb-1.5 flex-row items-center gap-3 rounded-xl border-2 px-4 py-3 shadow-sm ${
           isSelected ? 'border-brand bg-bg-2' : 'border-transparent bg-bg-2'
         }`}>
         <View className="flex-1">
@@ -166,7 +166,6 @@ const CustomDropdown = ({
 
         <Text
           numberOfLines={1}
-          adjustsFontSizeToFit
           className={`flex-1 pl-3 pr-2 font-saira text-xl ${
             value ? 'font-saira-medium text-text-1' : 'text-gray-400'
           }`}>

@@ -24,6 +24,7 @@ export const PickerRow = ({
   value,
   onChange,
   isExpanded,
+  minimumDate,
   onToggle,
   backgroundColor = 'bg-bg-2',
   disabled = false,
@@ -64,6 +65,7 @@ export const PickerRow = ({
         mode={mode}
         display={Platform.OS === 'ios' ? (mode === 'date' ? 'inline' : 'spinner') : 'default'}
         is24Hour
+        minimumDate={minimumDate}
         onChange={(event, selected) => {
           if (Platform.OS === 'android') {
             // Always close the picker on Android (dialog auto-dismisses)

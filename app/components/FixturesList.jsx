@@ -47,6 +47,16 @@ const FixturesList = () => {
     error: districtsError,
   } = useDistricts();
 
+  const [activeFilter, setActiveFilter] = useState(null);
+  const [district, setDistrict] = useState(defaultDistrict);
+  const [tempDistrict, setTempDistrict] = useState(defaultDistrict);
+  const [season, setSeason] = useState(defaultSeason);
+  const [tempSeason, setTempSeason] = useState(defaultSeason);
+  const [competitionInstance, setCompetitionInstance] = useState(defaultCompetitionInstance);
+  const [tempCompetitionInstance, setTempCompetitionInstance] = useState(
+    defaultCompetitionInstance
+  );
+
   // Fetch seasons by district id
   const {
     data: seasons = [],
@@ -63,16 +73,6 @@ const FixturesList = () => {
 
   const leagueCompetitions = competitionInstances.filter(
     (comp) => comp?.competition?.competition_type === 'league'
-  );
-
-  const [activeFilter, setActiveFilter] = useState(null);
-  const [district, setDistrict] = useState(defaultDistrict);
-  const [tempDistrict, setTempDistrict] = useState(defaultDistrict);
-  const [season, setSeason] = useState(defaultSeason);
-  const [tempSeason, setTempSeason] = useState(defaultSeason);
-  const [competitionInstance, setCompetitionInstance] = useState(defaultCompetitionInstance);
-  const [tempCompetitionInstance, setTempCompetitionInstance] = useState(
-    defaultCompetitionInstance
   );
 
   useEffect(() => {
@@ -111,7 +111,7 @@ const FixturesList = () => {
       const found = seasons.find((s) => s.id === defaultSeason.id);
       if (found) setSeason(found);
     }
-    if (competitionInstance?.season_id !== season.id) {
+    if (competitionInstance?.season_id !== season?.id) {
       setCompetitionInstance(null); // 💥 Wipes the default
       setTempCompetitionInstance(null);
     }
@@ -159,9 +159,8 @@ const FixturesList = () => {
     isLoading,
     error,
   } = useGroupedFixtures({
-    month: selectedMonth,
-    seasonId: season?.id,
     competitionInstanceId: competitionInstance?.id,
+    month: selectedMonth,
   });
 
   const grouped = Object.entries(fixtureData ?? {});
@@ -435,12 +434,12 @@ const FixturesList = () => {
           {activeFilter === 'competition' &&
             leagueCompetitions.map((d) => (
               <Pressable
-                className="mb-3 flex-row items-center justify-between"
+                className="mb-5 flex-row items-center justify-between"
                 key={d.id}
                 onPress={() => setTempCompetitionInstance(d)}>
                 <View>
                   <Text
-                    className={`font-saira text-2xl ${
+                    className={`font-saira-medium text-2xl ${
                       tempCompetitionInstance?.id === d.id ? 'text-text-1' : 'text-text-2'
                     }`}>
                     {d.name}
@@ -449,9 +448,10 @@ const FixturesList = () => {
                     className={`font-saira ${
                       tempCompetitionInstance?.id === d.id ? 'text-text-1' : 'text-text-2'
                     }`}>
-                    {d.group_name} -{' '}
-                    {d.competitor_type.slice(0, 1).toUpperCase() +
-                      d.competitor_type.slice(1).toLowerCase()}
+                    {d.division?.group_name} -{' '}
+                    {d.competition?.competitor_type?.slice(0, 1).toUpperCase() +
+                      d.competition?.competitor_type?.slice(1).toLowerCase()}{' '}
+                    Competitions
                   </Text>
                 </View>
                 <Ionicons
