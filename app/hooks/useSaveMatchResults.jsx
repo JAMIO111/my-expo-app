@@ -24,6 +24,7 @@ export function useSaveMatchResults(fixtureId, existingResults) {
         breakDish: f.breakDish || false,
         reverseDish: f.reverseDish || false,
         lagWon: f.lagWon || null,
+        bonusFrame: f.bonusFrame || false,
         frameNumber: i + 1,
         status: 'pending',
       }));
@@ -52,7 +53,6 @@ export function useSaveMatchResults(fixtureId, existingResults) {
           text1: 'Submission Failed',
           text2: error.message,
         });
-        setSaving(false);
         return false;
       } else {
         await queryClient.invalidateQueries(['results', fixtureId]);
@@ -63,7 +63,6 @@ export function useSaveMatchResults(fixtureId, existingResults) {
           text2: 'All frames have been successfully saved.',
         });
 
-        setSaving(false);
         return true;
       }
     } catch (e) {
@@ -72,8 +71,9 @@ export function useSaveMatchResults(fixtureId, existingResults) {
         text1: 'Unexpected Error',
         text2: e.message,
       });
-      setSaving(false);
       return false;
+    } finally {
+      setSaving(false);
     }
   };
 

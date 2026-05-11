@@ -45,6 +45,7 @@
     "react-native": "0.79.4",
     "react-native-appearance": "^0.3.4",
     "react-native-color-picker": "^0.6.0",
+    "react-native-draggable-flatlist": "^4.0.3",
     "react-native-gesture-handler": "~2.24.0",
     "react-native-iap": "^14.7.8",
     "react-native-keyboard-aware-scroll-view": "^0.9.5",

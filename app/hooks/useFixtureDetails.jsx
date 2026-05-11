@@ -47,6 +47,7 @@ export const useFixtureDetails = (fixtureId) => {
       name,
       special_match,
       special_match_abbreviation,
+      special_match_name,
       draws_allowed,
       best_of,
       competition_type:Competitions!CompetitionInstances_competition_id_fkey(competition_type),
