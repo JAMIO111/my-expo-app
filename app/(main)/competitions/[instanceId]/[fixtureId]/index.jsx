@@ -39,7 +39,7 @@ const index = () => {
           header: () => (
             <SafeViewWrapper useBottomInset={false}>
               <CustomHeader
-                title={`${competitorType === 'team' ? fixtureDetails?.homeCompetitor?.abbreviation || 'Home' : fixtureDetails?.homeCompetitor?.nickname.toUpperCase() || 'Home'} vs ${competitorType === 'team' ? fixtureDetails?.awayCompetitor?.abbreviation || 'Away' : fixtureDetails?.awayCompetitor?.nickname.toUpperCase() || 'Away'}`}
+                title={`${competitorType === 'team' ? fixtureDetails?.homeCompetitor?.abbreviation || 'Home' : fixtureDetails?.homeCompetitor?.nickname?.toUpperCase() || 'Home'} vs ${competitorType === 'team' ? fixtureDetails?.awayCompetitor?.abbreviation || 'Away' : fixtureDetails?.awayCompetitor?.nickname?.toUpperCase() || 'Away'}`}
                 onRightPress={
                   canSubmit
                     ? () => router.push(`competitions/${instanceId}/${fixtureId}/submit-results`)

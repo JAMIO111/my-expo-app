@@ -69,8 +69,8 @@ const PlayerCard = ({ player, team, context }) => {
 
   console.log('PlayerCard Team', team);
 
-  const isCaptain = team.captain === player.id;
-  const isViceCaptain = team.vice_captain === player.id;
+  const isCaptain = team?.captain === player?.id;
+  const isViceCaptain = team?.vice_captain === player?.id;
 
   return (
     <Animated.View className="shadow-sm" style={{ transform: [{ scale }] }}>
@@ -86,9 +86,9 @@ const PlayerCard = ({ player, team, context }) => {
               {player?.first_name} {player?.surname}
             </Text>
             <View className="flex-row items-center">
-              {player.nickname && (
+              {player?.nickname && (
                 <Text numberOfLines={1} className="font-saira-medium text-xl text-text-2">
-                  {player?.nickname.toUpperCase()}
+                  {player?.nickname?.toUpperCase()}
                 </Text>
               )}
             </View>

@@ -39,8 +39,8 @@ export const useGroupedFixtures = ({ competitionInstanceId, month }) => {
           : {
               ...fixture.home_player,
               type: 'player',
-              abbreviation: fixture.home_player.nickname.toUpperCase(),
-              display_name: `${fixture.home_player.first_name} ${fixture.home_player.surname}`,
+              abbreviation: fixture.home_player?.nickname?.toUpperCase(),
+              display_name: `${fixture.home_player?.first_name} ${fixture.home_player?.surname}`,
             };
 
       const awayCompetitor =
@@ -49,8 +49,8 @@ export const useGroupedFixtures = ({ competitionInstanceId, month }) => {
           : {
               ...fixture.away_player,
               type: 'player',
-              abbreviation: fixture.away_player.nickname.toUpperCase(),
-              display_name: `${fixture.away_player.first_name} ${fixture.away_player.surname}`,
+              abbreviation: fixture.away_player?.nickname?.toUpperCase(),
+              display_name: `${fixture.away_player?.first_name} ${fixture.away_player?.surname}`,
             };
 
       const fixtureWithCompetitors = {

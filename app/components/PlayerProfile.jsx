@@ -282,7 +282,7 @@ const PlayerProfile = ({ context, isLoading, playerProfile, error }) => {
               </Text>
               {playerProfile?.nickname && (
                 <Text style={{ lineHeight: 26 }} className="font-saira-medium text-2xl text-text-1">
-                  {playerProfile?.nickname.toUpperCase()}
+                  {playerProfile?.nickname?.toUpperCase()}
                 </Text>
               )}
               <Text style={{ lineHeight: 24 }} className="font-saira text-xl text-text-2">
@@ -432,6 +432,7 @@ const PlayerProfile = ({ context, isLoading, playerProfile, error }) => {
                 type="yellow"
                 callbackFn={() => setCaptainModalVisible(true)}
                 text="Make Team Captain"
+                icon={<Ionicons name="shield-checkmark-outline" size={20} color="black" />}
               />
               <ConfirmModal
                 type="success"
@@ -453,6 +454,7 @@ const PlayerProfile = ({ context, isLoading, playerProfile, error }) => {
                   type="brand"
                   callbackFn={() => setViceCaptainModalVisible(true)}
                   text="Make Vice Captain"
+                  icon={<Ionicons name="shield-checkmark-outline" size={20} color="white" />}
                 />
                 <ConfirmModal
                   type="success"
@@ -468,6 +470,7 @@ const PlayerProfile = ({ context, isLoading, playerProfile, error }) => {
             <>
               <CTAButton
                 type="error"
+                icon={<Ionicons name="person-remove-outline" size={20} color="white" />}
                 callbackFn={
                   (iAmCaptain || iAmViceCaptain) && isMe
                     ? () => {
@@ -499,7 +502,7 @@ const PlayerProfile = ({ context, isLoading, playerProfile, error }) => {
               />
             </>
           )}
-          <Text className="text-center font-saira text-xs text-text-2">{`Player ID: ${playerProfile?.id}`}</Text>
+          <Text className="pt-2 text-center font-saira text-xs text-text-2">{`Player ID: ${playerProfile?.id}`}</Text>
         </View>
       </ScrollView>
       <BottomSheetModal

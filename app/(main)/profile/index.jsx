@@ -114,7 +114,7 @@ const ProfilePage = () => {
                   </Text>
                 </View>
                 <View className="flex-1 items-center">
-                  <Ionicons name="globe-outline" size={24} color="white" />
+                  <Ionicons name="earth" size={24} color="white" />
                   <Text className="text-center font-saira text-xl text-gray-300">Rank</Text>
                   <Text className="text-center font-saira-semibold text-2xl text-white">#23</Text>
                 </View>

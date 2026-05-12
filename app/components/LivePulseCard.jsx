@@ -40,10 +40,7 @@ const LivePulseCard = ({ fontSize = 14, dotSize = 8 }) => {
   }, []);
 
   return (
-    <View
-      className="mb-1 flex-row items-center justify-center gap-2 rounded-xl bg-theme-gray-5 px-4 py-0.5 shadow-sm"
-      style={{ alignSelf: 'flex-start' }} // shrink-wrap content
-    >
+    <View className="flex-row items-center justify-center gap-2 rounded-xl bg-bg-1 px-3 py-0.5 shadow-sm">
       <View
         style={{
           width: containerSize,

@@ -185,7 +185,7 @@ const Account = () => {
                   {player?.first_name} {player?.surname}
                 </Text>
                 <Text className="flex items-center justify-center rounded-lg bg-theme-gray-4 px-4 pt-2 text-center font-saira-medium text-3xl text-text-2">
-                  {player?.nickname.toUpperCase() || initials.toUpperCase()}
+                  {player?.nickname?.toUpperCase() || initials?.toUpperCase()}
                 </Text>
               </View>
             </View>

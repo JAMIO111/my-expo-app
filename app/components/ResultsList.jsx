@@ -337,7 +337,7 @@ const ResultsList = () => {
                         <Text className="font-saira-semibold text-lg text-text-2">
                           {competitorType === 'team'
                             ? f.home_competitor.abbreviation
-                            : f.home_competitor.nickname.toUpperCase()}
+                            : f.home_competitor?.nickname?.toUpperCase()}
                         </Text>
                         <Text className="font-saira-medium text-lg text-text-1">
                           {f.home_competitor.display_name}
@@ -358,7 +358,7 @@ const ResultsList = () => {
                         <Text className="font-saira-semibold text-lg text-text-2">
                           {f.away_competitor.type === 'team'
                             ? f.away_competitor.abbreviation
-                            : f.away_competitor.nickname.toUpperCase()}
+                            : f.away_competitor?.nickname?.toUpperCase()}
                         </Text>
                         <Text className="font-saira-medium text-lg text-text-1">
                           {f.away_competitor.display_name}

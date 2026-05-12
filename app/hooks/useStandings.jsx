@@ -71,6 +71,7 @@ export function useStandings(divisionId, seasonId) {
           frames_for: 0,
           frames_against: 0,
           frame_diff: 0,
+          special_match: 0,
         };
       });
 
@@ -141,13 +142,26 @@ export function useStandings(divisionId, seasonId) {
         let homeFrames = 0;
         let awayFrames = 0;
 
+        let homeBonusFrames = 0;
+        let awayBonusFrames = 0;
+
         fixtureFrames.forEach((fr) => {
-          if (fr.winner_side === 'home') homeFrames++;
-          if (fr.winner_side === 'away') awayFrames++;
+          const isBonus = fr.is_bonus_frame === true;
+
+          if (isBonus) {
+            if (fr.winner_side === 'home') homeBonusFrames++;
+            if (fr.winner_side === 'away') awayBonusFrames++;
+          } else {
+            if (fr.winner_side === 'home') homeFrames++;
+            if (fr.winner_side === 'away') awayFrames++;
+          }
         });
 
         const homeRow = standingsMap[home.id];
         const awayRow = standingsMap[away.id];
+
+        homeRow.special_match += homeBonusFrames;
+        awayRow.special_match += awayBonusFrames;
 
         if (!homeRow || !awayRow) return;
 

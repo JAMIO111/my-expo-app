@@ -71,7 +71,12 @@ const Slot = ({ name, isWinner, isBye, isHome, isFrames, score }) => {
         {label}
       </Text>
       {isFrames && (
-        <Text style={[styles.slotText, isWinner && styles.winnerText, { marginLeft: 6 }]}>
+        <Text
+          style={[
+            styles.slotText,
+            isWinner && styles.winnerText,
+            { marginLeft: 6, fontWeight: '600', fontSize: 14, width: 20, textAlign: 'center' },
+          ]}>
           {score}
         </Text>
       )}
@@ -132,11 +137,14 @@ const MatchCard = ({
 
   const isFrames = frames && frames.length > 0;
 
+  const isApproved = fixture.approved;
+
   const homeScore = frames.filter((f) => f.winner_side === 'home').length;
   const awayScore = frames.filter((f) => f.winner_side === 'away').length;
 
   return (
     <Pressable
+      className="shadow-sm"
       onPress={() => {
         router.push(`/competitions/${competitionInstanceId}/${fixture.id}`);
       }}
@@ -150,7 +158,7 @@ const MatchCard = ({
         ]}>
         <Slot
           name={homeName}
-          isWinner={fixture.winner_side === 'home'}
+          isWinner={fixture.winner_side === 'home' && isApproved}
           isBye={homeBye}
           isHome
           isFrames={isFrames}
@@ -158,7 +166,7 @@ const MatchCard = ({
         />
         <Slot
           name={awayName}
-          isWinner={fixture.winner_side === 'away'}
+          isWinner={fixture.winner_side === 'away' && isApproved}
           isBye={awayBye}
           isFrames={isFrames}
           score={awayScore}
@@ -352,15 +360,15 @@ const styles = StyleSheet.create({
   },
 
   winnerDot: {
-    width: 5,
-    height: 5,
-    borderRadius: 5,
+    width: 6,
+    height: 6,
+    borderRadius: 6,
     backgroundColor: '#d97706',
     marginRight: 6,
   },
 
   slotText: {
-    fontSize: 11,
+    fontSize: 12,
     color: '#111827',
     flexShrink: 1,
   },

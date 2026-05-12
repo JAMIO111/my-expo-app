@@ -290,10 +290,11 @@ const TeamProfile = ({ context, profile, isLoading }) => {
               <CTAButton
                 type="error"
                 text="Disband Team"
+                icon={<Ionicons name="trash-outline" size={20} color="white" />}
                 callbackFn={() => router.push(`/teams/${profile.id}/full-profile`)}
               />
             )}
-            <Text className="text-center font-saira text-xs text-text-2">{`Team ID: ${profile.id}`}</Text>
+            <Text className="pt-2 text-center font-saira text-xs text-text-2">{`Team ID: ${profile.id}`}</Text>
           </View>
         </View>
       </ScrollView>

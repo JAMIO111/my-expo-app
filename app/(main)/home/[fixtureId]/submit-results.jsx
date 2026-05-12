@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { View, Text, Pressable, Switch, Platform, UIManager, StyleSheet } from 'react-native';
 import { supabase } from '@/lib/supabase';
 import { Stack, useRouter, useLocalSearchParams } from 'expo-router';
@@ -41,6 +41,7 @@ const SubmitResultsScreen = () => {
   const { data: existingResults, isLoading: isExistingResultsLoading } =
     useResultsByFixture(fixtureId);
   const { data: fixtureDetails, isLoading: isFixtureDetailsLoading } = useFixtureDetails(fixtureId);
+  console.log('Fixture details:', fixtureDetails);
   const trophyColor = colorScheme === 'dark' ? '#FFD700' : '#EBB30A';
   const { data: homeTeamPlayers, isLoading: isHomeTeamPlayersLoading } = useTeamPlayers(
     fixtureDetails?.homeTeam?.id
@@ -58,6 +59,7 @@ const SubmitResultsScreen = () => {
   const isHome = editingPlayer?.startsWith('home');
   const players = isHome ? homeTeamPlayers : awayTeamPlayers;
   const amendMode = fixtureDetails?.is_disputed;
+  const drawsAllowed = fixtureDetails?.competition?.draws_allowed;
 
   const bestOf = fixtureDetails?.competition?.best_of;
   const bonusFrame = fixtureDetails?.competition?.special_match;
@@ -175,7 +177,7 @@ const SubmitResultsScreen = () => {
       Toast.show({
         type: 'info',
         text1: 'Bonus Frame Already Exists',
-        text2: `Only one ${fixtureDetails?.competition?.special_match_name || 'special'}) frame is allowed per fixture.`,
+        text2: `Only one ${fixtureDetails?.competition?.special_match_name || 'bonus'} frame is allowed per fixture.`,
       });
       return;
     }
@@ -218,6 +220,15 @@ const SubmitResultsScreen = () => {
   };
 
   const handleSubmit = async () => {
+    if (!drawsAllowed && homeScore === awayScore) {
+      Toast.show({
+        type: 'info',
+        text1: 'Draw Not Allowed',
+        text2: 'This competition does not allow draws. Number of frames cannot be tied.',
+      });
+      setConfirmSubmitModalVisible(false);
+      return false;
+    }
     const normalFrameCount = frames.filter((f) => !f.bonusFrame).length;
     if (bestOf && normalFrameCount > bestOf) {
       Toast.show({
@@ -357,6 +368,10 @@ const SubmitResultsScreen = () => {
     }
   };
 
+  const reversedFrames = useMemo(() => {
+    return [...frames].reverse();
+  }, [frames]);
+
   // ─── Score card rendered as the list header ───────────────────────────────
   const ScoreHeader = (
     <View className="my-4 rounded-3xl bg-bg-1 p-4 shadow-sm">
@@ -475,7 +490,8 @@ const SubmitResultsScreen = () => {
   //   • any frame is open for editing  (activeFrameId is set)
   //   • we're in amendMode and this frame is not disputed
   const renderFrame = ({ item: frame, drag, isActive: isDragging, getIndex }) => {
-    const index = frames.length - getIndex();
+    const currentIndex = getIndex?.() ?? 0;
+    const index = frames.length - currentIndex;
     const isActive = frame.tempId === activeFrameId;
     const isDisputed = frame?.status === 'disputed';
     const homeCount = [frame.homePlayer1, frame.homePlayer2].filter(Boolean).length;
@@ -521,305 +537,308 @@ const SubmitResultsScreen = () => {
           className={`mb-3 rounded-3xl border-2 ${isDisputed ? 'border-theme-red' : 'border-transparent'} bg-bg-grouped-2 pb-2 shadow-sm`}
           style={[styles.cardContainer, isDragging && styles.cardDragging]}>
           {/* ── Expanded / editable view ─────────────────────────────── */}
-          <View
-            className="flex flex-col gap-3"
-            style={[
-              styles.editableContainer,
-              { display: isActive ? 'flex' : 'none', opacity: isActive ? 1 : 0 },
-            ]}>
-            <View
-              style={{ borderTopRightRadius: 14, borderTopLeftRadius: 14 }}
-              className={`gap-2 ${amendMode && isDisputed ? 'bg-theme-red' : ''} pb-2`}>
-              <Text
-                className={`mt-6 w-full px-5 ${isActive ? 'text-left' : 'text-center'} font-saira-medium text-xl ${isDisputed ? 'text-white' : 'text-text-2'}`}>
-                {index}
-                {`${getOrdinalSuffix(index)} Frame ${fixtureDetails?.is_disputed ? '- Disputed' : ''}`}
-              </Text>
-              {amendMode && isDisputed && (
-                <Text className="px-5 text-left font-saira text-sm text-white">
-                  {frame?.comment}
+          {isActive && (
+            <View className="flex flex-col gap-3">
+              <View
+                style={{ borderTopRightRadius: 14, borderTopLeftRadius: 14 }}
+                className={`gap-2 ${amendMode && isDisputed ? 'bg-theme-red' : ''} pb-2`}>
+                <Text
+                  className={`mt-6 w-full px-5 ${isActive ? 'text-left' : 'text-center'} font-saira-medium text-xl ${isDisputed ? 'text-white' : 'text-text-2'}`}>
+                  {index}
+                  {`${getOrdinalSuffix(index)} Frame ${fixtureDetails?.is_disputed ? '- Disputed' : ''}`}
                 </Text>
-              )}
-              <View className="absolute right-3 top-3 flex-row items-center justify-end gap-3">
-                <Pressable
-                  onPress={() => {
-                    if (bestOf && normalFrameCount > bestOf && !frame.bonusFrame) {
-                      Toast.show({
-                        type: 'error',
-                        text1: 'Frame Limit Reached',
-                        text2: `This competition is a best of ${bestOf} frames, so you cannot have more than ${bestOf} normal frames.`,
-                      });
-                      return;
-                    }
-                    if (
-                      (allowDoubles
-                        ? homeCount === 2 && awayCount === 2
-                        : homeCount === 1 && awayCount === 1) &&
-                      homeCount === awayCount &&
-                      frame.winnerSide !== null
-                    ) {
-                      markComplete(frame.tempId);
-                    } else {
-                      Toast.show({
-                        type: 'error',
-                        text1: 'Error!',
-                        text2:
-                          'Ensure both players are selected, the number of players is equal, and a winner is chosen.',
-                        props: { colorScheme },
-                      });
-                    }
-                  }}
-                  className="flex-row items-center gap-2 rounded-xl border-theme-green/50 bg-theme-green/15 p-2 px-4">
-                  <Ionicons name="checkmark-outline" size={24} color={'green'} />
-                  <Text className="font-saira-medium text-lg text-[#058501]">Save</Text>
-                </Pressable>
-                {!amendMode && isActive && (
+                {amendMode && isDisputed && (
+                  <Text className="px-5 text-left font-saira text-sm text-white">
+                    {frame?.comment}
+                  </Text>
+                )}
+                <View className="absolute right-3 top-3 flex-row items-center justify-end gap-3">
                   <Pressable
                     onPress={() => {
-                      setFrameToDelete(frame.tempId);
-                      setConfirmDeleteModalVisible(true);
+                      if (bestOf && normalFrameCount > bestOf && !frame.bonusFrame) {
+                        Toast.show({
+                          type: 'error',
+                          text1: 'Frame Limit Reached',
+                          text2: `This competition is a best of ${bestOf} frames, so you cannot have more than ${bestOf} normal frames.`,
+                        });
+                        return;
+                      }
+                      if (
+                        (allowDoubles
+                          ? homeCount === 2 && awayCount === 2
+                          : homeCount === 1 && awayCount === 1) &&
+                        homeCount === awayCount &&
+                        frame.winnerSide !== null
+                      ) {
+                        markComplete(frame.tempId);
+                      } else {
+                        Toast.show({
+                          type: 'error',
+                          text1: 'Error!',
+                          text2:
+                            'Ensure both players are selected, the number of players is equal, and a winner is chosen.',
+                          props: { colorScheme },
+                        });
+                      }
                     }}
-                    className="rounded-xl border-theme-red/50 bg-theme-red/20 p-2">
-                    <Ionicons name="trash-outline" size={24} color={'red'} />
+                    className="flex-row items-center gap-2 rounded-xl border-theme-green/50 bg-theme-green/15 p-2 px-4">
+                    <Ionicons name="checkmark-outline" size={24} color={'green'} />
+                    <Text className="font-saira-medium text-lg text-[#058501]">Save</Text>
                   </Pressable>
+                  {!amendMode && isActive && (
+                    <Pressable
+                      onPress={() => {
+                        setFrameToDelete(frame.tempId);
+                        setConfirmDeleteModalVisible(true);
+                      }}
+                      className="rounded-xl border-theme-red/50 bg-theme-red/20 p-2">
+                      <Ionicons name="trash-outline" size={24} color={'red'} />
+                    </Pressable>
+                  )}
+                </View>
+              </View>
+
+              <View className="gap-3 px-4 pb-2">
+                {fixtureDetails?.competitor_type === 'team' && (
+                  <SlidingTabButton
+                    value={allowDoubles ? 'right' : 'left'}
+                    onChange={(value) => setAllowDoubles(value === 'right')}
+                    option1="Singles"
+                    option2="Doubles"
+                  />
                 )}
-              </View>
-            </View>
 
-            <View className="gap-3 px-4 pb-2">
-              {fixtureDetails?.competitor_type === 'team' && (
-                <SlidingTabButton
-                  value={allowDoubles ? 'right' : 'left'}
-                  onChange={(value) => setAllowDoubles(value === 'right')}
-                  option1="Singles"
-                  option2="Doubles"
-                />
-              )}
-
-              <View className="flex-row gap-5 pb-2">
-                <Pressable
-                  onPress={() => {
-                    if (fixtureDetails?.competitor_type === 'individual') return;
-                    setEditingPlayer('homePlayer1');
-                    openSheet();
-                  }}
-                  className="flex-1 rounded-2xl bg-bg-2 p-3 py-4 shadow-sm">
-                  <Text
-                    numberOfLines={1}
-                    className={`text-center ${frame.homePlayer1 ? 'font-saira-medium text-text-1' : 'font-saira-regular text-text-2'}`}>
-                    {getPlayerName(frame.homePlayer1)}
-                  </Text>
-                </Pressable>
-                <Pressable
-                  onPress={() => {
-                    if (fixtureDetails?.competitor_type === 'individual') return;
-                    setEditingPlayer('awayPlayer1');
-                    openSheet();
-                  }}
-                  className="flex-1 rounded-2xl bg-bg-2 p-3 py-4 shadow-sm">
-                  <Text
-                    numberOfLines={1}
-                    className={`text-center ${frame.awayPlayer1 ? 'font-saira-medium text-text-1' : 'font-saira-regular text-text-2'}`}>
-                    {getPlayerName(frame.awayPlayer1)}
-                  </Text>
-                </Pressable>
-              </View>
-
-              {allowDoubles && (
                 <View className="flex-row gap-5 pb-2">
                   <Pressable
                     onPress={() => {
                       if (fixtureDetails?.competitor_type === 'individual') return;
-                      setEditingPlayer('homePlayer2');
+                      setEditingPlayer('homePlayer1');
                       openSheet();
                     }}
                     className="flex-1 rounded-2xl bg-bg-2 p-3 py-4 shadow-sm">
                     <Text
                       numberOfLines={1}
-                      className={`text-center ${frame.homePlayer2 ? 'font-saira-medium text-text-1' : 'font-saira-regular text-text-2'}`}>
-                      {getPlayerName(frame.homePlayer2)}
+                      className={`text-center ${frame.homePlayer1 ? 'font-saira-medium text-text-1' : 'font-saira-regular text-text-2'}`}>
+                      {getPlayerName(frame.homePlayer1)}
                     </Text>
                   </Pressable>
                   <Pressable
                     onPress={() => {
                       if (fixtureDetails?.competitor_type === 'individual') return;
-                      setEditingPlayer('awayPlayer2');
+                      setEditingPlayer('awayPlayer1');
                       openSheet();
                     }}
                     className="flex-1 rounded-2xl bg-bg-2 p-3 py-4 shadow-sm">
                     <Text
                       numberOfLines={1}
-                      className={`text-center ${frame.awayPlayer2 ? 'font-saira-medium text-text-1' : 'font-saira-regular text-text-2'}`}>
-                      {getPlayerName(frame.awayPlayer2)}
+                      className={`text-center ${frame.awayPlayer1 ? 'font-saira-medium text-text-1' : 'font-saira-regular text-text-2'}`}>
+                      {getPlayerName(frame.awayPlayer1)}
                     </Text>
                   </Pressable>
                 </View>
-              )}
 
-              {isValidPlayers && (
-                <View className="mt-3 flex-col items-center justify-center gap-3">
-                  {/* Winner row */}
-                  <View className="flex-row items-center justify-evenly">
+                {allowDoubles && (
+                  <View className="flex-row gap-5 pb-2">
                     <Pressable
-                      style={{ height: 44, width: 44 }}
-                      onPress={() =>
-                        updateActiveFrame('winnerSide', frame.winnerSide === 'home' ? null : 'home')
-                      }
-                      className={`h-15 w-15 items-center justify-center rounded-xl border ${frame.winnerSide === 'home' ? 'border-brand bg-brand-light' : 'border-border-color bg-bg-grouped-1'}`}>
-                      {frame.winnerSide === 'home' && (
-                        <Ionicons name="trophy-outline" size={26} color="white" />
-                      )}
+                      onPress={() => {
+                        if (fixtureDetails?.competitor_type === 'individual') return;
+                        setEditingPlayer('homePlayer2');
+                        openSheet();
+                      }}
+                      className="flex-1 rounded-2xl bg-bg-2 p-3 py-4 shadow-sm">
+                      <Text
+                        numberOfLines={1}
+                        className={`text-center ${frame.homePlayer2 ? 'font-saira-medium text-text-1' : 'font-saira-regular text-text-2'}`}>
+                        {getPlayerName(frame.homePlayer2)}
+                      </Text>
                     </Pressable>
-                    <Text className="flex-1 text-center font-saira-medium text-xl text-text-1">
-                      Winner
-                    </Text>
                     <Pressable
-                      style={{ height: 44, width: 44 }}
-                      onPress={() =>
-                        updateActiveFrame('winnerSide', frame.winnerSide === 'away' ? null : 'away')
-                      }
-                      className={`items-center justify-center rounded-xl border ${frame.winnerSide === 'away' ? 'border-brand bg-brand-light' : 'border-border-color bg-bg-grouped-1'}`}>
-                      {frame.winnerSide === 'away' && (
-                        <Ionicons name="trophy-outline" size={26} color="white" />
-                      )}
+                      onPress={() => {
+                        if (fixtureDetails?.competitor_type === 'individual') return;
+                        setEditingPlayer('awayPlayer2');
+                        openSheet();
+                      }}
+                      className="flex-1 rounded-2xl bg-bg-2 p-3 py-4 shadow-sm">
+                      <Text
+                        numberOfLines={1}
+                        className={`text-center ${frame.awayPlayer2 ? 'font-saira-medium text-text-1' : 'font-saira-regular text-text-2'}`}>
+                        {getPlayerName(frame.awayPlayer2)}
+                      </Text>
                     </Pressable>
                   </View>
+                )}
 
-                  {/* Lag Won row */}
-                  <View className="flex-row items-center justify-evenly">
-                    <Pressable
-                      style={{ height: 44, width: 44 }}
-                      onPress={() =>
-                        updateActiveFrame('lagWon', frame.lagWon === 'home' ? null : 'home')
-                      }
-                      className={`h-15 w-15 items-center justify-center rounded-xl border ${frame.lagWon === 'home' ? 'border-brand bg-brand-light' : 'border-border-color bg-bg-grouped-1'}`}>
-                      {frame.lagWon === 'home' && (
-                        <Ionicons
-                          style={{ transform: [{ rotate: '90deg' }] }}
-                          name="swap-horizontal-outline"
-                          size={26}
-                          color="white"
-                        />
-                      )}
-                    </Pressable>
-                    <Text className="flex-1 text-center font-saira-medium text-xl text-text-1">
-                      Lag Won
-                    </Text>
-                    <Pressable
-                      style={{ height: 44, width: 44 }}
-                      onPress={() =>
-                        updateActiveFrame('lagWon', frame.lagWon === 'away' ? null : 'away')
-                      }
-                      className={`items-center justify-center rounded-xl border ${frame.lagWon === 'away' ? 'border-brand bg-brand-light' : 'border-border-color bg-bg-grouped-1'}`}>
-                      {frame.lagWon === 'away' && (
-                        <Ionicons
-                          style={{ transform: [{ rotate: '90deg' }] }}
-                          name="swap-horizontal-outline"
-                          size={26}
-                          color="white"
-                        />
-                      )}
-                    </Pressable>
-                  </View>
-
-                  {/* Break Dish row */}
-                  {frame.winnerSide !== null && (
+                {isValidPlayers && (
+                  <View className="mt-3 flex-col items-center justify-center gap-3">
+                    {/* Winner row */}
                     <View className="flex-row items-center justify-evenly">
-                      {frame.winnerSide === 'home' ? (
-                        <Pressable
-                          style={{ height: 44, width: 44 }}
-                          onPress={() => updateActiveFrame('breakDish', !frame.breakDish)}
-                          className={`h-15 w-15 items-center justify-center rounded-xl border ${frame.breakDish && frame.winnerSide === 'home' ? 'border-brand bg-brand-light' : 'border-border-color bg-bg-grouped-1'}`}>
-                          {frame.breakDish && frame.winnerSide === 'home' && (
-                            <Ionicons name="flash" size={26} color="white" />
-                          )}
-                        </Pressable>
-                      ) : (
-                        <View style={{ width: 44 }} />
-                      )}
+                      <Pressable
+                        style={{ height: 44, width: 44 }}
+                        onPress={() =>
+                          updateActiveFrame(
+                            'winnerSide',
+                            frame.winnerSide === 'home' ? null : 'home'
+                          )
+                        }
+                        className={`h-15 w-15 items-center justify-center rounded-xl border ${frame.winnerSide === 'home' ? 'border-brand bg-brand-light' : 'border-border-color bg-bg-grouped-1'}`}>
+                        {frame.winnerSide === 'home' && (
+                          <Ionicons name="trophy-outline" size={26} color="white" />
+                        )}
+                      </Pressable>
                       <Text className="flex-1 text-center font-saira-medium text-xl text-text-1">
-                        Break Dish
+                        Winner
                       </Text>
-                      {frame.winnerSide === 'away' ? (
-                        <Pressable
-                          style={{ height: 44, width: 44 }}
-                          onPress={() => updateActiveFrame('breakDish', !frame.breakDish)}
-                          className={`items-center justify-center rounded-xl border ${frame.breakDish && frame.winnerSide === 'away' ? 'border-brand bg-brand-light' : 'border-border-color bg-bg-grouped-1'}`}>
-                          {frame.breakDish && frame.winnerSide === 'away' && (
-                            <Ionicons name="flash" size={26} color="white" />
-                          )}
-                        </Pressable>
-                      ) : (
-                        <View style={{ width: 44 }} />
-                      )}
+                      <Pressable
+                        style={{ height: 44, width: 44 }}
+                        onPress={() =>
+                          updateActiveFrame(
+                            'winnerSide',
+                            frame.winnerSide === 'away' ? null : 'away'
+                          )
+                        }
+                        className={`items-center justify-center rounded-xl border ${frame.winnerSide === 'away' ? 'border-brand bg-brand-light' : 'border-border-color bg-bg-grouped-1'}`}>
+                        {frame.winnerSide === 'away' && (
+                          <Ionicons name="trophy-outline" size={26} color="white" />
+                        )}
+                      </Pressable>
                     </View>
-                  )}
 
-                  {/* Reverse Dish row */}
-                  {frame.winnerSide !== null && (
+                    {/* Lag Won row */}
                     <View className="flex-row items-center justify-evenly">
-                      {frame.winnerSide === 'home' ? (
-                        <Pressable
-                          style={{ height: 44, width: 44 }}
-                          onPress={() => updateActiveFrame('reverseDish', !frame.reverseDish)}
-                          className={`h-11 w-11 items-center justify-center rounded-xl border ${frame.reverseDish && frame.winnerSide === 'home' ? 'border-brand bg-brand-light' : 'border-border-color bg-bg-grouped-1'}`}>
-                          {frame.reverseDish && frame.winnerSide === 'home' && (
-                            <Ionicons
-                              style={{ transform: [{ rotate: '180deg' }] }}
-                              name="refresh-outline"
-                              size={26}
-                              color="white"
-                            />
-                          )}
-                        </Pressable>
-                      ) : (
-                        <View style={{ width: 44 }} />
-                      )}
+                      <Pressable
+                        style={{ height: 44, width: 44 }}
+                        onPress={() =>
+                          updateActiveFrame('lagWon', frame.lagWon === 'home' ? null : 'home')
+                        }
+                        className={`h-15 w-15 items-center justify-center rounded-xl border ${frame.lagWon === 'home' ? 'border-brand bg-brand-light' : 'border-border-color bg-bg-grouped-1'}`}>
+                        {frame.lagWon === 'home' && (
+                          <Ionicons
+                            style={{ transform: [{ rotate: '90deg' }] }}
+                            name="swap-horizontal-outline"
+                            size={26}
+                            color="white"
+                          />
+                        )}
+                      </Pressable>
                       <Text className="flex-1 text-center font-saira-medium text-xl text-text-1">
-                        Reverse Dish
+                        Lag Won
                       </Text>
-                      {frame.winnerSide === 'away' ? (
-                        <Pressable
-                          style={{ height: 44, width: 44 }}
-                          onPress={() => updateActiveFrame('reverseDish', !frame.reverseDish)}
-                          className={`items-center justify-center rounded-xl border ${frame.reverseDish && frame.winnerSide === 'away' ? 'border-brand bg-brand-light' : 'border-border-color bg-bg-grouped-1'}`}>
-                          {frame.reverseDish && frame.winnerSide === 'away' && (
-                            <Ionicons
-                              style={{ transform: [{ rotate: '180deg' }] }}
-                              name="refresh-outline"
-                              size={26}
-                              color="white"
-                            />
-                          )}
-                        </Pressable>
-                      ) : (
-                        <View style={{ width: 44 }} />
-                      )}
+                      <Pressable
+                        style={{ height: 44, width: 44 }}
+                        onPress={() =>
+                          updateActiveFrame('lagWon', frame.lagWon === 'away' ? null : 'away')
+                        }
+                        className={`items-center justify-center rounded-xl border ${frame.lagWon === 'away' ? 'border-brand bg-brand-light' : 'border-border-color bg-bg-grouped-1'}`}>
+                        {frame.lagWon === 'away' && (
+                          <Ionicons
+                            style={{ transform: [{ rotate: '90deg' }] }}
+                            name="swap-horizontal-outline"
+                            size={26}
+                            color="white"
+                          />
+                        )}
+                      </Pressable>
                     </View>
-                  )}
 
-                  {/* Bonus frame toggle */}
-                  <View className="mt-2 flex-row items-center justify-between gap-5 border-t border-theme-gray-4 bg-bg-1 pt-3">
-                    <View className="flex-1 items-start justify-center gap-1">
-                      <Text className="font-saira-medium text-xl text-text-1">
-                        {fixtureDetails?.competition?.special_match_name || 'Bonus Frame'}
-                      </Text>
-                      <Text className="font-saira text-sm text-text-2">
-                        {`If enabled this frame will be recorded as the ${fixtureDetails?.competition?.special_match_name || 'bonus frame'} (${fixtureDetails?.competition?.special_match_abbreviation || 'BF'})`}
-                      </Text>
+                    {/* Break Dish row */}
+                    {frame.winnerSide !== null && (
+                      <View className="flex-row items-center justify-evenly">
+                        {frame.winnerSide === 'home' ? (
+                          <Pressable
+                            style={{ height: 44, width: 44 }}
+                            onPress={() => updateActiveFrame('breakDish', !frame.breakDish)}
+                            className={`h-15 w-15 items-center justify-center rounded-xl border ${frame.breakDish && frame.winnerSide === 'home' ? 'border-brand bg-brand-light' : 'border-border-color bg-bg-grouped-1'}`}>
+                            {frame.breakDish && frame.winnerSide === 'home' && (
+                              <Ionicons name="flash" size={26} color="white" />
+                            )}
+                          </Pressable>
+                        ) : (
+                          <View style={{ width: 44 }} />
+                        )}
+                        <Text className="flex-1 text-center font-saira-medium text-xl text-text-1">
+                          Break Dish
+                        </Text>
+                        {frame.winnerSide === 'away' ? (
+                          <Pressable
+                            style={{ height: 44, width: 44 }}
+                            onPress={() => updateActiveFrame('breakDish', !frame.breakDish)}
+                            className={`items-center justify-center rounded-xl border ${frame.breakDish && frame.winnerSide === 'away' ? 'border-brand bg-brand-light' : 'border-border-color bg-bg-grouped-1'}`}>
+                            {frame.breakDish && frame.winnerSide === 'away' && (
+                              <Ionicons name="flash" size={26} color="white" />
+                            )}
+                          </Pressable>
+                        ) : (
+                          <View style={{ width: 44 }} />
+                        )}
+                      </View>
+                    )}
+
+                    {/* Reverse Dish row */}
+                    {frame.winnerSide !== null && (
+                      <View className="flex-row items-center justify-evenly">
+                        {frame.winnerSide === 'home' ? (
+                          <Pressable
+                            style={{ height: 44, width: 44 }}
+                            onPress={() => updateActiveFrame('reverseDish', !frame.reverseDish)}
+                            className={`h-11 w-11 items-center justify-center rounded-xl border ${frame.reverseDish && frame.winnerSide === 'home' ? 'border-brand bg-brand-light' : 'border-border-color bg-bg-grouped-1'}`}>
+                            {frame.reverseDish && frame.winnerSide === 'home' && (
+                              <Ionicons
+                                style={{ transform: [{ rotate: '180deg' }] }}
+                                name="refresh-outline"
+                                size={26}
+                                color="white"
+                              />
+                            )}
+                          </Pressable>
+                        ) : (
+                          <View style={{ width: 44 }} />
+                        )}
+                        <Text className="flex-1 text-center font-saira-medium text-xl text-text-1">
+                          Reverse Dish
+                        </Text>
+                        {frame.winnerSide === 'away' ? (
+                          <Pressable
+                            style={{ height: 44, width: 44 }}
+                            onPress={() => updateActiveFrame('reverseDish', !frame.reverseDish)}
+                            className={`items-center justify-center rounded-xl border ${frame.reverseDish && frame.winnerSide === 'away' ? 'border-brand bg-brand-light' : 'border-border-color bg-bg-grouped-1'}`}>
+                            {frame.reverseDish && frame.winnerSide === 'away' && (
+                              <Ionicons
+                                style={{ transform: [{ rotate: '180deg' }] }}
+                                name="refresh-outline"
+                                size={26}
+                                color="white"
+                              />
+                            )}
+                          </Pressable>
+                        ) : (
+                          <View style={{ width: 44 }} />
+                        )}
+                      </View>
+                    )}
+
+                    {/* Bonus frame toggle */}
+                    <View className="mt-2 flex-row items-center justify-between gap-5 border-t border-theme-gray-4 bg-bg-1 pt-3">
+                      <View className="flex-1 items-start justify-center gap-1">
+                        <Text className="font-saira-medium text-xl text-text-1">
+                          {fixtureDetails?.competition?.special_match_name || 'Bonus Frame'}
+                        </Text>
+                        <Text className="font-saira text-sm text-text-2">
+                          {`If enabled this frame will be recorded as the ${fixtureDetails?.competition?.special_match_name || 'bonus frame'} (${fixtureDetails?.competition?.special_match_abbreviation || 'BF'})`}
+                        </Text>
+                      </View>
+                      <Switch
+                        className="w-16"
+                        value={frame.bonusFrame || false}
+                        onValueChange={handleToggleBonus}
+                        trackColor={{ false: '#E5E7EB', true: '#800080' }}
+                        thumbColor={frame.bonusFrame ? '#ffffff' : '#f4f3f4'}
+                      />
                     </View>
-                    <Switch
-                      className="w-16"
-                      value={frame.bonusFrame || false}
-                      onValueChange={handleToggleBonus}
-                      trackColor={{ false: '#E5E7EB', true: '#800080' }}
-                      thumbColor={frame.bonusFrame ? '#ffffff' : '#f4f3f4'}
-                    />
                   </View>
-                </View>
-              )}
+                )}
+              </View>
             </View>
-          </View>
+          )}
 
           {/* Modals live inside the card so they reference the right frame */}
           <FloatingBottomSheet
@@ -848,167 +867,166 @@ const SubmitResultsScreen = () => {
           />
 
           {/* ── Collapsed summary view ───────────────────────────────── */}
-          <View
-            pointerEvents={isActive ? 'none' : 'auto'}
-            style={[
-              styles.summaryContainer,
-              {
-                display: isActive ? 'none' : 'flex',
-                opacity: isActive ? 0 : 1,
-                paddingBottom: isActive ? 0 : 12,
-                overflow: 'hidden',
-              },
-            ]}>
-            {isDisputed && (
-              <View
-                style={{ borderTopRightRadius: 14, borderTopLeftRadius: 14 }}
-                className="bg-theme-red py-1">
-                <Text className="text-center font-saira-medium text-white">
-                  {frame.status === 'disputed' ? 'Disputed' : ''}
-                </Text>
-              </View>
-            )}
-
-            <View className="mt-4 flex flex-1 flex-row items-center gap-2 px-3">
-              {/* Home icons */}
-              <View
-                style={{ borderRadius: 14 }}
-                className="flex h-12 flex-1 flex-row items-center justify-end gap-2 bg-bg-2 p-2 shadow-sm">
-                {frame.lagWon === 'home' && (
-                  <View className="items-center justify-center rounded-lg bg-brand p-2 shadow-sm">
-                    <Ionicons
-                      style={{ transform: [{ rotate: '90deg' }] }}
-                      name="swap-horizontal-outline"
-                      size={14}
-                      color="#FFF"
-                    />
-                  </View>
-                )}
-                {frame.reverseDish && frame.winnerSide === 'home' && (
-                  <View className="items-center justify-center rounded-lg bg-bg-1 p-2 shadow-sm">
-                    <Ionicons
-                      style={{ transform: [{ rotate: '180deg' }] }}
-                      name="refresh-outline"
-                      size={14}
-                      color="#000000"
-                    />
-                  </View>
-                )}
-                {frame.breakDish && frame.winnerSide === 'home' && (
-                  <View className="items-center justify-center rounded-lg bg-bg-1 p-2 shadow-sm">
-                    <Ionicons name="flash" size={14} color="#000" />
-                  </View>
-                )}
-                {frame.winnerSide === 'home' && (
-                  <View
-                    style={{ backgroundColor: trophyColor }}
-                    className="items-center justify-center rounded-lg bg-bg-1 p-2 shadow-sm">
-                    <Ionicons name="trophy" size={14} color="#FFF" />
-                  </View>
-                )}
-              </View>
-
-              {/* Frame number badge */}
-              <View
-                style={{ minWidth: 40 }}
-                className={`${frame.bonusFrame ? 'border-theme-purple bg-theme-purple/10' : 'border-transparent bg-bg-2'} h-full justify-center rounded-xl border shadow-sm`}>
-                <Text className="px-2 text-center font-saira-medium text-text-2">
-                  {index}
-                  {getOrdinalSuffix(index)}
-                </Text>
-                {frame.bonusFrame && (
-                  <Text
-                    style={{ lineHeight: 18 }}
-                    className="w-full px-2 text-center font-saira-medium text-theme-purple">
-                    {fixtureDetails?.competition?.special_match_abbreviation || 'BF'}
-                  </Text>
-                )}
-              </View>
-
-              {/* Away icons */}
-              <View
-                style={{ borderRadius: 14 }}
-                className="flex h-12 flex-1 flex-row items-center justify-start gap-2 bg-bg-2 p-2 shadow-sm">
-                {frame.winnerSide === 'away' && (
-                  <View
-                    style={{ backgroundColor: trophyColor }}
-                    className="items-center justify-center rounded-lg bg-bg-1 p-2 shadow-sm">
-                    <Ionicons name="trophy" size={14} color="#FFF" />
-                  </View>
-                )}
-                {frame.breakDish && frame.winnerSide === 'away' && (
-                  <View className="items-center justify-center rounded-lg bg-bg-1 p-2 shadow-sm">
-                    <Ionicons name="flash" size={14} color="#000" />
-                  </View>
-                )}
-                {frame.reverseDish && frame.winnerSide === 'away' && (
-                  <View className="items-center justify-center rounded-lg bg-bg-1 p-2 shadow-sm">
-                    <Ionicons
-                      style={{ transform: [{ rotate: '180deg' }] }}
-                      name="refresh-outline"
-                      size={14}
-                      color="#000000"
-                    />
-                  </View>
-                )}
-                {frame.lagWon === 'away' && (
-                  <View className="items-center justify-center rounded-lg bg-brand p-2 shadow-sm">
-                    <Ionicons
-                      style={{ transform: [{ rotate: '90deg' }] }}
-                      name="swap-horizontal-outline"
-                      size={14}
-                      color="#FFF"
-                    />
-                  </View>
-                )}
-              </View>
-            </View>
-
-            {/* Player names row */}
-            <View className="flex-row items-center justify-between gap-3 px-3 pt-3">
-              <View className="flex flex-1 flex-col gap-1">
-                <View className="flex flex-row items-center gap-2">
-                  <Avatar size={24} borderRadius={8} player={frame.homePlayer1} />
-                  <Text
-                    numberOfLines={1}
-                    className={`${frame.homePlayer1 ? 'text-text-1' : 'text-theme-red'} flex-1 text-left font-saira-medium text-lg`}>
-                    {getPlayerName(frame.homePlayer1)}
+          {!isActive && (
+            <View
+              pointerEvents={isActive ? 'none' : 'auto'}
+              style={[
+                styles.summaryContainer,
+                {
+                  minHeight: 90,
+                },
+              ]}>
+              {isDisputed && (
+                <View
+                  style={{ borderTopRightRadius: 14, borderTopLeftRadius: 14 }}
+                  className="bg-theme-red py-1">
+                  <Text className="text-center font-saira-medium text-white">
+                    {frame.status === 'disputed' ? 'Disputed' : ''}
                   </Text>
                 </View>
-                {frame.homePlayer2 && (
+              )}
+
+              <View className="mt-4 flex flex-1 flex-row items-center gap-2 px-3">
+                {/* Home icons */}
+                <View
+                  style={{ borderRadius: 14 }}
+                  className="flex h-12 flex-1 flex-row items-center justify-end gap-2 bg-bg-2 p-2 shadow-sm">
+                  {frame.lagWon === 'home' && (
+                    <View className="items-center justify-center rounded-lg bg-brand p-2 shadow-sm">
+                      <Ionicons
+                        style={{ transform: [{ rotate: '90deg' }] }}
+                        name="swap-horizontal-outline"
+                        size={14}
+                        color="#FFF"
+                      />
+                    </View>
+                  )}
+                  {frame.reverseDish && frame.winnerSide === 'home' && (
+                    <View className="items-center justify-center rounded-lg bg-bg-1 p-2 shadow-sm">
+                      <Ionicons
+                        style={{ transform: [{ rotate: '180deg' }] }}
+                        name="refresh-outline"
+                        size={14}
+                        color="#000000"
+                      />
+                    </View>
+                  )}
+                  {frame.breakDish && frame.winnerSide === 'home' && (
+                    <View className="items-center justify-center rounded-lg bg-bg-1 p-2 shadow-sm">
+                      <Ionicons name="flash" size={14} color="#000" />
+                    </View>
+                  )}
+                  {frame.winnerSide === 'home' && (
+                    <View
+                      style={{ backgroundColor: trophyColor }}
+                      className="items-center justify-center rounded-lg bg-bg-1 p-2 shadow-sm">
+                      <Ionicons name="trophy" size={14} color="#FFF" />
+                    </View>
+                  )}
+                </View>
+
+                {/* Frame number badge */}
+                <View
+                  style={{ minWidth: 40 }}
+                  className={`${frame.bonusFrame ? 'border-theme-purple bg-theme-purple/10' : 'border-transparent bg-bg-2'} h-full justify-center rounded-xl border shadow-sm`}>
+                  <Text className="px-2 text-center font-saira-medium text-text-2">
+                    {index}
+                    {getOrdinalSuffix(index)}
+                  </Text>
+                  {frame.bonusFrame && (
+                    <Text
+                      style={{ lineHeight: 18 }}
+                      className="w-full px-2 text-center font-saira-medium text-theme-purple">
+                      {fixtureDetails?.competition?.special_match_abbreviation || 'BF'}
+                    </Text>
+                  )}
+                </View>
+
+                {/* Away icons */}
+                <View
+                  style={{ borderRadius: 14 }}
+                  className="flex h-12 flex-1 flex-row items-center justify-start gap-2 bg-bg-2 p-2 shadow-sm">
+                  {frame.winnerSide === 'away' && (
+                    <View
+                      style={{ backgroundColor: trophyColor }}
+                      className="items-center justify-center rounded-lg bg-bg-1 p-2 shadow-sm">
+                      <Ionicons name="trophy" size={14} color="#FFF" />
+                    </View>
+                  )}
+                  {frame.breakDish && frame.winnerSide === 'away' && (
+                    <View className="items-center justify-center rounded-lg bg-bg-1 p-2 shadow-sm">
+                      <Ionicons name="flash" size={14} color="#000" />
+                    </View>
+                  )}
+                  {frame.reverseDish && frame.winnerSide === 'away' && (
+                    <View className="items-center justify-center rounded-lg bg-bg-1 p-2 shadow-sm">
+                      <Ionicons
+                        style={{ transform: [{ rotate: '180deg' }] }}
+                        name="refresh-outline"
+                        size={14}
+                        color="#000000"
+                      />
+                    </View>
+                  )}
+                  {frame.lagWon === 'away' && (
+                    <View className="items-center justify-center rounded-lg bg-brand p-2 shadow-sm">
+                      <Ionicons
+                        style={{ transform: [{ rotate: '90deg' }] }}
+                        name="swap-horizontal-outline"
+                        size={14}
+                        color="#FFF"
+                      />
+                    </View>
+                  )}
+                </View>
+              </View>
+
+              {/* Player names row */}
+              <View className="flex-row items-center justify-between gap-3 px-3 pt-3">
+                <View className="flex flex-1 flex-col gap-1">
                   <View className="flex flex-row items-center gap-2">
-                    <Avatar size={24} borderRadius={8} player={frame.homePlayer2} />
+                    <Avatar size={24} borderRadius={8} player={frame.homePlayer1} />
                     <Text
                       numberOfLines={1}
-                      className={`${frame.homePlayer2 ? 'text-text-1' : 'text-theme-red'} flex-1 text-left font-saira-medium text-lg`}>
-                      {getPlayerName(frame.homePlayer2)}
+                      className={`${frame.homePlayer1 ? 'text-text-1' : 'text-theme-red'} flex-1 text-left font-saira-medium text-lg`}>
+                      {getPlayerName(frame.homePlayer1)}
                     </Text>
                   </View>
-                )}
-              </View>
-              <Text className="mx-2 text-center text-sm text-text-2">vs</Text>
-              <View className="flex flex-1 flex-col gap-1">
-                <View className="flex flex-row items-center gap-2">
-                  <Text
-                    numberOfLines={1}
-                    className={`${frame.awayPlayer1 ? 'text-text-1' : 'text-theme-red'} flex-1 text-right font-saira-medium text-lg`}>
-                    {getPlayerName(frame.awayPlayer1)}
-                  </Text>
-                  <Avatar size={24} borderRadius={8} player={frame.awayPlayer1} />
+                  {frame.homePlayer2 && (
+                    <View className="flex flex-row items-center gap-2">
+                      <Avatar size={24} borderRadius={8} player={frame.homePlayer2} />
+                      <Text
+                        numberOfLines={1}
+                        className={`${frame.homePlayer2 ? 'text-text-1' : 'text-theme-red'} flex-1 text-left font-saira-medium text-lg`}>
+                        {getPlayerName(frame.homePlayer2)}
+                      </Text>
+                    </View>
+                  )}
                 </View>
-                {frame.awayPlayer2 && (
+                <Text className="mx-2 text-center text-sm text-text-2">vs</Text>
+                <View className="flex flex-1 flex-col gap-1">
                   <View className="flex flex-row items-center gap-2">
                     <Text
                       numberOfLines={1}
-                      className={`${frame.awayPlayer2 ? 'text-text-1' : 'text-theme-red'} flex-1 text-right font-saira-medium text-lg`}>
-                      {getPlayerName(frame.awayPlayer2)}
+                      className={`${frame.awayPlayer1 ? 'text-text-1' : 'text-theme-red'} flex-1 text-right font-saira-medium text-lg`}>
+                      {getPlayerName(frame.awayPlayer1)}
                     </Text>
-                    <Avatar size={24} borderRadius={8} player={frame.awayPlayer2} />
+                    <Avatar size={24} borderRadius={8} player={frame.awayPlayer1} />
                   </View>
-                )}
+                  {frame.awayPlayer2 && (
+                    <View className="flex flex-row items-center gap-2">
+                      <Text
+                        numberOfLines={1}
+                        className={`${frame.awayPlayer2 ? 'text-text-1' : 'text-theme-red'} flex-1 text-right font-saira-medium text-lg`}>
+                        {getPlayerName(frame.awayPlayer2)}
+                      </Text>
+                      <Avatar size={24} borderRadius={8} player={frame.awayPlayer2} />
+                    </View>
+                  )}
+                </View>
               </View>
             </View>
-          </View>
+          )}
         </Pressable>
       </ScaleDecorator>
     );
@@ -1039,7 +1057,7 @@ const SubmitResultsScreen = () => {
           {/* ── DraggableFlatList replaces the old ScrollView + .map() ── */}
           <DraggableFlatList
             // Display in reverse so newest frame is at the top
-            data={[...frames].reverse()}
+            data={reversedFrames}
             keyExtractor={(item) => item.tempId}
             renderItem={renderFrame}
             onDragEnd={handleDragEnd}

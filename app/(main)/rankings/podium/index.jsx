@@ -89,14 +89,16 @@ const index = () => {
                       numberOfLines={1}
                       ellipsizeMode="tail"
                       className="font-saira-semibold text-lg text-text-1">
-                      {type === 'player' ? `${item.first_name} ${item.surname}` : item.display_name}
+                      {type === 'player'
+                        ? `${item?.first_name} ${item?.surname}`
+                        : item?.display_name}
                     </Text>
-                    {item.nickname && (
+                    {item?.nickname && (
                       <Text
                         numberOfLines={1}
                         ellipsizeMode="tail"
                         className="mt-0.5 font-saira-medium text-text-2">
-                        {item.nickname?.toUpperCase() || ''}
+                        {item?.nickname?.toUpperCase() || ''}
                       </Text>
                     )}
                   </View>

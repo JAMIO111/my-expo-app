@@ -42,8 +42,10 @@ const StatCard = ({
           <Skeleton width={50} height={42} className="mb-6" />
         ) : (
           <Text
+            numberOfLines={1}
+            adjustsFontSizeToFit
             style={{ lineHeight: 10, fontSize: 46, paddingTop: 46 }}
-            className="font-saira-semibold text-text-1">
+            className="pr-2 font-saira-semibold text-text-1">
             {displayValue}
           </Text>
         )}
@@ -60,7 +62,10 @@ const StatCard = ({
           {isLoading ? (
             <Skeleton width={110} height={18} />
           ) : (
-            <Text className="font-saira-medium text-lg text-text-2" numberOfLines={1}>
+            <Text
+              className="font-saira-medium text-xl text-text-2"
+              numberOfLines={1}
+              adjustsFontSizeToFit>
               {title}
             </Text>
           )}

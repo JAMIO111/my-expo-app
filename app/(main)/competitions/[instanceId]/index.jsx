@@ -295,8 +295,9 @@ const index = () => {
       }
 
       // refresh data
-      queryClient.invalidateQueries(['CompetitionInstanceDetails', instanceId]);
-      queryClient.invalidateQueries(['CompetitionInstances']);
+      await queryClient.invalidateQueries(['CompetitionInstanceDetails', instanceId]);
+      await queryClient.invalidateQueries(['knockout-bracket', instanceId]);
+      await queryClient.invalidateQueries(['CompetitionInstances']);
 
       Toast.show({
         type: 'success',
@@ -390,7 +391,9 @@ const index = () => {
   };
 
   const progressStage = async (compInstanceId) => {
+    if (queryLoading) return;
     try {
+      setQueryLoading(true);
       const { error } = await supabase.rpc('progress_stage', {
         p_competition_instance_id: compInstanceId,
       });
@@ -425,6 +428,8 @@ const index = () => {
         text1: 'Unexpected error',
         text2: 'Please check your connection and try again.',
       });
+    } finally {
+      setQueryLoading(false);
     }
   };
 
@@ -589,6 +594,7 @@ const index = () => {
                                 <CTAButton
                                   text="Proceed to Next Round"
                                   type="yellow"
+                                  disabled={isLoading || queryLoading}
                                   callbackFn={() => progressStage(instanceId)}
                                 />
                               )}
@@ -770,7 +776,11 @@ const index = () => {
                   <View className="flex-1 flex-col items-center justify-end">
                     {competitionInstance?.winner_reward === null ? (
                       <View className="h-30 w-30 mb-4 flex-1 items-center justify-center rounded-2xl">
-                        <Ionicons name="add" size={120} color="#000000" />
+                        <Ionicons
+                          name={isAdmin ? 'add' : 'sad-outline'}
+                          size={120}
+                          color={isAdmin ? '#000000' : '#FF000088'}
+                        />
                       </View>
                     ) : (
                       <Image source={winnerTrophy?.icon} className="h-30 w-30 mb-4" />
@@ -787,7 +797,11 @@ const index = () => {
                   <View className="flex-1 flex-col items-center justify-end">
                     {competitionInstance?.runner_up_reward === null ? (
                       <View className="mb-4 flex-1 items-center justify-center rounded-2xl">
-                        <Ionicons name="add" size={120} color="#000000" />
+                        <Ionicons
+                          name={isAdmin ? 'add' : 'sad-outline'}
+                          size={120}
+                          color={isAdmin ? '#000000' : '#FF000088'}
+                        />
                       </View>
                     ) : (
                       <Image source={runnerUpTrophy?.icon} className="h-30 w-30 mb-4" />
@@ -801,6 +815,23 @@ const index = () => {
                   </View>
                 </Pressable>
               </View>
+            </View>
+            <View className="gap-3 bg-bg-1 p-4 pb-8">
+              <Text
+                numberOfLines={1}
+                adjustsFontSizeToFit
+                className="text-center font-saira-medium text-sm text-text-2">
+                Competition ID: {competitionInstance?.id}
+              </Text>
+              <Text
+                numberOfLines={1}
+                adjustsFontSizeToFit
+                className="text-center font-saira-medium text-sm text-text-2">
+                Initiated at:{' '}
+                {competitionInstance?.created_at
+                  ? new Date(competitionInstance.created_at).toLocaleString()
+                  : 'N/A'}
+              </Text>
             </View>
           </ScrollView>
           <FloatingBottomSheet
