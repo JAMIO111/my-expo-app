@@ -20,8 +20,6 @@
     }
   },
   "submit": {
-    "production": {
-      "track": "internal"
-    }
+    "production": {}
   }
 }
