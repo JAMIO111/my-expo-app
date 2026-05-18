@@ -52,7 +52,7 @@ export default ({ config }) => {
     },
     android: {
       package: 'com.jdigital.breakroom',
-      googleServicesFile: isDev ? './google-services-dev.json' : './google-services-prod.json',
+      googleServicesFile: process.env.GOOGLE_SERVICES_JSON ?? './google-services.json',
       adaptiveIcon: {
         foregroundImage: './app/assets/adaptive-icon.png',
         backgroundColor: '#ffffff',

@@ -10,13 +10,18 @@
     },
     "preview": {
       "distribution": "internal",
+      "channel": "preview",
       "android": {
         "buildType": "app-bundle"
+      },
+      "ios": {
+        "simulator": false
       }
     },
     "production": {
       "autoIncrement": true,
       "distribution": "store",
+      "channel": "production",
       "android": {
         "buildType": "app-bundle"
       }

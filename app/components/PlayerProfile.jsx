@@ -44,15 +44,15 @@ const PlayerProfile = ({ context, isLoading, playerProfile, error }) => {
 
   const currentTeam =
     context === 'teams'
-      ? playerProfile.teams.find((t) => t.team_id === currentRole?.team.id)
+      ? playerProfile.teams.find((t) => t.team_id === currentRole?.team?.id)
       : playerProfile.teams.find((t) => t.team_id === teamId) || null;
   console.log('Current Teams:', playerProfile.teams);
-  const inMyTeam = currentTeam?.team_id === currentRole?.team.id;
-  const isMe = playerProfile.id === player.id;
-  const iAmCaptain = currentRole?.team?.captain === player.id;
-  const iAmViceCaptain = currentRole?.team?.vice_captain === player.id;
-  const playerIsCaptain = currentTeam?.captain === playerProfile.id;
-  const playerIsViceCaptain = currentTeam?.vice_captain === playerProfile.id;
+  const inMyTeam = currentTeam?.team_id === currentRole?.team?.id;
+  const isMe = playerProfile?.id === player?.id;
+  const iAmCaptain = currentRole?.team?.captain === player?.id;
+  const iAmViceCaptain = currentRole?.team?.vice_captain === player?.id;
+  const playerIsCaptain = currentTeam?.captain === playerProfile?.id;
+  const playerIsViceCaptain = currentTeam?.vice_captain === playerProfile?.id;
 
   console.log('Current Team:', currentTeam);
   console.log('In My Team:', inMyTeam);

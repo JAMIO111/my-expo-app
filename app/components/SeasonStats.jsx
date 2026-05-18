@@ -15,6 +15,9 @@ const SeasonStats = ({ homeTeam, awayTeam, fixtureDetails }) => {
   const homeStats = standings?.standings?.find((s) => s.id === homeTeam?.id);
   const awayStats = standings?.standings?.find((s) => s.id === awayTeam?.id);
 
+  const homeFramesPlayed = homeStats?.frames_for + homeStats?.frames_against;
+  const awayFramesPlayed = awayStats?.frames_for + awayStats?.frames_against;
+
   console.log(homeStats, awayStats);
 
   if (isLoading)
@@ -55,32 +58,32 @@ const SeasonStats = ({ homeTeam, awayTeam, fixtureDetails }) => {
     {
       statName: 'Match Win %',
       homeValue:
-        homeStats?.played < 1 ? 0 : Math.round((homeStats?.won / homeStats?.played) * 10000) / 100,
+        homeStats?.played < 1 ? 0 : Math.round((homeStats?.won / homeStats?.played) * 1000) / 10,
       awayValue:
-        awayStats?.played < 1 ? 0 : Math.round((awayStats?.won / awayStats?.played) * 10000) / 100,
+        awayStats?.played < 1 ? 0 : Math.round((awayStats?.won / awayStats?.played) * 1000) / 10,
       isPercentage: true,
     },
     {
       statName: 'Frames Played',
-      homeValue: homeStats?.frames_played,
-      awayValue: awayStats?.frames_played,
+      homeValue: homeFramesPlayed,
+      awayValue: awayFramesPlayed,
     },
-    { statName: 'Frames Won', homeValue: homeStats?.frames_won, awayValue: awayStats?.frames_won },
+    { statName: 'Frames Won', homeValue: homeStats?.frames_for, awayValue: awayStats?.frames_for },
     {
       statName: 'Frames Lost',
-      homeValue: homeStats?.frames_lost,
-      awayValue: awayStats?.frames_lost,
+      homeValue: homeStats?.frames_against,
+      awayValue: awayStats?.frames_against,
     },
     {
       statName: 'Frame Win %',
       homeValue:
-        homeStats?.frames_played < 1
+        homeFramesPlayed < 1
           ? 0
-          : Math.round((homeStats?.frames_won / homeStats?.frames_played) * 10000) / 100,
+          : Math.round((homeStats?.frames_for / homeFramesPlayed) * 1000) / 10,
       awayValue:
-        awayStats?.frames_played < 1
+        awayFramesPlayed < 1
           ? 0
-          : Math.round((awayStats?.frames_won / awayStats?.frames_played) * 10000) / 100,
+          : Math.round((awayStats?.frames_for / awayFramesPlayed) * 1000) / 10,
 
       isPercentage: true,
     },
