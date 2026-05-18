@@ -62,6 +62,6 @@ export default function useUserProfile(userId) {
     },
     enabled: !!userId,
     staleTime: 5 * 60 * 1000,
-    cacheTime: 30 * 60 * 1000,
+    gcTime: 30 * 60 * 1000,
   });
 }

@@ -357,8 +357,9 @@ const FixturePage = ({ fixtureDetails, isLoading, context }) => {
               Head to Head - All Time
             </Text>
             <HeadToHead
-              homeTeam={fixtureDetails?.homeCompetitor}
-              awayTeam={fixtureDetails?.awayCompetitor}
+              homeCompetitor={fixtureDetails?.homeCompetitor}
+              awayCompetitor={fixtureDetails?.awayCompetitor}
+              competitorType={competitorType}
             />
           </View>
         )}

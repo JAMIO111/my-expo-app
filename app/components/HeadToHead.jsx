@@ -3,8 +3,14 @@ import { useHeadToHeadStats } from '@hooks/useHeadToHeadStats';
 import TeamLogo from '@components/TeamLogo';
 import StatCardCompare from '@components/StatCardCompare';
 
-const HeadToHead = ({ homeTeam, awayTeam }) => {
-  const { data, isLoading } = useHeadToHeadStats(homeTeam?.id, awayTeam?.id);
+const HeadToHead = ({ homeCompetitor, awayCompetitor, competitorType }) => {
+  const { data, isLoading } = useHeadToHeadStats(
+    homeCompetitor?.id,
+    awayCompetitor?.id,
+    competitorType
+  );
+  console.log('HeadToHead props:', { homeCompetitor, awayCompetitor, competitorType });
+  console.log('HeadToHead data:', data);
 
   if (isLoading)
     return (
@@ -22,8 +28,8 @@ const HeadToHead = ({ homeTeam, awayTeam }) => {
     );
 
   // Find home and away objects
-  const homeStats = data.find((d) => d.team_id === homeTeam?.id);
-  const awayStats = data.find((d) => d.team_id === awayTeam?.id);
+  const homeStats = data.find((d) => d.team_id === homeCompetitor?.id);
+  const awayStats = data.find((d) => d.team_id === awayCompetitor?.id);
 
   // Build an array of stat rows to loop through
   const statRows = [
@@ -70,17 +76,17 @@ const HeadToHead = ({ homeTeam, awayTeam }) => {
       {/* Header */}
       <View className="mb-1 flex-row justify-between bg-bg-grouped-2 p-3">
         <View className="flex-1 flex-row items-center justify-start gap-3">
-          <TeamLogo size={36} {...homeTeam?.crest} />
+          <TeamLogo size={36} {...homeCompetitor?.crest} />
           <Text className="mt-2 font-saira-semibold text-3xl text-text-1">
-            {homeTeam?.abbreviation}
+            {homeCompetitor?.abbreviation}
           </Text>
         </View>
         <Text className="px-2 pt-2 font-saira text-2xl text-text-2">vs</Text>
         <View className="flex-1 flex-row items-center justify-end gap-3">
           <Text className="mt-2 font-saira-semibold text-3xl text-text-1">
-            {awayTeam?.abbreviation}
+            {awayCompetitor?.abbreviation}
           </Text>
-          <TeamLogo size={36} {...awayTeam?.crest} />
+          <TeamLogo size={36} {...awayCompetitor?.crest} />
         </View>
       </View>
 
@@ -88,8 +94,8 @@ const HeadToHead = ({ homeTeam, awayTeam }) => {
       {statRows.map((stat, index) => (
         <StatCardCompare
           key={index}
-          homeTeam={homeTeam}
-          awayTeam={awayTeam}
+          homeTeam={homeCompetitor}
+          awayTeam={awayCompetitor}
           stat={{
             statName: stat.statName,
             homeValue: stat.homeValue,

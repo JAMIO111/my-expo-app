@@ -25,7 +25,7 @@ export function useCompetitions({ districtId, divisionId, competitionType } = {}
       return data;
     },
     staleTime: 5 * 60 * 1000,
-    cacheTime: 60 * 60 * 1000,
+    gcTime: 60 * 60 * 1000,
     enabled: !!(districtId || divisionId || competitionType), // prevents useless calls
   });
 }

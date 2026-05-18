@@ -84,6 +84,6 @@ export function useFixturesAwaitingResults({
     },
     enabled: enabled && !!competitorId && !!competitorType && !!type,
     staleTime: 15 * 60 * 1000,
-    cacheTime: 60 * 60 * 1000,
+    gcTime: 60 * 60 * 1000,
   });
 }

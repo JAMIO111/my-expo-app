@@ -6,7 +6,7 @@ export function useStandings(divisionId, seasonId) {
     queryKey: ['Standings', divisionId, seasonId],
     enabled: !!divisionId && !!seasonId,
     staleTime: 30 * 60 * 1000,
-    cacheTime: 60 * 60 * 1000,
+    gcTime: 60 * 60 * 1000,
 
     queryFn: async () => {
       if (!divisionId || !seasonId) {

@@ -23,7 +23,7 @@ export function useCompetitionInstanceDetails(instanceId) {
       return data;
     },
     staleTime: 5 * 60 * 1000, // 5 minutes
-    cacheTime: 60 * 60 * 1000, // 1 hour
+    gcTime: 60 * 60 * 1000, // 1 hour
     enabled: !!instanceId, // Only run if instanceId is provided
   });
 }

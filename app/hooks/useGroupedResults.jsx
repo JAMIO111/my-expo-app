@@ -69,7 +69,7 @@ export const useMonthlyResults = ({ month, seasonId, divisionId }) => {
     queryKey: ['results-grouped', month?.toISOString(), seasonId, divisionId],
     queryFn: () => fetchResultsByMonth({ month, seasonId, divisionId }),
     staleTime: 1000 * 60 * 5,
-    cacheTime: 1000 * 60 * 60,
+    gcTime: 1000 * 60 * 60,
     enabled: !!month && !!seasonId && !!divisionId,
     keepPreviousData: true,
   });

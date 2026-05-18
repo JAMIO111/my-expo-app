@@ -71,7 +71,7 @@ export const useGroupedFixtures = ({ competitionInstanceId, month }) => {
     queryKey: ['fixtures-grouped', competitionInstanceId, month?.toISOString() ?? null],
     queryFn: () => fetchGroupedFixtures({ competitionInstanceId, month }),
     staleTime: 1000 * 60 * 5,
-    cacheTime: 1000 * 60 * 60,
+    gcTime: 1000 * 60 * 60,
     enabled: !!competitionInstanceId,
     keepPreviousData: true,
   });

@@ -42,6 +42,6 @@ export function useDisputedFixtures({
     },
     enabled: enabled && !!competitorId && !!competitorType,
     staleTime: 15 * 60 * 1000,
-    cacheTime: 60 * 60 * 1000,
+    gcTime: 60 * 60 * 1000,
   });
 }

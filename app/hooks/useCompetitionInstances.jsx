@@ -23,7 +23,7 @@ export function useCompetitionInstances(seasonId) {
       return data;
     },
     staleTime: 5 * 60 * 1000, // 5 minutes
-    cacheTime: 60 * 60 * 1000, // 1 hour
+    gcTime: 60 * 60 * 1000, // 1 hour
     enabled: !!seasonId, // only run query if seasonId is provided
   });
 }

@@ -85,6 +85,6 @@ export function useKnockoutBracket(competitionInstanceId) {
     queryFn: () => fetchBracketData(competitionInstanceId),
     enabled: !!competitionInstanceId,
     staleTime: 1000 * 60 * 30,
-    cacheTime: 1000 * 60 * 60,
+    gcTime: 1000 * 60 * 60,
   });
 }

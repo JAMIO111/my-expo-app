@@ -16,6 +16,6 @@ export function useJoinTeamRequests({ districtId, teamId }) {
     },
     enabled: !!districtId || !!teamId,
     staleTime: 5 * 60 * 1000,
-    cacheTime: 60 * 60 * 1000,
+    gcTime: 60 * 60 * 1000,
   });
 }

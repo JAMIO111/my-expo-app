@@ -24,10 +24,11 @@ const DIGITS = {
 const BASE_W = 54;
 const BASE_H = 94;
 const T = 9;
-const G = 3;
+const G = 2;
 const C = 4;
 const DIGIT_GAP = 10;
 const VIEWBOX_W = BASE_W * 2 + DIGIT_GAP;
+const Y_OFFSET = 4.5;
 
 function hPoints(x, y) {
   const w = BASE_W - 2 * T - 2 * G;
@@ -60,13 +61,13 @@ function Digit({ value, offsetX }) {
   const vbot = (BASE_H + T) / 2 + G;
 
   const segments = [
-    hPoints(offsetX, 0),
+    hPoints(offsetX, Y_OFFSET),
     vPoints(offsetX + BASE_W - T, vtop),
     vPoints(offsetX + BASE_W - T, vbot),
-    hPoints(offsetX, BASE_H - T),
+    hPoints(offsetX, BASE_H - T + Y_OFFSET),
     vPoints(offsetX, vbot),
     vPoints(offsetX, vtop),
-    hPoints(offsetX, (BASE_H - T) / 2),
+    hPoints(offsetX, (BASE_H - T) / 2 + Y_OFFSET),
   ];
 
   return (
@@ -89,7 +90,7 @@ function ScoreDisplay({ score, scale }) {
   const svgH = BASE_H * scale;
 
   return (
-    <Svg width={svgW} height={svgH} viewBox={`0 0 ${VIEWBOX_W} ${BASE_H}`}>
+    <Svg width={svgW} height={svgH + 2 * Y_OFFSET * scale} viewBox={`0 0 ${VIEWBOX_W} ${BASE_H}`}>
       <Digit value={tens} offsetX={0} />
       <Digit value={ones} offsetX={BASE_W + DIGIT_GAP} />
     </Svg>
@@ -119,7 +120,7 @@ export default function SevenSegmentScoreboard({ homeScore = 0, awayScore = 0, s
         <ScoreDisplay score={homeScore} scale={s} />
       </View>
 
-      <View style={{ flexDirection: 'column', gap: 14 * s }}>
+      <View style={{ paddingTop: 30 * s, flexDirection: 'column', gap: 14 * s }}>
         <View
           style={{ width: dotSize, height: dotSize, borderRadius: dotRadius, backgroundColor: ON }}
         />

@@ -64,7 +64,7 @@ export function usePlayerStats(playerId) {
       };
     },
     staleTime: 5 * 60 * 1000,
-    gcTime: 60 * 60 * 1000, // Note: cacheTime was renamed to gcTime in v5
+    gcTime: 60 * 60 * 1000,
     enabled: !!playerId,
   });
 }
