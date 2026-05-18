@@ -74,28 +74,6 @@ export const useSubscription = () => {
     setSubscription(null);
   };
 
-  useEffect(() => {
-    fetchSubscription();
-
-    const channel = supabase
-      .channel('subscription-changes')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'UserSubscriptions' }, () => {
-        // ✅ Debounce: if the DB fires two events in quick succession
-        //    (delete old row, insert new row) we only fetch once,
-        //    after the dust has settled.
-        clearTimeout(debounceTimer.current);
-        debounceTimer.current = setTimeout(() => {
-          fetchSubscription();
-        }, REALTIME_DEBOUNCE_MS);
-      })
-      .subscribe();
-
-    return () => {
-      clearTimeout(debounceTimer.current);
-      supabase.removeChannel(channel);
-    };
-  }, []);
-
   const tier = subscription?.product_id ? subscription.product_id.split('.').at(-2) : null;
 
   const interval = subscription?.product_id ? subscription.product_id.split('.').at(-1) : null;

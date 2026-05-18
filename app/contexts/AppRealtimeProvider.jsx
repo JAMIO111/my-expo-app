@@ -7,161 +7,175 @@ import { useUser } from '@/contexts/UserProvider';
 export default function AppRealtimeProvider({ children }) {
   const queryClient = useQueryClient();
   const { currentRole, player } = useUser();
-
-  const channelsRef = useRef([]);
-  const isSubscribedRef = useRef(false);
   const appState = useRef(AppState.currentState);
-
-  const subscribe = () => {
-    if (currentRole) return;
-    if (isSubscribedRef.current) return; // 🛑 prevent duplicates
-
-    console.log('Subscribing to realtime channels...');
-    isSubscribedRef.current = true;
-
-    const channels = [];
-
-    // --- TeamPlayers ---
-    const teamPlayers = supabase
-      .channel('team_players')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'TeamPlayers' }, (payload) => {
-        const playerId = payload.new?.player_id ?? payload.old?.player_id;
-        const teamId = payload.new?.team_id ?? payload.old?.team_id;
-        const isRequestChange =
-          ['pending_both', 'pending_captain', 'pending_admin'].includes(payload.new?.status) ||
-          ['pending_both', 'pending_captain', 'pending_admin'].includes(payload.old?.status);
-
-        if (isRequestChange) queryClient.invalidateQueries(['TeamPlayerRequest', teamId]);
-
-        if (playerId) queryClient.invalidateQueries(['PlayerProfile', playerId]);
-        if (teamId) queryClient.invalidateQueries(['TeamPlayers', teamId]);
-
-        if (playerId === player?.id) {
-          queryClient.invalidateQueries(['authUserProfile']);
-        }
-      })
-      .subscribe((status) => console.log('TeamPlayers:', status));
-
-    channels.push(teamPlayers);
-
-    // --- Results ---
-    const results = supabase
-      .channel('results-channel')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'Results' }, (payload) => {
-        const fixtureId = payload.new?.fixture_id ?? payload.old?.fixture_id;
-
-        const playerIds = new Set(
-          [
-            payload.new?.home_player_1,
-            payload.new?.home_player_2,
-            payload.new?.away_player_1,
-            payload.new?.away_player_2,
-            payload.old?.home_player_1,
-            payload.old?.home_player_2,
-            payload.old?.away_player_1,
-            payload.old?.away_player_2,
-          ].filter(Boolean)
-        );
-
-        playerIds.forEach((id) => {
-          queryClient.invalidateQueries(['PlayerStats', id]);
-        });
-
-        if (fixtureId) {
-          queryClient.invalidateQueries(['ResultsByFixture', fixtureId]);
-        }
-      })
-      .subscribe((status) => console.log('Results:', status));
-
-    channels.push(results);
-
-    // --- Fixtures ---
-    const fixtures = supabase
-      .channel('fixtures-channel')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'Fixtures' }, (payload) => {
-        const oldMonth = payload.old?.date_time ? new Date(payload.old.date_time).getMonth() : null;
-        const newMonth = payload.new?.date_time ? new Date(payload.new.date_time).getMonth() : null;
-        const seasonId = payload.new?.season ?? payload.old?.season;
-        const divisionId = payload.new?.division ?? payload.old?.division;
-        const fixtureId = payload.new?.id ?? payload.old?.id;
-        const competitionInstanceId =
-          payload.new?.competition_instance_id ?? payload.old?.competition_instance_id;
-        const oldVenue = payload.old?.venue_id;
-        const newVenue = payload.new?.venue_id;
-
-        queryClient.invalidateQueries(['fixture-details', fixtureId]);
-
-        if (newMonth !== oldMonth || newVenue !== oldVenue) {
-          queryClient.invalidateQueries([
-            'fixtures-grouped',
-            oldMonth,
-            seasonId,
-            competitionInstanceId,
-          ]);
-          queryClient.invalidateQueries([
-            'fixtures-grouped',
-            newMonth,
-            seasonId,
-            competitionInstanceId,
-          ]);
-        }
-
-        if (newMonth && oldMonth && seasonId && divisionId) {
-          queryClient.invalidateQueries([
-            'results-grouped',
-            newMonth,
-            seasonId,
-            competitionInstanceId,
-          ]);
-          queryClient.invalidateQueries([
-            'results-grouped',
-            oldMonth,
-            seasonId,
-            competitionInstanceId,
-          ]);
-        }
-      })
-      .subscribe((status) => console.log('Fixtures:', status));
-
-    channels.push(fixtures);
-
-    channelsRef.current = channels;
-  };
-
-  const unsubscribe = () => {
-    console.log('Unsubscribing from realtime channels...');
-
-    channelsRef.current.forEach((ch) => {
-      supabase.removeChannel(ch);
-    });
-
-    channelsRef.current = [];
-    isSubscribedRef.current = false;
-  };
+  const channelsRef = useRef([]); // ✅ Persist across async boundaries
 
   useEffect(() => {
-    subscribe();
+    if (!currentRole || !player?.id) return;
 
-    const sub = AppState.addEventListener('change', (next) => {
-      // Only react when coming BACK to active
-      if (appState.current.match(/inactive|background/) && next === 'active') {
-        console.log('App resumed');
+    let mounted = true;
 
-        // ❗️DO NOT blindly resubscribe
-        // Only resubscribe if nothing is active
-        if (!isSubscribedRef.current) {
-          subscribe();
+    const teardown = async () => {
+      const toRemove = [...channelsRef.current];
+      channelsRef.current = [];
+      for (const ch of toRemove) {
+        try {
+          await supabase.removeChannel(ch);
+        } catch (err) {
+          console.error('Failed removing channel:', err);
         }
       }
+    };
 
-      appState.current = next;
+    const setupRealtime = async () => {
+      // ✅ Always tear down before setting up
+      await teardown();
+
+      if (!mounted) return;
+
+      console.log('🔌 Setting up realtime channels...');
+
+      const suffix = `${player.id}_${Date.now()}`; // ✅ Unique names avoid stale channel collisions
+
+      const teamPlayersChannel = supabase
+        .channel(`team_players_${suffix}`)
+        .on(
+          'postgres_changes',
+          { event: '*', schema: 'public', table: 'TeamPlayers' },
+          (payload) => {
+            const playerId = payload.new?.player_id ?? payload.old?.player_id;
+            const teamId = payload.new?.team_id ?? payload.old?.team_id;
+
+            const isRequestChange =
+              ['pending_both', 'pending_captain', 'pending_admin'].includes(payload.new?.status) ||
+              ['pending_both', 'pending_captain', 'pending_admin'].includes(payload.old?.status);
+
+            if (isRequestChange && teamId)
+              queryClient.invalidateQueries({ queryKey: ['TeamPlayerRequest', teamId] });
+            if (playerId) {
+              queryClient.invalidateQueries({ queryKey: ['PlayerProfile', playerId] });
+              queryClient.invalidateQueries({ queryKey: ['PlayerStats', playerId] });
+            }
+            if (teamId) queryClient.invalidateQueries({ queryKey: ['TeamPlayers', teamId] });
+            if (playerId === player.id)
+              queryClient.invalidateQueries({ queryKey: ['authUserProfile'] });
+          }
+        )
+        .subscribe((status) => console.log('✅ TeamPlayers:', status));
+
+      if (!mounted) {
+        supabase.removeChannel(teamPlayersChannel);
+        return;
+      }
+      channelsRef.current.push(teamPlayersChannel);
+
+      const resultsChannel = supabase
+        .channel(`results_${suffix}`)
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'Results' }, (payload) => {
+          const fixtureId = payload.new?.fixture_id ?? payload.old?.fixture_id;
+          const playerIds = new Set(
+            [
+              payload.new?.home_player_1,
+              payload.new?.home_player_2,
+              payload.new?.away_player_1,
+              payload.new?.away_player_2,
+              payload.old?.home_player_1,
+              payload.old?.home_player_2,
+              payload.old?.away_player_1,
+              payload.old?.away_player_2,
+            ].filter(Boolean)
+          );
+
+          playerIds.forEach((id) =>
+            queryClient.invalidateQueries({ queryKey: ['PlayerStats', id] })
+          );
+          if (fixtureId) {
+            queryClient.invalidateQueries({ queryKey: ['ResultsByFixture', fixtureId] });
+            queryClient.invalidateQueries({ queryKey: ['fixture-details', fixtureId] });
+          }
+        })
+        .subscribe((status) => console.log('✅ Results:', status));
+
+      if (!mounted) {
+        supabase.removeChannel(resultsChannel);
+        return;
+      }
+      channelsRef.current.push(resultsChannel);
+
+      const fixturesChannel = supabase
+        .channel(`fixtures_${suffix}`)
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'Fixtures' }, (payload) => {
+          const fixtureId = payload.new?.id ?? payload.old?.id;
+          const seasonId = payload.new?.season ?? payload.old?.season;
+          const divisionId = payload.new?.division ?? payload.old?.division;
+          const competitionInstanceId =
+            payload.new?.competition_instance_id ?? payload.old?.competition_instance_id;
+          const oldMonth =
+            payload.old?.date_time != null ? new Date(payload.old.date_time).getMonth() : null;
+          const newMonth =
+            payload.new?.date_time != null ? new Date(payload.new.date_time).getMonth() : null;
+          const oldVenue = payload.old?.venue_id;
+          const newVenue = payload.new?.venue_id;
+
+          if (fixtureId)
+            queryClient.invalidateQueries({ queryKey: ['fixture-details', fixtureId] });
+          if (
+            oldMonth !== null &&
+            newMonth !== null &&
+            seasonId &&
+            competitionInstanceId &&
+            (newMonth !== oldMonth || newVenue !== oldVenue)
+          ) {
+            queryClient.invalidateQueries({
+              queryKey: ['fixtures-grouped', oldMonth, seasonId, competitionInstanceId],
+            });
+            queryClient.invalidateQueries({
+              queryKey: ['fixtures-grouped', newMonth, seasonId, competitionInstanceId],
+            });
+          }
+          if (
+            oldMonth !== null &&
+            newMonth !== null &&
+            seasonId &&
+            divisionId &&
+            competitionInstanceId
+          ) {
+            queryClient.invalidateQueries({
+              queryKey: ['results-grouped', oldMonth, seasonId, competitionInstanceId],
+            });
+            queryClient.invalidateQueries({
+              queryKey: ['results-grouped', newMonth, seasonId, competitionInstanceId],
+            });
+          }
+        })
+        .subscribe((status) => console.log('✅ Fixtures:', status));
+
+      if (!mounted) {
+        supabase.removeChannel(fixturesChannel);
+        return;
+      }
+      channelsRef.current.push(fixturesChannel);
+    };
+
+    setupRealtime();
+
+    const appStateSub = AppState.addEventListener('change', async (nextState) => {
+      if (appState.current.match(/inactive|background/) && nextState === 'active') {
+        console.log('📱 App resumed');
+        if (channelsRef.current.length === 0 && mounted) {
+          await setupRealtime();
+        }
+      }
+      appState.current = nextState;
     });
 
     return () => {
-      unsubscribe();
-      sub.remove();
+      mounted = false;
+      console.log('🧹 Cleaning realtime channels...');
+      appStateSub.remove();
+      teardown();
     };
-  }, [currentRole]);
+  }, [currentRole, player?.id, queryClient]);
 
   return children;
 }

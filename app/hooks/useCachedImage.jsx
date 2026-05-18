@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import * as FileSystem from 'expo-file-system';
+import * as FileSystem from 'expo-file-system/legacy';
 
 const getFileNameFromUrl = (url) => {
   return url?.split('/').pop()?.split('?')[0] || `fallback-${Date.now()}`;

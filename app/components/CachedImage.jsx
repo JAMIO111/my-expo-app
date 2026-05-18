@@ -17,7 +17,11 @@ const CachedImage = ({ avatarUrl, width = 100, height = 100, borderRadius = 50 }
         <ActivityIndicator size="small" color="gray" />
       </View>
     );
-  if (error) return <Text>Error loading image</Text>;
+  if (error) {
+    console.error('Error loading image:', error);
+
+    return <Text>Error loading image</Text>;
+  }
 
   return (
     <Image

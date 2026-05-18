@@ -1,6 +1,6 @@
 // hooks/useUploadImage.js
 import { useState } from 'react';
-import * as FileSystem from 'expo-file-system';
+import * as FileSystem from 'expo-file-system/legacy';
 import * as ImageManipulator from 'expo-image-manipulator';
 import { supabase } from '@/lib/supabase';
 import uuid from 'react-native-uuid';

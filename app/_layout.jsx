@@ -27,16 +27,6 @@ export default function RootLayout() {
     DelaGothicOne: require('@assets/fonts/DelaGothicOne-Regular.ttf'),
   });
 
-  const [isReady, setIsReady] = useState(false);
-
-  useEffect(() => {
-    // Slight delay to ensure navigation context is initialized
-    const timeout = setTimeout(() => {
-      setIsReady(true);
-    }, 100);
-    return () => clearTimeout(timeout);
-  }, []);
-
   const queryClientRef = useRef();
   if (!queryClientRef.current) {
     queryClientRef.current = new QueryClient({
@@ -49,7 +39,7 @@ export default function RootLayout() {
     });
   }
 
-  if (!fontsLoaded || !isReady) return null;
+  if (!fontsLoaded) return null;
 
   // ✅ ✅ This is the KEY — manually apply the `dark` class to the outermost View
   return (

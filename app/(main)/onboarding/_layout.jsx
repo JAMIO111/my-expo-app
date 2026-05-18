@@ -36,7 +36,7 @@ const _layout = () => {
     }
   }, [loading, player, isActive, currentRole]);
 
-  if (loading || subscriptionLoading) {
+  if (loading) {
     return <LoadingScreen />;
   }
 
