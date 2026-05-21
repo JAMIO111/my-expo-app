@@ -15,6 +15,8 @@ import { calculateLevel } from '@lib/helperFunctions';
 import EntityStats from '@components/EntityStats';
 import CachedImage from '@components/CachedImage';
 import usePlayerBadges from '@hooks/usePlayerBadges';
+import { BlurView } from 'expo-blur';
+import ProGate from '@components/ProGate';
 
 const ProfilePage = () => {
   const router = useRouter();
@@ -126,13 +128,17 @@ const ProfilePage = () => {
               <SlidingTabButton option1="Badges" option2="Stats" onChange={setView} value={view} />
             </View>
 
-            <View className="px-2" style={{ display: view === 'left' ? 'flex' : 'none' }}>
-              <BadgeList badges={badges} />
+            <View style={{ display: view === 'left' ? 'flex' : 'none' }}>
+              <ProGate>
+                <BadgeList badges={badges} />
+              </ProGate>
             </View>
             <View
               className="bg-bg-grouped-1"
               style={{ display: view === 'right' ? 'flex' : 'none' }}>
-              <EntityStats entityId={player?.id} entityType="player" />
+              <ProGate intensity={30}>
+                <EntityStats entityId={player?.id} entityType="player" />
+              </ProGate>
             </View>
           </View>
         </View>

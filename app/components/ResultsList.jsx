@@ -19,6 +19,7 @@ import { useDivisions } from '@hooks/useDivisions';
 import { useSeasons } from '@hooks/useSeasons';
 import { getActiveSeason } from '@lib/helperFunctions';
 import Avatar from './Avatar';
+import LoadingScreen from './LoadingScreen';
 
 const ResultsList = () => {
   const router = useRouter();
@@ -129,7 +130,8 @@ const ResultsList = () => {
 
   const {
     data: resultsData,
-    isLoading,
+    isLoading: isResultsLoading,
+    isFetching: isResultsFetching,
     error,
   } = useMonthlyResults({
     month: selectedMonth,
@@ -158,6 +160,11 @@ const ResultsList = () => {
     }).start();
   };
 
+  const isInitialLoading =
+    (isDistrictsLoading || isDivisionsLoading || isSeasonsLoading) && !resultsData;
+
+  const isBackgroundRefreshing = !isInitialLoading && (isResultsLoading || isResultsFetching);
+
   const grouped = Object.entries(resultsData ?? {});
 
   if (error)
@@ -170,12 +177,10 @@ const ResultsList = () => {
     );
 
   // Loading or error fallback
-  if (isDistrictsLoading || isDivisionsLoading || isSeasonsLoading) {
+  if (isInitialLoading) {
     return (
       <SafeAreaView style={{ flex: 1, backgroundColor: themeColors.background }}>
-        <Text style={{ color: themeColors.primaryText, textAlign: 'center', marginTop: 20 }}>
-          Loading...
-        </Text>
+        <LoadingScreen />
       </SafeAreaView>
     );
   }
@@ -268,7 +273,7 @@ const ResultsList = () => {
         </View>
 
         {/* Loading Skeleton */}
-        {isLoading && (
+        {isBackgroundRefreshing && (
           <View className="mb-4 rounded-3xl border border-theme-gray-5 bg-bg-grouped-2 p-4">
             <View className="mb-8 h-8 w-16 gap-3 rounded-xl bg-bg-grouped-3"></View>
             <FixtureSkeleton />
@@ -283,7 +288,7 @@ const ResultsList = () => {
         )}
 
         {/* No Results */}
-        {grouped.length === 0 && !isLoading && (
+        {grouped.length === 0 && !isInitialLoading && (
           <View className="items-center justify-center gap-3 rounded-3xl border border-theme-gray-5 bg-bg-grouped-2 px-8 py-12">
             <Text className="text-center font-saira-medium text-xl text-text-1">{`No results available for ${format(
               selectedMonth,

@@ -16,6 +16,7 @@ import { BottomSheetView, BottomSheetScrollView, BottomSheetFooter } from '@gorh
 import Ionicons from '@expo/vector-icons/Ionicons';
 import colors from '@lib/colors';
 import TeamLogo from '@components/TeamLogo';
+import Purchases from 'react-native-purchases';
 
 const Account = () => {
   const [isSigningOut, setIsSigningOut] = useState(false);
@@ -36,22 +37,15 @@ const Account = () => {
   const handleSignOut = async () => {
     if (isSigningOut) return;
 
-    console.log('User Logging out:', user);
-    console.log('Current session:', session);
-    console.log('Current role:', roles);
-
     try {
       setIsSigningOut(true);
+      const appUserId = await Purchases.getAppUserID();
+      const isAnonymous = await Purchases.isAnonymous();
 
-      const { error: sessionError, data: sessionData } = await supabase.auth.getSession();
-      if (sessionError) throw sessionError;
-      console.log('Session before logout:', sessionData?.session?.user?.email);
-
-      const { error } = await supabase.auth.signOut();
-
-      if (error) throw error;
-
-      console.log('Sign out successful');
+      if (!isAnonymous) {
+        await Purchases.logOut();
+      }
+      await supabase.auth.signOut();
     } catch (err) {
       console.error('Logout error:', err);
     } finally {

@@ -6,13 +6,15 @@ import SafeViewWrapper from '@components/SafeViewWrapper';
 import BrandHeader from '@components/BrandHeader';
 import TeamLogo from '@components/TeamLogo';
 import { ScrollView } from 'react-native-gesture-handler';
-import { useSubscription } from '@hooks/useSubscription';
+import { useRevenueCat } from '@contexts/RevenueCatProvider';
 
 const RoleSelect = () => {
+  const { isPro, isCore, customerInfo } = useRevenueCat();
   const router = useRouter();
   const { roles, currentRole, setCurrentRole } = useUser();
-  const { isActive } = useSubscription();
   console.log('Available roles:', roles);
+  console.log('Customer Info from RevenueCat:', customerInfo);
+  console.log('isPro:', isPro, 'isCore:', isCore);
 
   // Use current role to show context-specific UI
   if (currentRole?.type === 'player') {
@@ -46,9 +48,9 @@ const RoleSelect = () => {
                   if (role.type === 'admin') {
                     router.replace('/(main)/home');
                   } else {
-                    if (isActive) {
+                    if (isPro || isCore) {
                       router.replace('/(main)/home');
-                    } else router.replace('/(main)/onboarding/upgrade');
+                    } else router.replace('/(main)/home/paywall');
                   }
                 }}>
                 <View className="mb-3 flex-row items-center justify-between gap-2 rounded-2xl bg-bg-2 px-4 py-3 shadow-sm">

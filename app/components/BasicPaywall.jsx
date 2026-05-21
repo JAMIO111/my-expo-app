@@ -8,43 +8,94 @@ import {
   Animated,
   Easing,
   useColorScheme,
+  Linking,
 } from 'react-native';
 import { useEffect, useRef, useState } from 'react';
 import IonIcons from 'react-native-vector-icons/Ionicons';
 import CTAButton from '@components/CTAButton';
 import { ScrollView, Switch } from 'react-native-gesture-handler';
 import colors from '../lib/colors';
-import useIAPHook from '@hooks/useIAPHook';
-import { useSubscription } from '@hooks/useSubscription';
 import { ActivityIndicator } from 'react-native';
+import Purchases, { INTRO_ELIGIBILITY_STATUS } from 'react-native-purchases';
+import {
+  useOfferings,
+  usePurchase,
+  useCustomerInfo,
+  useRevenueCat,
+} from '@contexts/RevenueCatProvider';
 
 const BasicPaywall = () => {
+  // ─── RC hooks ────────────────────────────────────────────────────────────────
+  const { offerings, fetch: fetchOfferings, isLoading: offeringsLoading } = useOfferings();
+  const { customerInfo } = useCustomerInfo();
+  const { purchasePackage: rcPurchase, restorePurchases: rcRestore } = usePurchase();
+  const { isPro, isCore } = useRevenueCat();
+
+  console.log('Offerings in Paywall:', offerings);
+
+  // ─── Local state ─────────────────────────────────────────────────────────────
   const [selectedBilling, setSelectedBilling] = useState('monthly');
   const [selectedTier, setSelectedTier] = useState(null);
   const [selectedPlan, setSelectedPlan] = useState(null);
   const [fullscreenImage, setFullscreenImage] = useState(null);
   const [isTrialEnabled, setIsTrialEnabled] = useState(false);
+  const [introEligibility, setIntroEligibility] = useState({});
+  const [isSubscribing, setIsSubscribing] = useState(false);
+  const [isRestoring, setIsRestoring] = useState(false);
+
   const scaleAnim = useRef(new Animated.Value(0.8)).current;
   const opacityAnim = useRef(new Animated.Value(0)).current;
   const colorScheme = useColorScheme();
   const themeColors = colors[colorScheme];
   const scrollRef = useRef(null);
-  const {
-    subscriptions,
-    currentSubscription,
-    handleSubscribe,
-    isSubscribing,
-    restorePurchases,
-    isRestoring,
-    isLoading,
-  } = useIAPHook();
-  const { subscription, isCore, isPro, interval, refetch } = useSubscription();
 
-  console.log('Available subscription plans from useIAP:', subscriptions);
-  console.log('Current subscription:', currentSubscription);
-  console.log('Subscription from useSubscription hook:', subscription);
+  const isLoading = offeringsLoading || isSubscribing || isRestoring;
 
-  const proPercentageOff = subscriptions
+  // ─── Derive subscriptions list from RC packages ───────────────────────────────
+  // Packages use identifiers like "core.monthly", "pro.annual" etc.
+  const packages = offerings?.current?.availablePackages ?? [];
+
+  const subscriptions = packages.map((pkg) => {
+    const [tier, interval] = pkg.identifier.split('.');
+    return {
+      tier,
+      interval,
+      displayPrice: pkg.product.priceString,
+      price: pkg.product.price,
+      package: pkg,
+    };
+  });
+
+  // ─── Derive current plan info from customerInfo ───────────────────────────────
+  const activeEntitlement =
+    isPro || isCore
+      ? customerInfo?.entitlements?.active?.['isPro'] ||
+        customerInfo?.entitlements?.active?.['isCore']
+      : null;
+
+  const currentProductId = activeEntitlement?.productIdentifier ?? null;
+
+  // Match the active product back to one of our packages so we know tier + interval
+  const currentPackage = packages.find((pkg) => pkg.product.productIdentifier === currentProductId);
+  const currentInterval = currentPackage?.identifier?.split('.')?.[1] ?? null;
+
+  // "subscription" here mirrors the old hook's truthiness check (any active plan)
+  const subscription = isPro || isCore ? activeEntitlement : null;
+
+  // ─── Fetch offerings on mount ─────────────────────────────────────────────────
+  useEffect(() => {
+    fetchOfferings();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Is the currently selected plan's product eligible for an intro offer?
+  const selectedProductId = selectedPlan?.package?.product?.productIdentifier;
+  const isTrialEligible =
+    selectedProductId &&
+    introEligibility[selectedProductId]?.status === INTRO_ELIGIBILITY_STATUS.ELIGIBLE;
+
+  // ─── Percentage-off calculations ─────────────────────────────────────────────
+  const proPercentageOff = subscriptions.length
     ? Math.round(
         ((subscriptions.find((p) => p.tier === 'pro' && p.interval === 'monthly')?.price * 12 -
           subscriptions.find((p) => p.tier === 'pro' && p.interval === 'annual')?.price) /
@@ -53,7 +104,7 @@ const BasicPaywall = () => {
       )
     : 0;
 
-  const corePercentageOff = subscriptions
+  const corePercentageOff = subscriptions.length
     ? Math.round(
         ((subscriptions.find((p) => p.tier === 'core' && p.interval === 'monthly')?.price * 12 -
           subscriptions.find((p) => p.tier === 'core' && p.interval === 'annual')?.price) /
@@ -62,6 +113,29 @@ const BasicPaywall = () => {
       )
     : 0;
 
+  // ─── Actions ──────────────────────────────────────────────────────────────────
+  const handleSubscribe = async (plan) => {
+    if (!plan?.package) return;
+    setIsSubscribing(true);
+    try {
+      // RC automatically applies the intro offer when the user is eligible —
+      // no separate "purchase with trial" call is needed.
+      await rcPurchase(plan.package);
+    } finally {
+      setIsSubscribing(false);
+    }
+  };
+
+  const handleRestore = async () => {
+    setIsRestoring(true);
+    try {
+      return await rcRestore();
+    } finally {
+      setIsRestoring(false);
+    }
+  };
+
+  // ─── Modal animations ─────────────────────────────────────────────────────────
   const planImages = {
     pro: {
       monthly: require('@assets/pro-monthly.jpg'),
@@ -81,7 +155,6 @@ const BasicPaywall = () => {
     require('@assets/home-dashboard-light.png'),
   ];
 
-  // Animate in
   useEffect(() => {
     if (fullscreenImage) {
       Animated.parallel([
@@ -102,7 +175,6 @@ const BasicPaywall = () => {
   }, [fullscreenImage]);
 
   const handleCloseModal = () => {
-    // Animate out
     Animated.parallel([
       Animated.timing(scaleAnim, {
         toValue: 0.8,
@@ -119,6 +191,7 @@ const BasicPaywall = () => {
     ]).start(() => setFullscreenImage(null));
   };
 
+  // ─── Render ───────────────────────────────────────────────────────────────────
   return (
     <>
       {(isRestoring || isSubscribing) && (
@@ -139,25 +212,25 @@ const BasicPaywall = () => {
           </View>
         </View>
       )}
+
       <ScrollView ref={scrollRef} className="relative w-full flex-1 bg-bg-grouped-1 py-6">
         <Text
           style={{ lineHeight: 44 }}
           className="px-6 text-left font-delagothic text-4xl text-text-1">
-          {!subscription
+          {!isPro && !isCore
             ? "Get Access to everyone's stats for just £1.99/month"
             : isCore
               ? 'Go Pro and unlock exclusive insights and features!'
               : "You're on the Pro plan! Thanks for your support!"}
         </Text>
+
         <View className="my-6 mt-8 w-full px-6">
           {!isPro && (
             <CTAButton
               type="yellow"
               textColor="black"
               text="Upgrade Now!"
-              callbackFn={() => {
-                scrollRef.current?.scrollToEnd({ animated: true });
-              }}
+              callbackFn={() => scrollRef.current?.scrollToEnd({ animated: true })}
             />
           )}
         </View>
@@ -180,25 +253,34 @@ const BasicPaywall = () => {
             </View>
           ))}
         </View>
-
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          className="w-full border-y border-theme-gray-5 bg-bg-grouped-2 px-6 py-8">
-          {screenshots.map((src, idx) => (
-            <View key={idx} className="pr-8">
-              <Pressable onPress={() => setFullscreenImage(src)}>
-                <View style={{ borderRadius: 17 }} className="overflow-hidden bg-theme-gray-1 p-1">
-                  <Image
-                    contentFit="contain"
-                    className="mx-auto h-96 w-48 rounded-2xl"
-                    source={src}
-                  />
-                </View>
-              </Pressable>
-            </View>
-          ))}
-        </ScrollView>
+        <View className="gap-6 border-y border-theme-gray-5 bg-bg-grouped-2 px-6 py-6">
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} className="w-full">
+            {screenshots.map((src, idx) => (
+              <View key={idx} className="pr-8">
+                <Pressable onPress={() => setFullscreenImage(src)}>
+                  <View
+                    style={{ borderRadius: 17 }}
+                    className="overflow-hidden bg-theme-gray-1 p-1">
+                    <Image
+                      contentFit="contain"
+                      className="mx-auto h-96 w-48 rounded-2xl"
+                      source={src}
+                    />
+                  </View>
+                </Pressable>
+              </View>
+            ))}
+          </ScrollView>
+          <Pressable
+            className="mt-2 flex-row items-center gap-3 rounded-2xl border border-brand-dark bg-brand p-4"
+            onPress={() => Linking.openURL('https://www.break-room.uk/features')}>
+            <IonIcons name="information-circle-outline" size={24} color="#fff" />
+            <Text className="flex-1 font-saira-medium text-lg text-white">
+              See more about features here
+            </Text>
+            <IonIcons name="arrow-forward" size={20} color="#fff" />
+          </Pressable>
+        </View>
 
         <Modal visible={!!fullscreenImage} transparent>
           <Pressable
@@ -226,23 +308,20 @@ const BasicPaywall = () => {
           <ScrollView
             horizontal
             showsHorizontalScrollIndicator={false}
-            contentContainerStyle={{
-              flexDirection: 'row',
-              gap: 20,
-              paddingHorizontal: 20,
-            }}>
+            contentContainerStyle={{ flexDirection: 'row', gap: 20, paddingHorizontal: 20 }}>
+            {/* Review cards — unchanged */}
             <View
               style={{ width: 300, flexShrink: 0 }}
               className="mb-8 rounded-3xl border border-theme-gray-5 bg-bg-grouped-2 px-6 py-4">
               <View className="mb-4 flex-row items-center justify-between">
                 <Image
                   contentFit="contain"
-                  className="h-12 w-12 rounded-full border"
+                  className="h-12 w-12 rounded-xl border"
                   source={require('@assets/avatar.jpg')}
                 />
                 <View className="ml-2 flex-row">
                   {Array.from({ length: 5 }, (_, i) => (
-                    <IonIcons key={i} name="star" size={24} color="gold" />
+                    <IonIcons key={i} name="star" size={24} color="#FFD700" />
                   ))}
                 </View>
               </View>
@@ -251,18 +330,19 @@ const BasicPaywall = () => {
                 "Its great seeing the scores come in live as they happen!"
               </Text>
             </View>
+
             <View
               style={{ width: 300, flexShrink: 0 }}
-              className="mb-8 rounded-3xl border border-theme-gray-5 bg-bg-grouped-2 px-6 py-4">
+              className="mb-8 rounded-3xl border border-theme-gray-5 bg-bg-grouped-2 px-5 py-5">
               <View className="mb-4 flex-row items-center justify-between">
                 <Image
                   contentFit="contain"
-                  className="h-12 w-12 rounded-full border"
+                  className="h-12 w-12 rounded-xl border"
                   source={require('@assets/avatar.jpg')}
                 />
                 <View className="ml-2 flex-row">
                   {Array.from({ length: 5 }, (_, i) => (
-                    <IonIcons key={i} name="star" size={24} color="gold" />
+                    <IonIcons key={i} name="star" size={24} color="#FFD700" />
                   ))}
                 </View>
               </View>
@@ -274,6 +354,7 @@ const BasicPaywall = () => {
             </View>
           </ScrollView>
 
+          {/* ── Plan cards ── */}
           <View className="mt-4 w-full gap-4 overflow-visible px-4">
             {subscriptions && subscriptions.length > 0 ? (
               subscriptions
@@ -283,7 +364,10 @@ const BasicPaywall = () => {
                     (a.interval === 'annual' ? 1 : 0) - (b.interval === 'annual' ? 1 : 0)
                 )
                 .map((plan, idx) => {
-                  const isCurrentPlan = subscription && subscription.product_id === plan.sku;
+                  const isCurrentPlan = currentProductId === plan.package.product.identifier;
+
+                  console.log('Current Product ID:', currentProductId);
+                  console.log('Plan Product ID:', plan.package.product.identifier);
 
                   return (
                     <Pressable
@@ -295,7 +379,7 @@ const BasicPaywall = () => {
                         setSelectedTier(plan.tier);
                         setSelectedPlan(plan);
                       }}
-                      className={`relative w-full flex-row items-center justify-start gap-4 rounded-3xl border-2  bg-bg-1 p-2 pr-5 shadow-sm ${
+                      className={`relative w-full flex-row items-center justify-start gap-4 rounded-3xl border-2 bg-bg-1 p-2 pr-5 shadow-sm ${
                         isCurrentPlan
                           ? 'border-brand opacity-50'
                           : selectedBilling === plan.interval && selectedTier === plan.tier
@@ -310,8 +394,8 @@ const BasicPaywall = () => {
 
                       <View className="flex-1">
                         <Text className="font-saira-semibold text-2xl text-text-1">
-                          {plan.tier.charAt(0).toUpperCase() + plan.tier.slice(1)} –{' '}
-                          {plan.interval.charAt(0).toUpperCase() + plan.interval.slice(1)}
+                          {plan.tier.charAt(0)?.toUpperCase() + plan.tier.slice(1)} –{' '}
+                          {plan.interval.charAt(0)?.toUpperCase() + plan.interval.slice(1)}
                         </Text>
 
                         <Text className="font-saira text-xl text-text-1">
@@ -334,7 +418,9 @@ const BasicPaywall = () => {
                         )}
 
                         {((isPro && plan.tier === 'core') ||
-                          (isPro && interval === 'annual' && plan.interval === 'monthly')) && (
+                          (isPro &&
+                            currentInterval === 'annual' &&
+                            plan.interval === 'monthly')) && (
                           <Text
                             numberOfLines={1}
                             ellipsizeMode="tail"
@@ -372,6 +458,7 @@ const BasicPaywall = () => {
                           </View>
                         )
                       )}
+
                       {!isCurrentPlan && (
                         <View
                           className={`rounded-full border-2 p-1 ${
@@ -419,20 +506,20 @@ const BasicPaywall = () => {
               </View>
             )}
           </View>
-          {!subscription && subscriptions && subscriptions.length > 0 && (
+
+          {/* Trial toggle — only shown when user has no plan and a trial-eligible plan is selected */}
+          {!subscription && subscriptions && subscriptions.length > 0 && isTrialEligible && (
             <View className="mt-6 w-full flex-row items-center justify-between px-6">
               <Text className="font-saira-medium text-xl text-text-1">Enable 7-day free trial</Text>
               <Switch
                 value={isTrialEnabled}
                 onValueChange={setIsTrialEnabled}
                 thumbColor={'white'}
-                trackColor={{
-                  false: 'gray',
-                  true: '#4CAF50',
-                }}
+                trackColor={{ false: 'gray', true: '#4CAF50' }}
               />
             </View>
           )}
+
           <View className="mt-6 w-full px-4">
             <CTAButton
               type="yellow"
@@ -442,7 +529,7 @@ const BasicPaywall = () => {
                   ? 'Processing...'
                   : !selectedPlan
                     ? 'Select a Plan'
-                    : isTrialEnabled
+                    : isTrialEnabled && isTrialEligible
                       ? 'Start Free Trial'
                       : 'Upgrade Now!'
               }
@@ -450,28 +537,31 @@ const BasicPaywall = () => {
               disabled={!selectedPlan || isLoading}
             />
           </View>
+
           <View className="flex-row items-center justify-between gap-3 px-6 py-8">
-            <Pressable className="flex-1 text-text-2 underline">
+            <Pressable
+              onPress={() => Linking.openURL('https://break-room.uk/privacy')}
+              className="flex-1 py-2 text-text-2 underline">
               <Text className="text-left font-saira text-text-2 underline">Privacy Policy</Text>
             </Pressable>
+
             <Pressable
               onPress={async () => {
                 try {
-                  const result = await restorePurchases();
-
-                  if (result.restoredCount > 0) {
-                    await refetch();
-                  }
-                } catch (error) {
-                  console.error('Error restoring purchases:', error);
+                  await handleRestore();
+                } catch (err) {
+                  console.error('Error restoring purchases:', err);
                 }
               }}
-              className="flex-1 text-text-2 underline">
+              className="flex-1 py-2 text-text-2 underline">
               <Text className="text-center font-saira text-text-2 underline">
                 Restore Purchases
               </Text>
             </Pressable>
-            <Pressable className="flex-1 text-text-2 underline">
+
+            <Pressable
+              onPress={() => Linking.openURL('https://break-room.uk/terms')}
+              className="flex-1 py-2 text-text-2 underline">
               <Text className="text-right font-saira text-text-2 underline">Terms of Use</Text>
             </Pressable>
           </View>

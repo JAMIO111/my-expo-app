@@ -34,7 +34,7 @@ const NavBar = ({ type = 'main' }) => {
     { name: 'Upgrade', href: '/onboarding/upgrade', icon: DiamondIcon },
     { name: 'Season', href: '/onboarding/season' },
     { name: 'Explore', href: '/onboarding/explore', icon: SearchIcon },
-    { name: 'Profile', href: '/onboarding/profile', icon: UserIcon },
+    { name: 'Profile', href: '/profile', icon: UserIcon },
   ];
 
   const ACTIVE_NAV_ITEMS = type === 'onboarding' ? ONBOARDING_NAV_ITEMS : NAV_ITEMS;

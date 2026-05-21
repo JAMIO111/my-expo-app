@@ -8,6 +8,7 @@ import { useUser } from '@contexts/UserProvider';
 import SafeViewWrapper from '@components/SafeViewWrapper';
 import CTAButton from '@components/CTAButton';
 import FloatingBottomSheet from '@components/FloatingBottomSheet';
+import Purchases from 'react-native-purchases';
 
 const SignInAndSecurity = () => {
   const { user, player, loading } = useUser();
@@ -70,11 +71,20 @@ const SignInAndSecurity = () => {
           topButtonType={'default'}
           bottomButtonType={'error'}
           topButtonFn={() => SetDeleteAccountModal(false)}
-          bottomButtonFn={() =>
-            supabase.rpc('delete_user_data').then(() => {
-              supabase.auth.signOut();
-            })
-          }
+          bottomButtonFn={async () => {
+            try {
+              await supabase.rpc('delete_user_data');
+              const appUserId = await Purchases.getAppUserID();
+              const isAnonymous = await Purchases.isAnonymous();
+
+              if (!isAnonymous) {
+                await Purchases.logOut();
+              }
+              await supabase.auth.signOut();
+            } catch (err) {
+              console.error('Error during account deletion:', err);
+            }
+          }}
           onCancel={() => SetDeleteAccountModal(false)}
         />
       </>

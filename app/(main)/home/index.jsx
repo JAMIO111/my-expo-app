@@ -367,7 +367,7 @@ const Home = () => {
                   category="Membership"
                   image={require('@assets/premium-card.jpg')}
                   onPress={() => {
-                    router.push('/(main)/home/premium');
+                    router.push('/(main)/home/paywall');
                   }}
                 />
                 <CTAButton

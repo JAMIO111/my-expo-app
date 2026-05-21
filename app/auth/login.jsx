@@ -17,6 +17,7 @@ import { Michroma_400Regular } from '@expo-google-fonts/michroma';
 import { supabase } from '@/lib/supabase';
 import * as Linking from 'expo-linking';
 import { useUser } from '@contexts/UserProvider';
+import Purchases from 'react-native-purchases'; // ✅ default import, not named
 
 const LoginPage = () => {
   const router = useRouter();
@@ -28,8 +29,8 @@ const LoginPage = () => {
   const [fontsLoaded] = useFonts({
     Michroma: Michroma_400Regular,
   });
-  const slideAnim = useRef(new Animated.Value(-1000)).current; // Start 300px left offscreen
-  const fadeAnim = useRef(new Animated.Value(0)).current; // start fully transparent
+  const slideAnim = useRef(new Animated.Value(-1000)).current;
+  const fadeAnim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
     Animated.parallel([
@@ -49,23 +50,23 @@ const LoginPage = () => {
     ]).start();
   }, []);
 
+  // ─── OAuth deep link handler ──────────────────────────────────────────────────
   useEffect(() => {
     const handleUrl = async (event) => {
       try {
         const { url } = event;
 
-        // Get session from the redirect URL
         const { data, error } = await supabase.auth.getSessionFromUrl({ url });
         if (error) throw error;
 
         const session = data.session;
-        console.log('OAuth session:', session); // <-- log session
-
         if (!session) return;
 
         const userId = session.user.id;
 
-        // fetch onboarding info for first-time users
+        // ✅ Log in to RC after successful OAuth
+        await Purchases.logIn(userId);
+
         const { data: profile, error: profileError } = await supabase
           .from('Players')
           .select('onboarding')
@@ -78,10 +79,8 @@ const LoginPage = () => {
       }
     };
 
-    // Listen for incoming deep links
     const subscription = Linking.addEventListener('url', handleUrl);
 
-    // Handle cold start (when the app opens from an OAuth link)
     (async () => {
       const initialUrl = await Linking.getInitialURL();
       if (initialUrl) handleUrl({ url: initialUrl });
@@ -90,36 +89,42 @@ const LoginPage = () => {
     return () => subscription.remove();
   }, []);
 
-  // ---------------------
-  // Email/password login
-  // ---------------------
+  // ─── Email / password login ───────────────────────────────────────────────────
   const handleLogin = async () => {
     setLoading(true);
     setError(null);
 
-    const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
+    try {
+      const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
 
-    setLoading(false);
+      // ✅ Check auth error BEFORE touching authData.user
+      if (authError) {
+        setError(authError.message);
+        return;
+      }
 
-    if (authError) {
-      setError(authError.message);
-      return;
-    }
+      // ✅ Only call logIn once we know auth succeeded
+      await Purchases.logIn(authData.user.id);
 
-    const userId = authData.user.id;
+      const { data: profile, error: profileError } = await supabase
+        .from('Players')
+        .select('onboarding')
+        .eq('auth_id', authData.user.id)
+        .single();
 
-    const { data: profile, error: profileError } = await supabase
-      .from('Players')
-      .select('onboarding')
-      .eq('auth_id', userId)
-      .single();
-
-    if (profileError) {
-      setError('Failed to load profile');
-      return;
+      if (profileError) {
+        setError('Failed to load profile');
+        return;
+      }
+    } catch (err) {
+      console.error('Login error:', err);
+      setError('Something went wrong. Please try again.');
+    } finally {
+      // ✅ Always clear loading, even if something throws
+      setLoading(false);
     }
   };
 
@@ -157,13 +162,14 @@ const LoginPage = () => {
               </View>
             </View>
           </View>
+
           <ScrollView
             className="bg-bg-grouped-1"
             contentContainerStyle={{ padding: 32, paddingBottom: 60 }}
             keyboardShouldPersistTaps="handled"
             showsVerticalScrollIndicator={false}>
             <View className="flex-1 justify-center gap-5">
-              <View class>
+              <View>
                 <Text className="text-3xl font-bold text-text-1">Welcome back!</Text>
                 <Text className="text-lg text-text-2">Enter your details to sign in.</Text>
               </View>
@@ -256,6 +262,5 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginVertical: 20,
   },
-
   errorText: { color: 'red', marginBottom: 10, paddingLeft: 10, textAlign: 'left' },
 });

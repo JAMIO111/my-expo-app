@@ -12,14 +12,55 @@ import {
   Modal,
 } from 'react-native';
 import IonIcons from 'react-native-vector-icons/Ionicons';
+import ProGate from '@components/ProGate';
+import { useRevenueCat } from '@contexts/RevenueCatProvider';
+
+const randomTrophies = [
+  {
+    id: '1',
+    image: require('@assets/trophies/trophy-1-gold.png'),
+  },
+  {
+    id: '2',
+    image: require('@assets/trophies/trophy-2-silver.png'),
+  },
+  {
+    id: '3',
+    image: require('@assets/trophies/trophy-3-gold.png'),
+  },
+  {
+    id: '4',
+    image: require('@assets/trophies/trophy-4-silver.png'),
+  },
+  {
+    id: '5',
+    image: require('@assets/trophies/trophy-5-silver.png'),
+  },
+  {
+    id: '6',
+    image: require('@assets/trophies/trophy-6-gold.png'),
+  },
+  {
+    id: '7',
+    image: require('@assets/trophies/trophy-7-gold.png'),
+  },
+  {
+    id: '8',
+    image: require('@assets/trophies/trophy-8-silver.png'),
+  },
+];
 
 const TrophyCabinet = ({ trophies = [] }) => {
+  const { isPro, isCore } = useRevenueCat();
   const [cabinetWidth, setCabinetWidth] = useState(0);
   const screenWidth = Dimensions.get('window').width;
-  const shelf1 = trophies.filter((_, i) => i % 2 === 0);
-  const shelf2 = trophies.filter((_, i) => i % 2 !== 0);
+  const hasAccess = isPro || isCore;
+  const data = hasAccess ? trophies : randomTrophies;
 
-  const maxCount = Math.max(shelf1.length, shelf2.length);
+  const shelf1 = data?.filter((_, i) => i % 2 === 0);
+  const shelf2 = data?.filter((_, i) => i % 2 !== 0);
+
+  const maxCount = Math.max(shelf1?.length, shelf2?.length);
   const trophyWidth = 100;
   const gap = 8;
 
@@ -67,204 +108,207 @@ const TrophyCabinet = ({ trophies = [] }) => {
   };
 
   return (
-    <View style={styles.container}>
-      <View style={styles.woodFrameWrapper}>
-        <View
-          onLayout={(e) => {
-            setCabinetWidth(e.nativeEvent.layout.width);
-          }}
-          style={styles.woodFrame}>
-          {(!Array.isArray(trophies) || trophies.length === 0) && (
-            <Image
-              source={require('@assets/cobweb.png')} // your cobweb asset
-              style={{
-                position: 'absolute',
-                top: 79,
-                left: 12,
-                width: 64,
-                height: 64,
-                zIndex: 5,
-                opacity: 0.6, // subtle effect
-              }}
-              resizeMode="contain"
-            />
-          )}
-          {(!Array.isArray(trophies) || trophies.length < 2) && (
-            <Image
-              source={require('@assets/cobweb.png')} // your cobweb asset
-              style={{
-                //flip horizontally
-                transform: [{ scaleX: -1 }],
-                position: 'absolute',
-                top: 242,
-                right: 12,
-                width: 64,
-                height: 64,
-                zIndex: 5,
-                opacity: 0.6, // subtle effect
-              }}
-              resizeMode="contain"
-            />
-          )}
-          {/* Touchable Plaque */}
-          <TouchableOpacity
-            activeOpacity={0.7}
-            onPress={closeDoorIfOpen}
-            style={{
-              marginBottom: 16,
-              alignItems: 'center',
-              borderRadius: 4,
-              backgroundColor: '#fde68a',
-              paddingVertical: 6,
-              paddingHorizontal: 12,
-            }}>
-            <Text className="font-saira-semibold" style={[styles.title, { fontSize: 24 }]}>
-              🏆 Trophy Cabinet 🏆
-            </Text>
-          </TouchableOpacity>
-
-          <View style={styles.shelfContainer}>
-            {/* Top shelf */}
-            <View style={[styles.shelfBase, { width: shelfWidth }]}>
-              <ScrollView
-                horizontal
-                showsHorizontalScrollIndicator={false}
-                contentContainerStyle={{ gap }}>
-                {shelf1.map((trophy) => (
-                  <TouchableOpacity
-                    key={trophy.id}
-                    style={styles.trophyCard}
-                    onPress={() => openModal(trophy)}>
-                    <Image source={trophy.image} style={styles.image} resizeMode="cover" />
-                  </TouchableOpacity>
-                ))}
-              </ScrollView>
-            </View>
-
-            {/* Bottom shelf */}
-            <View style={[styles.shelfBase, { width: shelfWidth }]}>
-              <ScrollView
-                horizontal
-                showsHorizontalScrollIndicator={false}
-                contentContainerStyle={{ gap }}>
-                {shelf2.map((trophy) => (
-                  <TouchableOpacity
-                    key={trophy.id}
-                    style={styles.trophyCard}
-                    onPress={() => openModal(trophy)}>
-                    <Image source={trophy.image} style={styles.image} resizeMode="cover" />
-                  </TouchableOpacity>
-                ))}
-              </ScrollView>
-            </View>
-          </View>
-        </View>
-
-        {/* Glass overlay with tap to toggle */}
-        <TouchableWithoutFeedback onPress={toggleDoor}>
-          <Animated.View
-            style={[
-              styles.simpleGlassOverlay,
-              {
-                transform: [{ translateX: slideAnim }],
-              },
-            ]}
-          />
-        </TouchableWithoutFeedback>
-
-        {/* Modal */}
-        <Modal
-          animationType="fade"
-          transparent={true}
-          visible={modalVisible}
-          onRequestClose={closeModal}>
-          <View style={styles.modalOverlay}>
-            <View
-              className="overflow-hidden rounded-xl bg-bg-grouped-2 p-1"
-              style={styles.modalContent}>
-              {/* Close button */}
-              <TouchableOpacity
-                onPress={closeModal}
+    <ProGate intensity={18} borderRadius={16}>
+      <View style={styles.container}>
+        <View style={styles.woodFrameWrapper}>
+          <View
+            onLayout={(e) => {
+              setCabinetWidth(e.nativeEvent.layout.width);
+            }}
+            style={styles.woodFrame}>
+            {(!Array.isArray(trophies) || trophies.length === 0) && (
+              <Image
+                source={require('@assets/cobweb.png')} // your cobweb asset
                 style={{
                   position: 'absolute',
-                  top: 8,
-                  right: 8,
-                  zIndex: 10,
-                  backgroundColor: 'rgba(0,0,0,0.2)',
-                  borderRadius: 14,
-                  width: 40,
-                  height: 40,
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                }}>
-                <IonIcons name="close" size={30} color="#fff" />
-              </TouchableOpacity>
+                  top: 79,
+                  left: 12,
+                  width: 64,
+                  height: 64,
+                  zIndex: 5,
+                  opacity: 0.6, // subtle effect
+                }}
+                resizeMode="contain"
+              />
+            )}
+            {(!Array.isArray(data) || data.length < 2) && (
+              <Image
+                source={require('@assets/cobweb.png')} // your cobweb asset
+                style={{
+                  //flip horizontally
+                  transform: [{ scaleX: -1 }],
+                  position: 'absolute',
+                  top: 242,
+                  right: 12,
+                  width: 64,
+                  height: 64,
+                  zIndex: 5,
+                  opacity: 0.6, // subtle effect
+                }}
+                resizeMode="contain"
+              />
+            )}
+            {/* Touchable Plaque */}
+            <TouchableOpacity
+              activeOpacity={0.7}
+              onPress={closeDoorIfOpen}
+              style={{
+                marginBottom: 16,
+                alignItems: 'center',
+                borderRadius: 4,
+                backgroundColor: '#fde68a',
+                paddingVertical: 6,
+                paddingHorizontal: 12,
+              }}>
+              <Text className="font-saira-semibold" style={[styles.title, { fontSize: 24 }]}>
+                🏆 Trophy Cabinet 🏆
+              </Text>
+            </TouchableOpacity>
 
-              <View
-                style={styles.trophyBackground}
-                className="w-full items-end border-b border-theme-gray-4 bg-bg-2">
-                {selectedTrophy && (
-                  <Image
-                    source={selectedTrophy.image}
-                    style={styles.modalImage}
-                    resizeMode="contain"
-                    className="my-8"
-                  />
-                )}
+            <View style={styles.shelfContainer}>
+              {/* Top shelf */}
+              <View style={[styles.shelfBase, { width: shelfWidth }]}>
+                <ScrollView
+                  horizontal
+                  showsHorizontalScrollIndicator={false}
+                  contentContainerStyle={{ gap }}>
+                  {shelf1?.map((trophy) => (
+                    <TouchableOpacity
+                      key={trophy.id}
+                      style={styles.trophyCard}
+                      onPress={() => openModal(trophy)}>
+                      <Image source={trophy.image} style={styles.image} resizeMode="cover" />
+                    </TouchableOpacity>
+                  ))}
+                </ScrollView>
               </View>
 
-              <View className="flex w-full flex-row py-4 pl-4">
-                {/* your existing content */}
-                <View className="flex flex-1 flex-col gap-4">
-                  <View className="flex w-full flex-col gap-1">
-                    <Text className="font-saira text-lg text-text-2">DISTRICT</Text>
-                    <Text className="font-saira-semibold text-xl text-text-1">
-                      {selectedTrophy?.district_name || 'N/A'}
-                    </Text>
-                  </View>
-                  <View className="flex w-full flex-col gap-1">
-                    <Text className="font-saira text-lg text-text-2">SEASON</Text>
-                    <Text className="font-saira-semibold text-xl text-text-1">
-                      {selectedTrophy?.season_name || 'N/A'}
-                    </Text>
-                  </View>
-                  <View className="flex w-full flex-col gap-1">
-                    <Text className="font-saira text-lg text-text-2">SEASON START</Text>
-                    <Text className="font-saira-semibold text-xl text-text-1">
-                      {new Date(selectedTrophy?.season_start).toLocaleDateString('en-GB') || 'N/A'}
-                    </Text>
-                  </View>
+              {/* Bottom shelf */}
+              <View style={[styles.shelfBase, { width: shelfWidth }]}>
+                <ScrollView
+                  horizontal
+                  showsHorizontalScrollIndicator={false}
+                  contentContainerStyle={{ gap }}>
+                  {shelf2?.map((trophy) => (
+                    <TouchableOpacity
+                      key={trophy.id}
+                      style={styles.trophyCard}
+                      onPress={() => openModal(trophy)}>
+                      <Image source={trophy.image} style={styles.image} resizeMode="cover" />
+                    </TouchableOpacity>
+                  ))}
+                </ScrollView>
+              </View>
+            </View>
+          </View>
+
+          {/* Glass overlay with tap to toggle */}
+          <TouchableWithoutFeedback onPress={toggleDoor}>
+            <Animated.View
+              style={[
+                styles.simpleGlassOverlay,
+                {
+                  transform: [{ translateX: slideAnim }],
+                },
+              ]}
+            />
+          </TouchableWithoutFeedback>
+
+          {/* Modal */}
+          <Modal
+            animationType="fade"
+            transparent={true}
+            visible={modalVisible}
+            onRequestClose={closeModal}>
+            <View style={styles.modalOverlay}>
+              <View
+                className="overflow-hidden rounded-xl bg-bg-grouped-2 p-1"
+                style={styles.modalContent}>
+                {/* Close button */}
+                <TouchableOpacity
+                  onPress={closeModal}
+                  style={{
+                    position: 'absolute',
+                    top: 8,
+                    right: 8,
+                    zIndex: 10,
+                    backgroundColor: 'rgba(0,0,0,0.2)',
+                    borderRadius: 14,
+                    width: 40,
+                    height: 40,
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                  }}>
+                  <IonIcons name="close" size={30} color="#fff" />
+                </TouchableOpacity>
+
+                <View
+                  style={styles.trophyBackground}
+                  className="w-full items-end border-b border-theme-gray-4 bg-bg-2">
+                  {selectedTrophy && (
+                    <Image
+                      source={selectedTrophy.image}
+                      style={styles.modalImage}
+                      resizeMode="contain"
+                      className="my-8"
+                    />
+                  )}
                 </View>
-                <View className="flex flex-1 flex-col gap-4">
-                  <View className="flex w-full flex-col gap-1">
-                    <Text className="font-saira text-lg text-text-2">DIVISION</Text>
-                    <Text className="font-saira-semibold text-xl text-text-1">
-                      {selectedTrophy?.division_name || 'N/A'}
-                    </Text>
+
+                <View className="flex w-full flex-row py-4 pl-4">
+                  {/* your existing content */}
+                  <View className="flex flex-1 flex-col gap-4">
+                    <View className="flex w-full flex-col gap-1">
+                      <Text className="font-saira text-lg text-text-2">DISTRICT</Text>
+                      <Text className="font-saira-semibold text-xl text-text-1">
+                        {selectedTrophy?.district_name || 'N/A'}
+                      </Text>
+                    </View>
+                    <View className="flex w-full flex-col gap-1">
+                      <Text className="font-saira text-lg text-text-2">SEASON</Text>
+                      <Text className="font-saira-semibold text-xl text-text-1">
+                        {selectedTrophy?.season_name || 'N/A'}
+                      </Text>
+                    </View>
+                    <View className="flex w-full flex-col gap-1">
+                      <Text className="font-saira text-lg text-text-2">SEASON START</Text>
+                      <Text className="font-saira-semibold text-xl text-text-1">
+                        {new Date(selectedTrophy?.season_start).toLocaleDateString('en-GB') ||
+                          'N/A'}
+                      </Text>
+                    </View>
                   </View>
-                  <View className="flex w-full flex-col gap-1">
-                    <Text className="font-saira text-lg text-text-2">POSITION</Text>
-                    <Text className="font-saira-semibold text-xl text-text-1">
-                      {selectedTrophy?.result === '1'
-                        ? 'Winners'
-                        : selectedTrophy?.result === '2'
-                          ? 'Runners Up'
-                          : 'N/A'}
-                    </Text>
-                  </View>
-                  <View className="flex w-full flex-col gap-1">
-                    <Text className="font-saira text-lg text-text-2">SEASON END</Text>
-                    <Text className="font-saira-semibold text-xl text-text-1">
-                      {new Date(selectedTrophy?.season_end).toLocaleDateString('en-GB') || 'N/A'}
-                    </Text>
+                  <View className="flex flex-1 flex-col gap-4">
+                    <View className="flex w-full flex-col gap-1">
+                      <Text className="font-saira text-lg text-text-2">DIVISION</Text>
+                      <Text className="font-saira-semibold text-xl text-text-1">
+                        {selectedTrophy?.division_name || 'N/A'}
+                      </Text>
+                    </View>
+                    <View className="flex w-full flex-col gap-1">
+                      <Text className="font-saira text-lg text-text-2">POSITION</Text>
+                      <Text className="font-saira-semibold text-xl text-text-1">
+                        {selectedTrophy?.result === '1'
+                          ? 'Winners'
+                          : selectedTrophy?.result === '2'
+                            ? 'Runners Up'
+                            : 'N/A'}
+                      </Text>
+                    </View>
+                    <View className="flex w-full flex-col gap-1">
+                      <Text className="font-saira text-lg text-text-2">SEASON END</Text>
+                      <Text className="font-saira-semibold text-xl text-text-1">
+                        {new Date(selectedTrophy?.season_end).toLocaleDateString('en-GB') || 'N/A'}
+                      </Text>
+                    </View>
                   </View>
                 </View>
               </View>
             </View>
-          </View>
-        </Modal>
+          </Modal>
+        </View>
       </View>
-    </View>
+    </ProGate>
   );
 };
 

@@ -124,7 +124,7 @@ const FixturePage = ({ fixtureDetails, isLoading, context }) => {
                 <Text className="text-left font-saira-medium text-text-1">
                   {`${fixtureDetails?.competition?.season?.name} ${fixtureDetails?.competition?.name}${
                     fixtureDetails?.competition?.competition_type?.competition_type !== 'league'
-                      ? ` - ${stage.stage_type?.charAt(0)?.toUpperCase() + stage.stage_type?.slice(1)}`
+                      ? ` - ${stage?.stage_type?.charAt(0)?.toUpperCase() + stage?.stage_type?.slice(1)}`
                       : ''
                   }`}
                 </Text>
@@ -253,7 +253,7 @@ const FixturePage = ({ fixtureDetails, isLoading, context }) => {
                     </View>
                     <View className="flex-1">
                       <Text className="font-saira text-sm text-text-2">
-                        {fixtureDetails.date_time
+                        {fixtureDetails?.date_time
                           ? new Date(fixtureDetails.date_time).toLocaleDateString('en-GB', {
                               timeZone: 'Europe/London',
                               weekday: 'long',
@@ -264,7 +264,7 @@ const FixturePage = ({ fixtureDetails, isLoading, context }) => {
                           : 'Date TBC'}
                       </Text>
                       <Text className="font-saira-medium text-base text-text-1">
-                        {fixtureDetails.date_time
+                        {fixtureDetails?.date_time
                           ? new Date(fixtureDetails.date_time).toLocaleDateString('en-GB', {
                               timeZone: 'Europe/London',
                               day: 'numeric',

@@ -5,20 +5,15 @@ import CustomHeader from '@components/CustomNativeHeader';
 import SafeViewWrapper from '@components/SafeViewWrapper';
 import { useUser } from '@contexts/UserProvider';
 import { useEffect } from 'react';
-import { useSubscription } from '@hooks/useSubscription';
 import LoadingScreen from '@components/LoadingScreen';
 
 const _layout = () => {
   const { player, user, loading, currentRole } = useUser();
   const colorScheme = useColorScheme();
-  const { subscription, isLoading: subscriptionLoading, isActive } = useSubscription();
   const pathname = usePathname();
-  console.log('EntityOnboardingLayout');
-  console.log('Subscription:', subscription);
-  console.log('Subscription active:', isActive);
 
   useEffect(() => {
-    if (loading || subscriptionLoading) return;
+    if (loading) return;
 
     if (player && player.onboarding === 0) {
       router.replace('/(main)/onboarding/(profile-onboarding)/name');
@@ -30,11 +25,11 @@ const _layout = () => {
     } else if (!currentRole && player && player.onboarding === 9) {
       router.replace('/(main)/role-select');
     } else if (player && player.onboarding === 9 && currentRole) {
-      subscription && isActive && currentRole?.type === 'admin'
+      currentRole?.type === 'admin'
         ? router.replace('/home')
         : router.replace('/(main)/onboarding/upgrade');
     }
-  }, [loading, player, isActive, currentRole]);
+  }, [loading, player, currentRole]);
 
   if (loading) {
     return <LoadingScreen />;

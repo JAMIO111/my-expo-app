@@ -16,6 +16,8 @@ import { useRouter, Link } from 'expo-router';
 import { makeRedirectUri } from 'expo-auth-session';
 import * as WebBrowser from 'expo-web-browser';
 import SafeViewWrapper from '@components/SafeViewWrapper';
+import Purchases from 'react-native-purchases'; // ✅ default import, not named
+import Toast from 'react-native-toast-message';
 
 const SignUpPage = () => {
   const router = useRouter();
@@ -47,20 +49,44 @@ const SignUpPage = () => {
   }, []);
 
   const handleSignUp = async () => {
-    setLoading(true);
     setError(null);
+    setConfirmError(null);
 
-    const { data, error } = await supabase.auth.signUp({ email, password });
-
-    setLoading(false);
-
-    if (error) {
-      setError(error.message);
-    } else if (data.user) {
-      router.replace({
-        pathname: '/(main)/onboarding/(profile-onboarding)/name',
-        params: { user: data.user },
+    // ✅ Validate passwords match before hitting Supabase
+    if (password !== confirmPassword) {
+      Toast.show({
+        type: 'error',
+        text1: 'Password Mismatch',
+        text2: 'Please make sure both password fields match.',
       });
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      const { data, error: signUpError } = await supabase.auth.signUp({ email, password });
+
+      if (signUpError) {
+        setError(signUpError.message);
+        return;
+      }
+
+      if (data.user) {
+        // ✅ Log new user into RC straight after account creation
+        await Purchases.logIn(data.user.id);
+
+        router.replace({
+          pathname: '/(main)/onboarding/(profile-onboarding)/name',
+          params: { user: data.user },
+        });
+      }
+    } catch (err) {
+      console.error('Sign up error:', err);
+      setError('Something went wrong. Please try again.');
+    } finally {
+      // ✅ Always clears loading even if something throws
+      setLoading(false);
     }
   };
 

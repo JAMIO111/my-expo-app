@@ -3,6 +3,7 @@ import { supabase } from '@/lib/supabase';
 import * as WebBrowser from 'expo-web-browser';
 import * as Linking from 'expo-linking';
 import { useAuthUserProfile } from '@hooks/useAuthUserProfile2';
+import Purchases from 'react-native-purchases'; // ✅ added
 
 WebBrowser.maybeCompleteAuthSession();
 
@@ -25,7 +26,6 @@ export const UserProvider = ({ children }) => {
 
     console.log('[AUTH] Raw redirect:', url);
 
-    // Extract fragment after #
     const fragment = url.split('#')[1];
     if (!fragment) {
       console.log('[AUTH] No fragment found');
@@ -63,8 +63,30 @@ export const UserProvider = ({ children }) => {
       setLoadingAuth(false);
 
       if (session?.user) {
+        // ✅ Identify user in RC on any sign in or session restore.
+        // Guard with isAnonymous so we don't call logIn redundantly if
+        // the login/signup pages already did it directly.
+        try {
+          const isAnonymous = await Purchases.isAnonymous();
+          if (isAnonymous) {
+            await Purchases.logIn(session.user.id);
+          }
+        } catch (err) {
+          console.error('[RC] logIn error:', err);
+        }
+
         await refetch();
       } else {
+        // ✅ Sign out of RC when Supabase session ends (sign out, token expiry, etc.)
+        try {
+          const isAnonymous = await Purchases.isAnonymous();
+          if (!isAnonymous) {
+            await Purchases.logOut();
+          }
+        } catch (err) {
+          console.error('[RC] logOut error:', err);
+        }
+
         setCurrentRole(null);
       }
     });
@@ -90,16 +112,13 @@ export const UserProvider = ({ children }) => {
   useEffect(() => {
     if (!currentRole || !data?.roles) return;
 
-    // Try to find the updated version of the current role
     const updatedRole = data.roles.find((r) => r.id === currentRole?.id);
 
     if (updatedRole) {
-      // Replace currentRole with the updated object if it changed
       if (updatedRole !== currentRole) {
         setCurrentRole(updatedRole);
       }
     } else {
-      // currentRole no longer exists, pick the first available role or null
       setCurrentRole(data.roles[0] || null);
     }
   }, [data?.roles, currentRole]);

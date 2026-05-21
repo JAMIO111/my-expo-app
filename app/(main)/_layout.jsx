@@ -4,22 +4,21 @@ import { Slot, useRouter, useSegments } from 'expo-router';
 import { useEffect, useRef } from 'react';
 import { useUser } from '@contexts/UserProvider';
 import LoadingScreen from '../components/LoadingScreen';
-import { useSubscription } from '@hooks/useSubscription';
+import { useRevenueCat } from '@contexts/RevenueCatProvider';
 
 const _layout = () => {
+  const { isPro, isCore } = useRevenueCat();
   const router = useRouter();
   const segments = useSegments();
   const { user, player, loading, roles, setCurrentRole, currentRole } = useUser();
-  const { isActive, isLoading: subscriptionLoading } = useSubscription();
 
   console.log('AppLayout (main)');
   console.log('User:', user);
   console.log('Player:', player);
   console.log('Current Role:', currentRole);
-  console.log('Subscription active:', isActive);
   console.log('roles:', roles);
-
-  const prevIsActive = useRef(null);
+  console.log('isPro:', isPro);
+  console.log('isCore:', isCore);
 
   useEffect(() => {
     if (loading) return;
@@ -34,6 +33,7 @@ const _layout = () => {
       'rankings',
       'profile',
       'settings',
+      'paywall',
     ];
 
     const inHome = HOME_SEGMENTS.some((s) => segments.includes(s));
@@ -72,49 +72,13 @@ const _layout = () => {
           }
         }
 
-        // 👇 THEN handle navigation once role exists
-        if (!currentRole) return;
-
-        const canAccess = isActive || currentRole.type === 'admin';
-
-        if (canAccess && !inHome) {
-          router.replace('/(main)/home');
+        if (!inHome && !inOnboarding) {
+          router.replace('/home');
           return;
-        }
-
-        if (!canAccess && !inOnboarding) {
-          router.replace('/(main)/onboarding/upgrade');
         }
       }
     }
-  }, [user, player, loading, segments, roles, isActive, currentRole]);
-
-  useEffect(() => {
-    // Don't act until subscription has finished its first fetch.
-    if (subscriptionLoading) return;
-
-    // On the very first resolved value, just record it — don't redirect.
-    // This prevents redirecting every time the app cold-starts.
-    if (prevIsActive.current === null) {
-      prevIsActive.current = isActive;
-      return;
-    }
-
-    // From here we know isActive genuinely changed after mount.
-    if (isActive && !prevIsActive.current) {
-      // Subscription just became active (e.g. purchase completed, restored).
-      console.log('[layout] subscription activated → redirecting to home');
-      router.replace('/(main)/home');
-    }
-
-    if (!isActive && prevIsActive.current) {
-      // Subscription just lapsed or was cancelled.
-      console.log('[layout] subscription lost → redirecting to paywall');
-      router.replace('/(main)/onboarding/upgrade');
-    }
-
-    prevIsActive.current = isActive;
-  }, [isActive]);
+  }, [user, player, loading, segments, roles, currentRole, isPro, isCore]);
 
   if (loading) {
     console.log('Loading user data...');
