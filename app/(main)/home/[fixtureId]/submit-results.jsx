@@ -985,7 +985,7 @@ const SubmitResultsScreen = () => {
               <View className="flex-row items-center justify-between gap-3 px-3 pt-3">
                 <View className="flex flex-1 flex-col gap-1">
                   <View className="flex flex-row items-center gap-2">
-                    <Avatar size={24} borderRadius={8} player={frame.homePlayer1} />
+                    <Avatar size={24} borderRadius={6} player={frame.homePlayer1} />
                     <Text
                       numberOfLines={1}
                       className={`${frame.homePlayer1 ? 'text-text-1' : 'text-theme-red'} flex-1 text-left font-saira-medium text-lg`}>
@@ -994,7 +994,7 @@ const SubmitResultsScreen = () => {
                   </View>
                   {frame.homePlayer2 && (
                     <View className="flex flex-row items-center gap-2">
-                      <Avatar size={24} borderRadius={8} player={frame.homePlayer2} />
+                      <Avatar size={24} borderRadius={6} player={frame.homePlayer2} />
                       <Text
                         numberOfLines={1}
                         className={`${frame.homePlayer2 ? 'text-text-1' : 'text-theme-red'} flex-1 text-left font-saira-medium text-lg`}>

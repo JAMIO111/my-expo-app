@@ -7,6 +7,8 @@ import SettingsItem from '@components/SettingsItem';
 import { supabase } from '@/lib/supabase';
 import SafeViewWrapper from '@components/SafeViewWrapper';
 import CustomHeader from '@components/CustomHeader'; // Adjust the import path as necessary
+import Toast from 'react-native-toast-message';
+import EditableSettingsItem from '@components/EditableSettingsItem';
 
 const TeamDetails = () => {
   const { player, loading: playerLoading, refetch, currentRole } = useUser(); // Assume refreshUser reloads user data
@@ -19,13 +21,51 @@ const TeamDetails = () => {
 
   console.log('PersonalDetails:', player, currentRole);
 
-  // ✅ Detect changes
+  const handleSave = async () => {
+    setIsSaving(true);
+    try {
+      const { error } = await supabase.rpc('log_and_update_changes', {
+        table_name: 'Teams',
+        target_id: currentRole?.team?.id,
+        updates: {
+          name: teamName,
+          display_name: teamDisplayName,
+        },
+        user_id: player?.auth_id,
+      });
+      if (error) {
+        throw error;
+      }
+      Toast.show({
+        type: 'success',
+        text1: 'Team details updated successfully',
+      });
+      refetch(); // Refresh user data after successful update
+    } catch (error) {
+      console.error('Error updating team details:', error);
+      Toast.show({
+        type: 'error',
+        text1: 'Failed to update team details',
+        text2: error.message,
+      });
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
   useEffect(() => {
-    setTeamName(currentRole?.team?.name || '');
-    setTeamDisplayName(currentRole?.team?.display_name || '');
-    setAbbreviation(currentRole?.team?.abbreviation || '');
-    setAddress(currentRole?.team?.address || '');
-  }, [teamName, teamDisplayName, abbreviation, player, currentRole]);
+    if (!player) {
+      setHasChanges(false);
+      return;
+    }
+
+    const requiredFieldsFilled = teamName.trim() !== '' && teamDisplayName.trim() !== '';
+
+    const changed =
+      teamName !== currentRole?.team?.name || teamDisplayName !== currentRole?.team?.display_name;
+
+    setHasChanges(requiredFieldsFilled && changed);
+  }, [teamName, teamDisplayName, currentRole]);
 
   return (
     <SafeViewWrapper topColor="bg-brand" useBottomInset={false}>
@@ -33,7 +73,11 @@ const TeamDetails = () => {
         options={{
           header: () => (
             <SafeViewWrapper useBottomInset={false}>
-              <CustomHeader title="Team Info" />
+              <CustomHeader
+                onRightPress={hasChanges ? handleSave : undefined}
+                rightIcon="checkmark-outline"
+                title="Team Details"
+              />
             </SafeViewWrapper>
           ),
         }}
@@ -51,11 +95,17 @@ const TeamDetails = () => {
           />
         </MenuContainer>
         <MenuContainer>
-          <SettingsItem routerPath="/settings/team-name" title="Team Name" text={teamName} />
-          <SettingsItem
-            routerPath="/settings/DisplayName"
+          <EditableSettingsItem
+            title="Team Name"
+            value={teamName}
+            onChangeText={setTeamName}
+            placeholder="Enter your team name"
+          />
+          <EditableSettingsItem
             title="Display Name"
-            text={teamDisplayName}
+            value={teamDisplayName}
+            onChangeText={setTeamDisplayName}
+            placeholder="Enter your display name"
           />
           <SettingsItem
             routerPath="/settings/Abbreviation"

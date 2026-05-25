@@ -1,50 +1,58 @@
-import { StyleSheet, View } from 'react-native';
+import { StyleSheet, View, useColorScheme } from 'react-native';
 import CrestEditor from '@components/CrestEditor';
 import CustomHeader from '@components/CustomHeader';
 import SafeViewWrapper from '@components/SafeViewWrapper';
-import { Stack } from 'expo-router';
+import { Stack, useRouter } from 'expo-router';
 import { useUser } from '@contexts/UserProvider';
 import { supabase } from '@/lib/supabase';
 import Toast from 'react-native-toast-message';
-import { useColorScheme } from 'react-native';
+import { useState } from 'react';
 
 const TeamCrest = () => {
-  const { currentRole } = useUser();
+  const { currentRole, refetch } = useUser();
   const colorScheme = useColorScheme();
+  const [isSaving, setIsSaving] = useState(false);
+  const router = useRouter();
 
-  const handleSave = ({ type, color1, color2, thickness }) => {
+  const handleSave = async ({ type, color1, color2, thickness }) => {
+    setIsSaving(true);
     // Save the changes to the database
-    supabase
-      .from('Teams')
-      .update({
-        crest: {
-          type,
-          color1,
-          color2,
-          thickness,
+    try {
+      await supabase
+        .from('Teams')
+        .update({
+          crest: {
+            type,
+            color1,
+            color2,
+            thickness,
+          },
+        })
+        .eq('id', currentRole?.team?.id);
+
+      await refetch();
+      router.back();
+
+      Toast.show({
+        type: 'success',
+        text1: 'Crest Updated',
+        text2: 'Your team crest has been successfully updated.',
+        props: {
+          colorScheme: colorScheme,
         },
-      })
-      .eq('id', currentRole?.team?.id)
-      .then(() => {
-        Toast.show({
-          type: 'success',
-          text1: 'Crest Updated',
-          text2: 'Your team crest has been successfully updated.',
-          props: {
-            colorScheme: colorScheme,
-          },
-        });
-      })
-      .catch((error) => {
-        Toast.show({
-          type: 'error',
-          text1: 'Update Failed',
-          text2: `Failed to update crest: ${error.message}`,
-          props: {
-            colorScheme: colorScheme,
-          },
-        });
       });
+    } catch (error) {
+      Toast.show({
+        type: 'error',
+        text1: 'Update Failed',
+        text2: `Failed to update crest: ${error.message}`,
+        props: {
+          colorScheme: colorScheme,
+        },
+      });
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   return (

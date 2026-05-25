@@ -21,19 +21,19 @@ const PlayerStatsPage = ({ userId }) => {
         }}
       />
       <View className="mt-16 w-full flex-1 bg-bg-grouped-1">
-        <View className="flex w-full flex-row gap-5 border-b border-theme-gray-5 bg-brand p-3">
-          <View style={{ borderRadius: 8, lineHeight: 20 }} className="bg-bg-1 p-1">
-            <Avatar player={playerProfile} size={60} borderRadius={5} />
+        <View className="flex w-full flex-row gap-5 border-b border-theme-gray-5 bg-brand p-4">
+          <View style={{ borderRadius: 30, lineHeight: 20, padding: 2 }} className="bg-bg-1">
+            <Avatar player={playerProfile} size={60} borderRadius={30} />
           </View>
-          <View className="items-start justify-center">
+          <View className="items-start justify-center gap-1">
             <Text
               style={{ fontSize: 26, lineHeight: 30 }}
               className="font-saira-medium text-text-on-brand">
               {playerProfile?.first_name} {playerProfile?.surname}
             </Text>
             <Text
-              style={{ fontSize: 22 }}
-              className="font-saira-medium text-text-on-brand-2 opacity-60">
+              style={{ fontSize: 18 }}
+              className="rounded-lg bg-brand-light px-3 font-saira-medium text-text-on-brand">
               {playerProfile?.nickname || ''}
             </Text>
           </View>

@@ -42,9 +42,7 @@ const StatCard = ({
           <Skeleton width={50} height={42} className="mb-6" />
         ) : (
           <Text
-            numberOfLines={1}
-            adjustsFontSizeToFit
-            style={{ lineHeight: 10, fontSize: 46, paddingTop: 46 }}
+            style={{ lineHeight: 10, fontSize: 40, paddingTop: 46 }}
             className="pr-2 font-saira-semibold text-text-1">
             {displayValue}
           </Text>

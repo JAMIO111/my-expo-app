@@ -23,6 +23,7 @@ import AnimatedSearchBar from './AnimatedSearchBar';
 import CompareTeamStatsRows from './CompareTeamStatsRows';
 import Avatar from './Avatar';
 import MultiOptionSlidingToggle from './MultiOptionSlidingToggle';
+import ProGate from './ProGate';
 
 export default function CompareTeamStats() {
   const { currentRole } = useUser();
@@ -134,7 +135,9 @@ export default function CompareTeamStats() {
                 ]}
               />
               <View className="overflow-hidden rounded-2xl">
-                <CompareTeamStatsRows team1Stats={stats1} team2Stats={stats2} context={view} />
+                <ProGate>
+                  <CompareTeamStatsRows team1Stats={stats1} team2Stats={stats2} context={view} />
+                </ProGate>
               </View>
             </View>
           </Animated.ScrollView>

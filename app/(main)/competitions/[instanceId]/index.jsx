@@ -26,6 +26,7 @@ import BottomSheetWrapper from '@/components/BottomSheetWrapper';
 import { BottomSheetScrollView, BottomSheetView } from '@gorhom/bottom-sheet';
 import KnockoutBracket from '@components/KnockoutBracket';
 import ExpandableView from '@components/ExpandableView';
+import { useKnockoutBracket } from '@hooks/useKnockoutBracket';
 
 export function getStatusColors(status) {
   switch (status) {
@@ -62,6 +63,11 @@ const index = () => {
   const { loading, currentRole, player } = useUser();
   const { instanceId } = useLocalSearchParams();
   const { data: competitionInstance, error, isLoading } = useCompetitionInstanceDetails(instanceId);
+  const {
+    data: knockoutBracket,
+    isLoading: knockoutLoading,
+    error: knockoutError,
+  } = useKnockoutBracket(instanceId);
   const trophyIconMap = Object.fromEntries(trophyIcons.map((t) => [t.key, t]));
   const winnerTrophy = trophyIconMap[competitionInstance?.winner_reward];
   const runnerUpTrophy = trophyIconMap[competitionInstance?.runner_up_reward];
@@ -82,7 +88,12 @@ const index = () => {
   const canJoin =
     competitionInstance?.status === 'upcoming' && deadline >= new Date() && (!isTeam || isCaptain);
 
-  const entryType = competitionInstance?.entry_type;
+  const entryType = competitionInstance;
+
+  const finalStage =
+    knockoutBracket?.stages?.[knockoutBracket.stages.length - 1]?.status === 'active';
+
+  const competitionComplete = competitionInstance?.status === 'completed';
 
   const showSheet = (config) => {
     setSheetConfig(config);
@@ -420,6 +431,7 @@ const index = () => {
       queryClient.invalidateQueries({
         queryKey: ['knockout-bracket', compInstanceId],
       });
+      queryClient.invalidateQueries(['CompetitionInstanceDetails', instanceId]);
     } catch (err) {
       // 🔥 truly unexpected (network, runtime, etc.)
 
@@ -592,7 +604,7 @@ const index = () => {
                               <KnockoutBracket competitionInstanceId={instanceId} />
                               {isAdmin && (
                                 <CTAButton
-                                  text="Proceed to Next Round"
+                                  text={finalStage ? 'End Competition' : 'Proceed to Next Round'}
                                   type="yellow"
                                   disabled={isLoading || queryLoading}
                                   callbackFn={() => progressStage(instanceId)}
@@ -771,8 +783,8 @@ const index = () => {
               </Text>
               <View className="flex-row items-stretch justify-around gap-5">
                 <Pressable
-                  onPress={() => isAdmin && openSheet('winner')}
-                  className={`flex-1 flex-col items-center justify-end rounded-2xl ${isAdmin ? 'border-2 border-dashed border-theme-gray-4' : ''}`}>
+                  onPress={() => isAdmin && !competitionComplete && openSheet('winner')}
+                  className={`flex-1 flex-col items-center justify-end rounded-2xl ${isAdmin && !competitionComplete ? 'border-2 border-dashed border-theme-gray-4' : ''}`}>
                   <View className="flex-1 flex-col items-center justify-end">
                     {competitionInstance?.winner_reward === null ? (
                       <View className="h-30 w-30 mb-4 flex-1 items-center justify-center rounded-2xl">
@@ -792,8 +804,8 @@ const index = () => {
                   </View>
                 </Pressable>
                 <Pressable
-                  onPress={() => isAdmin && openSheet('runnerUp')}
-                  className={`flex-1 flex-col items-center justify-end rounded-2xl ${isAdmin ? 'border-2 border-dashed border-theme-gray-4' : ''}`}>
+                  onPress={() => isAdmin && !competitionComplete && openSheet('runnerUp')}
+                  className={`flex-1 flex-col items-center justify-end rounded-2xl ${isAdmin && !competitionComplete ? 'border-2 border-dashed border-theme-gray-4' : ''}`}>
                   <View className="flex-1 flex-col items-center justify-end">
                     {competitionInstance?.runner_up_reward === null ? (
                       <View className="mb-4 flex-1 items-center justify-center rounded-2xl">

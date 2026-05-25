@@ -31,7 +31,7 @@ const Avatar = ({ player, size = 64, borderRadius = 5, backgroundColor = 'bg-bra
         alignItems: 'center',
       }}>
       <Text
-        style={{ fontSize: size / 3.5, lineHeight: size / 5 }}
+        style={{ fontSize: size / 3.5, lineHeight: size / 4 }}
         className="pt-2 font-michroma text-white">
         {getInitials()}
       </Text>

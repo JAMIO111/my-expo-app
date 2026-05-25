@@ -149,7 +149,7 @@ const PersonalDetailsComponent = () => {
           />
         </MenuContainer>
 
-        <View className="w-full rounded-2xl bg-bg-grouped-2">
+        <View className="w-full rounded-2xl bg-bg-grouped-2 shadow-sm">
           <Pressable
             onPress={() => setShowDatePicker((prev) => !prev)}
             className="flex-row items-center justify-between px-4 py-4">

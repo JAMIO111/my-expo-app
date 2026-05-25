@@ -3,14 +3,13 @@ import { ScrollView, View, Text, useColorScheme } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useState, useEffect } from 'react';
 import { useUser } from '@contexts/UserProvider';
-import { getAgeInYearsAndDays } from '@lib/helperFunctions';
+import { getAgeInYearsAndDays, isBirthdayToday } from '@lib/helperFunctions';
 import CTAButton from '@components/CTAButton';
 import Heading from '@components/Heading';
 import { supabase } from '@/lib/supabase';
 import Toast from 'react-native-toast-message';
 import LoadingScreen from '@components/LoadingScreen';
 import StatCard from '@components/StatCard';
-import { isBirthdayToday } from '@lib/helperFunctions';
 import CachedImage from '@components/CachedImage';
 import { usePlayerStats } from '@hooks/usePlayerStats';
 import TrophyCabinet from './TrophyCabinet';
@@ -18,6 +17,7 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import { useQueryClient } from '@tanstack/react-query';
 import BottomSheetModal from '@components/BottomSheetModal';
 import SelectStatMenu from './SelectStatMenu';
+import PlayerProfileHeader from './PlayerProfileHeader';
 
 const PlayerProfile = ({ context, isLoading, playerProfile, error }) => {
   const router = useRouter();
@@ -256,99 +256,10 @@ const PlayerProfile = ({ context, isLoading, playerProfile, error }) => {
       <ScrollView
         contentContainerStyle={{ alignItems: 'center', justifyContent: 'center' }}
         className="w-full bg-bg-grouped-1">
-        <View className="w-full p-4 px-2">
-          <View className="w-full flex-row items-center justify-start gap-6 rounded-2xl border border-theme-gray-5 bg-bg-grouped-2 p-2 shadow-[0_2px_4px_rgba(0,0,0,0.1)]">
-            {playerProfile?.avatar_url ? (
-              <CachedImage
-                avatarUrl={playerProfile.avatar_url}
-                userId={playerProfile.id}
-                width={100}
-                height={100}
-                borderRadius={10}
-              />
-            ) : (
-              <View
-                style={{ height: 100, width: 100, borderRadius: 10 }}
-                className="items-center justify-center border-2 border-brand bg-brand-light">
-                <Text className="font-michroma text-4xl text-white">
-                  {playerProfile?.first_name.charAt(0)}
-                  {playerProfile?.surname.charAt(0)}
-                </Text>
-              </View>
-            )}
-            <View className="justify-center gap-1">
-              <Text style={{ lineHeight: 40 }} className="font-saira-semibold text-3xl text-text-1">
-                {playerProfile?.first_name} {playerProfile?.surname}
-              </Text>
-              {playerProfile?.nickname && (
-                <Text style={{ lineHeight: 26 }} className="font-saira-medium text-2xl text-text-1">
-                  {playerProfile?.nickname?.toUpperCase()}
-                </Text>
-              )}
-              <Text style={{ lineHeight: 24 }} className="font-saira text-xl text-text-2">
-                {`Since: ${
-                  playerProfile?.created_at
-                    ? new Date(playerProfile.created_at).toLocaleDateString('en-GB', {
-                        year: 'numeric',
-                        month: 'short',
-                        day: 'numeric',
-                      })
-                    : 'N/A'
-                }`}
-              </Text>
-            </View>
-          </View>
-        </View>
-        <View className="mb-1 bg-bg-grouped-2 px-2">
-          <View className="w-full pt-6">
-            <Heading text="Personal Details" />
-          </View>
-          <View className="flex w-full flex-row px-2 py-4">
-            <View className="flex flex-1 flex-col gap-4">
-              <View className="flex- w-full flex-col gap-1">
-                <Text className="font-saira text-lg text-text-2">TEAM</Text>
-                <Text className="font-saira-semibold text-xl text-text-1">
-                  {currentTeam?.team_name}
-                </Text>
-              </View>
-              <View className="flex- w-full flex-col gap-1">
-                <Text className="font-saira text-lg text-text-2">DATE OF BIRTH</Text>
-                <Text className="font-saira-semibold text-xl text-text-1">
-                  {playerProfile?.dob
-                    ? new Date(playerProfile.dob).toLocaleDateString('en-GB', {
-                        year: 'numeric',
-                        month: '2-digit',
-                        day: '2-digit',
-                      })
-                    : 'N/A'}
-                </Text>
-              </View>
-            </View>
-            <View className="flex flex-1 flex-col gap-4">
-              <View className="flex- w-full flex-col gap-1">
-                <Text className="font-saira text-lg text-text-2">SIGN ON DATE</Text>
-                <Text className="font-saira-semibold text-xl text-text-1">
-                  {currentTeam?.joined_at
-                    ? new Date(currentTeam.joined_at).toLocaleDateString('en-GB', {
-                        year: 'numeric',
-                        month: 'short',
-                        day: 'numeric',
-                      })
-                    : 'N/A'}
-                </Text>
-              </View>
-              <View className="flex- w-full flex-col gap-1">
-                <Text className="font-saira text-lg text-text-2">AGE</Text>
-                <Text className="font-saira-semibold text-xl text-text-1">
-                  {`${playerProfile?.dob ? `${years} Years ${days} days` : 'N/A'}  ${isBirthdayToday(playerProfile?.dob) ? '🎂' : ''}`}
-                </Text>
-              </View>
-            </View>
-          </View>
-        </View>
+        <PlayerProfileHeader playerProfile={playerProfile} currentTeam={currentTeam} />
 
         <View className="w-full bg-bg-grouped-2 px-2 py-6">
-          <Heading className="pl-3" text="Statistics" />
+          <Heading className="pl-3" text="Showcase Stats" />
           <View className="mt-2 gap-4 px-2">
             <View className="flex-row gap-4">
               {statSlots.slice(0, 2).map((slotKey, index) => {

@@ -32,6 +32,18 @@ const index = () => {
 
   const canSubmit = fixtureValid && playerValid;
 
+  const homeName =
+    competitorType === 'team'
+      ? fixtureDetails?.homeCompetitor?.abbreviation
+      : fixtureDetails?.homeCompetitor?.nickname?.toUpperCase() ||
+        fixtureDetails?.homeCompetitor?.surname?.toUpperCase();
+
+  const awayName =
+    competitorType === 'team'
+      ? fixtureDetails?.awayCompetitor?.abbreviation
+      : fixtureDetails?.awayCompetitor?.nickname?.toUpperCase() ||
+        fixtureDetails?.awayCompetitor?.surname?.toUpperCase();
+
   return (
     <SafeViewWrapper useBottomInset={false} topColor="bg-brand">
       <Stack.Screen
@@ -39,7 +51,7 @@ const index = () => {
           header: () => (
             <SafeViewWrapper useBottomInset={false}>
               <CustomHeader
-                title={`${competitorType === 'team' ? fixtureDetails?.homeCompetitor?.abbreviation || 'Home' : fixtureDetails?.homeCompetitor?.nickname?.toUpperCase() || 'Home'} vs ${competitorType === 'team' ? fixtureDetails?.awayCompetitor?.abbreviation || 'Away' : fixtureDetails?.awayCompetitor?.nickname?.toUpperCase() || 'Away'}`}
+                title={`${homeName || 'Home'} vs ${awayName || 'Away'}`}
                 onRightPress={
                   canSubmit
                     ? () => router.push(`competitions/${instanceId}/${fixtureId}/submit-results`)

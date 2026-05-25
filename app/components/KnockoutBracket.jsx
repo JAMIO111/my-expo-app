@@ -4,6 +4,9 @@ import { useRouter } from 'expo-router';
 import Svg, { Path } from 'react-native-svg';
 import { useKnockoutBracket } from '@/hooks/useKnockoutBracket';
 import CTAButton from './CTAButton';
+import Ionicons from '@expo/vector-icons/Ionicons';
+import { useUser } from '@contexts/UserProvider';
+import BottomSheetModal from './BottomSheetModal';
 
 // ─── Layout constants ─────────────────────────────────────
 const CARD_H = 68;
@@ -178,8 +181,11 @@ const MatchCard = ({
 
 // ─── Main Component ──────────────────────────────────────
 export default function KnockoutBracket({ competitionInstanceId }) {
+  const [activeStage, setActiveStage] = useState(null);
   const [stageModalVisible, setStageModalVisible] = useState(false);
   const { data, isLoading, error } = useKnockoutBracket(competitionInstanceId);
+  const { currentRole } = useUser();
+
   console.log('KnockoutBracket - data:', data);
 
   const stages = data?.stages ?? [];
@@ -233,8 +239,22 @@ export default function KnockoutBracket({ competitionInstanceId }) {
           <View className="mb-4 mt-4 flex-row">
             {stages.map((stage, ri) => (
               <View key={stage.id} style={{ width: ri < nR - 1 ? ROUND_W : COL_W }}>
-                <Pressable onPress={() => setStageModalVisible(true)} className="items-center">
-                  <Text className="pr-8 text-center font-saira-medium uppercase text-text-2">
+                <Pressable
+                  onPress={() => {
+                    setActiveStage(stage);
+                    setStageModalVisible(true);
+                  }}
+                  className="flex-row items-center justify-center gap-2">
+                  <Ionicons
+                    name={
+                      currentRole?.role === 'admin'
+                        ? 'settings-outline'
+                        : 'information-circle-outline'
+                    }
+                    size={16}
+                    color="#1f84d1"
+                  />
+                  <Text className="text-center font-saira-medium uppercase text-text-2">
                     {stage.name}
                   </Text>
                 </Pressable>
@@ -294,25 +314,81 @@ export default function KnockoutBracket({ competitionInstanceId }) {
           </View>
         </View>
       </ScrollView>
-      <Modal
-        presentationStyle="pageSheet"
-        visible={stageModalVisible}
-        onRequestClose={() => setStageModalVisible(false)}
-        animationType="slide">
-        <View className="flex-1 items-center justify-center bg-white p-4">
-          <View className="flex-1 items-start justify-start gap-4">
-            <Text className="font-saira-medium text-xl text-text-1">Stage Details</Text>
-            <Text className="mt-2 font-saira text-text-2">
-              More details about the stage can go here. This is a placeholder for the stage
-              information that will be shown when a stage is tapped.
+      <BottomSheetModal
+        showModal={stageModalVisible}
+        setShowModal={setStageModalVisible}
+        title="Stage Details">
+        <View className="flex-1 p-4">
+          <View className="mb-4 flex-row items-center gap-3">
+            <Text className="flex-1 font-saira-medium text-lg text-text-2">Competition Stage</Text>
+            <Text className="flex-1 text-right font-saira-medium text-lg text-text-1">
+              {activeStage?.name}
             </Text>
           </View>
-
-          <View className="w-full pb-8">
-            <CTAButton text="Close" type="yellow" callbackFn={() => setStageModalVisible(false)} />
+          <View className="mb-4 flex-row items-center gap-3">
+            <Text className="flex-1 font-saira-medium text-lg text-text-2">Stage Type</Text>
+            <Text className="flex-1 text-right font-saira-medium text-lg text-text-1">
+              {activeStage?.stage_type === 'round_robin'
+                ? 'Round Robin'
+                : activeStage?.stage_type === 'knockout'
+                  ? 'Knockout'
+                  : activeStage?.stage_type === 'league'
+                    ? 'League'
+                    : activeStage?.stage_type === 'group'
+                      ? 'Groups Stage'
+                      : activeStage?.stage_type === 'playoff'
+                        ? 'Play-offs'
+                        : activeStage?.stage_type}
+            </Text>
           </View>
+          <View className="mb-4 flex-row items-center gap-3">
+            <Text className="flex-1 font-saira-medium text-lg text-text-2">Stage Status</Text>
+            <Text className="flex-1 text-right font-saira-medium text-lg text-text-1">
+              {activeStage?.status === 'completed'
+                ? 'Completed'
+                : activeStage?.status === 'active'
+                  ? 'In Progress'
+                  : 'Upcoming'}
+            </Text>
+          </View>
+          {activeStage?.stage_type === 'knockout' && (
+            <View className="mb-4 flex-row items-center gap-3">
+              <Text className="flex-1 font-saira-medium text-lg text-text-2">No. of Legs</Text>
+              <Text className="flex-1 text-right font-saira-medium text-lg text-text-1">
+                {activeStage?.legs || '–'}
+              </Text>
+            </View>
+          )}
+          {activeStage?.stage_type == 'round_robin' && (
+            <View className="mb-4 flex-row items-center gap-3">
+              <Text className="flex-1 font-saira-medium text-lg text-text-2">
+                No. of Round Robins
+              </Text>
+              <Text className="flex-1 text-right font-saira-medium text-lg text-text-1">
+                {activeStage?.round_robins || '–'}
+              </Text>
+            </View>
+          )}
+          {activeStage?.stage_type === 'group' && (
+            <>
+              <View className="mb-4 flex-row items-center gap-3">
+                <Text className="flex-1 font-saira-medium text-lg text-text-2">No. of Groups</Text>
+                <Text className="flex-1 text-right font-saira-medium text-lg text-text-1">
+                  {activeStage?.groups || '–'}
+                </Text>
+              </View>
+              <View className="mb-4 flex-row items-center gap-3">
+                <Text className="flex-1 font-saira-medium text-lg text-text-2">
+                  Teams per Group
+                </Text>
+                <Text className="flex-1 text-right font-saira-medium text-lg text-text-1">
+                  {activeStage?.teams_per_group || '–'}
+                </Text>
+              </View>
+            </>
+          )}
         </View>
-      </Modal>
+      </BottomSheetModal>
     </>
   );
 }

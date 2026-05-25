@@ -5,12 +5,14 @@ import { useUser } from '@contexts/UserProvider';
 import CTAButton from '@components/CTAButton';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { supabase } from '@/lib/supabase';
+import Toast from 'react-native-toast-message';
 
 const AbbreviationEditor = () => {
   const router = useRouter();
-  const { currentRole, setCurrentRole, player } = useUser(); // Assuming currentRole contains team information
+  const { currentRole, setCurrentRole, player, refetch } = useUser(); // Assuming currentRole contains team information
   const [abbreviation, setAbbreviation] = useState(currentRole?.team?.abbreviation || '');
   const [takenAbbreviations, setTakenAbbreviations] = useState([]);
+  const [isSaving, setIsSaving] = useState(false);
   const [isAvailable, setIsAvailable] = useState(true);
   const currentAbbr = currentRole?.team?.abbreviation?.toUpperCase() || '';
   const hasChanges = abbreviation !== currentAbbr;
@@ -43,27 +45,45 @@ const AbbreviationEditor = () => {
   }, [currentRole?.district?.id]);
 
   const handleSave = async () => {
-    const { error } = await supabase.rpc('log_and_update_changes', {
-      table_name: 'Teams',
-      target_id: currentRole?.team?.id,
-      updates: { abbreviation: abbreviation.toUpperCase() },
-      user_id: player?.auth_id,
-    });
+    setIsSaving(true);
+    try {
+      const { error } = await supabase.rpc('log_and_update_changes', {
+        table_name: 'Teams',
+        target_id: currentRole?.team?.id,
+        updates: { abbreviation: abbreviation.toUpperCase() },
+        user_id: player?.auth_id,
+      });
 
-    if (error) {
-      console.error('Update failed:', error.message);
-    } else {
-      console.log('Update and log successful');
+      if (error) {
+        console.error('Update failed:', error.message);
+      } else {
+        console.log('Update and log successful');
 
-      setCurrentRole((prev) => ({
-        ...prev,
-        team: {
-          ...prev.team,
-          abbreviation: abbreviation.toUpperCase(),
-        },
-      }));
+        setCurrentRole((prev) => ({
+          ...prev,
+          team: {
+            ...prev.team,
+            abbreviation: abbreviation.toUpperCase(),
+          },
+        }));
 
-      router.back(); // Navigate back after saving
+        await refetch();
+        Toast.show({
+          type: 'success',
+          text1: 'Abbreviation Updated',
+          text2: 'Your team abbreviation has been successfully updated.',
+        });
+        router.back(); // Navigate back after saving
+      }
+    } catch (error) {
+      console.error('Error during update:', error);
+      Toast.show({
+        type: 'error',
+        text1: 'Update Failed',
+        text2: `Failed to update abbreviation: ${error.message}`,
+      });
+    } finally {
+      setIsSaving(false);
     }
   };
 

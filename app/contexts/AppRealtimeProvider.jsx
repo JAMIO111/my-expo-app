@@ -71,29 +71,57 @@ export default function AppRealtimeProvider({ children }) {
 
       const resultsChannel = supabase
         .channel(`results_${suffix}`)
-        .on('postgres_changes', { event: '*', schema: 'public', table: 'Results' }, (payload) => {
-          const fixtureId = payload.new?.fixture_id ?? payload.old?.fixture_id;
-          const playerIds = new Set(
-            [
-              payload.new?.home_player_1,
-              payload.new?.home_player_2,
-              payload.new?.away_player_1,
-              payload.new?.away_player_2,
-              payload.old?.home_player_1,
-              payload.old?.home_player_2,
-              payload.old?.away_player_1,
-              payload.old?.away_player_2,
-            ].filter(Boolean)
-          );
+        .on(
+          'postgres_changes',
+          { event: '*', schema: 'public', table: 'Results' },
+          async (payload) => {
+            const fixtureId = payload.new?.fixture_id ?? payload.old?.fixture_id;
+            const playerIds = new Set(
+              [
+                payload.new?.home_player_1,
+                payload.new?.home_player_2,
+                payload.new?.away_player_1,
+                payload.new?.away_player_2,
+                payload.old?.home_player_1,
+                payload.old?.home_player_2,
+                payload.old?.away_player_1,
+                payload.old?.away_player_2,
+              ].filter(Boolean)
+            );
 
-          playerIds.forEach((id) =>
-            queryClient.invalidateQueries({ queryKey: ['PlayerStats', id] })
-          );
-          if (fixtureId) {
-            queryClient.invalidateQueries({ queryKey: ['ResultsByFixture', fixtureId] });
-            queryClient.invalidateQueries({ queryKey: ['fixture-details', fixtureId] });
+            // ── Synchronous invalidations first — don't block these ──
+            playerIds.forEach((id) =>
+              queryClient.invalidateQueries({ queryKey: ['PlayerStats', id] })
+            );
+            if (fixtureId) {
+              queryClient.invalidateQueries({ queryKey: ['ResultsByFixture', fixtureId] });
+              queryClient.invalidateQueries({ queryKey: ['fixture-details', fixtureId] });
+            }
+
+            // ── Async lookup for knockout bracket ──
+            if (fixtureId) {
+              try {
+                const fixture = await queryClient.ensureQueryData({
+                  queryKey: ['fixture-details', fixtureId],
+                  queryFn: () =>
+                    supabase
+                      .from('Fixtures')
+                      .select('competition_instance_id')
+                      .eq('id', fixtureId)
+                      .single()
+                      .then((r) => r.data),
+                });
+                if (fixture?.competition_instance_id) {
+                  queryClient.invalidateQueries({
+                    queryKey: ['knockout-bracket', fixture.competition_instance_id],
+                  });
+                }
+              } catch (e) {
+                console.warn('Could not resolve competition_instance_id for fixture', fixtureId, e);
+              }
+            }
           }
-        })
+        )
         .subscribe((status) => console.log('✅ Results:', status));
 
       if (!mounted) {
@@ -116,6 +144,12 @@ export default function AppRealtimeProvider({ children }) {
             payload.new?.date_time != null ? new Date(payload.new.date_time).getMonth() : null;
           const oldVenue = payload.old?.venue_id;
           const newVenue = payload.new?.venue_id;
+
+          if (competitionInstanceId) {
+            queryClient.invalidateQueries({
+              queryKey: ['knockout-bracket', competitionInstanceId],
+            });
+          }
 
           if (fixtureId)
             queryClient.invalidateQueries({ queryKey: ['fixture-details', fixtureId] });

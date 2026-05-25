@@ -9,7 +9,7 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 const ProGate = ({
   children,
   pro = false,
-  core = false,
+  core = true,
   title = 'Exclusive Feature',
   description = 'Upgrade now to unlock this feature',
   showCTA = true,
@@ -77,7 +77,7 @@ const ProGate = ({
             useNativeDriver: true,
           }),
         ]).start();
-      }, 1000);
+      }, 500);
 
       return () => clearTimeout(timer);
     }

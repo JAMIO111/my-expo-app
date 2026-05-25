@@ -91,7 +91,7 @@ const PlayerId = () => {
             <View className="w-full flex-row items-center justify-between">
               <Text className="font-saira-medium text-xl text-text-2">Team</Text>
               <Text className="font-saira-semibold text-lg text-text-1">
-                {playerProfile?.team_name}
+                {playerProfile?.team?.name}
               </Text>
             </View>
             <View className="border-t border-theme-gray-5"></View>

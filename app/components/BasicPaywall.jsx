@@ -90,9 +90,8 @@ const BasicPaywall = () => {
 
   // Is the currently selected plan's product eligible for an intro offer?
   const selectedProductId = selectedPlan?.package?.product?.productIdentifier;
-  const isTrialEligible =
-    selectedProductId &&
-    introEligibility[selectedProductId]?.status === INTRO_ELIGIBILITY_STATUS.ELIGIBLE;
+  const hasTrial = selectedPlan?.package?.product?.introPrice != null;
+  const isTrialEligible = hasTrial;
 
   // ─── Percentage-off calculations ─────────────────────────────────────────────
   const proPercentageOff = subscriptions.length
@@ -510,7 +509,9 @@ const BasicPaywall = () => {
           {/* Trial toggle — only shown when user has no plan and a trial-eligible plan is selected */}
           {!subscription && subscriptions && subscriptions.length > 0 && isTrialEligible && (
             <View className="mt-6 w-full flex-row items-center justify-between px-6">
-              <Text className="font-saira-medium text-xl text-text-1">Enable 7-day free trial</Text>
+              <Text className="font-saira-medium text-xl text-text-1">
+                Enable 14-day free trial
+              </Text>
               <Switch
                 value={isTrialEnabled}
                 onValueChange={setIsTrialEnabled}

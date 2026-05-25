@@ -55,7 +55,7 @@ const LeaderboardCard = ({
               },
             }))
         }
-        className="h-[300px] min-w-[300px] rounded-3xl bg-bg-grouped-2 p-3 pl-0 shadow-sm">
+        className="h-[300px] w-[300px] rounded-3xl bg-bg-grouped-2 p-3 pl-0 shadow-sm">
         <Text className="mb-2 pl-4 font-saira-semibold text-2xl text-text-1">{title}</Text>
         {sortedData.slice(0, 5).map((item, index) => (
           <View key={index} className="flex-row items-center justify-between p-2">

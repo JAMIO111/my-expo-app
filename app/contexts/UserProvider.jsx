@@ -75,7 +75,7 @@ export const UserProvider = ({ children }) => {
           console.error('[RC] logIn error:', err);
         }
 
-        await refetch();
+        refetch();
       } else {
         // ✅ Sign out of RC when Supabase session ends (sign out, token expiry, etc.)
         try {

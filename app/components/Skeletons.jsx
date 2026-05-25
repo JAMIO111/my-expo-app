@@ -94,8 +94,8 @@ export const TableSkeleton = () => {
 
 export const LeaderboardSkeleton = () => {
   return (
-    <View className="rounded-3xl bg-bg-2 p-2">
-      <View className="h-[300px] w-[300px] flex-1 items-start gap-3 rounded-3xl border border-theme-gray-5 bg-bg-grouped-2 p-2">
+    <View className="h-[300px] w-[300px] rounded-3xl bg-bg-2 p-3">
+      <View className="flex-1 items-start gap-3 rounded-3xl border border-theme-gray-5 bg-bg-grouped-2 p-2">
         <View className="m-2 h-8 w-1/2 rounded-full bg-theme-gray-5" />
         <View className="w-full flex-1 items-center justify-around px-2">
           {Array.from({ length: 5 }).map((_, index) => (

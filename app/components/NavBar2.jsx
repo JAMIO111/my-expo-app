@@ -99,7 +99,7 @@ const NavBar = ({ type = 'main' }) => {
       {/* Decorative top bar */}
       <View className="absolute top-0 h-6 w-full flex-row items-center justify-around bg-red-950">
         {[...Array(4)].map((_, i) => (
-          <View key={i} className="h-1.5 w-1.5 rounded-full bg-gray-500" />
+          <View key={i} className="h-1.5 w-1.5 rounded-full bg-theme-gray-3" />
         ))}
       </View>
 

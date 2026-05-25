@@ -14,6 +14,8 @@ import {
 import IonIcons from 'react-native-vector-icons/Ionicons';
 import ProGate from '@components/ProGate';
 import { useRevenueCat } from '@contexts/RevenueCatProvider';
+import BottomSheetModal from './BottomSheetModal';
+import TrophyModalContent from './TrophyModaContent';
 
 const randomTrophies = [
   {
@@ -56,6 +58,8 @@ const TrophyCabinet = ({ trophies = [] }) => {
   const screenWidth = Dimensions.get('window').width;
   const hasAccess = isPro || isCore;
   const data = hasAccess ? trophies : randomTrophies;
+
+  const realTrophyCount = Array.isArray(trophies) ? trophies.length : 0;
 
   const shelf1 = data?.filter((_, i) => i % 2 === 0);
   const shelf2 = data?.filter((_, i) => i % 2 !== 0);
@@ -116,7 +120,7 @@ const TrophyCabinet = ({ trophies = [] }) => {
               setCabinetWidth(e.nativeEvent.layout.width);
             }}
             style={styles.woodFrame}>
-            {(!Array.isArray(trophies) || trophies.length === 0) && (
+            {realTrophyCount === 0 && (
               <Image
                 source={require('@assets/cobweb.png')} // your cobweb asset
                 style={{
@@ -131,7 +135,7 @@ const TrophyCabinet = ({ trophies = [] }) => {
                 resizeMode="contain"
               />
             )}
-            {(!Array.isArray(data) || data.length < 2) && (
+            {realTrophyCount < 2 && (
               <Image
                 source={require('@assets/cobweb.png')} // your cobweb asset
                 style={{
@@ -214,98 +218,12 @@ const TrophyCabinet = ({ trophies = [] }) => {
             />
           </TouchableWithoutFeedback>
 
-          {/* Modal */}
-          <Modal
-            animationType="fade"
-            transparent={true}
-            visible={modalVisible}
-            onRequestClose={closeModal}>
-            <View style={styles.modalOverlay}>
-              <View
-                className="overflow-hidden rounded-xl bg-bg-grouped-2 p-1"
-                style={styles.modalContent}>
-                {/* Close button */}
-                <TouchableOpacity
-                  onPress={closeModal}
-                  style={{
-                    position: 'absolute',
-                    top: 8,
-                    right: 8,
-                    zIndex: 10,
-                    backgroundColor: 'rgba(0,0,0,0.2)',
-                    borderRadius: 14,
-                    width: 40,
-                    height: 40,
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                  }}>
-                  <IonIcons name="close" size={30} color="#fff" />
-                </TouchableOpacity>
-
-                <View
-                  style={styles.trophyBackground}
-                  className="w-full items-end border-b border-theme-gray-4 bg-bg-2">
-                  {selectedTrophy && (
-                    <Image
-                      source={selectedTrophy.image}
-                      style={styles.modalImage}
-                      resizeMode="contain"
-                      className="my-8"
-                    />
-                  )}
-                </View>
-
-                <View className="flex w-full flex-row py-4 pl-4">
-                  {/* your existing content */}
-                  <View className="flex flex-1 flex-col gap-4">
-                    <View className="flex w-full flex-col gap-1">
-                      <Text className="font-saira text-lg text-text-2">DISTRICT</Text>
-                      <Text className="font-saira-semibold text-xl text-text-1">
-                        {selectedTrophy?.district_name || 'N/A'}
-                      </Text>
-                    </View>
-                    <View className="flex w-full flex-col gap-1">
-                      <Text className="font-saira text-lg text-text-2">SEASON</Text>
-                      <Text className="font-saira-semibold text-xl text-text-1">
-                        {selectedTrophy?.season_name || 'N/A'}
-                      </Text>
-                    </View>
-                    <View className="flex w-full flex-col gap-1">
-                      <Text className="font-saira text-lg text-text-2">SEASON START</Text>
-                      <Text className="font-saira-semibold text-xl text-text-1">
-                        {new Date(selectedTrophy?.season_start).toLocaleDateString('en-GB') ||
-                          'N/A'}
-                      </Text>
-                    </View>
-                  </View>
-                  <View className="flex flex-1 flex-col gap-4">
-                    <View className="flex w-full flex-col gap-1">
-                      <Text className="font-saira text-lg text-text-2">DIVISION</Text>
-                      <Text className="font-saira-semibold text-xl text-text-1">
-                        {selectedTrophy?.division_name || 'N/A'}
-                      </Text>
-                    </View>
-                    <View className="flex w-full flex-col gap-1">
-                      <Text className="font-saira text-lg text-text-2">POSITION</Text>
-                      <Text className="font-saira-semibold text-xl text-text-1">
-                        {selectedTrophy?.result === '1'
-                          ? 'Winners'
-                          : selectedTrophy?.result === '2'
-                            ? 'Runners Up'
-                            : 'N/A'}
-                      </Text>
-                    </View>
-                    <View className="flex w-full flex-col gap-1">
-                      <Text className="font-saira text-lg text-text-2">SEASON END</Text>
-                      <Text className="font-saira-semibold text-xl text-text-1">
-                        {new Date(selectedTrophy?.season_end).toLocaleDateString('en-GB') || 'N/A'}
-                      </Text>
-                    </View>
-                  </View>
-                </View>
-              </View>
-            </View>
-          </Modal>
+          <BottomSheetModal
+            showModal={modalVisible}
+            setShowModal={setModalVisible}
+            title="Trophy Details">
+            <TrophyModalContent selectedTrophy={selectedTrophy} />
+          </BottomSheetModal>
         </View>
       </View>
     </ProGate>

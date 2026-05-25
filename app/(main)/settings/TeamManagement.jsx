@@ -79,16 +79,24 @@ const Team = () => {
               type="error"
               text={isLeavingTeam ? 'Leaving Team...' : 'Leave Team'}
               callbackFn={async () => {
-                setIsLeavingTeam(true);
-                const { error } = await supabase
-                  .from('TeamPlayers')
-                  .update({ left_at: new Date().toISOString(), status: 'left' })
-                  .eq('player_id', player.id)
-                  .eq('team_id', currentRole?.team?.id);
+                if (currentRole?.team?.captain === player.id) {
+                  Toast.show({
+                    type: 'error',
+                    text1: 'Captain cannot leave team',
+                    text2: 'Please assign a new captain before leaving the team.',
+                    props: { colorScheme },
+                  });
+                  return;
+                }
 
-                if (error) {
-                  console.error('Error leaving team:', error.message);
-                } else {
+                try {
+                  setIsLeavingTeam(true);
+                  const { error } = await supabase
+                    .from('TeamPlayers')
+                    .update({ left_at: new Date().toISOString(), status: 'left' })
+                    .eq('player_id', player.id)
+                    .eq('team_id', currentRole?.team?.id);
+
                   Toast.show({
                     type: 'success',
                     text1: 'Left Team',
@@ -96,10 +104,19 @@ const Team = () => {
                     props: { colorScheme },
                   });
                   router.replace('/home');
+                } catch (error) {
+                  console.error('Error leaving team:', error);
+                  Toast.show({
+                    type: 'error',
+                    text1: 'Failed to leave team',
+                    text2: error.message,
+                    props: { colorScheme },
+                  });
+                } finally {
+                  setIsLeavingTeam(false);
                 }
-                setIsLeavingTeam(false);
               }}
-              disabled={isLeavingTeam}
+              disabled={isLoading || isLeavingTeam}
             />
           </View>
         </View>

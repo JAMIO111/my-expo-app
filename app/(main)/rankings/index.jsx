@@ -150,6 +150,16 @@ const Index = () => {
                 label="Wins"
               />
             </ProGate>
+            <ProGate showCTA={false} intensity={blurIntensity}>
+              <LeaderboardCard
+                type="team"
+                statKey="current_match_win_streak"
+                data={teamLeaderboards}
+                title="Current Win Streak"
+                loading={isLoadingTeams}
+                label="Wins"
+              />
+            </ProGate>
           </ScrollView>
         </ScrollView>
       </View>

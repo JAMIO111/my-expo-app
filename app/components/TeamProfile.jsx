@@ -20,6 +20,7 @@ import { useUser } from '@contexts/UserProvider';
 import TeamJoinRequests from './TeamJoinRequests';
 import BottomSheetModal from './BottomSheetModal';
 import SelectStatMenu from './SelectStatMenu';
+import TeamProfileHeader from '@components/TeamProfileHeader';
 
 const TeamProfile = ({ context, profile, isLoading }) => {
   const { currentRole, player } = useUser();
@@ -133,49 +134,20 @@ const TeamProfile = ({ context, profile, isLoading }) => {
   return (
     <>
       <ScrollView className="flex-1 bg-bg-1" contentContainerStyle={{ flexGrow: 1 }}>
-        <View className="border-b border-theme-gray-3">
+        <View className="bg-brand p-3">
           {profile.cover_image_url && (
-            <CachedImage
-              avatarUrl={profile.cover_image_url}
-              userId={profile?.id}
-              width={Dimensions.get('window').width}
-              height={(Dimensions.get('window').width * 9) / 16}
-              borderRadius={0}
-            />
-          )}
-        </View>
-        <View className="items-items-start w-full flex-row justify-start gap-8 border-b border-theme-gray-5 bg-bg-grouped-2 py-5 pl-5">
-          <View className="items-center justify-start gap-4">
-            <View className="rounded-full border border-separator">
-              <TeamLogo
-                size={68}
-                color1={profile?.crest?.color1}
-                color2={profile?.crest?.color2}
-                type={profile?.crest?.type}
-                thickness={profile?.crest?.thickness}
+            <View className="overflow-hidden rounded-2xl">
+              <CachedImage
+                avatarUrl={profile.cover_image_url}
+                userId={profile?.id}
+                width={Dimensions.get('window').width - 24}
+                height={((Dimensions.get('window').width - 24) * 9) / 16}
+                borderRadius={0}
               />
             </View>
-            <Text className="rounded-lg bg-bg-grouped-3 px-4 py-1 font-saira text-lg font-semibold text-text-1 shadow-sm">
-              {profile?.abbreviation}
-            </Text>
-          </View>
-          <View className="max-w-full items-start justify-between gap-2">
-            <View>
-              <Text className="mt-2 max-w-xs font-saira text-3xl font-bold text-text-1">
-                {profile?.name || 'No Name'}
-              </Text>
-              <Text className="mb-3 max-w-xs font-saira text-xl font-medium text-text-2">
-                {profile?.division?.district?.name} - {profile?.division?.name || 'No Division'}
-              </Text>
-            </View>
-            <View className="gap-1">
-              <Text style={{ lineHeight: 22 }} className="max-w-xs font-saira text-lg text-text-2">
-                {[line_1, line_2, city, postcode].filter(Boolean).join(', ') ||
-                  'No Address Available'}
-              </Text>
-            </View>
-          </View>
+          )}
         </View>
+        <TeamProfileHeader profile={profile} />
         <View className="gap-1 bg-bg-grouped-1">
           <View className="mt-1 bg-bg-grouped-2 px-4 py-6">
             <Heading text="Team Stats" />
