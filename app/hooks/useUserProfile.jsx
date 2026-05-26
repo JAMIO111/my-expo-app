@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 
-export default function useUserProfile(userId) {
+export function useUserProfile(userId) {
   return useQuery({
     queryKey: ['PlayerProfile', userId],
     queryFn: async () => {
@@ -65,3 +65,5 @@ export default function useUserProfile(userId) {
     gcTime: 30 * 60 * 1000,
   });
 }
+
+export default useUserProfile;

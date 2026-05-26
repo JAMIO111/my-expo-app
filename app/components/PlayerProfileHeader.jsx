@@ -32,13 +32,13 @@ const PlayerProfileHeader = ({ playerProfile, currentTeam }) => {
         month: '2-digit',
         day: '2-digit',
       })
-    : 'N/A';
+    : '';
 
   const { years, days } = getAgeInYearsAndDays(playerProfile?.dob);
 
   const ageLabel = playerProfile?.dob
     ? `${years}y ${days}d${isBirthdayToday(playerProfile?.dob) ? ' 🎂' : ''}`
-    : 'N/A';
+    : '';
 
   return (
     <View className="bg-brand" style={styles.container}>
@@ -46,36 +46,17 @@ const PlayerProfileHeader = ({ playerProfile, currentTeam }) => {
         {/* ── Left: avatar + nickname pill ── */}
         <View style={styles.avatarCol}>
           <View style={styles.avatarRing}>
-            {playerProfile?.avatar_url ? (
-              <CachedImage
-                avatarUrl={playerProfile.avatar_url}
-                userId={playerProfile.id}
-                width={72}
-                height={72}
-                borderRadius={999}
-              />
-            ) : (
-              <View style={styles.initialsCircle}>
-                <Text style={styles.initialsText}>{initials}</Text>
-              </View>
-            )}
+            <Avatar size={120} player={playerProfile} borderRadius={12} />
           </View>
-
-          {/* Nickname pill — mirrors abbreviation pill in TeamProfileHeader */}
-          {playerProfile?.nickname && (
-            <View className="mt-2 flex-row items-center gap-2 rounded-lg bg-brand-light px-3 py-1">
-              <Text style={styles.nicknameText} numberOfLines={1}>
-                {playerProfile.nickname.toUpperCase()}
-              </Text>
-            </View>
-          )}
         </View>
 
         {/* ── Right: name, team chip, details ── */}
         <View style={styles.infoCol}>
           {/* Player name */}
-          <Text className="font-saira-semibold text-3xl text-text-on-brand" numberOfLines={2}>
-            {fullName}
+          <Text style={styles.nicknameText} numberOfLines={1}>
+            {playerProfile?.nickname?.toUpperCase() ||
+              playerProfile?.surname?.toUpperCase() ||
+              'No Nickname'}
           </Text>
 
           {/* Team chip — mirrors division chip in TeamProfileHeader */}
@@ -92,7 +73,7 @@ const PlayerProfileHeader = ({ playerProfile, currentTeam }) => {
           <View className="mt-2 flex-row items-center gap-2">
             <Ionicons name="calendar-outline" size={14} color="#ffffff" />
             <Text className="font-saira text-text-on-brand" numberOfLines={1}>
-              {dob} · {ageLabel}
+              {dob ? `${dob} · ${ageLabel}` : 'No DOB'}
             </Text>
           </View>
 
@@ -103,7 +84,7 @@ const PlayerProfileHeader = ({ playerProfile, currentTeam }) => {
               style={{ width: 15, height: 15 }}
             />
             <Text className="font-saira text-text-on-brand" numberOfLines={1}>
-              Since {sinceDate}
+              Since {sinceDate || 'Unknown'}
             </Text>
           </View>
         </View>
@@ -156,7 +137,7 @@ const styles = StyleSheet.create({
 
   avatarRing: {
     padding: 3,
-    borderRadius: 999,
+    borderRadius: 12,
     backgroundColor: '#ffffff',
     shadowColor: '#000000',
     shadowOffset: { width: 0, height: 2 },
@@ -182,8 +163,8 @@ const styles = StyleSheet.create({
   },
 
   nicknameText: {
-    fontFamily: 'Saira-SemiBold',
-    fontSize: 16,
+    fontFamily: 'Saira-medium',
+    fontSize: 20,
     color: '#ffffff',
     letterSpacing: 1.2,
   },
@@ -191,7 +172,7 @@ const styles = StyleSheet.create({
   // ── Info ──
   infoCol: {
     flex: 1,
-    gap: 6,
+    gap: 5,
     alignItems: 'flex-start',
   },
 

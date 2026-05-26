@@ -122,3 +122,11 @@ export const UpcomingFixtureSkeleton = () => {
     </View>
   );
 };
+
+export default {
+  FixtureSkeleton,
+  FixtureDetailsSkeleton,
+  TableSkeleton,
+  LeaderboardSkeleton,
+  UpcomingFixtureSkeleton,
+};

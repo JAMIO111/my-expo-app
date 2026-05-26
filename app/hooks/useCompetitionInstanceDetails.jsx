@@ -27,3 +27,5 @@ export function useCompetitionInstanceDetails(instanceId) {
     enabled: !!instanceId, // Only run if instanceId is provided
   });
 }
+
+export default useCompetitionInstanceDetails;

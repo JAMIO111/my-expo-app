@@ -88,3 +88,5 @@ export function useKnockoutBracket(competitionInstanceId) {
     gcTime: 1000 * 60 * 60,
   });
 }
+
+export default useKnockoutBracket;

@@ -19,3 +19,5 @@ export function useJoinTeamRequests({ districtId, teamId }) {
     gcTime: 60 * 60 * 1000,
   });
 }
+
+export default useJoinTeamRequests;

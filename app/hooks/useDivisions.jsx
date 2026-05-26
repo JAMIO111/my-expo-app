@@ -20,3 +20,5 @@ export function useDivisions(districtId) {
     enabled: !!districtId, // only run query if districtId is provided
   });
 }
+
+export default useDivisions;

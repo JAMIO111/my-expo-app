@@ -45,3 +45,5 @@ export function useDisputedFixtures({
     gcTime: 60 * 60 * 1000,
   });
 }
+
+export default useDisputedFixtures;

@@ -101,3 +101,5 @@ export const LeaderboardRow = ({ item, index, type, getValue, label }) => {
     </View>
   );
 };
+
+export default LeaderboardRow;

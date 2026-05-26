@@ -63,3 +63,5 @@ export const useUpcomingFixtures = (competitorId, competitorType, seasonId) => {
     retry: false,
   });
 };
+
+export default useUpcomingFixtures;

@@ -105,3 +105,5 @@ export const useFixtureDetails = (fixtureId) => {
     retry: false,
   });
 };
+
+export default useFixtureDetails;

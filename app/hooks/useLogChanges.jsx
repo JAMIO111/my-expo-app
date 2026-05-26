@@ -58,3 +58,5 @@ const logChanges = async ({
     if (insertError) throw new Error(insertError.message);
   }
 };
+
+export default logChanges;

@@ -68,3 +68,5 @@ export function usePlayerStats(playerId) {
     enabled: !!playerId,
   });
 }
+
+export default usePlayerStats;

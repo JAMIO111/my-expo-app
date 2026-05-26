@@ -13,6 +13,8 @@ import StatCard from '@components/StatCard';
 import CachedImage from '@components/CachedImage';
 import { usePlayerStats } from '@hooks/usePlayerStats';
 import TrophyCabinet from './TrophyCabinet';
+import { usePlayerAwards } from '@hooks/usePlayerAwards';
+import { trophyIcons } from '../lib/badgeIcons';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useQueryClient } from '@tanstack/react-query';
 import BottomSheetModal from '@components/BottomSheetModal';
@@ -38,9 +40,26 @@ const PlayerProfile = ({ context, isLoading, playerProfile, error }) => {
   const [statSlots, setStatSlots] = useState(EMPTY_SLOTS);
   const [editingSlotIndex, setEditingSlotIndex] = useState(null);
   const [statModalVisible, setStatModalVisible] = useState(false);
+  const {
+    data: playerAwards,
+    isLoading: isLoadingPlayerAwards,
+    error: playerAwardsError,
+  } = usePlayerAwards(playerProfile?.id);
 
   console.log('Player Profile:', playerProfile);
   console.log('Player Profile Stats:', playerStats);
+  console.log('Player Awards:', playerAwards);
+  console.log('Player awards error:', playerAwardsError);
+
+  const trophyIconMap = Object.fromEntries(trophyIcons.map((t) => [t.key, t]));
+  const trophies = playerAwards?.map((award) => {
+    const trophyDef = trophyIconMap[award.reward];
+
+    return {
+      ...award,
+      image: trophyDef?.icon ?? null,
+    };
+  });
 
   const currentTeam =
     context === 'teams'
@@ -334,7 +353,7 @@ const PlayerProfile = ({ context, isLoading, playerProfile, error }) => {
           </View>
         </View>
         <View className="mt-1 w-full bg-bg-grouped-2 px-4 py-8">
-          <TrophyCabinet trophies={[]} />
+          <TrophyCabinet trophies={trophies || []} />
         </View>
         <View className="mt-1 w-full gap-6 bg-bg-grouped-2 px-6 py-8">
           {!isMe && iAmCaptain && inMyTeam && (

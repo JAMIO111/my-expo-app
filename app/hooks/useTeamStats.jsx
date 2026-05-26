@@ -72,3 +72,5 @@ export function useTeamStats(teamId) {
     enabled: !!teamId,
   });
 }
+
+export default useTeamStats;

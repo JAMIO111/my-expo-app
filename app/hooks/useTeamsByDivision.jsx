@@ -49,3 +49,5 @@ export const useTeamsByDivision = (divisionId) => {
     retry: false,
   });
 };
+
+export default useTeamsByDivision;

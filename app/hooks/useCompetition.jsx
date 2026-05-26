@@ -19,3 +19,5 @@ export function useCompetition(competitionId) {
     enabled: !!competitionId, // only run query if competitionId is provided
   });
 }
+
+export default useCompetition;

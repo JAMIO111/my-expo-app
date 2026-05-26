@@ -68,3 +68,5 @@ export const useActiveFrame = (frames, setFrames, activeFrameId) => {
     updateActiveFrame,
   };
 };
+
+export default useActiveFrame;

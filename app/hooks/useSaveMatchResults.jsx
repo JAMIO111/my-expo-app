@@ -79,3 +79,5 @@ export function useSaveMatchResults(fixtureId, existingResults) {
 
   return { saving, save };
 }
+
+export default useSaveMatchResults;

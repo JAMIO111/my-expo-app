@@ -272,3 +272,5 @@ function formatResponse(division, standings) {
     standings,
   };
 }
+
+export default useStandings;

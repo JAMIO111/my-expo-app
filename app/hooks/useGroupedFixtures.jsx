@@ -76,3 +76,5 @@ export const useGroupedFixtures = ({ competitionInstanceId, month }) => {
     keepPreviousData: true,
   });
 };
+
+export default useGroupedFixtures;

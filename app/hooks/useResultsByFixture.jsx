@@ -39,3 +39,5 @@ export function useResultsByFixture(fixtureId) {
     gcTime: 60 * 60 * 1000, // 30 minutes
   });
 }
+
+export default useResultsByFixture;

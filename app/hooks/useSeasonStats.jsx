@@ -21,3 +21,5 @@ export const useSeasonStats = (teamId, seasonId) => {
     enabled: !!teamId && !!seasonId, // avoid running query when teamId or seasonId is not yet ready
   });
 };
+
+export default useSeasonStats;

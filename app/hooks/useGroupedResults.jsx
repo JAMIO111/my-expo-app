@@ -74,3 +74,5 @@ export const useMonthlyResults = ({ month, seasonId, divisionId }) => {
     keepPreviousData: true,
   });
 };
+
+export default useMonthlyResults;

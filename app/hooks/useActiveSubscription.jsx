@@ -37,3 +37,5 @@ export const useActiveSubscription = () => {
 
   return active;
 };
+
+export default useActiveSubscription;

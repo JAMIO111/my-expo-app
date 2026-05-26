@@ -29,3 +29,5 @@ export function useCompetitions({ districtId, divisionId, competitionType } = {}
     enabled: !!(districtId || divisionId || competitionType), // prevents useless calls
   });
 }
+
+export default useCompetitions;

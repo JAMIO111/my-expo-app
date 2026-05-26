@@ -5,10 +5,7 @@ export function usePlayerAwards(playerId) {
   return useQuery({
     queryKey: ['PlayerAwards', playerId],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('player_awards_with_details')
-        .select('*')
-        .eq('player_id', playerId);
+      const { data, error } = await supabase.rpc('get_player_awards', { _player_id: playerId });
 
       if (error) throw error;
       return data;
@@ -18,3 +15,5 @@ export function usePlayerAwards(playerId) {
     enabled: !!playerId,
   });
 }
+
+export default usePlayerAwards;

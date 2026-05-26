@@ -27,3 +27,5 @@ export function useCompetitionInstances(seasonId) {
     enabled: !!seasonId, // only run query if seasonId is provided
   });
 }
+
+export default useCompetitionInstances;

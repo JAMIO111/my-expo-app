@@ -41,3 +41,5 @@ export const useHeadToHeadStats = (homeCompetitorId, awayCompetitorId, competito
     gcTime: 1000 * 60 * 60,
   });
 };
+
+export default useHeadToHeadStats;

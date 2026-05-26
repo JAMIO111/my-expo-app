@@ -26,3 +26,5 @@ export const useLast5Results = (competitorId, competitorType, formType = 'matche
     keepPreviousData: true,
   });
 };
+
+export default useLast5Results;

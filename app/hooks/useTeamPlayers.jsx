@@ -44,3 +44,5 @@ export function useTeamPlayers(teamId) {
     gcTime: 10 * 60 * 1000,
   });
 }
+
+export default useTeamPlayers;

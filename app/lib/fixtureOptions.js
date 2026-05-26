@@ -19,3 +19,9 @@ export const monthlyMatchDaysOptions = [
   { label: '3rd', value: '3' },
   { label: '4th', value: '4' },
 ];
+
+export default {
+  matchFrequencyOptions,
+  matchDaysOptions,
+  monthlyMatchDaysOptions,
+};

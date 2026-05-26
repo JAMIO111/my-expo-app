@@ -813,3 +813,21 @@ export async function createNewSeason(districtId, districtName, startDate) {
     throw err;
   }
 }
+
+export default {
+  generateQuadraticTiers,
+  calculateLevel,
+  getContrastColor,
+  isBirthdayToday,
+  getSeasonLabel,
+  getAgeInYearsAndDays,
+  generateFixtures,
+  endSeason,
+  initiateNewSeason,
+  getActiveSeason,
+  handleSubmitResults,
+  getBgClass,
+  getTextClass,
+  getSubscriptionAction,
+  normalizeSubscription,
+};

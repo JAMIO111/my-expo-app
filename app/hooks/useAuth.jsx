@@ -22,3 +22,5 @@ export function useAuth() {
 
   return { session, loading };
 }
+
+export default useAuth;

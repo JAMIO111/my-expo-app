@@ -32,3 +32,5 @@ export function useFixtureConfig() {
   }
   return context;
 }
+
+export default AdminContext;

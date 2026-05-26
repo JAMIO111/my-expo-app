@@ -87,3 +87,5 @@ export function useFixturesAwaitingResults({
     gcTime: 60 * 60 * 1000,
   });
 }
+
+export default useFixturesAwaitingResults;

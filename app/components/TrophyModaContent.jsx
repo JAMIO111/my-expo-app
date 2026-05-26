@@ -1,4 +1,4 @@
-import { View, Text, Image, StyleSheet } from 'react-native';
+import { View, Text, Image, StyleSheet, ScrollView } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import Ionicons from '@expo/vector-icons/Ionicons';
 
@@ -37,8 +37,12 @@ const Divider = () => <View style={styles.divider} />;
 const TrophyModalContent = ({ selectedTrophy }) => {
   const position = positionLabel(selectedTrophy?.result);
 
+  const formatCompetitionType = (value) => {
+    return value.replace(/-/g, ' & ').replace(/\b\w/g, (char) => char.toUpperCase());
+  };
+
   return (
-    <View style={styles.container}>
+    <ScrollView style={styles.container}>
       {/* ── Hero section ──────────────────────────────────────────────────── */}
       <View style={styles.hero}>
         {/* Dark radial glow behind trophy */}
@@ -68,13 +72,11 @@ const TrophyModalContent = ({ selectedTrophy }) => {
 
       {/* ── Title block ───────────────────────────────────────────────────── */}
       <View style={styles.titleBlock}>
-        <Text style={styles.competitionName} numberOfLines={2}>
-          {selectedTrophy?.season_name || 'Competition'}
+        <Text style={styles.seasonName} numberOfLines={2}>
+          {selectedTrophy?.season_name || 'Season'}
         </Text>
-        <Text style={styles.districtName}>
-          {[selectedTrophy?.district_name, selectedTrophy?.division_name]
-            .filter(Boolean)
-            .join(' · ') || 'N/A'}
+        <Text style={styles.competitionName} numberOfLines={1}>
+          {selectedTrophy?.competition_instance_name || 'Competition'}
         </Text>
       </View>
 
@@ -82,15 +84,34 @@ const TrophyModalContent = ({ selectedTrophy }) => {
       <View style={styles.statsPanel}>
         <StatRow label="District" value={selectedTrophy?.district_name || 'N/A'} />
         <Divider />
-        <StatRow label="Division" value={selectedTrophy?.division_name || 'N/A'} />
+        <StatRow
+          label="Competition Type"
+          value={formatCompetitionType(selectedTrophy?.competition_type || 'N/A')}
+        />
+        <Divider />
+        <StatRow
+          label="Competitor Type"
+          value={formatCompetitionType(selectedTrophy?.competitor_type || 'N/A')}
+        />
+        <Divider />
+        {selectedTrophy?.division_name && selectedTrophy?.competition_type === 'league' && (
+          <>
+            <StatRow label="Division" value={selectedTrophy?.division_name || 'N/A'} />
+            <Divider />
+          </>
+        )}
+        <StatRow label="Position" value={position.label} accent={position.color} />
+        <Divider />
+        <StatRow label="Awarded at" value={fmt(selectedTrophy?.created_at)} />
         <Divider />
         <StatRow label="Season Start" value={fmt(selectedTrophy?.season_start)} />
         <Divider />
-        <StatRow label="Season End" value={fmt(selectedTrophy?.season_end)} />
-        <Divider />
-        <StatRow label="Position" value={position.label} accent={position.color} />
+        <StatRow
+          label="Season End"
+          value={selectedTrophy?.season_end ? fmt(selectedTrophy?.season_end) : 'Ongoing'}
+        />
       </View>
-    </View>
+    </ScrollView>
   );
 };
 
@@ -161,7 +182,7 @@ const styles = StyleSheet.create({
     borderBottomColor: '#ffffff0f',
   },
 
-  competitionName: {
+  seasonName: {
     fontFamily: 'Saira-SemiBold',
     fontSize: 22,
     color: '#ffffff',
@@ -169,11 +190,11 @@ const styles = StyleSheet.create({
     lineHeight: 28,
   },
 
-  districtName: {
+  competitionName: {
     fontFamily: 'Saira',
-    fontSize: 14,
+    fontSize: 18,
     color: '#888',
-    marginTop: 4,
+    marginTop: 2,
     letterSpacing: 0.2,
   },
 

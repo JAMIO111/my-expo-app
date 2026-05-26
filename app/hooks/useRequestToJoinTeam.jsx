@@ -73,3 +73,5 @@ export function useRequestToJoinTeam(team, playerId, adminApproval = false) {
     },
   });
 }
+
+export default useRequestToJoinTeam;

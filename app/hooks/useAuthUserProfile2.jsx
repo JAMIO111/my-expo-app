@@ -44,3 +44,5 @@ export const useAuthUserProfile = () => {
     placeholderData: (prev) => prev, // key fix
   });
 };
+
+export default useAuthUserProfile;

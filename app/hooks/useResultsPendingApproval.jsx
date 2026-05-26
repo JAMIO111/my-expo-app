@@ -44,3 +44,5 @@ export function useResultsPendingApproval({
     gcTime: 60 * 60 * 1000,
   });
 }
+
+export default useResultsPendingApproval;

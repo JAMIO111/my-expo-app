@@ -24,3 +24,5 @@ export const useTeamsByDistrict = (districtId) => {
     retry: false,
   });
 };
+
+export default useTeamsByDistrict;

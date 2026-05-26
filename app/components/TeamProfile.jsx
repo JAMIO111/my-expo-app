@@ -26,7 +26,14 @@ const TeamProfile = ({ context, profile, isLoading }) => {
   const { currentRole, player } = useUser();
   const router = useRouter();
   const { teamId, fixtureId } = useLocalSearchParams();
-  const { data: teamAwards, isLoading: isLoadingTeamAwards } = useTeamAwards(profile?.id);
+  const {
+    data: teamAwards,
+    isLoading: isLoadingTeamAwards,
+    error: teamAwardsError,
+  } = useTeamAwards(profile?.id);
+  console.log('Team Awards:', teamAwards);
+  console.log('Team Awards Loading State:', isLoadingTeamAwards);
+  console.log('Team Awards Error State:', teamAwardsError);
   const { data: last5Results, isLoading: isLoadingLast5Results } = useLast5Results(
     profile?.id,
     'team',

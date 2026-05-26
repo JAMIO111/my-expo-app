@@ -132,3 +132,13 @@ export const SearchIcon = (props) => (
     <Line x1="21" y1="21" x2="16.65" y2="16.65"></Line>
   </Svg>
 );
+
+export default {
+  SettingsIcon,
+  TeamIcon,
+  ChartIcon,
+  TrophyIcon,
+  UserIcon,
+  DiamondIcon,
+  SearchIcon,
+};

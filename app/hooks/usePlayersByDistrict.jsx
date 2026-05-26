@@ -71,3 +71,5 @@ export const usePlayersByDistrict = (districtId) => {
     },
   });
 };
+
+export default usePlayersByDistrict;

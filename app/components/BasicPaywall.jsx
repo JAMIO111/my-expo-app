@@ -24,6 +24,52 @@ import {
   useRevenueCat,
 } from '@contexts/RevenueCatProvider';
 
+const reviews = [
+  {
+    id: '1',
+    title: 'I love this app!',
+    body: 'Its great seeing the scores come in live as they happen! ',
+    avatar: require('@assets/avatar.jpg'),
+    rating: 5,
+  },
+  {
+    id: '2',
+    title: 'Stats galore',
+    body: 'I love being able to look at all of my stats in one place and compare them to others.',
+    avatar: require('@assets/avatar.jpg'),
+    rating: 5,
+  },
+  {
+    id: '3',
+    title: 'Fantastic for league management',
+    body: 'The league management features are fantastic. It makes running my Thursday league so much easier.',
+    avatar: require('@assets/avatar.jpg'),
+    rating: 5,
+  },
+];
+
+const ReviewCard = ({ item }) => {
+  return (
+    <View
+      style={{ width: 300, flexShrink: 0 }}
+      className="mb-8 rounded-3xl bg-bg-grouped-2 px-6 py-4 shadow-sm">
+      <View className="mb-4 flex-row items-center justify-between">
+        <Image contentFit="contain" className="h-12 w-12 rounded-xl border" source={item.avatar} />
+
+        <View className="ml-2 flex-row">
+          {Array.from({ length: item.rating }, (_, i) => (
+            <IonIcons key={i} name="star" size={24} color="#FFD700" />
+          ))}
+        </View>
+      </View>
+
+      <Text className="font-saira-medium text-xl text-text-1">"{item.title}"</Text>
+
+      <Text className="mt-2 font-saira text-lg text-text-2">"{item.body}"</Text>
+    </View>
+  );
+};
+
 const BasicPaywall = () => {
   // ─── RC hooks ────────────────────────────────────────────────────────────────
   const { offerings, fetch: fetchOfferings, isLoading: offeringsLoading } = useOfferings();
@@ -307,50 +353,14 @@ const BasicPaywall = () => {
           <ScrollView
             horizontal
             showsHorizontalScrollIndicator={false}
-            contentContainerStyle={{ flexDirection: 'row', gap: 20, paddingHorizontal: 20 }}>
-            {/* Review cards — unchanged */}
-            <View
-              style={{ width: 300, flexShrink: 0 }}
-              className="mb-8 rounded-3xl border border-theme-gray-5 bg-bg-grouped-2 px-6 py-4">
-              <View className="mb-4 flex-row items-center justify-between">
-                <Image
-                  contentFit="contain"
-                  className="h-12 w-12 rounded-xl border"
-                  source={require('@assets/avatar.jpg')}
-                />
-                <View className="ml-2 flex-row">
-                  {Array.from({ length: 5 }, (_, i) => (
-                    <IonIcons key={i} name="star" size={24} color="#FFD700" />
-                  ))}
-                </View>
-              </View>
-              <Text className="font-saira-medium text-xl text-text-1">"I love this app!"</Text>
-              <Text className="mt-2 font-saira text-lg text-text-2">
-                "Its great seeing the scores come in live as they happen!"
-              </Text>
-            </View>
-
-            <View
-              style={{ width: 300, flexShrink: 0 }}
-              className="mb-8 rounded-3xl border border-theme-gray-5 bg-bg-grouped-2 px-5 py-5">
-              <View className="mb-4 flex-row items-center justify-between">
-                <Image
-                  contentFit="contain"
-                  className="h-12 w-12 rounded-xl border"
-                  source={require('@assets/avatar.jpg')}
-                />
-                <View className="ml-2 flex-row">
-                  {Array.from({ length: 5 }, (_, i) => (
-                    <IonIcons key={i} name="star" size={24} color="#FFD700" />
-                  ))}
-                </View>
-              </View>
-              <Text className="font-saira-medium text-xl text-text-1">"Stats galore"</Text>
-              <Text className="mt-2 font-saira text-lg text-text-2">
-                "I love being able to look at all of my stats in one place and compare them to
-                others."
-              </Text>
-            </View>
+            contentContainerStyle={{
+              flexDirection: 'row',
+              gap: 20,
+              paddingHorizontal: 20,
+            }}>
+            {reviews.map((item) => (
+              <ReviewCard key={item.id} item={item} />
+            ))}
           </ScrollView>
 
           {/* ── Plan cards ── */}

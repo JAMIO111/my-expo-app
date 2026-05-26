@@ -330,3 +330,5 @@ export function useTeamPlayerActions(teamId, callbacks = {}) {
     removeFromDivision,
   };
 }
+
+export default useTeamPlayerActions;

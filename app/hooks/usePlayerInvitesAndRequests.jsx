@@ -64,3 +64,5 @@ export function usePlayerInvitesAndRequests({ teamId, playerId }) {
     gcTime: 10 * 60 * 1000,
   });
 }
+
+export default usePlayerInvitesAndRequests;

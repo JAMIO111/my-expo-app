@@ -1,6 +1,6 @@
 import { router, Stack } from 'expo-router';
 import { StyleSheet, Text, View, ScrollView, Platform, RefreshControl } from 'react-native';
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 import { useUser } from '@contexts/UserProvider';
 import LoadingScreen from '@components/LoadingScreen';
 import HorizontalScrollUpcomingFixtures from '@components/HorizontalScrollUpcomingFixtures';
@@ -23,11 +23,13 @@ import TransferWindowCard from '@components/TransferWindowCard';
 import ToggleTransferWindowCard from '@components/ToggleTransferWindowCard';
 import { useQueryClient } from '@tanstack/react-query';
 import BottomSheetModal from '@components/BottomSheetModal';
+import { useRevenueCat } from '@contexts/RevenueCatProvider';
+import { isCallOrNewExpression } from 'typescript';
 
 const Home = () => {
+  const { isPro, isCore } = useRevenueCat();
   const [windowLoading, setWindowLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
-  const [showModal, setShowModal] = useState(false);
   const {
     user,
     player,
@@ -49,11 +51,13 @@ const Home = () => {
   console.log('index DivisionId', currentRole?.division?.id);
   console.log('index SeasonId', currentRole?.activeSeason?.id);
 
-  const divisionId =
-    currentRole?.type === 'admin'
-      ? currentRole?.competitions?.filter((comp) => comp.division_tier === 1)?.[0]?.division_id
-      : currentRole?.division?.id;
-  console.log('Division ID:', divisionId);
+  const divisionId = useMemo(
+    () =>
+      currentRole?.type === 'admin'
+        ? currentRole?.competitions?.find((c) => c.division_tier === 1)?.division_id
+        : currentRole?.division?.id,
+    [currentRole]
+  );
 
   const {
     data: standings,
@@ -91,10 +95,13 @@ const Home = () => {
     enabled: !!player?.id,
   });
 
-  const resultsPendingApproval = [
-    ...(teamResultsPendingApproval || []),
-    ...(playerResultsPendingApproval || []),
-  ].sort((a, b) => new Date(b.date_time) - new Date(a.date_time)); // sort by date descending
+  const resultsPendingApproval = useMemo(
+    () =>
+      [...(teamResultsPendingApproval || []), ...(playerResultsPendingApproval || [])].sort(
+        (a, b) => new Date(b.date_time) - new Date(a.date_time)
+      ),
+    [teamResultsPendingApproval, playerResultsPendingApproval]
+  );
 
   const {
     data: teamDisputedFixtures,
@@ -118,10 +125,13 @@ const Home = () => {
     enabled: !!player?.id,
   });
 
-  const disputedFixtures = [
-    ...(teamDisputedFixtures || []),
-    ...(playerDisputedFixtures || []),
-  ].sort((a, b) => new Date(b.date_time) - new Date(a.date_time)); // sort by date descending
+  const disputedFixtures = useMemo(
+    () =>
+      [...(teamDisputedFixtures || []), ...(playerDisputedFixtures || [])].sort(
+        (a, b) => new Date(b.date_time) - new Date(a.date_time)
+      ),
+    [teamDisputedFixtures, playerDisputedFixtures]
+  );
 
   const {
     data: teamAmendedFixtures,
@@ -145,10 +155,13 @@ const Home = () => {
     enabled: !!player?.id,
   });
 
-  const amendedFixtures = [...(teamAmendedFixtures || []), ...(playerAmendedFixtures || [])].sort(
-    (a, b) => new Date(b.date_time) - new Date(a.date_time)
-  ); // sort by date descending
-
+  const amendedFixtures = useMemo(
+    () =>
+      [...(teamAmendedFixtures || []), ...(playerAmendedFixtures || [])].sort(
+        (a, b) => new Date(b.date_time) - new Date(a.date_time)
+      ),
+    [teamAmendedFixtures, playerAmendedFixtures]
+  );
   console.log('All Disputed Fixtures:', disputedFixtures);
   console.log('All Amended Fixtures:', amendedFixtures);
 
@@ -174,10 +187,13 @@ const Home = () => {
     enabled: !!player?.id,
   });
 
-  const fixturesAwaitingResults = [
-    ...(teamFixturesAwaitingResults || []),
-    ...(playerFixturesAwaitingResults || []),
-  ].sort((a, b) => new Date(b.date_time) - new Date(a.date_time)); // sort by date descending
+  const fixturesAwaitingResults = useMemo(
+    () =>
+      [...(teamFixturesAwaitingResults || []), ...(playerFixturesAwaitingResults || [])].sort(
+        (a, b) => new Date(b.date_time) - new Date(a.date_time)
+      ),
+    [teamFixturesAwaitingResults, playerFixturesAwaitingResults]
+  );
 
   console.log('Team Fixtures Awaiting Results:', teamFixturesAwaitingResults);
   console.log('Player Fixtures Awaiting Results:', playerFixturesAwaitingResults);
@@ -186,18 +202,28 @@ const Home = () => {
 
   const onRefresh = useCallback(() => {
     setRefreshing(true);
-
-    standingsRefetch()
-      .then(() => {
-        upcomingFixturesRefetch();
-      })
-      .then(() => {
-        return new Promise((resolve) => setTimeout(resolve, 1000)); // 1s delay
-      })
-      .finally(() => {
-        setRefreshing(false);
-      });
-  }, [upcomingFixturesRefetch]);
+    Promise.all([
+      standingsRefetch(),
+      upcomingFixturesRefetch(),
+      teamResultsPendingApprovalRefetch(),
+      playerResultsPendingApprovalRefetch(),
+      fixturesAwaitingResultsRefetch(),
+      teamDisputedFixturesRefetch(),
+      playerDisputedFixturesRefetch(),
+      teamAmendedFixturesRefetch(),
+      playerAmendedFixturesRefetch(),
+    ]).finally(() => setRefreshing(false));
+  }, [
+    standingsRefetch,
+    upcomingFixturesRefetch,
+    teamResultsPendingApprovalRefetch,
+    playerResultsPendingApprovalRefetch,
+    fixturesAwaitingResultsRefetch,
+    teamDisputedFixturesRefetch,
+    playerDisputedFixturesRefetch,
+    teamAmendedFixturesRefetch,
+    playerAmendedFixturesRefetch,
+  ]);
 
   if (!player) {
     return (
@@ -213,16 +239,6 @@ const Home = () => {
       </>
     );
   }
-
-  const onChange = (event, selectedDate) => {
-    if (Platform.OS === 'android') {
-      setShowPicker(false); // hide picker immediately on Android
-    }
-
-    if (selectedDate) {
-      setDate(selectedDate);
-    }
-  };
 
   return (
     <SafeViewWrapper topColor="bg-brand" bottomColor="bg-brand">
@@ -362,8 +378,20 @@ const Home = () => {
                   }}
                 />
                 <HomeScreenCardLarge
-                  title="Upgrade to Pro Membership!"
-                  body="Unlock exclusive features such as in depth statistics, advanced match analysis, and the removal of ads for just an extra £0.99/month"
+                  title={
+                    isPro
+                      ? 'You are a Pro Member!'
+                      : isCore
+                        ? 'Upgrade to Pro Membership'
+                        : 'Upgrade to Core Membership'
+                  }
+                  body={
+                    isPro
+                      ? 'Thank you for being a Pro Member! Enjoy your exclusive perks and support the app development.'
+                      : isCore
+                        ? 'Upgrade to Pro Membership to unlock exclusive features and support the app development for just £2.99/month.'
+                        : 'Upgrade to Core Membership to unlock additional features and support the app development for just £1.99/month.'
+                  }
                   category="Membership"
                   image={require('@assets/premium-card.jpg')}
                   onPress={() => {
@@ -387,25 +415,10 @@ const Home = () => {
                     }
                   }}
                 />
-                <CTAButton text="Show Modal" callbackFn={() => setShowModal(true)} />
               </View>
             </View>
           </View>
         </ScrollView>
-        {showModal && (
-          <BottomSheetModal showModal={showModal} setShowModal={setShowModal} title="Hello World">
-            <ScrollView>
-              <View className="p-4">
-                <Text className="text-lg text-text-1">This is the content of the modal.</Text>
-                <Text className="mt-2 text-text-2">
-                  You can put anything you want here, including forms, images, or even a list of
-                  items.
-                </Text>
-                <CTAButton text="Close Modal" callbackFn={() => setShowModal(false)} />
-              </View>
-            </ScrollView>
-          </BottomSheetModal>
-        )}
         <NavBar />
       </View>
     </SafeViewWrapper>

@@ -117,3 +117,9 @@ export const trophyIcons = [
   },
   // Add more trophies as needed
 ];
+
+export default {
+  badgeIcons,
+  romanNumerals,
+  trophyIcons,
+};
