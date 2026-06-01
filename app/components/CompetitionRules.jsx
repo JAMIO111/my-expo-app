@@ -63,6 +63,7 @@ const CompetitionRules = ({ context }) => {
           max_age: competition.max_age,
           gender: competition.gender,
           max_competitors: maxCompetitors ? parseInt(maxCompetitors) : null,
+          max_team_size: competition.competitor_type === 'team' ? competition.max_team_size : null,
           bracket_generation: bracketGeneration,
           legs: legs ? parseInt(legs) : 1,
           best_of: bestOf ? parseInt(bestOf) : null,
@@ -117,6 +118,12 @@ const CompetitionRules = ({ context }) => {
         gender: params.gender ? params.gender : 'mixed',
         division_id: params.division,
         max_competitors: maxCompetitors ? parseInt(maxCompetitors) : null,
+        max_team_size:
+          params.competitorType === 'team'
+            ? params.maxTeamSize
+              ? parseInt(params.maxTeamSize)
+              : null
+            : null,
         bracket_generation: bracketGeneration,
         legs: legs ? parseInt(legs) : 1,
         best_of: bestOf ? parseInt(bestOf) : null,

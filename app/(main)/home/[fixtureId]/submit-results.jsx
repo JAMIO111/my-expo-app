@@ -1077,7 +1077,7 @@ const SubmitResultsScreen = () => {
               <View
                 style={{ borderRadius: 30 }}
                 className="border border-theme-gray-3 bg-bg-1/80 shadow-md backdrop-blur-lg">
-                <View className="gap-3 p-6">
+                <View className="gap-3 p-4">
                   {amendMode && (
                     <CTAButton
                       text="Submit Amendments"

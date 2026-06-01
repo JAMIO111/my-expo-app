@@ -1,9 +1,12 @@
-import { View, Text, Pressable } from 'react-native';
+import { View, Text, Pressable, Animated } from 'react-native';
 import { useRef } from 'react';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useUser } from '@contexts/UserProvider';
 import { useRouter } from 'expo-router';
+
+// ─── Helpers (unchanged) ──────────────────────────────────────────────────────
 
 export function formatFixtureDate(date) {
   if (!date) return '';
@@ -25,30 +28,35 @@ export function formatAgeRestrictions(minAge, maxAge) {
   if (!minAge && !maxAge) return '';
   if (minAge && maxAge) return `${minAge}–${maxAge}`;
   if (minAge) return `${minAge}+`;
-  if (maxAge) return `U${maxAge}`;
+  if (maxAge) return `Under ${maxAge}`;
 }
 
 export function getStatusColors(status) {
   switch (status) {
     case 'Eligible':
-      return { background: '#00800033', text: '#008000', border: '#00800066', accent: '#008000' };
+      return { background: '#00800033', text: '#4ade80', border: '#4ade8044', accent: '#4ade80' };
     case 'Ineligible':
-      return { background: '#FF000033', text: '#FF0000', border: '#FF000066', accent: '#FF0000' };
+      return { background: '#FF000022', text: '#f87171', border: '#f8717144', accent: '#f87171' };
     case 'Closed':
     case 'closed':
-      return { background: '#FF000033', text: '#FF0000', border: '#FF000066', accent: '#FF0000' };
+      return { background: '#FF000022', text: '#f87171', border: '#f8717144', accent: '#f87171' };
     case 'Entered':
-      return { background: '#00800033', text: '#008000', border: '#00800066', accent: '#008000' };
+      return { background: '#00800033', text: '#4ade80', border: '#4ade8044', accent: '#4ade80' };
     case 'active':
-      return { background: '#0000FF22', text: '#0000FF', border: '#0000FF66', accent: '#0000FF' };
+      return { background: '#3b82f622', text: '#60a5fa', border: '#60a5fa44', accent: '#60a5fa' };
     case 'upcoming':
-      return { background: '#FFA50022', text: '#ff9100', border: '#ff910066', accent: '#ff9100' };
+      return { background: '#f9731622', text: '#fb923c', border: '#fb923c44', accent: '#fb923c' };
     case 'Requested':
-      return { background: '#FFA50022', text: '#ff9100', border: '#ff910066', accent: '#ff9100' };
+      return { background: '#f9731622', text: '#fb923c', border: '#fb923c44', accent: '#fb923c' };
     case 'completed':
-      return { background: '#80008033', text: '#800080', border: '#80008066', accent: '#800080' };
+      return { background: '#a855f722', text: '#c084fc', border: '#c084fc44', accent: '#c084fc' };
     default:
-      return { background: '#00000033', text: '#000000', border: '#00000066', accent: '#000000' };
+      return {
+        background: '#ffffff11',
+        text: 'rgba(255,255,255,0.4)',
+        border: '#ffffff22',
+        accent: 'rgba(255,255,255,0.2)',
+      };
   }
 }
 
@@ -93,15 +101,9 @@ export const formatCompetitionType = (value) => {
     .join(' & ');
 };
 
-// ─── Gender icon helper ───────────────────────────────────────────────────────
-const GenderIcon = ({ gender }) => {
-  if (gender === 'male') return <Ionicons name="male" size={14} color="#0085E5" />;
-  if (gender === 'female') return <Ionicons name="female" size={14} color="#FF69B4" />;
-  return null;
-};
+// ─── Status badge ─────────────────────────────────────────────────────────────
 
-// ─── Pill chip ────────────────────────────────────────────────────────────────
-const Chip = ({ label, colors, icon }) => (
+const StatusBadge = ({ label, colors, iconName }) => (
   <View
     style={{
       backgroundColor: colors.background,
@@ -109,29 +111,50 @@ const Chip = ({ label, colors, icon }) => (
       borderWidth: 1,
       flexDirection: 'row',
       alignItems: 'center',
-      gap: 4,
+      gap: 5,
       borderRadius: 8,
       paddingHorizontal: 10,
-      paddingVertical: 3,
+      paddingVertical: 4,
     }}>
-    {icon}
-    <Text style={{ color: colors.text, fontFamily: 'Saira-Medium', fontSize: 13 }}>{label}</Text>
+    {iconName && <Ionicons name={iconName} size={13} color={colors.text} />}
+    <Text style={{ fontFamily: 'Saira_500Medium', fontSize: 12, color: colors.text }}>{label}</Text>
   </View>
 );
 
-// ─── Stat cell ────────────────────────────────────────────────────────────────
-const StatCell = ({ icon, label }) => (
-  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
+// ─── Footer stat pill ─────────────────────────────────────────────────────────
+
+const StatPill = ({ icon, label }) => (
+  <View
+    style={{
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 5,
+      backgroundColor: 'rgba(255,255,255,0.06)',
+      borderRadius: 8,
+      paddingHorizontal: 9,
+      paddingVertical: 4,
+      borderWidth: 1,
+      borderColor: 'rgba(255,255,255,0.06)',
+    }}>
     {icon}
-    <Text style={{ fontFamily: 'Saira', fontSize: 14, color: '#888', marginTop: 1 }}>{label}</Text>
+    <Text style={{ fontFamily: 'Saira_400Regular', fontSize: 12, color: 'rgba(255,255,255,0.55)' }}>
+      {label}
+    </Text>
   </View>
 );
 
 // ─── Main card ────────────────────────────────────────────────────────────────
+
 const CompetitionInstanceCard = ({ instance }) => {
   const hasNavigated = useRef(false);
+  const scale = useRef(new Animated.Value(1)).current;
   const router = useRouter();
   const { player, currentRole } = useUser();
+
+  const handlePressIn = () =>
+    Animated.spring(scale, { toValue: 0.98, useNativeDriver: true, speed: 50 }).start();
+  const handlePressOut = () =>
+    Animated.spring(scale, { toValue: 1, useNativeDriver: true, speed: 50 }).start();
 
   const statusColors = getStatusColors(instance.status);
   const eligibility = checkEligibility(player, instance, currentRole);
@@ -140,12 +163,8 @@ const CompetitionInstanceCard = ({ instance }) => {
   const showEligibility =
     (instance.status === 'upcoming' || eligibility === 'Entered') && currentRole?.type !== 'admin';
 
-  const activeCount = instance.CompetitionParticipants.filter(
-    (p) =>
-      p.status === 'active' ||
-      p.status === 'champion' ||
-      p.status === 'runner_up' ||
-      p.status === 'eliminated'
+  const activeCount = instance.CompetitionParticipants.filter((p) =>
+    ['active', 'champion', 'runner_up', 'eliminated'].includes(p.status)
   ).length;
 
   const competitorLabel =
@@ -154,125 +173,161 @@ const CompetitionInstanceCard = ({ instance }) => {
 
   const deadline = formatFixtureDate(instance?.entry_deadline);
 
+  const statusLabel = instance.status.charAt(0).toUpperCase() + instance.status.slice(1);
+
+  const eligibilityIcon =
+    eligibility === 'Ineligible' || eligibility === 'Closed'
+      ? 'close-circle-outline'
+      : eligibility === 'Entered'
+        ? 'checkmark-circle-outline'
+        : eligibility === 'Requested'
+          ? 'time-outline'
+          : 'checkmark-circle-outline';
+
   return (
-    <Pressable
-      onPress={() => {
-        if (hasNavigated.current) return;
-        hasNavigated.current = true;
-        setTimeout(() => {
-          hasNavigated.current = false;
-        }, 500);
-        router.push(`/competitions/${instance.id}`);
-      }}
-      key={instance.id}
-      className="overflow-hidden bg-bg-grouped-2 shadow-md"
-      style={{
-        borderTopLeftRadius: 8,
-        borderTopRightRadius: 8,
-        borderBottomLeftRadius: 10,
-        borderBottomRightRadius: 10,
-      }}>
-      {/* ── Coloured status accent bar ── */}
-      <View style={{ height: 8, backgroundColor: statusColors.accent, width: '100%' }} />
+    <Animated.View style={{ transform: [{ scale }] }}>
+      <Pressable
+        onPress={() => {
+          if (hasNavigated.current) return;
+          hasNavigated.current = true;
+          setTimeout(() => {
+            hasNavigated.current = false;
+          }, 500);
+          router.push(`/competitions/${instance.id}`);
+        }}
+        onPressIn={handlePressIn}
+        onPressOut={handlePressOut}
+        style={{
+          borderRadius: 16,
+          overflow: 'hidden',
+          borderWidth: 1,
+          borderColor: 'rgba(255,255,255,0.07)',
+        }}>
+        {/* ── Top accent bar (status colour) ── */}
+        <View style={{ height: 8, backgroundColor: statusColors.accent, width: '100%' }} />
 
-      <View className="p-4">
-        {/* ── Header row: name + eligibility badge ── */}
-        <View
-          style={{
-            flexDirection: 'row',
-            alignItems: 'flex-start',
-            justifyContent: 'space-between',
-            gap: 8,
-          }}>
-          <View style={{ flex: 1 }}>
-            <Text className="font-saira-semibold text-2xl text-text-1" numberOfLines={2}>
-              {instance.name}
-            </Text>
-            <Text className="font-saira text-base text-text-2" style={{ marginTop: 2 }}>
-              {competitorLabel} · {formatCompetitionType(instance.competition.competition_type)}
-            </Text>
-          </View>
-
-          {/* Eligibility badge — top-right, no longer absolutely positioned */}
-          {showEligibility && (
-            <View
-              style={{
-                backgroundColor: eligibilityColors.background,
-                borderColor: eligibilityColors.border,
-                borderWidth: 1,
-                flexDirection: 'row',
-                alignItems: 'center',
-                gap: 4,
-                borderRadius: 10,
-                paddingHorizontal: 10,
-                paddingVertical: 4,
-                flexShrink: 0,
-              }}>
-              <Ionicons
-                name={
-                  eligibility === 'Ineligible' || eligibility === 'Closed'
-                    ? 'close-circle-outline'
-                    : 'checkmark-circle-outline'
-                }
-                size={14}
-                color={eligibilityColors.text}
-              />
+        {/* ── Header gradient ── */}
+        <LinearGradient
+          colors={['#1a2a1a', '#111a11']}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={{ paddingHorizontal: 16, paddingTop: 16, paddingBottom: 14 }}>
+          {/* Name row */}
+          <View
+            style={{
+              flexDirection: 'row',
+              alignItems: 'flex-start',
+              justifyContent: 'space-between',
+              gap: 10,
+              marginBottom: 10,
+            }}>
+            <View style={{ flex: 1 }}>
               <Text
-                style={{ color: eligibilityColors.text, fontFamily: 'Saira-Medium', fontSize: 13 }}>
-                {eligibility}
+                style={{
+                  fontFamily: 'Saira_700Bold',
+                  fontSize: 20,
+                  color: '#fff',
+                  marginBottom: 3,
+                }}
+                numberOfLines={2}>
+                {instance.name}
+              </Text>
+              <Text
+                style={{
+                  fontFamily: 'Saira_400Regular',
+                  fontSize: 13,
+                  color: 'rgba(255,255,255,0.4)',
+                  letterSpacing: 0.3,
+                }}>
+                {competitorLabel} · {formatCompetitionType(instance.competition.competition_type)}
               </Text>
             </View>
-          )}
-        </View>
 
-        {/* ── Chips row: status + division ── */}
-        <View style={{ flexDirection: 'row', gap: 8, marginTop: 14, flexWrap: 'wrap' }}>
-          <Chip
-            label={instance.status.charAt(0).toUpperCase() + instance.status.slice(1)}
-            colors={statusColors}
-          />
-          {instance.division && (
-            <Chip
-              label={instance.division.name}
-              colors={{ background: '#8888880F', border: '#88888833', text: '#666' }}
+            {/* Eligibility badge */}
+            {showEligibility && (
+              <StatusBadge
+                label={eligibility}
+                colors={eligibilityColors}
+                iconName={eligibilityIcon}
+              />
+            )}
+          </View>
+
+          {/* Status + division chips */}
+          <View style={{ flexDirection: 'row', gap: 8, flexWrap: 'wrap' }}>
+            <StatusBadge label={statusLabel} colors={statusColors} />
+            {instance.division && (
+              <View
+                style={{
+                  backgroundColor: 'rgba(255,255,255,0.06)',
+                  borderColor: 'rgba(255,255,255,0.1)',
+                  borderWidth: 1,
+                  borderRadius: 8,
+                  paddingHorizontal: 10,
+                  paddingVertical: 4,
+                }}>
+                <Text
+                  style={{
+                    fontFamily: 'Saira_500Medium',
+                    fontSize: 12,
+                    color: 'rgba(255,255,255,0.5)',
+                  }}>
+                  {instance.division.name}
+                </Text>
+              </View>
+            )}
+          </View>
+        </LinearGradient>
+
+        {/* ── Footer stats row ── */}
+        <LinearGradient
+          colors={['#0f160f', '#0c130c']}
+          style={{
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            paddingHorizontal: 12,
+            paddingVertical: 10,
+            borderTopWidth: 1,
+            borderTopColor: 'rgba(255,255,255,0.05)',
+          }}>
+          {/* Left cluster */}
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+            <StatPill
+              icon={<Ionicons name="people-outline" size={14} color="rgba(255,255,255,0.45)" />}
+              label={String(activeCount)}
             />
-          )}
-        </View>
-      </View>
+            {(instance.max_age || instance.min_age) && (
+              <StatPill
+                icon={
+                  <MaterialCommunityIcons
+                    name="cake-variant-outline"
+                    size={14}
+                    color="rgba(255,255,255,0.45)"
+                  />
+                }
+                label={formatAgeRestrictions(instance?.min_age, instance?.max_age)}
+              />
+            )}
+            {instance.gender === 'male' && (
+              <StatPill icon={<Ionicons name="male" size={14} color="#60a5fa" />} label="Male" />
+            )}
+            {instance.gender === 'female' && (
+              <StatPill
+                icon={<Ionicons name="female" size={14} color="#f9a8d4" />}
+                label="Female"
+              />
+            )}
+          </View>
 
-      {/* ── Footer stats row ── */}
-      <View
-        className="border-t border-theme-gray-4"
-        style={{
-          flexDirection: 'row',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          paddingHorizontal: 16,
-          paddingVertical: 10,
-        }}>
-        {/* Left cluster: participants, gender, age */}
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 14 }}>
-          <StatCell
-            icon={<Ionicons name="people-outline" size={16} color="#888" />}
-            label={String(activeCount)}
+          {/* Right: deadline */}
+          <StatPill
+            icon={<Ionicons name="calendar-outline" size={14} color="rgba(255,255,255,0.45)" />}
+            label={deadline || 'No Deadline'}
           />
-          {instance.gender === 'male' && <Ionicons name="male" size={16} color="#0085E5" />}
-          {instance.gender === 'female' && <Ionicons name="female" size={16} color="#FF69B4" />}
-          {(instance.max_age || instance.min_age) && (
-            <StatCell
-              icon={<MaterialCommunityIcons name="cake-variant-outline" size={16} color="#888" />}
-              label={formatAgeRestrictions(instance?.min_age, instance?.max_age)}
-            />
-          )}
-        </View>
-
-        {/* Right: deadline */}
-        <StatCell
-          icon={<Ionicons name="calendar-outline" size={16} color="#888" />}
-          label={deadline || 'No Deadline'}
-        />
-      </View>
-    </Pressable>
+        </LinearGradient>
+      </Pressable>
+    </Animated.View>
   );
 };
 

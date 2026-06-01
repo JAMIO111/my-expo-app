@@ -45,11 +45,38 @@ const index = () => {
       />
       <SafeViewWrapper bottomColor="bg-brand" topColor="bg-brand">
         <ScrollView
-          contentContainerStyle={{ display: 'flex', flexGrow: 1, gap: 20, paddingVertical: 20 }}
-          className="mt-16 flex-1 bg-brand px-4">
+          contentContainerStyle={{ display: 'flex', flexGrow: 1, gap: 30, paddingVertical: 20 }}
+          className="mt-16 flex-1 bg-bg-1 px-4">
+          {currentRole?.type !== 'admin' && (
+            <Pressable
+              onPress={() => {
+                if (hasNavigated.current) return;
+                hasNavigated.current = true;
+                setTimeout(() => {
+                  hasNavigated.current = false;
+                }, 500);
+                router.push('/competitions/team-management');
+              }}>
+              <View className="flex-1 flex-row gap-8 rounded-2xl bg-brand p-4 shadow-sm">
+                <View className="flex-1">
+                  <Text className="font-saira-medium text-xl text-text-on-brand">
+                    Competition Team Management
+                  </Text>
+                  <Text className="mt-2 font-saira text-sm text-text-on-brand-2">
+                    Manage your existing teams and form new competition teams by inviting players to
+                    join your doubles or trebles lineup.
+                  </Text>
+                </View>
+                <Ionicons name="people" size={40} color="#FFFFFF66" />
+                <View className="absolute bottom-6 right-4">
+                  <Ionicons name="chevron-forward" size={26} color="#FFFFFFBB" />
+                </View>
+              </View>
+            </Pressable>
+          )}
           {activeCompetitions?.length > 0 && (
             <View>
-              <Text className="mb-2 px-1 font-saira-medium text-2xl text-text-on-brand">
+              <Text className="mb-2 px-1 font-saira-medium text-2xl text-text-1">
                 Active Competitions
               </Text>
               <View className="gap-4">
@@ -61,7 +88,7 @@ const index = () => {
           )}
           {upcomingCompetitions?.length > 0 && (
             <View>
-              <Text className="mb-2 px-1 font-saira-medium text-2xl text-text-on-brand">
+              <Text className="mb-2 px-1 font-saira-medium text-2xl text-text-1">
                 Upcoming Competitions
               </Text>
               <View className="gap-4">
@@ -73,7 +100,7 @@ const index = () => {
           )}
           {completedCompetitions?.length > 0 && (
             <View>
-              <Text className="mb-2 px-1 font-saira-medium text-2xl text-text-on-brand">
+              <Text className="mb-2 px-1 font-saira-medium text-2xl text-text-1">
                 Completed Competitions
               </Text>
               <View className="gap-4">
@@ -85,7 +112,7 @@ const index = () => {
           )}
           {currentRole?.type === 'admin' && (
             <View className="gap-2">
-              <Heading text="Competition Tools" className="text-text-on-brand" />
+              <Heading text="Competition Admin Tools" className="text-text-1" />
               <View className="gap-4">
                 <Pressable
                   onPress={() => {
@@ -96,7 +123,7 @@ const index = () => {
                     }, 500); // Reset navigation state after 500ms
                     router.push('/competitions/create-blueprint');
                   }}
-                  className="flex-1 flex-row gap-8 rounded-2xl bg-bg-1 p-4">
+                  className="flex-1 flex-row gap-8 rounded-2xl bg-bg-2 p-4 shadow-sm">
                   <View className="flex-1">
                     <Text className="font-saira-medium text-xl text-text-1">Create Blueprint</Text>
                     <Text className="text-md mt-2 font-saira text-text-2">
@@ -115,7 +142,7 @@ const index = () => {
                       }, 500); // Reset navigation state after 500ms
                       router.push('/competitions/initiate-competition');
                     }}
-                    className="flex-1 flex-row gap-8 rounded-2xl bg-bg-1 p-4">
+                    className="flex-1 flex-row gap-8 rounded-2xl bg-bg-2 p-4 shadow-sm">
                     <View className="flex-1">
                       <Text className="font-saira-medium text-xl text-text-1">
                         Initiate Competition

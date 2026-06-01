@@ -27,6 +27,7 @@ const SearchResultsOverlay = ({ searchActive, searchQuery, sendJoinRequest }) =>
           `id, display_name, abbreviation, crest, division:Divisions(name, district:Districts(name))`
         )
         .or(`display_name.ilike.%${searchQuery}%,abbreviation.ilike.%${searchQuery}%`)
+        .is('parent_team_id', null)
         .limit(50);
 
       if (error) {

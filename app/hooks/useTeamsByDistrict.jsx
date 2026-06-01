@@ -9,6 +9,7 @@ export const useTeamsByDistrict = (districtId) => {
       .from('Teams')
       .select('*, division(id, name)')
       .eq('district', districtId)
+      .is('parent_team_id', null)
       .order('display_name', { ascending: true });
     if (error) {
       throw new Error(error.message);

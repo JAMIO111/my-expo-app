@@ -120,7 +120,7 @@ const index = () => {
 
     if (isAdmin) return true;
 
-    const publicStatuses = ['active', 'eliminated', 'champion'];
+    const publicStatuses = ['active', 'eliminated', 'champion', 'runner_up'];
 
     return publicStatuses.includes(p.status) || (p.status === 'requested' && isOwn);
   });
@@ -712,7 +712,8 @@ const index = () => {
                                 Requested
                               </Text>
                             )}
-                            {((isMyTeam && currentRole.team?.captain === player.id) || isMe) &&
+                            {competitionInstance?.status !== 'completed' &&
+                              ((isMyTeam && currentRole.team?.captain === player.id) || isMe) &&
                               !isAdmin && (
                                 <Pressable
                                   onPress={() => {

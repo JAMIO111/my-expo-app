@@ -13,8 +13,8 @@ const fmt = (dateStr) => {
 };
 
 const positionLabel = (result) => {
-  if (result === '1') return { label: 'Winners', icon: 'trophy', color: '#F5C842' };
-  if (result === '2') return { label: 'Runners Up', icon: 'medal', color: '#C0C0C0' };
+  if (result === '1') return { label: 'Winner', icon: 'trophy', color: '#F5C842' };
+  if (result === '2') return { label: 'Runner Up', icon: 'medal', color: '#C0C0C0' };
   return { label: 'Participant', icon: 'ribbon', color: '#CD7F32' };
 };
 

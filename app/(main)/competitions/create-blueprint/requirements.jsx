@@ -21,6 +21,7 @@ const Requirements = () => {
   const [maxAge, setMaxAge] = useState('');
   const [gender, setGender] = useState('');
   const [division, setDivision] = useState(null);
+  const [maxTeamSize, setMaxTeamSize] = useState('');
 
   console.log('Selected Division:', division);
 
@@ -60,6 +61,14 @@ const Requirements = () => {
       });
       return;
     }
+    if (competitorType === 'team' && (!maxTeamSize || parseInt(maxTeamSize) < 2)) {
+      Toast.show({
+        type: 'info',
+        text1: 'Invalid Team Size',
+        text2: 'Please enter a valid maximum team size (at least 2).',
+      });
+      return;
+    }
     router.push({
       pathname: '/competitions/create-blueprint/create-competition-rules',
       params: {
@@ -68,6 +77,7 @@ const Requirements = () => {
         compName,
         minAge,
         maxAge,
+        maxTeamSize: competitorType === 'team' ? maxTeamSize : null,
         gender,
         division,
       },
@@ -146,6 +156,24 @@ const Requirements = () => {
               singles will come under team.
             </Text>
           </View>
+          {competitorType === 'team' && (
+            <View className="gap-3">
+              <View className="flex-row gap-5">
+                <View className="flex-1">
+                  <CustomTextInput
+                    title="Maximum Team Size"
+                    value={maxTeamSize}
+                    onChangeText={setMaxTeamSize}
+                    keyboardType="numeric"
+                    placeholder="e.g. 3"
+                    leftIconName="people"
+                    iconColor="#FFA500"
+                    clearButtonMode="never"
+                  />
+                </View>
+              </View>
+            </View>
+          )}
           <View className="gap-3">
             <View className="flex-row gap-5">
               <View className="flex-1">

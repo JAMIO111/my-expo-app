@@ -11,12 +11,13 @@ import {
   Keyboard,
 } from 'react-native';
 import Ionicons from '@expo/vector-icons/Ionicons';
+import Avatar from './Avatar';
 
 const SHEET_HEIGHT = 480;
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
 /* ─── Option row ─────────────────────────────────────────────── */
-const OptionRow = ({ item, isSelected, onPress, index }) => {
+const OptionRow = ({ item, isSelected, onPress, index, multiSelect, showAvatar = false }) => {
   const scale = useRef(new Animated.Value(1)).current;
   const opacity = useRef(new Animated.Value(0)).current;
 
@@ -44,6 +45,7 @@ const OptionRow = ({ item, isSelected, onPress, index }) => {
         className={`mb-1.5 flex-row items-center gap-3 rounded-xl border-2 px-4 py-3 shadow-sm ${
           isSelected ? 'border-brand bg-bg-2' : 'border-transparent bg-bg-2'
         }`}>
+        {showAvatar && <Avatar player={item} size={38} />}
         <View className="flex-1">
           <Text
             className={`text-xl ${
@@ -54,12 +56,14 @@ const OptionRow = ({ item, isSelected, onPress, index }) => {
           {item.subLabel && <Text className="font-saira-medium text-text-2">{item.subLabel}</Text>}
         </View>
 
-        {/* Checkmark circle */}
+        {/* Checkmark — square for multi, circle for single */}
         <View
-          className={`h-8 w-8 items-center justify-center rounded-full ${
-            isSelected ? 'bg-brand' : 'border border-theme-gray-3 bg-transparent'
-          }`}>
-          {isSelected && <Ionicons name="checkmark" size={18} color="#fff" />}
+          className={`items-center justify-center ${
+            multiSelect ? 'h-8 w-8 rounded-lg' : 'h-8 w-8 rounded-full'
+          } ${isSelected ? 'bg-brand' : 'border border-theme-gray-3 bg-transparent'}`}>
+          {isSelected && (
+            <Ionicons name={multiSelect ? 'checkmark' : 'checkmark'} size={18} color="#fff" />
+          )}
         </View>
       </TouchableOpacity>
     </Animated.View>
@@ -71,14 +75,21 @@ const CustomDropdown = ({
   title,
   titleColor = 'text-text-on-brand',
   placeholder = 'Select option',
+  // Single-select
   value,
-  options = [],
   onChange,
+  // Multi-select
+  multiSelect = false,
+  values = [], // selected values array when multiSelect=true
+  onChangeMulti, // (newValuesArray) => void
+  // Shared
+  options = [],
   leftIconName,
   leftIconSize = 24,
   iconColor = '#9CA3AF',
   disabled = false,
   searchable = true,
+  showAvatar = false,
 }) => {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState('');
@@ -87,7 +98,10 @@ const CustomDropdown = ({
   const backdropOpacity = useRef(new Animated.Value(0)).current;
   const triggerScale = useRef(new Animated.Value(1)).current;
 
+  // Derived display values
   const selectedLabel = options.find((o) => o.value === value)?.label;
+  const selectedCount = values.length;
+
   const filtered = query.trim()
     ? options.filter(
         (o) =>
@@ -134,9 +148,32 @@ const CustomDropdown = ({
   }, []);
 
   const handleSelect = (itemValue) => {
-    onChange(itemValue === value ? null : itemValue);
-    closeSheet();
+    if (multiSelect) {
+      // Toggle in/out of array
+      const next = values.includes(itemValue)
+        ? values.filter((v) => v !== itemValue)
+        : [...values, itemValue];
+      onChangeMulti?.(next);
+      // Don't close — let user keep picking
+    } else {
+      onChange(itemValue === value ? null : itemValue);
+      closeSheet();
+    }
   };
+
+  const handleClearAll = () => onChangeMulti?.([]);
+
+  const isSelected = (itemValue) =>
+    multiSelect ? values.includes(itemValue) : itemValue === value;
+
+  // Trigger label
+  const triggerLabel = multiSelect
+    ? selectedCount > 0
+      ? `${selectedCount} selected`
+      : placeholder
+    : (selectedLabel ?? placeholder);
+
+  const hasValue = multiSelect ? selectedCount > 0 : !!value;
 
   return (
     <View>
@@ -167,13 +204,30 @@ const CustomDropdown = ({
         <Text
           numberOfLines={1}
           className={`flex-1 pl-3 pr-2 font-saira text-xl ${
-            value ? 'font-saira-medium text-text-1' : 'text-gray-400'
+            hasValue ? 'font-saira-medium text-text-1' : 'text-gray-400'
           }`}>
-          {selectedLabel ?? placeholder}
+          {triggerLabel}
         </Text>
 
-        {/* Clear button when value is selected */}
-        {value && (
+        {/* Multi: count badge + clear */}
+        {multiSelect && selectedCount > 0 && (
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+            <View className="rounded-lg bg-brand px-2 py-1">
+              <Text className="font-saira-semibold text-xs text-white">{selectedCount}</Text>
+            </View>
+            <TouchableOpacity
+              onPress={(e) => {
+                e.stopPropagation();
+                handleClearAll();
+              }}
+              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
+              <Ionicons name="close-circle" size={22} color="#9CA3AF" />
+            </TouchableOpacity>
+          </View>
+        )}
+
+        {/* Single: clear button */}
+        {!multiSelect && value && (
           <TouchableOpacity
             onPress={(e) => {
               e.stopPropagation();
@@ -197,7 +251,6 @@ const CustomDropdown = ({
           <Animated.View
             style={{ transform: [{ translateY: slideY }], maxHeight: SHEET_HEIGHT }}
             className="overflow-hidden rounded-t-3xl border border-b-0 border-theme-gray-3 bg-bg-1">
-            {/* Stop tap-through to backdrop */}
             <Pressable onPress={(e) => e.stopPropagation()}>
               {/* Handle bar */}
               <View className="items-center pb-1 pt-3">
@@ -209,14 +262,29 @@ const CustomDropdown = ({
                 <Text className="flex-1 font-saira-medium text-xl text-text-1">
                   {title || 'Choose an option'}
                 </Text>
-                <TouchableOpacity
-                  onPress={closeSheet}
-                  className="h-8 w-8 items-center justify-center rounded-full bg-bg-grouped-1">
-                  <Ionicons name="close" size={18} color="#9CA3AF" />
-                </TouchableOpacity>
+
+                {/* Multi: "X selected" count + clear all */}
+                {multiSelect && selectedCount > 0 && (
+                  <TouchableOpacity onPress={handleClearAll} className="mr-3">
+                    <Text className="font-saira-medium text-sm text-brand">Clear all</Text>
+                  </TouchableOpacity>
+                )}
+
+                {/* Multi: Done button instead of just close */}
+                {multiSelect ? (
+                  <TouchableOpacity onPress={closeSheet} className="rounded-lg bg-brand px-4 py-2">
+                    <Text className="font-saira-semibold text-sm text-white">Done</Text>
+                  </TouchableOpacity>
+                ) : (
+                  <TouchableOpacity
+                    onPress={closeSheet}
+                    className="h-8 w-8 items-center justify-center rounded-full bg-bg-grouped-1">
+                    <Ionicons name="close" size={18} color="#9CA3AF" />
+                  </TouchableOpacity>
+                )}
               </View>
 
-              {/* Search bar — only shown when searchable and enough options */}
+              {/* Search bar */}
               {searchable && options.length > 4 && (
                 <View className="mx-3 mb-1 mt-3 h-12 flex-row items-center rounded-xl border border-theme-gray-3 bg-input-background px-3">
                   <Ionicons name="search" size={16} color="#9CA3AF" style={{ marginRight: 8 }} />
@@ -255,8 +323,10 @@ const CustomDropdown = ({
                 <OptionRow
                   item={item}
                   index={index}
-                  isSelected={item.value === value}
+                  isSelected={isSelected(item.value)}
                   onPress={() => handleSelect(item.value)}
+                  multiSelect={multiSelect}
+                  showAvatar={showAvatar}
                 />
               )}
             />

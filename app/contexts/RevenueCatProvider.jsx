@@ -27,6 +27,7 @@ import React, {
 } from 'react';
 import { Platform } from 'react-native';
 import Purchases, { LOG_LEVEL } from 'react-native-purchases';
+import { useUser } from '@contexts/UserProvider';
 
 // ─── Context ──────────────────────────────────────────────────────────────────
 
@@ -40,7 +41,6 @@ RevenueCatContext.displayName = 'RevenueCatContext';
  * @param {string}   props.apiKey            RevenueCat API key for the current platform
  * @param {string}   [props.iosApiKey]       If you pass both keys the provider picks automatically
  * @param {string}   [props.androidApiKey]   Same as above
- * @param {string}   [props.appUserId]       Identify the user on init; omit for anonymous
  * @param {boolean}  [props.debug]           Enables verbose RC logging in dev
  * @param {function} [props.onCustomerInfoChange]
  * @param {function} [props.onError]
@@ -50,18 +50,19 @@ export function RevenueCatProvider({
   apiKey,
   iosApiKey,
   androidApiKey,
-  appUserId,
   debug = __DEV__,
   onCustomerInfoChange,
   onError,
   children,
 }) {
+  const listenerRef = useRef(null);
   const [isReady, setIsReady] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const [customerInfo, setCustomerInfo] = useState(null);
   const [offerings, setOfferings] = useState(null);
-  const [userId, setUserId] = useState(appUserId ?? null);
+  const { user } = useUser();
+  const [userId, setUserId] = useState(user?.id ?? null);
 
   // Prevent double-init (React Strict Mode / Fast Refresh)
   const initDoneRef = useRef(false);
@@ -100,7 +101,6 @@ export function RevenueCatProvider({
           Purchases.setLogLevel(LOG_LEVEL.DEBUG);
         }
 
-        // Resolve the correct API key
         const resolvedKey =
           iosApiKey && androidApiKey
             ? Platform.select({ ios: iosApiKey, android: androidApiKey })
@@ -112,19 +112,14 @@ export function RevenueCatProvider({
           );
         }
 
-        // Configure — optionally with an identified user ID
-        if (appUserId) {
-          await Purchases.configure({ apiKey: resolvedKey, appUserID: appUserId });
-        } else {
-          await Purchases.configure({ apiKey: resolvedKey });
-        }
+        // Always configure anonymously — identification happens in the effect below
+        await Purchases.configure({ apiKey: resolvedKey });
 
-        // Real-time listener: fires whenever entitlements / purchase state changes
-        Purchases.addCustomerInfoUpdateListener((info) => {
+        listenerRef.current = (info) => {
           if (!cancelled) applyCustomerInfo(info);
-        });
+        };
+        Purchases.addCustomerInfoUpdateListener(listenerRef.current);
 
-        // Fetch initial CustomerInfo
         const info = await Purchases.getCustomerInfo();
         const currentUserId = await Purchases.getAppUserID();
 
@@ -142,13 +137,23 @@ export function RevenueCatProvider({
 
     return () => {
       cancelled = true;
-      // Remove all listeners on unmount
-      Purchases.removeCustomerInfoUpdateListener(() => {});
-      // Note: react-native-purchases has no explicit close() on RN;
-      // listener removal is sufficient.
+      if (listenerRef.current) {
+        Purchases.removeCustomerInfoUpdateListener(listenerRef.current);
+      }
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // ── Identify / deidentify when auth state changes ─────────────────────────────
+  useEffect(() => {
+    if (!isReady) return;
+
+    if (user?.id) {
+      logIn(user.id);
+    } else {
+      logOut();
+    }
+  }, [user?.id, isReady]);
 
   // ── Entitlement check ─────────────────────────────────────────────────────────
 
@@ -268,10 +273,11 @@ export function RevenueCatProvider({
       const appUserId = await Purchases.getAppUserID();
       const isAnonymous = await Purchases.isAnonymous();
 
+      let info = null;
       if (!isAnonymous) {
-        const info = await Purchases.logOut();
+        info = await Purchases.logOut();
+        applyCustomerInfo(info);
       }
-      applyCustomerInfo(info);
       const anonId = await Purchases.getAppUserID();
       setUserId(anonId);
       return info;
@@ -315,9 +321,6 @@ export function RevenueCatProvider({
 
   // ── Context value (memoised to avoid unnecessary re-renders) ──────────────────
 
-  const isPro = !!customerInfo?.entitlements?.active?.isPro;
-  const isCore = !!customerInfo?.entitlements?.active?.isCore;
-
   const value = useMemo(
     () => ({
       // State
@@ -328,8 +331,8 @@ export function RevenueCatProvider({
       offerings,
       userId,
       // Entitlements
-      isPro,
-      isCore,
+      isPro: !!customerInfo?.entitlements?.active?.isPro,
+      isCore: !!customerInfo?.entitlements?.active?.isCore,
       // Actions
       fetchOfferings,
       purchasePackage,
@@ -348,8 +351,6 @@ export function RevenueCatProvider({
       customerInfo,
       offerings,
       userId,
-      isPro,
-      isCore,
       fetchOfferings,
       purchasePackage,
       purchaseStoreProduct,
@@ -361,13 +362,6 @@ export function RevenueCatProvider({
       clearError,
     ]
   );
-
-  console.log('RevenueCat Offereings:', offerings);
-  console.log('RevenueCat User ID:', userId);
-  console.log('RevenueCat CustomerInfo:', customerInfo);
-  console.log('RevenueCat Error:', error);
-  console.log('RevenueCat isPro:', isPro);
-  console.log('RevenueCat isCore:', isCore);
 
   return <RevenueCatContext.Provider value={value}>{children}</RevenueCatContext.Provider>;
 }

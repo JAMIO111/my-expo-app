@@ -25,6 +25,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import BottomSheetModal from '@components/BottomSheetModal';
 import { useRevenueCat } from '@contexts/RevenueCatProvider';
 import { isCallOrNewExpression } from 'typescript';
+import { useNotificationsPanel } from '@contexts/NotificationsPanelProvider';
 
 const Home = () => {
   const { isPro, isCore } = useRevenueCat();
@@ -248,7 +249,7 @@ const Home = () => {
           options={{
             header: () => (
               <SafeViewWrapper useBottomInset={false}>
-                <BrandHeader />
+                <BrandHeader showNotification />
               </SafeViewWrapper>
             ),
           }}

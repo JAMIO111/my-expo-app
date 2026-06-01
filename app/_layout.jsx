@@ -17,6 +17,7 @@ import { UserProvider } from '@contexts/UserProvider';
 import { AdminProvider } from '@contexts/AdminContext';
 import AppRealtimeProvider from '@contexts/AppRealtimeProvider';
 import RevenueCatProvider from '@contexts/RevenueCatProvider';
+import { NotificationsPanelProvider } from '@contexts/NotificationsPanelProvider';
 
 export default function RootLayout() {
   const [fontsLoaded] = useFonts({
@@ -52,16 +53,18 @@ export default function RootLayout() {
               iosApiKey="appl_DQoRBoSRUxeKJVXLtoWXeWeNGCn"
               androidApiKey="goog_yTNNoAuahqqKnkHPLDcDmmaPrXG">
               <AppRealtimeProvider>
-                <View className={`flex-1 bg-brand`}>
-                  <Slot />
-                </View>
-                <Toast
-                  config={toastConfig}
-                  position="top"
-                  visibilityTime={5000}
-                  autoHide={true}
-                  topOffset={80}
-                />
+                <NotificationsPanelProvider>
+                  <View className={`flex-1 bg-brand`}>
+                    <Slot />
+                  </View>
+                  <Toast
+                    config={toastConfig}
+                    position="top"
+                    visibilityTime={5000}
+                    autoHide={true}
+                    topOffset={80}
+                  />
+                </NotificationsPanelProvider>
               </AppRealtimeProvider>
             </RevenueCatProvider>
           </AdminProvider>
