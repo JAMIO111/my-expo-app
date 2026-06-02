@@ -73,7 +73,7 @@ const FramesList = ({ fixtureId }) => {
                   <Text className="font-saira-bold text-[10px] uppercase text-black">Doubles</Text>
                 </View>
               )}
-              {f.is_bonus_frame && (
+              {f.bonus_frame && (
                 <View className="rounded bg-theme-yellow px-2 py-0.5">
                   <Text className="font-saira-bold text-[10px] uppercase text-black">
                     Bonus Frame

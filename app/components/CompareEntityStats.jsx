@@ -135,7 +135,7 @@ export default function CompareTeamStats() {
                 ]}
               />
               <View className="overflow-hidden rounded-2xl">
-                <ProGate>
+                <ProGate justifyContent="flex-start">
                   <CompareTeamStatsRows team1Stats={stats1} team2Stats={stats2} context={view} />
                 </ProGate>
               </View>

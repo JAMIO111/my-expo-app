@@ -20,6 +20,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import BottomSheetModal from '@components/BottomSheetModal';
 import SelectStatMenu from './SelectStatMenu';
 import PlayerProfileHeader from './PlayerProfileHeader';
+import FloatingBottomSheet from './FloatingBottomSheet';
 
 const PlayerProfile = ({ context, isLoading, playerProfile, error }) => {
   const router = useRouter();
@@ -30,6 +31,7 @@ const PlayerProfile = ({ context, isLoading, playerProfile, error }) => {
   const [captainModalVisible, setCaptainModalVisible] = useState(false);
   const [viceCaptainModalVisible, setViceCaptainModalVisible] = useState(false);
   const [removePlayerModalVisible, setRemovePlayerModalVisible] = useState(false);
+  const [modalVisible, setModalVisible] = useState(false);
   const { refetch, loading, currentRole, player } = useUser();
   const {
     data: playerStats,
@@ -39,6 +41,7 @@ const PlayerProfile = ({ context, isLoading, playerProfile, error }) => {
   const EMPTY_SLOTS = [null, null, null, null];
   const [statSlots, setStatSlots] = useState(EMPTY_SLOTS);
   const [editingSlotIndex, setEditingSlotIndex] = useState(null);
+  const [modalConfig, setModalConfig] = useState(null);
   const [statModalVisible, setStatModalVisible] = useState(false);
   const {
     data: playerAwards,
@@ -270,6 +273,32 @@ const PlayerProfile = ({ context, isLoading, playerProfile, error }) => {
     }
   };
 
+  const openConfirmModal = (title, message, confirmText, confirmType, confirmFn) => {
+    setModalConfig({
+      title: title,
+      message: message,
+      topButtonText: 'Cancel',
+      topButtonType: 'default',
+      bottomButtonText: confirmText,
+      bottomButtonType: confirmType,
+
+      bottomButtonFn: () => {
+        if (!modalConfig) return;
+        confirmFn();
+        setModalConfig(null);
+      },
+    });
+    setModalVisible(true);
+  };
+
+  const handleAnimationEnd = () => {
+    setModalConfig(null);
+  };
+
+  const closeModal = () => {
+    setModalVisible(false);
+  };
+
   return (
     <>
       <ScrollView
@@ -352,25 +381,32 @@ const PlayerProfile = ({ context, isLoading, playerProfile, error }) => {
             />
           </View>
         </View>
-        <View className="mt-1 w-full bg-bg-grouped-2 px-4 py-8">
-          <TrophyCabinet trophies={trophies || []} />
+        <View className="mt-1 w-full gap-3 bg-bg-grouped-2 px-4 pb-8 pt-4">
+          <Heading text="Trophy Cabinet" />
+          <TrophyCabinet
+            trophies={trophies || []}
+            displayName={`${playerProfile?.first_name} ${playerProfile?.surname}`}
+            establishedYear={
+              playerProfile?.created_at ? new Date(playerProfile.created_at).getFullYear() : '2025'
+            }
+          />
         </View>
         <View className="mt-1 w-full gap-6 bg-bg-grouped-2 px-6 py-8">
           {!isMe && iAmCaptain && inMyTeam && (
             <>
               <CTAButton
                 type="yellow"
-                callbackFn={() => setCaptainModalVisible(true)}
+                callbackFn={() =>
+                  openConfirmModal(
+                    'Transfer Captaincy?',
+                    `Are you sure you want to make ${playerProfile?.nickname || `${playerProfile?.first_name} ${playerProfile?.surname}`} the team captain? You will lose your captaincy and all associated privileges.`,
+                    'Make Team Captain',
+                    'success',
+                    handleConfirmTransferCaptaincy
+                  )
+                }
                 text="Make Team Captain"
                 icon={<Ionicons name="shield-checkmark-outline" size={20} color="black" />}
-              />
-              <ConfirmModal
-                type="success"
-                visible={captainModalVisible}
-                onConfirm={handleConfirmTransferCaptaincy}
-                onCancel={handleCancel}
-                title="Transfer Captaincy?"
-                message={`Are you sure you want to make ${playerProfile?.nickname || `${playerProfile?.first_name} ${playerProfile?.surname}`} the team captain? You will no longer be captain.`}
               />
             </>
           )}
@@ -382,17 +418,17 @@ const PlayerProfile = ({ context, isLoading, playerProfile, error }) => {
               <>
                 <CTAButton
                   type="brand"
-                  callbackFn={() => setViceCaptainModalVisible(true)}
+                  callbackFn={() =>
+                    openConfirmModal(
+                      'Transfer Vice Captaincy?',
+                      `Are you sure you want to make ${playerProfile?.nickname || `${playerProfile?.first_name} ${playerProfile?.surname}`} the vice captain?`,
+                      'Make Vice Captain',
+                      'success',
+                      handleConfirmTransferViceCaptaincy
+                    )
+                  }
                   text="Make Vice Captain"
                   icon={<Ionicons name="shield-checkmark-outline" size={20} color="white" />}
-                />
-                <ConfirmModal
-                  type="success"
-                  visible={viceCaptainModalVisible}
-                  onConfirm={handleConfirmTransferViceCaptaincy}
-                  onCancel={handleCancel}
-                  title="Transfer Vice Captaincy?"
-                  message={`Are you sure you want to make ${playerProfile?.nickname || `${playerProfile?.first_name} ${playerProfile?.surname}`} the vice captain? You will no longer be vice captain.`}
                 />
               </>
             )}
@@ -413,7 +449,16 @@ const PlayerProfile = ({ context, isLoading, playerProfile, error }) => {
                           },
                         });
                       }
-                    : () => setRemovePlayerModalVisible(true)
+                    : () =>
+                        openConfirmModal(
+                          isMe ? 'Leave Team?' : 'Remove Player?',
+                          !isMe && iAmCaptain
+                            ? `Are you sure you want to remove ${playerProfile?.nickname || `${playerProfile?.first_name} ${playerProfile?.surname}`} from the team? They may not be able to join back until next transfer window.`
+                            : 'Are you sure you want to leave the team? You will need the captain to invite you again if you wish to rejoin.',
+                          !isMe && iAmCaptain ? 'Remove' : 'Leave',
+                          'error',
+                          handlePlayerRemove
+                        )
                 }
                 text={!isMe && iAmCaptain ? 'Remove Player' : 'Leave Team'}
               />
@@ -449,6 +494,19 @@ const PlayerProfile = ({ context, isLoading, playerProfile, error }) => {
           profile={playerProfile}
         />
       </BottomSheetModal>
+      <FloatingBottomSheet
+        visible={modalVisible}
+        onCancel={closeModal}
+        title={modalConfig?.title}
+        message={modalConfig?.message}
+        topButtonText="Cancel"
+        topButtonFn={closeModal}
+        topButtonType={modalConfig?.topButtonType}
+        bottomButtonText={modalConfig?.bottomButtonText}
+        bottomButtonType={modalConfig?.bottomButtonType}
+        bottomButtonFn={modalConfig?.bottomButtonFn}
+        onAnimationEnd={handleAnimationEnd}
+      />
     </>
   );
 };

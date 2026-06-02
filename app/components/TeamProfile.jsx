@@ -245,7 +245,13 @@ const TeamProfile = ({ context, profile, isLoading }) => {
           </View>
           <View className="gap-3 bg-bg-grouped-2 px-4 py-6">
             <Heading text="Team Awards" />
-            <TrophyCabinet trophies={trophies || []} />
+            <TrophyCabinet
+              trophies={trophies || []}
+              displayName={profile?.display_name || 'Break Room'}
+              establishedYear={
+                profile?.created_at ? new Date(profile.created_at).getFullYear() : '2025'
+              }
+            />
           </View>
 
           <View className="bg-bg-grouped-2 px-4 pb-8 pt-6">
@@ -265,14 +271,6 @@ const TeamProfile = ({ context, profile, isLoading }) => {
           </View>
           <TeamJoinRequests teamId={profile?.id} />
           <View className="flex gap-5 bg-bg-grouped-2 px-4 pb-8 pt-6">
-            {player.id === profile.captain && (
-              <CTAButton
-                type="error"
-                text="Disband Team"
-                icon={<Ionicons name="trash-outline" size={20} color="white" />}
-                callbackFn={() => router.push(`/teams/${profile.id}/full-profile`)}
-              />
-            )}
             <Text className="pt-2 text-center font-saira text-xs text-text-2">{`Team ID: ${profile.id}`}</Text>
           </View>
         </View>

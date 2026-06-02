@@ -35,10 +35,6 @@ export const usePlayersByDistrict = (districtId) => {
             surname,
             nickname,
             avatar_url,
-            current_frame_win_streak,
-            best_frame_win_streak,
-            current_match_win_streak,
-            best_match_win_streak,
             xp,
             dob
           )

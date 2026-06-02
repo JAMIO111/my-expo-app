@@ -15,6 +15,8 @@ export function usePlayerStats(playerId) {
         _player_id: playerId,
       });
 
+      console.log('usePlayerStats raw data:', data);
+
       if (error) throw error;
       return data;
     },

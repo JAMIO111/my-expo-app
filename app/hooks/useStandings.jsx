@@ -146,7 +146,7 @@ export function useStandings(divisionId, seasonId) {
         let awayBonusFrames = 0;
 
         fixtureFrames.forEach((fr) => {
-          const isBonus = fr.is_bonus_frame === true;
+          const isBonus = fr.bonus_frame === true;
 
           if (isBonus) {
             if (fr.winner_side === 'home') homeBonusFrames++;

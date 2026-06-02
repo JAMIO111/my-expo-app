@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, Image } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import TeamLogo from './TeamLogo';
@@ -11,6 +11,14 @@ const TeamProfileHeader = ({ profile }) => {
   const address =
     [line_1, line_2, city, postcode].filter(Boolean).join(', ') || 'No Address Available';
 
+  const sinceDate = profile?.created_at
+    ? new Date(profile.created_at).toLocaleDateString('en-GB', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+      })
+    : 'N/A';
+
   return (
     <View className="bg-brand" style={styles.container}>
       <View style={styles.inner}>
@@ -18,14 +26,14 @@ const TeamProfileHeader = ({ profile }) => {
         <View style={styles.crestCol}>
           <View style={styles.crestRing}>
             <TeamLogo
-              size={72}
+              size={80}
               color1={profile?.crest?.color1}
               color2={profile?.crest?.color2}
               type={profile?.crest?.type}
               thickness={profile?.crest?.thickness}
             />
           </View>
-          <View className="mt-2 flex-row items-center gap-2 rounded-lg bg-brand-light px-3 py-1">
+          <View className="mt-4 flex-row items-center gap-2 rounded-lg bg-brand-light px-3 py-1">
             <Text style={styles.abbrevText}>{profile?.abbreviation}</Text>
           </View>
         </View>
@@ -38,7 +46,7 @@ const TeamProfileHeader = ({ profile }) => {
           </Text>
 
           {/* Division chip */}
-          <View className="mt-2 flex-row items-center gap-2 rounded-lg bg-brand-light px-3 py-1">
+          <View className="flex-row items-center gap-2 rounded-lg bg-brand-light px-3 py-1">
             <View style={styles.divisionDot} />
             <Text style={styles.divisionText} numberOfLines={1}>
               {profile?.division?.district?.name
@@ -47,8 +55,18 @@ const TeamProfileHeader = ({ profile }) => {
             </Text>
           </View>
 
+          <View className="mt-1 flex-row items-center gap-2">
+            <Image
+              source={require('@assets/Break-Room-Logo-1024-Background.png')}
+              style={{ width: 15, height: 15 }}
+            />
+            <Text className="font-saira text-text-on-brand" numberOfLines={1}>
+              Since {sinceDate || 'Unknown'}
+            </Text>
+          </View>
+
           {/* Address */}
-          <View className="mt-6 flex-row items-center gap-2">
+          <View className="mt-4 flex-row items-center gap-2">
             <Ionicons name="location-sharp" size={14} color="#ffffff" />
             <Text className="font-saira text-text-on-brand" numberOfLines={2}>
               {address}

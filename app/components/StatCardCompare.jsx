@@ -34,14 +34,14 @@ const StatCardCompare = ({ stat, homeTeam, awayTeam }) => {
   return (
     <View className="px-4 pb-3 pt-2">
       <View className="flex-row items-start justify-between">
-        <Text className="w-32 px-2 text-left font-saira text-2xl font-bold text-text-1">
+        <Text className="w-26 px-2 text-left font-saira text-2xl font-bold text-text-1">
           {stat.differential ? (stat.homeValue > 0 ? '+' : stat.homeValue < 0 ? '-' : '') : ''}{' '}
           {stat.homeValue} {stat.isPercentage && '%'}
         </Text>
         <Text className="flex-1 text-center font-saira text-lg font-medium text-text-2">
           {stat.statName}
         </Text>
-        <Text className="w-32 px-2 text-right font-saira text-2xl font-bold text-text-1">
+        <Text className="w-26 px-2 text-right font-saira text-2xl font-bold text-text-1">
           {stat.differential ? (stat.awayValue > 0 ? '+' : stat.awayValue < 0 ? '-' : '') : ''}{' '}
           {stat.awayValue} {stat.isPercentage && '%'}
         </Text>

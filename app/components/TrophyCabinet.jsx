@@ -16,6 +16,7 @@ import ProGate from '@components/ProGate';
 import { useRevenueCat } from '@contexts/RevenueCatProvider';
 import BottomSheetModal from './BottomSheetModal';
 import TrophyModalContent from './TrophyModaContent';
+import TrophyCabinetPlaque from './TrophyCabinetPlaque';
 
 const randomTrophies = [
   {
@@ -52,7 +53,7 @@ const randomTrophies = [
   },
 ];
 
-const TrophyCabinet = ({ trophies = [] }) => {
+const TrophyCabinet = ({ trophies = [], displayName = 'Break Room', establishedYear = '2026' }) => {
   const { isPro, isCore } = useRevenueCat();
   const [cabinetWidth, setCabinetWidth] = useState(0);
   const screenWidth = Dimensions.get('window').width;
@@ -125,7 +126,7 @@ const TrophyCabinet = ({ trophies = [] }) => {
                 source={require('@assets/cobweb.png')} // your cobweb asset
                 style={{
                   position: 'absolute',
-                  top: 79,
+                  top: 123,
                   left: 12,
                   width: 64,
                   height: 64,
@@ -142,7 +143,7 @@ const TrophyCabinet = ({ trophies = [] }) => {
                   //flip horizontally
                   transform: [{ scaleX: -1 }],
                   position: 'absolute',
-                  top: 242,
+                  top: 287,
                   right: 12,
                   width: 64,
                   height: 64,
@@ -153,21 +154,10 @@ const TrophyCabinet = ({ trophies = [] }) => {
               />
             )}
             {/* Touchable Plaque */}
-            <TouchableOpacity
-              activeOpacity={0.7}
+            <TrophyCabinetPlaque
+              subtitle={`${displayName} | Est. ${establishedYear}`}
               onPress={closeDoorIfOpen}
-              style={{
-                marginBottom: 16,
-                alignItems: 'center',
-                borderRadius: 4,
-                backgroundColor: '#fde68a',
-                paddingVertical: 6,
-                paddingHorizontal: 12,
-              }}>
-              <Text className="font-saira-semibold" style={[styles.title, { fontSize: 24 }]}>
-                🏆 Trophy Cabinet 🏆
-              </Text>
-            </TouchableOpacity>
+            />
 
             <View style={styles.shelfContainer}>
               {/* Top shelf */}

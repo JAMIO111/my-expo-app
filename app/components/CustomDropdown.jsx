@@ -285,7 +285,7 @@ const CustomDropdown = ({
               </View>
 
               {/* Search bar */}
-              {searchable && options.length > 4 && (
+              {searchable && options.length > 5 && (
                 <View className="mx-3 mb-1 mt-3 h-12 flex-row items-center rounded-xl border border-theme-gray-3 bg-input-background px-3">
                   <Ionicons name="search" size={16} color="#9CA3AF" style={{ marginRight: 8 }} />
                   <TextInput
@@ -315,7 +315,7 @@ const CustomDropdown = ({
                 <View className="items-center py-8">
                   <Ionicons name="search-outline" size={30} color="#9CA3AF" />
                   <Text className="mt-2 font-saira text-base text-text-2">
-                    No results for "{query}"
+                    {`No results${query ? ` for "${query}"` : ''}`}
                   </Text>
                 </View>
               }
