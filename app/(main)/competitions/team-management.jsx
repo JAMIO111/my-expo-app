@@ -19,10 +19,7 @@ const TeamManagement = () => {
   const [selectedTeam, setSelectedTeam] = useState(null);
   const { currentRole, player } = useUser();
 
-  const { data: childTeams } = useChildTeams({
-    teamId: currentRole?.team?.id,
-    playerId: player?.id,
-  });
+  const childTeams = currentRole?.compTeams;
 
   console.log('Child Teams:', childTeams);
 
@@ -39,10 +36,16 @@ const TeamManagement = () => {
       />
       <SafeViewWrapper useBottomInset={false} topColor="bg-brand">
         <ScrollView
-          contentContainerStyle={{ display: 'flex', flexGrow: 1, gap: 20, paddingVertical: 20 }}
+          contentContainerStyle={{
+            display: 'flex',
+            flexGrow: 1,
+            gap: 10,
+            paddingVertical: 20,
+            paddingBottom: 120, // 👈 key fix
+          }}
           className="mt-16 flex-1 bg-bg-2 px-4">
           <Heading text="My Teams" />
-          <View>
+          <View className="gap-3">
             {childTeams?.length > 0 ? (
               childTeams.map((team) => (
                 <ChildTeamCard

@@ -1,5 +1,6 @@
 import {
   View,
+  ScrollView,
   Text,
   Pressable,
   Modal,
@@ -10,6 +11,7 @@ import {
   Keyboard,
   Alert,
 } from 'react-native';
+import { useRouter } from 'expo-router';
 import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -19,6 +21,8 @@ import useTeamPlayers from '@hooks/useTeamPlayers';
 import { useUser } from '@contexts/UserProvider';
 import Avatar from '@components/Avatar';
 import CTAButton from '@components/CTAButton';
+import { useCreateChildTeam } from '@hooks/useCreateChildTeam';
+import { useSaveChildTeam } from '@hooks/useSaveChildTeam';
 
 const SHEET_HEIGHT = 520;
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
@@ -206,8 +210,11 @@ function PickerRow({ item, isSelected, onPress, index }) {
 // ─── Main form ────────────────────────────────────────────────────────────────
 
 const ManageCompTeam = ({ type, team }) => {
-  const { currentRole } = useUser();
+  const router = useRouter();
+  const { currentRole, player } = useUser();
   const { data: teamPlayers } = useTeamPlayers(currentRole?.team?.id);
+  const { mutate: createTeam, isPending: isPendingCreate } = useCreateChildTeam();
+  const { mutate: saveTeam, isPending: isPendingSave } = useSaveChildTeam();
   const [teamName, setTeamName] = useState(team?.display_name || '');
   const [selectedPlayerIds, setSelectedPlayerIds] = useState(team?.players?.map((p) => p.id) || []);
   const [captainId, setCaptainId] = useState(team?.captain || null);
@@ -239,121 +246,159 @@ const ManageCompTeam = ({ type, team }) => {
   };
 
   const handleCreateTeam = () => {
-    // Validation
     if (!teamName.trim()) {
-      Alert.alert('Team name required', 'Please enter a name for your team', [{ text: 'OK' }]);
+      Alert.alert('Team name required', 'Please enter a name for your team');
       return;
     }
     if (selectedPlayerIds.length < 2) {
-      Alert.alert('Not enough players', 'At least 2 players are required to form a team', [
-        { text: 'OK' },
-      ]);
+      Alert.alert('Not enough players', 'At least 2 players are required to form a team');
       return;
     }
     if (!captainId) {
-      Alert.alert('Captain not set', 'Please assign a captain for the team', [{ text: 'OK' }]);
+      Alert.alert('Captain not set', 'Please assign a captain for the team');
       return;
     }
+
+    createTeam(
+      {
+        _name: teamName.trim(),
+        _player_ids: selectedPlayerIds,
+        _captain_id: captainId,
+        _parent_team_id: currentRole?.team?.id,
+        _creator_id: player?.id,
+      },
+      {
+        onSuccess: (data) => {
+          Alert.alert('Team created!', `${teamName.trim()} is ready.`, [
+            { text: 'OK', onPress: () => router.back() },
+          ]);
+        },
+        onError: (err) => {
+          // RPC error codes map to friendly messages
+          const messages = {
+            DUPLICATE_NAME: 'A team with that name already exists.',
+            DUPLICATE_PLAYER_COMBINATION: 'This exact squad already exists.',
+            CREATOR_NOT_IN_TEAM: 'You must include yourself in the team.',
+            CAPTAIN_NOT_IN_TEAM: 'The captain must be in the player list.',
+            INSUFFICIENT_PLAYERS: 'At least 2 players are required.',
+          };
+          Alert.alert('Could not create team', messages[err.message] ?? err.message);
+        },
+      }
+    );
   };
 
   return (
-    <View style={{ flex: 1, padding: 20, gap: 20 }}>
-      {/* Team name */}
-      <CustomTextInput
-        title="Team Name"
-        titleColor="text-text-1"
-        value={teamName}
-        onChangeText={setTeamName}
-        keyboardType="default"
-        placeholder="Enter team name"
-        leftIconName="shield-half-outline"
-        maxLength={30}
-        iconColor="#800080"
-        clearButtonMode="never"
-      />
+    <View className="flex-1">
+      <ScrollView
+        keyboardShouldPersistTaps="handled"
+        contentContainerStyle={{ flex: 1, padding: 20, gap: 20 }}>
+        {/* Team name */}
+        <CustomTextInput
+          title="Team Name"
+          titleColor="text-text-1"
+          value={teamName}
+          onChangeText={setTeamName}
+          keyboardType="default"
+          placeholder="Enter team name"
+          leftIconName="shield-half-outline"
+          maxLength={30}
+          iconColor="#800080"
+          clearButtonMode="never"
+        />
 
-      {/* Player picker */}
-      <CustomDropdown
-        title="Add Players"
-        titleColor="text-text-1"
-        placeholder="Search players..."
-        options={
-          teamPlayers?.map((p) => ({
-            first_name: p.first_name,
-            surname: p.surname,
-            nickname: p.nickname,
-            id: p.id,
-            avatar_url: p.avatar_url,
-            label: p.first_name + ' ' + p.surname,
-            value: p.id,
-            subLabel: p.nickname ? `(${p.nickname})` : null,
-          })) || []
-        }
-        showAvatar={true}
-        multiSelect
-        leftIconName="people"
-        iconColor="#800080"
-        values={selectedPlayerIds}
-        onChangeMulti={setSelectedPlayerIds}
-        onDeselect={(id) => {
-          setSelectedPlayerIds((prev) => prev.filter((pid) => pid !== id));
-          if (captainId === id) setCaptainId(null);
-        }}
-      />
+        {/* Player picker */}
+        <CustomDropdown
+          title="Add Players"
+          titleColor="text-text-1"
+          placeholder="Search players..."
+          options={
+            teamPlayers?.map((p) => ({
+              first_name: p.first_name,
+              surname: p.surname,
+              nickname: p.nickname,
+              id: p.id,
+              avatar_url: p.avatar_url,
+              label: p.first_name + ' ' + p.surname,
+              value: p.id,
+              subLabel: p.nickname ? `(${p.nickname})` : null,
+            })) || []
+          }
+          showAvatar={true}
+          multiSelect
+          leftIconName="people"
+          iconColor="#800080"
+          values={selectedPlayerIds}
+          onChangeMulti={setSelectedPlayerIds}
+          onDeselect={(id) => {
+            setSelectedPlayerIds((prev) => prev.filter((pid) => pid !== id));
+            if (captainId === id) setCaptainId(null);
+          }}
+        />
 
-      {/* Selected players */}
-      {selectedPlayers.length > 0 && (
-        <View style={{ gap: 8 }}>
-          {/* Section header */}
-          <View
-            style={{
-              flexDirection: 'row',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              paddingHorizontal: 4,
-            }}>
-            <Text
+        {/* Selected players */}
+        {selectedPlayers.length > 0 && (
+          <View style={{ gap: 8 }}>
+            {/* Section header */}
+            <View
               style={{
-                fontFamily: 'Saira_600SemiBold',
-                fontSize: 16,
-                color: 'rgba(0,0,0,1)',
-                textTransform: 'uppercase',
-                letterSpacing: 1,
+                flexDirection: 'row',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                paddingHorizontal: 4,
               }}>
-              Squad · {selectedPlayers.length}
-            </Text>
-            {!captainId && (
               <Text
                 style={{
-                  fontFamily: 'Saira_400Regular',
-                  fontSize: 12,
-                  color: 'rgba(253,150,85,0.8)',
+                  fontFamily: 'Saira_600SemiBold',
+                  fontSize: 16,
+                  color: 'rgba(0,0,0,1)',
+                  textTransform: 'uppercase',
+                  letterSpacing: 1,
                 }}>
-                Tap ★ to set a captain
+                Roster · {selectedPlayers.length}
               </Text>
-            )}
-          </View>
+              {!captainId && (
+                <Text
+                  style={{
+                    fontFamily: 'Saira_400Regular',
+                    fontSize: 12,
+                    color: 'rgba(253,150,85,0.8)',
+                  }}>
+                  Tap ★ to set a captain
+                </Text>
+              )}
+            </View>
 
-          {selectedPlayers.map((player) => (
-            <PlayerCard
-              key={player.value}
-              player={player}
-              isCaptain={captainId === player.value}
-              onRemove={() => handleRemovePlayer(player.value)}
-              onToggleCaptain={() => handleToggleCaptain(player.value)}
-            />
-          ))}
-        </View>
-      )}
+            {selectedPlayers.map((player) => (
+              <PlayerCard
+                key={player.value}
+                player={player}
+                isCaptain={captainId === player.value}
+                onRemove={() => handleRemovePlayer(player.value)}
+                onToggleCaptain={() => handleToggleCaptain(player.value)}
+              />
+            ))}
+          </View>
+        )}
+      </ScrollView>
       <View style={{ position: 'absolute', bottom: 0, left: 0, right: 0 }} className="p-6">
         <View
           style={{ borderRadius: 30 }}
           className="border border-theme-gray-3 bg-bg-1/80 p-4 shadow-md backdrop-blur-lg">
           <CTAButton
-            text={type === 'create' ? 'Create Team' : 'Save Changes'}
+            text={
+              type === 'create'
+                ? isPendingCreate
+                  ? 'Creating...'
+                  : 'Create Team'
+                : isPendingSave
+                  ? 'Saving...'
+                  : 'Save Changes'
+            }
             callbackFn={() => {
-              type === 'create' ? handleCreateTeam() : null;
+              type === 'create' ? handleCreateTeam() : handleSaveTeam();
             }}
+            disabled={isPendingCreate || isPendingSave}
             icon={<Ionicons name="" size={24} color="#000" />}
             type="yellow"
           />

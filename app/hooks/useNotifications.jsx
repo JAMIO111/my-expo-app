@@ -1,22 +1,22 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 
-export function useNotifications(userId) {
+export function useNotifications(playerId) {
   return useQuery({
-    queryKey: ['Notifications', userId],
+    queryKey: ['Notifications', playerId],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('Notifications')
         .select('*')
-        .eq('user_id', userId)
-        .order('timestamp', { ascending: false });
+        .eq('player_id', playerId)
+        .order('created_at', { ascending: false });
 
       if (error) throw error;
       return data;
     },
     staleTime: 5 * 60 * 1000, // 5 minutes
     gcTime: 60 * 60 * 1000, // 1 hour
-    enabled: !!userId, // only run query if userId is provided
+    enabled: !!playerId, // only run query if playerId is provided
   });
 }
 

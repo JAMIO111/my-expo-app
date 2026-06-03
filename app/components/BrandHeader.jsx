@@ -31,7 +31,7 @@ const BrandHeader = ({
         {text2}
       </Text>
       {showNotification && (
-        <Pressable className="w-12 items-start justify-center" onPress={open}>
+        <Pressable hitSlop={10} className="w-12 items-start justify-center" onPress={open}>
           <BellDot size={24} color="white" strokeWidth={2} />
         </Pressable>
       )}

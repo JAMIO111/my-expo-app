@@ -1,9 +1,10 @@
-import React, { createContext, useCallback, useContext, useRef, useState } from 'react';
+import React, { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react';
 import { Animated, Dimensions, FlatList, Pressable, SafeAreaView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import { useNotifications } from '@hooks/useNotifications'; // Your custom hook to fetch notifications
+import { useNotifications } from '@hooks/useNotifications';
 import { useUser } from '@contexts/UserProvider';
+import SafeViewWrapper from '@components/SafeViewWrapper';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const PANEL_WIDTH = SCREEN_WIDTH * 0.88;
@@ -12,35 +13,19 @@ const PANEL_WIDTH = SCREEN_WIDTH * 0.88;
 
 const NotificationsPanelContext = createContext(null);
 
-// ─── Types ────────────────────────────────────────────────────────────────────
-/**
- * Notification shape:
- * {
- *   id: string
- *   type: 'invite' | 'result' | 'system' | 'award'
- *   title: string
- *   body: string
- *   timestamp: Date | string
- *   read: boolean
- *   meta?: { competitionName?: string, avatarUrl?: string }
- * }
- */
-
 // ─── Icon map ─────────────────────────────────────────────────────────────────
 
 const TYPE_CONFIG = {
-  invite: { icon: 'people', color: '#6EE7B7' }, // green
-  result: { icon: 'trophy', color: '#FCD34D' }, // amber
-  system: { icon: 'information-circle', color: '#93C5FD' }, // blue
-  award: { icon: 'ribbon', color: '#F9A8D4' }, // pink
+  invite: { icon: 'people', color: '#6EE7B7' },
+  result: { icon: 'trophy', color: '#FCD34D' },
+  system: { icon: 'information-circle', color: '#93C5FD' },
+  award: { icon: 'ribbon', color: '#F9A8D4' },
 };
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 function timeAgo(timestamp) {
-  const now = new Date();
-  const then = new Date(timestamp);
-  const diff = Math.floor((now - then) / 1000);
+  const diff = Math.floor((Date.now() - new Date(timestamp)) / 1000);
   if (diff < 60) return `${diff}s ago`;
   if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
   if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
@@ -49,15 +34,15 @@ function timeAgo(timestamp) {
 
 // ─── Notification Row ─────────────────────────────────────────────────────────
 
-function NotificationRow({ item, onPress, onMarkRead }) {
+function NotificationRow({ item, onPress }) {
   const cfg = TYPE_CONFIG[item.type] ?? TYPE_CONFIG.system;
 
   return (
     <Pressable
       onPress={() => onPress(item)}
-      className="flex-row items-start px-4 py-3 active:opacity-70"
-      style={({ pressed }) => pressed && { opacity: 0.7 }}>
-      {/* Unread dot */}
+      style={({ pressed }) => ({ opacity: pressed ? 0.7 : 1 })}
+      className="mx-3 flex-row items-start rounded-xl bg-brand px-4 py-3">
+      {/* Unread dot + icon */}
       <View className="mr-3 mt-1 items-center justify-center">
         {!item.read && <View className="absolute -left-1 -top-1 h-2 w-2 rounded-full bg-brand" />}
         <View
@@ -77,7 +62,7 @@ function NotificationRow({ item, onPress, onMarkRead }) {
             {item.title}
           </Text>
           <Text className="text-xs text-white/40" style={{ fontFamily: 'Saira_400Regular' }}>
-            {timeAgo(item.timestamp)}
+            {timeAgo(item.created_at)}
           </Text>
         </View>
 
@@ -85,7 +70,7 @@ function NotificationRow({ item, onPress, onMarkRead }) {
           className="text-sm leading-5 text-white/60"
           style={{ fontFamily: 'Saira_400Regular' }}
           numberOfLines={2}>
-          {item.body}
+          {item.message}
         </Text>
 
         {item.meta?.competitionName && (
@@ -138,8 +123,16 @@ function NotificationsPanelInner({ notifications = [], onNotificationPress, onMa
   const translateX = useRef(new Animated.Value(PANEL_WIDTH)).current;
   const backdropOpacity = useRef(new Animated.Value(0)).current;
 
-  // Drive animation from isOpen
-  React.useEffect(() => {
+  // FIX 1: Track mounted state separately so we never unmount mid-animation.
+  // Mount immediately when opening; only unmount after the close animation
+  // fully completes — prevents the invisible touch-eating frozen backdrop.
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    if (isOpen) {
+      setMounted(true); // ensure rendered before animating in
+    }
+
     Animated.parallel([
       Animated.spring(translateX, {
         toValue: isOpen ? 0 : PANEL_WIDTH,
@@ -153,17 +146,25 @@ function NotificationsPanelInner({ notifications = [], onNotificationPress, onMa
         duration: 250,
         useNativeDriver: true,
       }),
-    ]).start();
+    ]).start(({ finished }) => {
+      // Only unmount after the close animation fully completes.
+      // If interrupted (e.g. re-opened mid-close) finished=false — don't unmount.
+      if (finished && !isOpen) {
+        setMounted(false);
+      }
+    });
   }, [isOpen]);
 
+  if (!mounted) return null;
+
   // Split into today vs earlier
-  const now = new Date();
-  const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const todayStart = new Date();
+  todayStart.setHours(0, 0, 0, 0);
 
-  const today = notifications?.filter((n) => new Date(n.timestamp) >= todayStart) || [];
-  const earlier = notifications?.filter((n) => new Date(n.timestamp) < todayStart) || [];
+  const today = notifications.filter((n) => new Date(n.created_at) >= todayStart);
+  const earlier = notifications.filter((n) => new Date(n.created_at) < todayStart);
 
-  const unreadCount = notifications?.filter((n) => !n.read).length || 0;
+  const unreadCount = notifications.filter((n) => !n.read).length;
 
   const sections = [
     ...(today.length ? [{ type: 'header', id: 'h1', label: 'Today' }, ...today] : []),
@@ -172,15 +173,15 @@ function NotificationsPanelInner({ notifications = [], onNotificationPress, onMa
 
   const renderItem = ({ item }) => {
     if (item.type === 'header') return <SectionHeader label={item.label} />;
-    return <NotificationRow item={item} onPress={onNotificationPress ?? (() => {})} />;
+    return <NotificationRow item={item} onPress={onNotificationPress} />;
   };
 
-  if (!isOpen && translateX._value === PANEL_WIDTH) return null;
-
   return (
-    <>
-      {/* Backdrop */}
+    <SafeViewWrapper topColor="bg-brand">
+      {/* FIX 3: pointerEvents='none' when closed so the invisible backdrop
+          never intercepts touches after the panel has animated away. */}
       <Animated.View
+        pointerEvents={isOpen ? 'auto' : 'none'}
         style={[
           {
             position: 'absolute',
@@ -188,7 +189,6 @@ function NotificationsPanelInner({ notifications = [], onNotificationPress, onMa
             left: 0,
             right: 0,
             bottom: 0,
-            backgroundColor: 'rgba(0,0,0,0.55)',
             zIndex: 50,
           },
           { opacity: backdropOpacity },
@@ -198,25 +198,25 @@ function NotificationsPanelInner({ notifications = [], onNotificationPress, onMa
 
       {/* Panel */}
       <Animated.View
-        style={[
-          {
-            position: 'absolute',
-            top: 0,
-            bottom: 0,
-            right: 0,
-            width: PANEL_WIDTH,
-            zIndex: 51,
-            transform: [{ translateX }],
-          },
-        ]}>
-        {/* Glass-style dark panel */}
+        style={{
+          position: 'absolute',
+          top: 0,
+          bottom: 0,
+          right: 0,
+          width: PANEL_WIDTH,
+          zIndex: 51,
+          borderTopLeftRadius: 24,
+          borderBottomLeftRadius: 24,
+          overflow: 'hidden',
+          transform: [{ translateX }],
+        }}>
         <View
-          className="flex-1 bg-zinc-900"
+          className="flex-1 bg-brand-dark"
           style={{ borderLeftWidth: 1, borderLeftColor: 'rgba(255,255,255,0.07)' }}>
           <SafeAreaView style={{ flex: 1, paddingTop: insets.top > 0 ? 0 : 12 }}>
             {/* Header */}
             <View
-              className="flex-row items-center justify-between px-4 pb-3 pt-2"
+              className="flex-row items-center justify-between px-6 pb-3 pt-4"
               style={{ borderBottomWidth: 1, borderBottomColor: 'rgba(255,255,255,0.06)' }}>
               <View className="flex-row items-center gap-2">
                 <Text className="text-xl text-white" style={{ fontFamily: 'Saira_700Bold' }}>
@@ -235,15 +235,20 @@ function NotificationsPanelInner({ notifications = [], onNotificationPress, onMa
 
               <View className="flex-row items-center gap-3">
                 {unreadCount > 0 && (
-                  <Pressable onPress={onMarkAllRead} className="active:opacity-60">
-                    <Text className="text-sm text-brand" style={{ fontFamily: 'Saira_500Medium' }}>
+                  <Pressable
+                    onPress={onMarkAllRead}
+                    style={({ pressed }) => ({ opacity: pressed ? 0.6 : 1 })}>
+                    <Text
+                      className="text-sm text-text-on-brand-2"
+                      style={{ fontFamily: 'Saira_500Medium' }}>
                       Mark all read
                     </Text>
                   </Pressable>
                 )}
                 <Pressable
                   onPress={close}
-                  className="h-8 w-8 items-center justify-center rounded-full bg-white/10 active:opacity-60">
+                  style={({ pressed }) => ({ opacity: pressed ? 0.6 : 1 })}
+                  className="h-8 w-8 items-center justify-center rounded-full bg-white/10">
                   <Ionicons name="close" size={18} color="rgba(255,255,255,0.8)" />
                 </Pressable>
               </View>
@@ -255,7 +260,8 @@ function NotificationsPanelInner({ notifications = [], onNotificationPress, onMa
             ) : (
               <FlatList
                 data={sections}
-                keyExtractor={(item) => item.id ?? item.type + item.id}
+                // FIX 4: safe keyExtractor — never produces undefined keys
+                keyExtractor={(item, index) => item.id?.toString() ?? `item-${index}`}
                 renderItem={renderItem}
                 showsVerticalScrollIndicator={false}
                 contentContainerStyle={{ paddingBottom: insets.bottom + 16 }}
@@ -270,24 +276,33 @@ function NotificationsPanelInner({ notifications = [], onNotificationPress, onMa
           </SafeAreaView>
         </View>
       </Animated.View>
-    </>
+    </SafeViewWrapper>
   );
 }
 
 // ─── Provider ─────────────────────────────────────────────────────────────────
 
 export function NotificationsPanelProvider({ children }) {
-  const { user } = useUser();
+  const { player } = useUser();
   const [isOpen, setIsOpen] = useState(false);
 
   const open = useCallback(() => setIsOpen(true), []);
   const close = useCallback(() => setIsOpen(false), []);
   const toggle = useCallback(() => setIsOpen((v) => !v), []);
 
-  const { data: notifications } = useNotifications(user?.id); // Replace with your actual data fetching logic
+  // FIX 2: Keep a local copy of notifications so onNotificationPress /
+  // onMarkAllRead have a setState to call. Previously they called
+  // setNotifications which was never declared, causing silent throws.
+  const { data: rawNotifications } = useNotifications(player?.id);
+  const [notifications, setNotifications] = useState([]);
+
+  console.log('NotificationsPanelProvider notifications:', rawNotifications);
+
+  useEffect(() => {
+    if (rawNotifications) setNotifications(rawNotifications);
+  }, [rawNotifications]);
 
   const onNotificationPress = useCallback((notification) => {
-    // Mark as read locally for instant feedback
     setNotifications((prev) =>
       prev.map((n) => (n.id === notification.id ? { ...n, read: true } : n))
     );

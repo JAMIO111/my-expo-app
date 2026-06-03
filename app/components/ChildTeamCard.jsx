@@ -26,7 +26,7 @@ function PlayerRow({ player, index, team, onPlayerPress }) {
         flexDirection: 'row',
         alignItems: 'center',
         paddingVertical: 10,
-        paddingHorizontal: 16,
+        paddingHorizontal: 10,
         backgroundColor: index % 2 === 0 ? 'rgba(255,255,255,0.02)' : 'transparent',
       }}>
       {/* Index */}
@@ -35,7 +35,7 @@ function PlayerRow({ player, index, team, onPlayerPress }) {
           fontFamily: 'Saira_400Regular',
           fontSize: 14,
           color: 'rgba(255,255,255,0.2)',
-          width: 16,
+          width: 8,
           textAlign: 'center',
         }}>
         {index + 1}
@@ -46,22 +46,48 @@ function PlayerRow({ player, index, team, onPlayerPress }) {
       {/* Name + captain tag */}
       <View style={{ flex: 1, paddingRight: 10 }}>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-          <View className="flex-1 flex-row items-center gap-2">
+          <View className="flex-1 flex-row items-center gap-2 overflow-hidden">
             <Text
               style={{
                 fontFamily: isCaptain ? 'Saira_600SemiBold' : 'Saira_400Regular',
                 fontSize: 14,
                 color: isCaptain ? '#fff' : 'rgba(255,255,255,0.75)',
-              }}
-              numberOfLines={1}>
+              }}>
               {player.first_name} {player.surname}
             </Text>
-            <Text className="font-saira text-sm text-text-on-brand-2">({player?.nickname})</Text>
+            <Text className="font-saira text-sm text-text-on-brand-2">
+              {player?.nickname ? `(${player.nickname})` : ''}
+            </Text>
           </View>
-          {isCaptain && (
+          <View className="flex-row items-center gap-2">
+            {isCaptain && (
+              <View
+                style={{
+                  backgroundColor: 'rgba(253, 204, 77, 0.15)',
+                  borderRadius: 4,
+                  paddingHorizontal: 5,
+                  paddingVertical: 1,
+                }}>
+                <Text
+                  style={{
+                    fontFamily: 'Saira_600SemiBold',
+                    fontSize: 9,
+                    color: '#FDCC4D',
+                    letterSpacing: 0.8,
+                    textTransform: 'uppercase',
+                  }}>
+                  Captain
+                </Text>
+              </View>
+            )}
             <View
               style={{
-                backgroundColor: 'rgba(253, 204, 77, 0.15)',
+                backgroundColor:
+                  player.status === 'active'
+                    ? 'rgba(30, 250, 20, 0.15)'
+                    : player.status === 'pending_player'
+                      ? 'rgba(255, 0, 122, 0.15)' //pink
+                      : 'transparent',
                 borderRadius: 4,
                 paddingHorizontal: 5,
                 paddingVertical: 1,
@@ -70,20 +96,25 @@ function PlayerRow({ player, index, team, onPlayerPress }) {
                 style={{
                   fontFamily: 'Saira_600SemiBold',
                   fontSize: 9,
-                  color: '#FDCC4D',
+                  color:
+                    player.status === 'active'
+                      ? 'rgba(30, 250, 20, 1)'
+                      : player.status === 'pending_player'
+                        ? 'rgba(255, 0, 122, 1)' //pink
+                        : 'transparent',
                   letterSpacing: 0.8,
                   textTransform: 'uppercase',
                 }}>
-                Captain
+                {player.status === 'active'
+                  ? 'Active'
+                  : player.status === 'pending_player'
+                    ? 'Invited'
+                    : ''}
               </Text>
             </View>
-          )}
+          </View>
         </View>
       </View>
-      {/* Right chevron hint */}
-      {onPlayerPress && (
-        <Ionicons name="chevron-forward" size={13} color="rgba(255,255,255,0.15)" />
-      )}
     </View>
   );
 }
@@ -157,9 +188,9 @@ export function ChildTeamCard({ team, onPress, onPlayerPress }) {
                 {team?.display_name ?? 'Unnamed Team'}
               </Text>
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-                <TeamLogo {...team?.parent_team_crest} size={14} />
+                <TeamLogo {...team?.parentTeam?.crest} size={14} />
                 <Text className="font-saira text-text-on-brand-2">
-                  {team?.parent_team_display_name ?? 'No parent team'}
+                  {team?.parentTeam?.display_name ?? 'No parent team'}
                 </Text>
                 <Text className="text-xl text-text-on-brand-2"> · </Text>
                 <Text
@@ -236,7 +267,22 @@ export function ChildTeamCard({ team, onPress, onPlayerPress }) {
             }}>
             Team Status
           </Text>
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+          <View
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              gap: 6,
+              paddingHorizontal: 6,
+              borderRadius: 4,
+              backgroundColor:
+                team?.status === 'active'
+                  ? 'rgba(74, 222, 128, 0.15)'
+                  : team?.status === 'pending'
+                    ? 'rgba(255, 165, 0, 0.15)'
+                    : team?.status === 'inactive'
+                      ? 'rgba(255,255,255,0.1)'
+                      : 'rgba(255,255,255,0.1)',
+            }}>
             <View
               style={{
                 width: 7,
@@ -246,10 +292,10 @@ export function ChildTeamCard({ team, onPress, onPlayerPress }) {
                   team?.status === 'active'
                     ? '#4ade80'
                     : team?.status === 'pending'
-                      ? 'rgba(255,165,0,0.5)'
+                      ? 'rgba(255,165,0,1)'
                       : team?.status === 'inactive'
-                        ? 'rgba(255,255,255,0.1)'
-                        : 'rgba(255,255,255,0.1)',
+                        ? 'rgba(255,255,255,0.5)'
+                        : 'rgba(255,255,255,0.5)',
               }}
             />
             <Text
@@ -260,10 +306,10 @@ export function ChildTeamCard({ team, onPress, onPlayerPress }) {
                   team?.status === 'active'
                     ? '#4ade80'
                     : team?.status === 'pending'
-                      ? 'rgba(255,165,0,0.5)' //orange
+                      ? 'rgba(255,165,0,1)' //orange
                       : team?.status === 'inactive'
-                        ? 'rgba(255,255,255,0.25)'
-                        : 'rgba(255,255,255,0.25)',
+                        ? 'rgba(255,255,255,0.5)'
+                        : 'rgba(255,255,255,0.5)',
               }}>
               {team?.status === 'active'
                 ? 'Active'

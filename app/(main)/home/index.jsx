@@ -226,7 +226,21 @@ const Home = () => {
     playerAmendedFixturesRefetch,
   ]);
 
-  if (!player) {
+  const isLoading =
+    isUserLoading ||
+    isStandingsLoading ||
+    isUpcomingFixturesLoading ||
+    isTeamResultsPendingApprovalLoading ||
+    isPlayerResultsPendingApprovalLoading ||
+    isTeamDisputedFixturesLoading ||
+    isPlayerDisputedFixturesLoading ||
+    isTeamAmendedFixturesLoading ||
+    isPlayerAmendedFixturesLoading ||
+    isTeamFixturesAwaitingResultsLoading ||
+    isPlayerFixturesAwaitingResultsLoading ||
+    windowLoading;
+
+  if (!player || isLoading) {
     return (
       <>
         <Stack.Screen
