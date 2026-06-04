@@ -1,12 +1,12 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@lib/supabase';
 
-export function useSaveChildTeam() {
+export function useUpdateChildTeam() {
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: async (payload) => {
-      const { data, error } = await supabase.rpc('save_child_team', payload);
+      const { data, error } = await supabase.rpc('update_child_team', payload);
       if (error) throw error;
       if (!data.success) throw new Error(data.message);
       return data;

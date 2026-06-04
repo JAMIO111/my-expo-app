@@ -90,7 +90,11 @@ const TeamManagement = () => {
           showModal={teamManagerVisible}
           setShowModal={setTeamManagerVisible}
           title={managerType === 'create' ? 'Create New Team' : 'Edit Team'}>
-          <ManageCompTeam type={managerType} team={managerType === 'edit' ? selectedTeam : null} />
+          <ManageCompTeam
+            type={managerType}
+            team={managerType === 'edit' ? selectedTeam : null}
+            closeModal={() => setTeamManagerVisible(false)}
+          />
         </BottomSheetModal>
       </SafeViewWrapper>
     </>

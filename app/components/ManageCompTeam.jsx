@@ -22,14 +22,14 @@ import { useUser } from '@contexts/UserProvider';
 import Avatar from '@components/Avatar';
 import CTAButton from '@components/CTAButton';
 import { useCreateChildTeam } from '@hooks/useCreateChildTeam';
-import { useSaveChildTeam } from '@hooks/useSaveChildTeam';
+import { useUpdateChildTeam } from '@hooks/useUpdateChildTeam';
 
 const SHEET_HEIGHT = 520;
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
 // ─── Selected player card ─────────────────────────────────────────────────────
 
-function PlayerCard({ player, onRemove, isCaptain, onToggleCaptain }) {
+function PlayerCard({ player, onRemove, canEdit, isCaptain, onToggleCaptain }) {
   const scale = useRef(new Animated.Value(0.85)).current;
   const opacity = useRef(new Animated.Value(0)).current;
 
@@ -83,51 +83,86 @@ function PlayerCard({ player, onRemove, isCaptain, onToggleCaptain }) {
           </View>
 
           {/* Captain toggle */}
-          <TouchableOpacity
-            onPress={onToggleCaptain}
-            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+          {canEdit && (
+            <TouchableOpacity
+              onPress={onToggleCaptain}
+              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                gap: 4,
+                backgroundColor: isCaptain ? 'rgba(253,204,77,0.15)' : 'rgba(255,255,255,0.06)',
+                borderRadius: 8,
+                paddingHorizontal: 8,
+                paddingVertical: 4,
+                borderWidth: 1,
+                borderColor: isCaptain ? 'rgba(253,204,77,0.3)' : 'rgba(255,255,255,0.08)',
+              }}>
+              <Ionicons
+                name="star"
+                size={12}
+                color={isCaptain ? '#FDCC4D' : 'rgba(255,255,255,0.25)'}
+              />
+              <Text
+                style={{
+                  fontFamily: 'Saira_500Medium',
+                  fontSize: 11,
+                  color: isCaptain ? '#FDCC4D' : 'rgba(255,255,255,0.3)',
+                }}>
+                {isCaptain ? 'Captain' : 'Set captain'}
+              </Text>
+            </TouchableOpacity>
+          )}
+          <View
             style={{
-              flexDirection: 'row',
-              alignItems: 'center',
-              gap: 4,
-              backgroundColor: isCaptain ? 'rgba(253,204,77,0.15)' : 'rgba(255,255,255,0.06)',
-              borderRadius: 8,
-              paddingHorizontal: 8,
-              paddingVertical: 4,
-              borderWidth: 1,
-              borderColor: isCaptain ? 'rgba(253,204,77,0.3)' : 'rgba(255,255,255,0.08)',
+              backgroundColor:
+                player.status === 'active'
+                  ? 'rgba(30, 250, 20, 0.15)'
+                  : player.status === 'pending_player'
+                    ? 'rgba(255, 0, 122, 0.15)' //pink
+                    : 'transparent',
+              borderRadius: 4,
+              paddingHorizontal: 5,
+              paddingVertical: 1,
             }}>
-            <Ionicons
-              name="star"
-              size={12}
-              color={isCaptain ? '#FDCC4D' : 'rgba(255,255,255,0.25)'}
-            />
             <Text
               style={{
-                fontFamily: 'Saira_500Medium',
-                fontSize: 11,
-                color: isCaptain ? '#FDCC4D' : 'rgba(255,255,255,0.3)',
+                fontFamily: 'Saira_600SemiBold',
+                fontSize: 9,
+                color:
+                  player.status === 'active'
+                    ? 'rgba(30, 250, 20, 1)'
+                    : player.status === 'pending_player'
+                      ? 'rgba(255, 0, 122, 1)' //pink
+                      : 'transparent',
+                letterSpacing: 0.8,
+                textTransform: 'uppercase',
               }}>
-              {isCaptain ? 'Captain' : 'Set captain'}
+              {player.status === 'active'
+                ? 'Active'
+                : player.status === 'pending_player'
+                  ? 'Invited'
+                  : ''}
             </Text>
-          </TouchableOpacity>
-
+          </View>
           {/* Remove */}
-          <TouchableOpacity
-            onPress={onRemove}
-            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-            style={{
-              width: 28,
-              height: 28,
-              borderRadius: 14,
-              backgroundColor: 'rgba(248,113,113,0.12)',
-              alignItems: 'center',
-              justifyContent: 'center',
-              borderWidth: 1,
-              borderColor: 'rgba(248,113,113,0.2)',
-            }}>
-            <Ionicons name="close" size={15} color="#f87171" />
-          </TouchableOpacity>
+          {canEdit && (
+            <TouchableOpacity
+              onPress={onRemove}
+              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+              style={{
+                width: 28,
+                height: 28,
+                borderRadius: 14,
+                backgroundColor: 'rgba(248,113,113,0.12)',
+                alignItems: 'center',
+                justifyContent: 'center',
+                borderWidth: 1,
+                borderColor: 'rgba(248,113,113,0.2)',
+              }}>
+              <Ionicons name="close" size={15} color="#f87171" />
+            </TouchableOpacity>
+          )}
         </LinearGradient>
       </View>
     </Animated.View>
@@ -209,15 +244,17 @@ function PickerRow({ item, isSelected, onPress, index }) {
 
 // ─── Main form ────────────────────────────────────────────────────────────────
 
-const ManageCompTeam = ({ type, team }) => {
+const ManageCompTeam = ({ type, team, closeModal }) => {
   const router = useRouter();
   const { currentRole, player } = useUser();
   const { data: teamPlayers } = useTeamPlayers(currentRole?.team?.id);
   const { mutate: createTeam, isPending: isPendingCreate } = useCreateChildTeam();
-  const { mutate: saveTeam, isPending: isPendingSave } = useSaveChildTeam();
+  const { mutate: updateTeam, isPending: isPendingUpdate } = useUpdateChildTeam();
   const [teamName, setTeamName] = useState(team?.display_name || '');
   const [selectedPlayerIds, setSelectedPlayerIds] = useState(team?.players?.map((p) => p.id) || []);
   const [captainId, setCaptainId] = useState(team?.captain || null);
+
+  const canEdit = team ? team?.captain === player?.id : false;
 
   const playerOptions = useMemo(
     () =>
@@ -270,7 +307,7 @@ const ManageCompTeam = ({ type, team }) => {
       {
         onSuccess: (data) => {
           Alert.alert('Team created!', `${teamName.trim()} is ready.`, [
-            { text: 'OK', onPress: () => router.back() },
+            { text: 'OK', onPress: () => closeModal() },
           ]);
         },
         onError: (err) => {
@@ -286,6 +323,74 @@ const ManageCompTeam = ({ type, team }) => {
         },
       }
     );
+  };
+
+  const handleUpdateTeam = () => {
+    if (!teamName.trim()) {
+      Alert.alert('Team name required', 'Please enter a name for your team');
+      return;
+    }
+    if (selectedPlayerIds.length < 2) {
+      Alert.alert('Not enough players', 'At least 2 players are required to form a team');
+      return;
+    }
+    if (!captainId) {
+      Alert.alert('Captain not set', 'Please assign a captain for the team');
+      return;
+    }
+    updateTeam(
+      {
+        _team_id: team.id,
+        _updater_id: player?.id,
+        _name: teamName.trim(),
+        _captain_id: captainId,
+        _player_ids: selectedPlayerIds,
+      },
+      {
+        onSuccess: (data) => {
+          Alert.alert('Team updated!', `${teamName.trim()} has been updated.`, [
+            { text: 'OK', onPress: () => closeModal() },
+          ]);
+        },
+        onError: (err) => {
+          // RPC error codes map to friendly messages
+          const messages = {
+            DUPLICATE_NAME: 'A team with that name already exists.',
+            DUPLICATE_PLAYER_COMBINATION: 'This exact squad already exists.',
+            CREATOR_NOT_IN_TEAM: 'You must include yourself in the team.',
+            CAPTAIN_NOT_IN_TEAM: 'The captain must be in the player list.',
+            INSUFFICIENT_PLAYERS: 'At least 2 players are required.',
+          };
+          Alert.alert('Could not update team', messages[err.message] ?? err.message);
+        },
+      }
+    );
+  };
+
+  const requestLeaveTeam = () => {
+    Alert.alert(
+      'Leave team',
+      'Are you sure you want to leave this team? You will lose access to it and its competitions.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Leave',
+          style: 'destructive',
+          onPress: handleLeaveTeam,
+        },
+      ]
+    );
+  };
+
+  const handleLeaveTeam = () => {
+    if (player?.id === team?.captain) {
+      Alert.alert(
+        'You are the captain',
+        'You cannot leave the team while you are the captain. Please assign a new captain before leaving.',
+        [{ text: 'OK' }]
+      );
+      return;
+    }
   };
 
   return (
@@ -373,6 +478,7 @@ const ManageCompTeam = ({ type, team }) => {
               <PlayerCard
                 key={player.value}
                 player={player}
+                canEdit={canEdit}
                 isCaptain={captainId === player.value}
                 onRemove={() => handleRemovePlayer(player.value)}
                 onToggleCaptain={() => handleToggleCaptain(player.value)}
@@ -381,26 +487,38 @@ const ManageCompTeam = ({ type, team }) => {
           </View>
         )}
       </ScrollView>
+
       <View style={{ position: 'absolute', bottom: 0, left: 0, right: 0 }} className="p-6">
         <View
           style={{ borderRadius: 30 }}
-          className="border border-theme-gray-3 bg-bg-1/80 p-4 shadow-md backdrop-blur-lg">
+          className="gap-4 border border-theme-gray-3 bg-bg-1/80 p-4 shadow-md backdrop-blur-lg">
           <CTAButton
             text={
               type === 'create'
                 ? isPendingCreate
                   ? 'Creating...'
                   : 'Create Team'
-                : isPendingSave
+                : isPendingUpdate
                   ? 'Saving...'
                   : 'Save Changes'
             }
-            callbackFn={() => {
-              type === 'create' ? handleCreateTeam() : handleSaveTeam();
-            }}
-            disabled={isPendingCreate || isPendingSave}
-            icon={<Ionicons name="" size={24} color="#000" />}
+            callbackFn={type === 'create' ? handleCreateTeam : handleUpdateTeam}
+            disabled={isPendingCreate || isPendingUpdate}
+            icon={
+              <Ionicons
+                name={type === 'create' ? 'color-wand' : 'checkmark-outline'}
+                size={24}
+                color="#000"
+              />
+            }
             type="yellow"
+          />
+          <CTAButton
+            text="Leave Team"
+            callbackFn={handleLeaveTeam}
+            disabled={false}
+            type="tertiary"
+            icon={<Ionicons name="exit-outline" size={24} color="#FFF" />}
           />
         </View>
       </View>

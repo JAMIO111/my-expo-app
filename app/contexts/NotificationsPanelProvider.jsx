@@ -16,7 +16,7 @@ const NotificationsPanelContext = createContext(null);
 // ─── Icon map ─────────────────────────────────────────────────────────────────
 
 const TYPE_CONFIG = {
-  invite: { icon: 'people', color: '#6EE7B7' },
+  team_invite: { icon: 'people', color: '#6EE7B7' },
   result: { icon: 'trophy', color: '#FCD34D' },
   system: { icon: 'information-circle', color: '#93C5FD' },
   award: { icon: 'ribbon', color: '#F9A8D4' },

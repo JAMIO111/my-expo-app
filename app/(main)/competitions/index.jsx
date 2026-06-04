@@ -74,41 +74,49 @@ const index = () => {
               </View>
             </Pressable>
           )}
-          {activeCompetitions?.length > 0 && (
-            <View>
-              <Text className="mb-2 px-1 font-saira-medium text-2xl text-text-1">
-                Active Competitions
-              </Text>
-              <View className="gap-4">
-                {activeCompetitions.map((instance) => (
-                  <CompetitionInstanceCard key={instance.id} instance={instance} />
-                ))}
-              </View>
+          {isCompetitionsLoading ? (
+            <View className="flex-1 items-center justify-center rounded-2xl bg-bg-2 py-12 shadow-sm">
+              <Text className="font-saira-medium text-lg text-text-1">Loading competitions...</Text>
             </View>
-          )}
-          {upcomingCompetitions?.length > 0 && (
-            <View>
-              <Text className="mb-2 px-1 font-saira-medium text-2xl text-text-1">
-                Upcoming Competitions
-              </Text>
-              <View className="gap-4">
-                {upcomingCompetitions?.map((instance) => (
-                  <CompetitionInstanceCard key={instance.id} instance={instance} />
-                ))}
-              </View>
-            </View>
-          )}
-          {completedCompetitions?.length > 0 && (
-            <View>
-              <Text className="mb-2 px-1 font-saira-medium text-2xl text-text-1">
-                Completed Competitions
-              </Text>
-              <View className="gap-4">
-                {completedCompetitions?.map((instance) => (
-                  <CompetitionInstanceCard key={instance.id} instance={instance} />
-                ))}
-              </View>
-            </View>
+          ) : (
+            <>
+              {activeCompetitions?.length > 0 && (
+                <View>
+                  <Text className="mb-2 px-1 font-saira-medium text-2xl text-text-1">
+                    Active Competitions
+                  </Text>
+                  <View className="gap-4">
+                    {activeCompetitions.map((instance) => (
+                      <CompetitionInstanceCard key={instance.id} instance={instance} />
+                    ))}
+                  </View>
+                </View>
+              )}
+              {upcomingCompetitions?.length > 0 && (
+                <View>
+                  <Text className="mb-2 px-1 font-saira-medium text-2xl text-text-1">
+                    Upcoming Competitions
+                  </Text>
+                  <View className="gap-4">
+                    {upcomingCompetitions?.map((instance) => (
+                      <CompetitionInstanceCard key={instance.id} instance={instance} />
+                    ))}
+                  </View>
+                </View>
+              )}
+              {completedCompetitions?.length > 0 && (
+                <View>
+                  <Text className="mb-2 px-1 font-saira-medium text-2xl text-text-1">
+                    Completed Competitions
+                  </Text>
+                  <View className="gap-4">
+                    {completedCompetitions?.map((instance) => (
+                      <CompetitionInstanceCard key={instance.id} instance={instance} />
+                    ))}
+                  </View>
+                </View>
+              )}
+            </>
           )}
           {currentRole?.type === 'admin' && (
             <View className="gap-2">
