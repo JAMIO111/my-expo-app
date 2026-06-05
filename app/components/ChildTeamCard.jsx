@@ -131,6 +131,19 @@ export function ChildTeamCard({ team, onPress, onPlayerPress }) {
 
   const players = team?.players ?? [];
 
+  const sortedPlayers = players.sort((a, b) => {
+    const getRank = (p) => {
+      if (p.id === team?.captain) return 0;
+      if (p.status === 'active') return 1;
+      if (p.status === 'pending_player') return 2;
+      return 3;
+    };
+
+    return getRank(a) - getRank(b);
+  });
+
+  const activePlayers = players?.filter((p) => p.status === 'active') ?? [];
+
   return (
     <Animated.View style={{ transform: [{ scale }] }}>
       <Pressable
@@ -198,7 +211,8 @@ export function ChildTeamCard({ team, onPress, onPlayerPress }) {
                     fontFamily: 'Saira_400Regular',
                     color: 'rgba(255,255,255,0.25)',
                   }}>
-                  {players.length} {players.length === 1 ? 'player' : 'players'}
+                  {activePlayers.length}{' '}
+                  {activePlayers.length === 1 ? 'active player' : 'active players'}
                 </Text>
               </View>
             </View>
@@ -229,7 +243,7 @@ export function ChildTeamCard({ team, onPress, onPlayerPress }) {
               </Text>
             </View>
           ) : (
-            players.map((player, index) => (
+            sortedPlayers.map((player, index) => (
               <Pressable
                 key={player.id}
                 onPress={() => onPlayerPress?.(player)}

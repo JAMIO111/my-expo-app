@@ -1,7 +1,7 @@
 import { Text, View, Image, Pressable } from 'react-native';
 import { useColorScheme } from 'react-native';
 import Ionicons from '@expo/vector-icons/Ionicons';
-import { BellDot } from 'lucide-react-native';
+import { BellDot, Bell } from 'lucide-react-native';
 import { useNotificationsPanel } from '@contexts/NotificationsPanelProvider';
 
 const BrandHeader = ({
@@ -11,7 +11,7 @@ const BrandHeader = ({
   showNotification = false,
 }) => {
   const colorScheme = useColorScheme();
-  const { open } = useNotificationsPanel();
+  const { open, unreadCount } = useNotificationsPanel();
   return (
     <View className={`h-16 flex-row items-center justify-center ${backgroundColor}`}>
       {showNotification && <View className="w-12" />}
@@ -31,8 +31,18 @@ const BrandHeader = ({
         {text2}
       </Text>
       {showNotification && (
-        <Pressable hitSlop={10} className="w-12 items-start justify-center" onPress={open}>
-          <BellDot size={24} color="white" strokeWidth={2} />
+        <Pressable hitSlop={10} className="relative w-12 items-start justify-center" onPress={open}>
+          {unreadCount > 0 ? (
+            <BellDot size={24} color="white" strokeWidth={2} />
+          ) : (
+            <Bell size={24} color="white" strokeWidth={2} />
+          )}
+          {unreadCount > 0 && (
+            <View
+              style={{ top: 1.0, left: 14, width: 8, height: 8 }}
+              className="absolute rounded-full bg-red-500"
+            />
+          )}
         </Pressable>
       )}
     </View>

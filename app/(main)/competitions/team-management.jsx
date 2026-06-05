@@ -12,12 +12,17 @@ import ChildTeamCard from '@components/ChildTeamCard';
 import BottomSheetModal from '@components/BottomSheetModal';
 import { useState } from 'react';
 import ManageCompTeam from '@components/ManageCompTeam';
+import TeamInviteCard from '@components/TeamInviteCard2';
+import { useTeamInvites } from '@hooks/useTeamInvites';
 
 const TeamManagement = () => {
   const [teamManagerVisible, setTeamManagerVisible] = useState(false);
   const [managerType, setManagerType] = useState(null);
   const [selectedTeam, setSelectedTeam] = useState(null);
   const { currentRole, player } = useUser();
+  const { data: invites } = useTeamInvites(player?.id, currentRole?.team.id);
+
+  console.log('invites:', invites);
 
   const childTeams = currentRole?.compTeams;
 
@@ -44,6 +49,14 @@ const TeamManagement = () => {
             paddingBottom: 120, // 👈 key fix
           }}
           className="mt-16 flex-1 bg-bg-2 px-4">
+          {invites?.length > 0 && (
+            <>
+              <Heading text="My Invites" />
+              {invites.map((invite) => (
+                <TeamInviteCard key={invite.id} invite={invite} />
+              ))}
+            </>
+          )}
           <Heading text="My Teams" />
           <View className="gap-3">
             {childTeams?.length > 0 ? (
@@ -64,7 +77,7 @@ const TeamManagement = () => {
                 />
               ))
             ) : (
-              <View className="flex-1 items-center justify-center gap-2 rounded-2xl bg-bg-2 py-8 shadow-sm">
+              <View className="flex-1 items-center justify-center gap-2 rounded-2xl bg-bg-1 py-8 shadow-sm">
                 <Ionicons name="people-circle-outline" size={64} color="#888" />
                 <Text className="font-saira-medium text-text-2">No teams available</Text>
               </View>

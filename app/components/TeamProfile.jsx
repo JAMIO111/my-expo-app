@@ -140,7 +140,7 @@ const TeamProfile = ({ context, profile, isLoading }) => {
 
   return (
     <>
-      <ScrollView className="flex-1 bg-bg-1" contentContainerStyle={{ flexGrow: 1 }}>
+      <ScrollView className="flex-1 bg-brand" contentContainerStyle={{ flexGrow: 1 }}>
         <View className="bg-brand p-3">
           {profile.cover_image_url && (
             <View className="overflow-hidden rounded-2xl">

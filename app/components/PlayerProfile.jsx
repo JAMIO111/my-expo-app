@@ -303,181 +303,184 @@ const PlayerProfile = ({ context, isLoading, playerProfile, error }) => {
     <>
       <ScrollView
         contentContainerStyle={{ alignItems: 'center', justifyContent: 'center' }}
-        className="w-full bg-bg-grouped-1">
+        className="w-full bg-brand">
         <PlayerProfileHeader playerProfile={playerProfile} currentTeam={currentTeam} />
+        <View className="w-full bg-bg-grouped-1">
+          <View className="w-full bg-bg-grouped-2 px-2 py-6">
+            <Heading className="pl-3" text="Showcase Stats" />
+            <View className="mt-2 gap-4 px-2">
+              <View className="flex-row gap-4">
+                {statSlots.slice(0, 2).map((slotKey, index) => {
+                  const stat = statOptions.find((s) => s.key === slotKey);
 
-        <View className="w-full bg-bg-grouped-2 px-2 py-6">
-          <Heading className="pl-3" text="Showcase Stats" />
-          <View className="mt-2 gap-4 px-2">
-            <View className="flex-row gap-4">
-              {statSlots.slice(0, 2).map((slotKey, index) => {
-                const stat = statOptions.find((s) => s.key === slotKey);
+                  return (
+                    <StatCard
+                      key={index}
+                      title={stat?.label || '—'}
+                      value={stat?.value ?? 0}
+                      onPress={() => openStatSelector(index)}
+                      disabled={!isMe}
+                      isLoading={isLoadingPlayerStats}
+                    />
+                  );
+                })}
+              </View>
 
-                return (
-                  <StatCard
-                    key={index}
-                    title={stat?.label || '—'}
-                    value={stat?.value ?? 0}
-                    onPress={() => openStatSelector(index)}
-                    disabled={!isMe}
-                    isLoading={isLoadingPlayerStats}
-                  />
-                );
-              })}
-            </View>
+              <View className="flex-row gap-4">
+                {statSlots.slice(2, 4).map((slotKey, index) => {
+                  const stat = statOptions.find((s) => s.key === slotKey);
 
-            <View className="flex-row gap-4">
-              {statSlots.slice(2, 4).map((slotKey, index) => {
-                const stat = statOptions.find((s) => s.key === slotKey);
-
-                return (
-                  <StatCard
-                    key={index + 2}
-                    title={stat?.label || '—'}
-                    value={stat?.value ?? 0}
-                    onPress={() => openStatSelector(index + 2)}
-                    disabled={!isMe}
-                    isLoading={isLoadingPlayerStats}
-                  />
-                );
-              })}
-            </View>
-            <CTAButton
-              icon={<Ionicons name="stats-chart" size={20} color="black" />}
-              callbackFn={handleViewStats}
-              text="View All Stats"
-              type="yellow"
-            />
-            <CTAButton
-              icon={<Ionicons name="git-compare-outline" size={24} color="white" />}
-              type="brand"
-              callbackFn={() => {
-                context === 'home/league'
-                  ? router.push({
-                      pathname: `home/league/${teamId}/compare-stats`,
-                      params: {
-                        defaultEntity: JSON.stringify(playerProfile),
-                        entityType: 'player',
-                      },
-                    })
-                  : context === 'teams'
+                  return (
+                    <StatCard
+                      key={index + 2}
+                      title={stat?.label || '—'}
+                      value={stat?.value ?? 0}
+                      onPress={() => openStatSelector(index + 2)}
+                      disabled={!isMe}
+                      isLoading={isLoadingPlayerStats}
+                    />
+                  );
+                })}
+              </View>
+              <CTAButton
+                icon={<Ionicons name="stats-chart" size={20} color="black" />}
+                callbackFn={handleViewStats}
+                text="View All Stats"
+                type="yellow"
+              />
+              <CTAButton
+                icon={<Ionicons name="git-compare-outline" size={24} color="white" />}
+                type="brand"
+                callbackFn={() => {
+                  context === 'home/league'
                     ? router.push({
-                        pathname: `/teams/${userId}/compare-stats`,
+                        pathname: `home/league/${teamId}/compare-stats`,
                         params: {
                           defaultEntity: JSON.stringify(playerProfile),
                           entityType: 'player',
                         },
                       })
-                    : context === 'fixture' &&
-                      router.push({
-                        pathname: `home/upcoming-fixture/${teamId}/compare-stats`,
-                        params: {
-                          defaultEntity: JSON.stringify(playerProfile),
-                          entityType: 'player',
-                        },
-                      });
-              }}
-              text="Compare Stats"
+                    : context === 'teams'
+                      ? router.push({
+                          pathname: `/teams/${userId}/compare-stats`,
+                          params: {
+                            defaultEntity: JSON.stringify(playerProfile),
+                            entityType: 'player',
+                          },
+                        })
+                      : context === 'fixture' &&
+                        router.push({
+                          pathname: `home/upcoming-fixture/${teamId}/compare-stats`,
+                          params: {
+                            defaultEntity: JSON.stringify(playerProfile),
+                            entityType: 'player',
+                          },
+                        });
+                }}
+                text="Compare Stats"
+              />
+            </View>
+          </View>
+          <View className="mt-1 w-full gap-3 bg-bg-grouped-2 px-4 pb-8 pt-4">
+            <Heading text="Trophy Cabinet" />
+            <TrophyCabinet
+              trophies={trophies || []}
+              displayName={`${playerProfile?.first_name} ${playerProfile?.surname}`}
+              establishedYear={
+                playerProfile?.created_at
+                  ? new Date(playerProfile.created_at).getFullYear()
+                  : '2025'
+              }
             />
           </View>
-        </View>
-        <View className="mt-1 w-full gap-3 bg-bg-grouped-2 px-4 pb-8 pt-4">
-          <Heading text="Trophy Cabinet" />
-          <TrophyCabinet
-            trophies={trophies || []}
-            displayName={`${playerProfile?.first_name} ${playerProfile?.surname}`}
-            establishedYear={
-              playerProfile?.created_at ? new Date(playerProfile.created_at).getFullYear() : '2025'
-            }
-          />
-        </View>
-        <View className="mt-1 w-full gap-6 bg-bg-grouped-2 px-6 py-8">
-          {!isMe && iAmCaptain && inMyTeam && (
-            <>
-              <CTAButton
-                type="yellow"
-                callbackFn={() =>
-                  openConfirmModal(
-                    'Transfer Captaincy?',
-                    `Are you sure you want to make ${playerProfile?.nickname || `${playerProfile?.first_name} ${playerProfile?.surname}`} the team captain? You will lose your captaincy and all associated privileges.`,
-                    'Make Team Captain',
-                    'success',
-                    handleConfirmTransferCaptaincy
-                  )
-                }
-                text="Make Team Captain"
-                icon={<Ionicons name="shield-checkmark-outline" size={20} color="black" />}
-              />
-            </>
-          )}
-          {!isMe &&
-            (iAmViceCaptain || iAmCaptain) &&
-            inMyTeam &&
-            !playerIsViceCaptain &&
-            !playerIsCaptain && (
+          <View className="mt-1 w-full gap-6 bg-bg-grouped-2 px-6 py-8">
+            {!isMe && iAmCaptain && inMyTeam && (
               <>
                 <CTAButton
-                  type="brand"
+                  type="yellow"
                   callbackFn={() =>
                     openConfirmModal(
-                      'Transfer Vice Captaincy?',
-                      `Are you sure you want to make ${playerProfile?.nickname || `${playerProfile?.first_name} ${playerProfile?.surname}`} the vice captain?`,
-                      'Make Vice Captain',
+                      'Transfer Captaincy?',
+                      `Are you sure you want to make ${playerProfile?.nickname || `${playerProfile?.first_name} ${playerProfile?.surname}`} the team captain? You will lose your captaincy and all associated privileges.`,
+                      'Make Team Captain',
                       'success',
-                      handleConfirmTransferViceCaptaincy
+                      handleConfirmTransferCaptaincy
                     )
                   }
-                  text="Make Vice Captain"
-                  icon={<Ionicons name="shield-checkmark-outline" size={20} color="white" />}
+                  text="Make Team Captain"
+                  icon={<Ionicons name="shield-checkmark-outline" size={20} color="black" />}
                 />
               </>
             )}
-          {((iAmCaptain && inMyTeam) || isMe) && (
-            <>
-              <CTAButton
-                type="error"
-                icon={<Ionicons name="person-remove-outline" size={20} color="white" />}
-                callbackFn={
-                  (iAmCaptain || iAmViceCaptain) && isMe
-                    ? () => {
-                        Toast.show({
-                          type: 'info',
-                          text1: 'Attention',
-                          text2: `You are the ${iAmCaptain ? 'team captain' : iAmViceCaptain ? 'vice captain' : ''}. Please transfer the ${iAmCaptain ? 'captaincy' : iAmViceCaptain ? 'vice captaincy' : ''} before leaving the team.`,
-                          props: {
-                            colorScheme: colorScheme,
-                          },
-                        });
-                      }
-                    : () =>
-                        openConfirmModal(
-                          isMe ? 'Leave Team?' : 'Remove Player?',
-                          !isMe && iAmCaptain
-                            ? `Are you sure you want to remove ${playerProfile?.nickname || `${playerProfile?.first_name} ${playerProfile?.surname}`} from the team? They may not be able to join back until next transfer window.`
-                            : 'Are you sure you want to leave the team? You will need the captain to invite you again if you wish to rejoin.',
-                          !isMe && iAmCaptain ? 'Remove' : 'Leave',
-                          'error',
-                          handlePlayerRemove
-                        )
-                }
-                text={!isMe && iAmCaptain ? 'Remove Player' : 'Leave Team'}
-              />
-              <ConfirmModal
-                type="error"
-                confirmText={!isMe && iAmCaptain ? 'Remove' : 'Leave'}
-                visible={removePlayerModalVisible}
-                onConfirm={handlePlayerRemove}
-                onCancel={() => setRemovePlayerModalVisible(false)}
-                title={isMe ? 'Leave Team?' : 'Remove Player?'}
-                message={
-                  !isMe && iAmCaptain
-                    ? `Are you sure you want to remove ${playerProfile?.nickname || `${playerProfile?.first_name} ${playerProfile?.surname}`} from the team? They may not be able to join back until next season.`
-                    : 'Are you sure you want to leave the team? You will need the captain to invite you again if you wish to rejoin.'
-                }
-              />
-            </>
-          )}
-          <Text className="pt-2 text-center font-saira text-xs text-text-2">{`Player ID: ${playerProfile?.id}`}</Text>
+            {!isMe &&
+              (iAmViceCaptain || iAmCaptain) &&
+              inMyTeam &&
+              !playerIsViceCaptain &&
+              !playerIsCaptain && (
+                <>
+                  <CTAButton
+                    type="brand"
+                    callbackFn={() =>
+                      openConfirmModal(
+                        'Transfer Vice Captaincy?',
+                        `Are you sure you want to make ${playerProfile?.nickname || `${playerProfile?.first_name} ${playerProfile?.surname}`} the vice captain?`,
+                        'Make Vice Captain',
+                        'success',
+                        handleConfirmTransferViceCaptaincy
+                      )
+                    }
+                    text="Make Vice Captain"
+                    icon={<Ionicons name="shield-checkmark-outline" size={20} color="white" />}
+                  />
+                </>
+              )}
+            {((iAmCaptain && inMyTeam) || isMe) && (
+              <>
+                <CTAButton
+                  type="error"
+                  icon={<Ionicons name="person-remove-outline" size={20} color="white" />}
+                  callbackFn={
+                    (iAmCaptain || iAmViceCaptain) && isMe
+                      ? () => {
+                          Toast.show({
+                            type: 'info',
+                            text1: 'Attention',
+                            text2: `You are the ${iAmCaptain ? 'team captain' : iAmViceCaptain ? 'vice captain' : ''}. Please transfer the ${iAmCaptain ? 'captaincy' : iAmViceCaptain ? 'vice captaincy' : ''} before leaving the team.`,
+                            props: {
+                              colorScheme: colorScheme,
+                            },
+                          });
+                        }
+                      : () =>
+                          openConfirmModal(
+                            isMe ? 'Leave Team?' : 'Remove Player?',
+                            !isMe && iAmCaptain
+                              ? `Are you sure you want to remove ${playerProfile?.nickname || `${playerProfile?.first_name} ${playerProfile?.surname}`} from the team? They may not be able to join back until next transfer window.`
+                              : 'Are you sure you want to leave the team? You will need the captain to invite you again if you wish to rejoin.',
+                            !isMe && iAmCaptain ? 'Remove' : 'Leave',
+                            'error',
+                            handlePlayerRemove
+                          )
+                  }
+                  text={!isMe && iAmCaptain ? 'Remove Player' : 'Leave Team'}
+                />
+                <ConfirmModal
+                  type="error"
+                  confirmText={!isMe && iAmCaptain ? 'Remove' : 'Leave'}
+                  visible={removePlayerModalVisible}
+                  onConfirm={handlePlayerRemove}
+                  onCancel={() => setRemovePlayerModalVisible(false)}
+                  title={isMe ? 'Leave Team?' : 'Remove Player?'}
+                  message={
+                    !isMe && iAmCaptain
+                      ? `Are you sure you want to remove ${playerProfile?.nickname || `${playerProfile?.first_name} ${playerProfile?.surname}`} from the team? They may not be able to join back until next season.`
+                      : 'Are you sure you want to leave the team? You will need the captain to invite you again if you wish to rejoin.'
+                  }
+                />
+              </>
+            )}
+            <Text className="pt-2 text-center font-saira text-xs text-text-2">{`Player ID: ${playerProfile?.id}`}</Text>
+          </View>
         </View>
       </ScrollView>
       <BottomSheetModal

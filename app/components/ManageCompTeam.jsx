@@ -33,6 +33,9 @@ function PlayerCard({ player, onRemove, canEdit, isCaptain, onToggleCaptain }) {
   const scale = useRef(new Animated.Value(0.85)).current;
   const opacity = useRef(new Animated.Value(0)).current;
 
+  console.log('Rendering PlayerCard for', player.first_name);
+  console.log('status:', player.status);
+
   useEffect(() => {
     Animated.parallel([
       Animated.spring(scale, { toValue: 1, useNativeDriver: true, damping: 14, stiffness: 180 }),
@@ -83,7 +86,7 @@ function PlayerCard({ player, onRemove, canEdit, isCaptain, onToggleCaptain }) {
           </View>
 
           {/* Captain toggle */}
-          {canEdit && (
+          {canEdit && player.status === 'active' && (
             <TouchableOpacity
               onPress={onToggleCaptain}
               hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
@@ -113,38 +116,26 @@ function PlayerCard({ player, onRemove, canEdit, isCaptain, onToggleCaptain }) {
               </Text>
             </TouchableOpacity>
           )}
-          <View
-            style={{
-              backgroundColor:
-                player.status === 'active'
-                  ? 'rgba(30, 250, 20, 0.15)'
-                  : player.status === 'pending_player'
-                    ? 'rgba(255, 0, 122, 0.15)' //pink
-                    : 'transparent',
-              borderRadius: 4,
-              paddingHorizontal: 5,
-              paddingVertical: 1,
-            }}>
-            <Text
+          {player.status === 'pending_player' && (
+            <View
               style={{
-                fontFamily: 'Saira_600SemiBold',
-                fontSize: 9,
-                color:
-                  player.status === 'active'
-                    ? 'rgba(30, 250, 20, 1)'
-                    : player.status === 'pending_player'
-                      ? 'rgba(255, 0, 122, 1)' //pink
-                      : 'transparent',
-                letterSpacing: 0.8,
-                textTransform: 'uppercase',
+                backgroundColor: 'rgba(255, 0, 122, 0.15)',
+                borderRadius: 6,
+                paddingHorizontal: 8,
+                paddingVertical: 3,
               }}>
-              {player.status === 'active'
-                ? 'Active'
-                : player.status === 'pending_player'
-                  ? 'Invited'
-                  : ''}
-            </Text>
-          </View>
+              <Text
+                style={{
+                  fontFamily: 'Saira_600SemiBold',
+                  fontSize: 9,
+                  color: 'rgba(255, 0, 122, 1)',
+                  letterSpacing: 0.8,
+                  textTransform: 'uppercase',
+                }}>
+                Invited
+              </Text>
+            </View>
+          )}
           {/* Remove */}
           {canEdit && (
             <TouchableOpacity
@@ -255,6 +246,13 @@ const ManageCompTeam = ({ type, team, closeModal }) => {
   const [captainId, setCaptainId] = useState(team?.captain || null);
 
   const canEdit = team ? team?.captain === player?.id : false;
+  const isCreate = type === 'create';
+
+  const initialPlayers = useMemo(() => {
+    if (isCreate && player?.id) return [player.id];
+    if (team?.players) return team.players.map((p) => p.id);
+    return [];
+  }, [isCreate, player?.id, team]);
 
   const playerOptions = useMemo(
     () =>
@@ -271,7 +269,30 @@ const ManageCompTeam = ({ type, team, closeModal }) => {
     [teamPlayers]
   );
 
-  const selectedPlayers = playerOptions.filter((p) => selectedPlayerIds.includes(p.value));
+  useEffect(() => {
+    if (type !== 'create') return;
+    if (!player?.id) return;
+
+    setSelectedPlayerIds([player.id]);
+    setCaptainId(player.id);
+  }, [type, player?.id]);
+
+  const selectedPlayers = useMemo(() => {
+    return selectedPlayerIds
+      .map((id) => {
+        const option = playerOptions.find((p) => p.value === id);
+
+        if (!option) return null;
+
+        const teamPlayer = team?.players?.find((p) => p.id === id);
+
+        return {
+          ...option,
+          status: teamPlayer?.status ?? null,
+        };
+      })
+      .filter(Boolean);
+  }, [selectedPlayerIds, playerOptions, team?.players]);
 
   const handleRemovePlayer = (playerId) => {
     setSelectedPlayerIds((prev) => prev.filter((id) => id !== playerId));

@@ -5,6 +5,8 @@ import { Ionicons } from '@expo/vector-icons';
 import { useNotifications } from '@hooks/useNotifications';
 import { useUser } from '@contexts/UserProvider';
 import SafeViewWrapper from '@components/SafeViewWrapper';
+import { supabase } from '@lib/supabase';
+import { useRouter } from 'expo-router';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const PANEL_WIDTH = SCREEN_WIDTH * 0.88;
@@ -41,13 +43,13 @@ function NotificationRow({ item, onPress }) {
     <Pressable
       onPress={() => onPress(item)}
       style={({ pressed }) => ({ opacity: pressed ? 0.7 : 1 })}
-      className="mx-3 flex-row items-start rounded-xl bg-brand px-4 py-3">
+      className="mx-3 flex-row items-start rounded-xl bg-bg-2 px-4 py-3">
       {/* Unread dot + icon */}
       <View className="mr-3 mt-1 items-center justify-center">
-        {!item.read && <View className="absolute -left-1 -top-1 h-2 w-2 rounded-full bg-brand" />}
+        {!item.read && <View className="absolute -left-1 -top-1 h-2 w-2 rounded-full bg-red-500" />}
         <View
-          className="h-10 w-10 items-center justify-center rounded-2xl"
-          style={{ backgroundColor: cfg.color + '22' }}>
+          className="h-10 w-10 items-center justify-center rounded-xl"
+          style={{ backgroundColor: cfg.color + '55' }}>
           <Ionicons name={cfg.icon} size={18} color={cfg.color} />
         </View>
       </View>
@@ -56,18 +58,18 @@ function NotificationRow({ item, onPress }) {
       <View className="flex-1">
         <View className="mb-0.5 flex-row items-center justify-between">
           <Text
-            className="mr-2 flex-1 text-sm font-semibold text-white"
+            className="mr-2 flex-1 text-sm font-semibold text-text-1"
             style={{ fontFamily: 'Saira_600SemiBold' }}
             numberOfLines={1}>
             {item.title}
           </Text>
-          <Text className="text-xs text-white/40" style={{ fontFamily: 'Saira_400Regular' }}>
+          <Text className="text-xs text-text-2" style={{ fontFamily: 'Saira_400Regular' }}>
             {timeAgo(item.created_at)}
           </Text>
         </View>
 
         <Text
-          className="text-sm leading-5 text-white/60"
+          className="text-sm leading-5 text-text-2"
           style={{ fontFamily: 'Saira_400Regular' }}
           numberOfLines={2}>
           {item.message}
@@ -285,6 +287,7 @@ function NotificationsPanelInner({ notifications = [], onNotificationPress, onMa
 export function NotificationsPanelProvider({ children }) {
   const { player } = useUser();
   const [isOpen, setIsOpen] = useState(false);
+  const router = useRouter();
 
   const open = useCallback(() => setIsOpen(true), []);
   const close = useCallback(() => setIsOpen(false), []);
@@ -295,6 +298,7 @@ export function NotificationsPanelProvider({ children }) {
   // setNotifications which was never declared, causing silent throws.
   const { data: rawNotifications } = useNotifications(player?.id);
   const [notifications, setNotifications] = useState([]);
+  const unreadCount = notifications.filter((n) => !n.read).length;
 
   console.log('NotificationsPanelProvider notifications:', rawNotifications);
 
@@ -302,18 +306,47 @@ export function NotificationsPanelProvider({ children }) {
     if (rawNotifications) setNotifications(rawNotifications);
   }, [rawNotifications]);
 
-  const onNotificationPress = useCallback((notification) => {
-    setNotifications((prev) =>
-      prev.map((n) => (n.id === notification.id ? { ...n, read: true } : n))
-    );
-  }, []);
+  const onNotificationPress = useCallback(
+    async (notification) => {
+      // optimistic UI update
+      setNotifications((prev) =>
+        prev.map((n) => (n.id === notification.id ? { ...n, read: true } : n))
+      );
 
-  const onMarkAllRead = useCallback(() => {
+      const { error } = await supabase
+        .from('Notifications')
+        .update({ read: true, read_at: new Date().toISOString() })
+        .eq('id', notification.id);
+
+      if (error) {
+        // rollback if it fails
+        setNotifications((prev) =>
+          prev.map((n) => (n.id === notification.id ? { ...n, read: false } : n))
+        );
+      }
+      if (notification.data?.link) {
+        close();
+        const segments = notification.data.link.split('/').filter(Boolean);
+        const paths = segments.map((_, i) => '/' + segments.slice(0, i + 1).join('/'));
+        for (const path of paths) {
+          router.push(path);
+        }
+      }
+    },
+    [router, close]
+  );
+
+  const onMarkAllRead = useCallback(async () => {
     setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
+
+    await supabase
+      .from('Notifications')
+      .update({ read: true, read_at: new Date().toISOString() })
+      .eq('user_id', player?.id);
   }, []);
 
   return (
-    <NotificationsPanelContext.Provider value={{ isOpen, open, close, toggle }}>
+    <NotificationsPanelContext.Provider value={{ isOpen, open, close, toggle, unreadCount }}>
       <View style={{ flex: 1 }}>
         {children}
         <NotificationsPanelInner
