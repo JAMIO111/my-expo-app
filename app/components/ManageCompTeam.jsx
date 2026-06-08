@@ -23,15 +23,18 @@ import Avatar from '@components/Avatar';
 import CTAButton from '@components/CTAButton';
 import { useCreateChildTeam } from '@hooks/useCreateChildTeam';
 import { useUpdateChildTeam } from '@hooks/useUpdateChildTeam';
+import { useLeaveChildTeam } from '@hooks/useLeaveChildTeam';
 
 const SHEET_HEIGHT = 520;
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
 // ─── Selected player card ─────────────────────────────────────────────────────
 
-function PlayerCard({ player, onRemove, canEdit, isCaptain, onToggleCaptain }) {
+function PlayerCard({ player, onRemove, canEdit, isCaptain, isCreate, onToggleCaptain }) {
   const scale = useRef(new Animated.Value(0.85)).current;
   const opacity = useRef(new Animated.Value(0)).current;
+
+  const isMe = useUser()?.player?.id === player.id;
 
   console.log('Rendering PlayerCard for', player.first_name);
   console.log('status:', player.status);
@@ -86,8 +89,9 @@ function PlayerCard({ player, onRemove, canEdit, isCaptain, onToggleCaptain }) {
           </View>
 
           {/* Captain toggle */}
-          {canEdit && player.status === 'active' && (
+          {((canEdit && player.status === 'active') || (isCreate && isMe)) && (
             <TouchableOpacity
+              disabled={isCreate}
               onPress={onToggleCaptain}
               hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
               style={{
@@ -137,7 +141,7 @@ function PlayerCard({ player, onRemove, canEdit, isCaptain, onToggleCaptain }) {
             </View>
           )}
           {/* Remove */}
-          {canEdit && (
+          {(canEdit || isCreate) && (
             <TouchableOpacity
               onPress={onRemove}
               hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
@@ -241,16 +245,19 @@ const ManageCompTeam = ({ type, team, closeModal }) => {
   const { data: teamPlayers } = useTeamPlayers(currentRole?.team?.id);
   const { mutate: createTeam, isPending: isPendingCreate } = useCreateChildTeam();
   const { mutate: updateTeam, isPending: isPendingUpdate } = useUpdateChildTeam();
+  const { mutate: leaveChildTeam, isPending: isLeaving } = useLeaveChildTeam();
   const [teamName, setTeamName] = useState(team?.display_name || '');
-  const [selectedPlayerIds, setSelectedPlayerIds] = useState(team?.players?.map((p) => p.id) || []);
+  const [selectedPlayerIds, setSelectedPlayerIds] = useState(
+    team?.players?.filter((p) => p.status !== 'left').map((p) => p.id) || []
+  );
   const [captainId, setCaptainId] = useState(team?.captain || null);
 
-  const canEdit = team ? team?.captain === player?.id : false;
   const isCreate = type === 'create';
+  const canEdit = team ? team?.captain === player?.id : false;
 
   const initialPlayers = useMemo(() => {
     if (isCreate && player?.id) return [player.id];
-    if (team?.players) return team.players.map((p) => p.id);
+    if (team?.players) return team.players.filter((p) => p.status !== 'left').map((p) => p.id);
     return [];
   }, [isCreate, player?.id, team]);
 
@@ -278,18 +285,24 @@ const ManageCompTeam = ({ type, team, closeModal }) => {
   }, [type, player?.id]);
 
   const selectedPlayers = useMemo(() => {
+    const existingIds = new Set(
+      team?.players
+        ?.filter((p) => p.status === 'active' || p.status === 'pending_player')
+        .map((p) => p.id) ?? []
+    );
+
     return selectedPlayerIds
       .map((id) => {
         const option = playerOptions.find((p) => p.value === id);
-
         if (!option) return null;
 
         const teamPlayer = team?.players?.find((p) => p.id === id);
 
-        return {
-          ...option,
-          status: teamPlayer?.status ?? null,
-        };
+        // If they're in selectedPlayerIds but not in the existing active/pending
+        // set, they've been freshly added this session — treat as new invite
+        const status = existingIds.has(id) ? (teamPlayer?.status ?? null) : null;
+
+        return { ...option, status };
       })
       .filter(Boolean);
   }, [selectedPlayerIds, playerOptions, team?.players]);
@@ -412,6 +425,22 @@ const ManageCompTeam = ({ type, team, closeModal }) => {
       );
       return;
     }
+    leaveChildTeam(
+      { teamId: team.id, playerId: player.id },
+      {
+        onSuccess: () => closeModal(),
+        onError: (err) => {
+          const messages = {
+            CAPTAIN_CANNOT_LEAVE: 'Assign a new captain before leaving.',
+            PLAYER_NOT_IN_TEAM: 'You are not an active member of this team.',
+          };
+          Alert.alert('Could not leave team', messages[err.message] ?? err.message);
+        },
+      }
+    );
+    Alert.alert('Left team', `You have left ${team.display_name}.`, [
+      { text: 'OK', onPress: () => closeModal() },
+    ]);
   };
 
   return (
@@ -419,48 +448,65 @@ const ManageCompTeam = ({ type, team, closeModal }) => {
       <ScrollView
         keyboardShouldPersistTaps="handled"
         contentContainerStyle={{ flex: 1, padding: 20, gap: 20 }}>
-        {/* Team name */}
-        <CustomTextInput
-          title="Team Name"
-          titleColor="text-text-1"
-          value={teamName}
-          onChangeText={setTeamName}
-          keyboardType="default"
-          placeholder="Enter team name"
-          leftIconName="shield-half-outline"
-          maxLength={30}
-          iconColor="#800080"
-          clearButtonMode="never"
-        />
+        {isCreate || canEdit ? (
+          <>
+            {/* Team name */}
+            <CustomTextInput
+              title="Team Name"
+              titleColor="text-text-1"
+              value={teamName}
+              onChangeText={setTeamName}
+              keyboardType="default"
+              placeholder="Enter team name"
+              leftIconName="shield-half-outline"
+              maxLength={30}
+              iconColor="#800080"
+              clearButtonMode="while-editing"
+            />
 
-        {/* Player picker */}
-        <CustomDropdown
-          title="Add Players"
-          titleColor="text-text-1"
-          placeholder="Search players..."
-          options={
-            teamPlayers?.map((p) => ({
-              first_name: p.first_name,
-              surname: p.surname,
-              nickname: p.nickname,
-              id: p.id,
-              avatar_url: p.avatar_url,
-              label: p.first_name + ' ' + p.surname,
-              value: p.id,
-              subLabel: p.nickname ? `(${p.nickname})` : null,
-            })) || []
-          }
-          showAvatar={true}
-          multiSelect
-          leftIconName="people"
-          iconColor="#800080"
-          values={selectedPlayerIds}
-          onChangeMulti={setSelectedPlayerIds}
-          onDeselect={(id) => {
-            setSelectedPlayerIds((prev) => prev.filter((pid) => pid !== id));
-            if (captainId === id) setCaptainId(null);
-          }}
-        />
+            {/* Player picker */}
+            <CustomDropdown
+              title="Add Players"
+              titleColor="text-text-1"
+              placeholder="Search players..."
+              options={
+                teamPlayers?.map((p) => ({
+                  first_name: p.first_name,
+                  surname: p.surname,
+                  nickname: p.nickname,
+                  id: p.id,
+                  avatar_url: p.avatar_url,
+                  label: p.first_name + ' ' + p.surname,
+                  value: p.id,
+                  subLabel: p.nickname ? `(${p.nickname})` : null,
+                })) || []
+              }
+              showAvatar={true}
+              multiSelect
+              leftIconName="people"
+              iconColor="#800080"
+              values={selectedPlayerIds}
+              onChangeMulti={setSelectedPlayerIds}
+              onDeselect={(id) => {
+                setSelectedPlayerIds((prev) => prev.filter((pid) => pid !== id));
+                if (captainId === id) setCaptainId(null);
+              }}
+            />
+          </>
+        ) : (
+          <>
+            <View className="flex-row items-center gap-5 rounded-xl px-4 py-3">
+              <View className="rounded-xl border border-theme-purple bg-theme-purple/20 p-2">
+                <Ionicons name="shield-half-outline" size={28} color="#800080" />
+              </View>
+
+              <View>
+                <Text className="font-saira-medium text-xl text-text-2">Team Name</Text>
+                <Text className="font-saira-medium text-2xl text-text-1">{teamName}</Text>
+              </View>
+            </View>
+          </>
+        )}
 
         {/* Selected players */}
         {selectedPlayers.length > 0 && (
@@ -500,6 +546,7 @@ const ManageCompTeam = ({ type, team, closeModal }) => {
                 key={player.value}
                 player={player}
                 canEdit={canEdit}
+                isCreate={isCreate}
                 isCaptain={captainId === player.value}
                 onRemove={() => handleRemovePlayer(player.value)}
                 onToggleCaptain={() => handleToggleCaptain(player.value)}
@@ -513,34 +560,40 @@ const ManageCompTeam = ({ type, team, closeModal }) => {
         <View
           style={{ borderRadius: 30 }}
           className="gap-4 border border-theme-gray-3 bg-bg-1/80 p-4 shadow-md backdrop-blur-lg">
-          <CTAButton
-            text={
-              type === 'create'
-                ? isPendingCreate
-                  ? 'Creating...'
-                  : 'Create Team'
-                : isPendingUpdate
-                  ? 'Saving...'
-                  : 'Save Changes'
-            }
-            callbackFn={type === 'create' ? handleCreateTeam : handleUpdateTeam}
-            disabled={isPendingCreate || isPendingUpdate}
-            icon={
-              <Ionicons
-                name={type === 'create' ? 'color-wand' : 'checkmark-outline'}
-                size={24}
-                color="#000"
-              />
-            }
-            type="yellow"
-          />
-          <CTAButton
-            text="Leave Team"
-            callbackFn={handleLeaveTeam}
-            disabled={false}
-            type="tertiary"
-            icon={<Ionicons name="exit-outline" size={24} color="#FFF" />}
-          />
+          {(isCreate || canEdit) && (
+            <CTAButton
+              text={
+                type === 'create'
+                  ? isPendingCreate
+                    ? 'Creating...'
+                    : 'Create Team'
+                  : isPendingUpdate
+                    ? 'Saving...'
+                    : 'Save Changes'
+              }
+              callbackFn={type === 'create' ? handleCreateTeam : handleUpdateTeam}
+              loading={isPendingCreate || isPendingUpdate}
+              loadingText={type === 'create' ? 'Creating...' : 'Saving...'}
+              icon={
+                <Ionicons
+                  name={type === 'create' ? 'color-wand' : 'checkmark-outline'}
+                  size={24}
+                  color="#000"
+                />
+              }
+              type="yellow"
+            />
+          )}
+          {!isCreate && (
+            <CTAButton
+              text="Leave Team"
+              callbackFn={requestLeaveTeam}
+              loading={isLeaving}
+              loadingText="Leaving..."
+              type="tertiary"
+              icon={<Ionicons name="exit-outline" size={24} color="#FFF" />}
+            />
+          )}
         </View>
       </View>
     </View>

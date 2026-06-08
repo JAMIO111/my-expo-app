@@ -1,11 +1,11 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 
-export function useTeamInvites(playerId, teamId) {
+export function useChildTeamInvites(playerId, teamId) {
   return useQuery({
-    queryKey: ['TeamInvites', playerId, teamId],
+    queryKey: ['ChildTeamInvites', playerId, teamId],
     queryFn: async () => {
-      const { data, error } = await supabase.rpc('get_team_invites', {
+      const { data, error } = await supabase.rpc('get_child_team_invites', {
         _player_id: playerId,
         _team_id: teamId,
       });
@@ -21,4 +21,4 @@ export function useTeamInvites(playerId, teamId) {
   });
 }
 
-export default useTeamInvites;
+export default useChildTeamInvites;

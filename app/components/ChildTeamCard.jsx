@@ -243,19 +243,21 @@ export function ChildTeamCard({ team, onPress, onPlayerPress }) {
               </Text>
             </View>
           ) : (
-            sortedPlayers.map((player, index) => (
-              <Pressable
-                key={player.id}
-                onPress={() => onPlayerPress?.(player)}
-                style={({ pressed }) => pressed && { opacity: 0.6 }}>
-                <PlayerRow
-                  player={player}
-                  index={index}
-                  team={team}
-                  onPlayerPress={onPlayerPress}
-                />
-              </Pressable>
-            ))
+            sortedPlayers
+              .filter((player) => player.status !== 'left')
+              .map((player, index) => (
+                <Pressable
+                  key={player.id}
+                  onPress={() => onPlayerPress?.(player)}
+                  style={({ pressed }) => pressed && { opacity: 0.6 }}>
+                  <PlayerRow
+                    player={player}
+                    index={index}
+                    team={team}
+                    onPlayerPress={onPlayerPress}
+                  />
+                </Pressable>
+              ))
           )}
         </View>
 
@@ -275,7 +277,7 @@ export function ChildTeamCard({ team, onPress, onPlayerPress }) {
             style={{
               fontFamily: 'Saira_400Regular',
               fontSize: 11,
-              color: 'rgba(255,255,255,0.2)',
+              color: 'rgba(255,255,255,0.5)',
               textTransform: 'uppercase',
               letterSpacing: 1,
             }}>
@@ -287,10 +289,10 @@ export function ChildTeamCard({ team, onPress, onPlayerPress }) {
               alignItems: 'center',
               gap: 6,
               paddingHorizontal: 6,
-              borderRadius: 4,
+              borderRadius: 6,
               backgroundColor:
                 team?.status === 'active'
-                  ? 'rgba(74, 222, 128, 0.15)'
+                  ? 'rgba(30, 250, 20, 0.15)'
                   : team?.status === 'pending'
                     ? 'rgba(255, 165, 0, 0.15)'
                     : team?.status === 'inactive'
@@ -304,7 +306,7 @@ export function ChildTeamCard({ team, onPress, onPlayerPress }) {
                 borderRadius: 4,
                 backgroundColor:
                   team?.status === 'active'
-                    ? '#4ade80'
+                    ? 'rgba(30, 250, 20, 1)'
                     : team?.status === 'pending'
                       ? 'rgba(255,165,0,1)'
                       : team?.status === 'inactive'
@@ -315,10 +317,10 @@ export function ChildTeamCard({ team, onPress, onPlayerPress }) {
             <Text
               style={{
                 fontFamily: 'Saira_500Medium',
-                fontSize: 14,
+                fontSize: 12,
                 color:
                   team?.status === 'active'
-                    ? '#4ade80'
+                    ? 'rgba(30, 250, 20, 1)'
                     : team?.status === 'pending'
                       ? 'rgba(255,165,0,1)' //orange
                       : team?.status === 'inactive'
@@ -326,12 +328,12 @@ export function ChildTeamCard({ team, onPress, onPlayerPress }) {
                         : 'rgba(255,255,255,0.5)',
               }}>
               {team?.status === 'active'
-                ? 'Active'
+                ? 'ACTIVE'
                 : team?.status === 'pending'
-                  ? 'Pending'
+                  ? 'PENDING'
                   : team?.status === 'inactive'
-                    ? 'Inactive'
-                    : 'Unknown status'}
+                    ? 'INACTIVE'
+                    : 'UNKNOWN'}
             </Text>
           </View>
         </LinearGradient>

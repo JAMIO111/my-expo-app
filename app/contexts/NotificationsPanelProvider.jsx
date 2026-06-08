@@ -18,7 +18,9 @@ const NotificationsPanelContext = createContext(null);
 // ─── Icon map ─────────────────────────────────────────────────────────────────
 
 const TYPE_CONFIG = {
-  team_invite: { icon: 'people', color: '#6EE7B7' },
+  team_invite: { icon: 'mail', color: '#0c7f23' },
+  player_joined: { icon: 'person-add', color: '#0c7f23' },
+  player_left: { icon: 'person-remove', color: '#f52c2c' },
   result: { icon: 'trophy', color: '#FCD34D' },
   system: { icon: 'information-circle', color: '#93C5FD' },
   award: { icon: 'ribbon', color: '#F9A8D4' },
@@ -49,7 +51,11 @@ function NotificationRow({ item, onPress }) {
         {!item.read && <View className="absolute -left-1 -top-1 h-2 w-2 rounded-full bg-red-500" />}
         <View
           className="h-10 w-10 items-center justify-center rounded-xl"
-          style={{ backgroundColor: cfg.color + '55' }}>
+          style={{
+            backgroundColor: cfg.color + '22',
+            borderColor: cfg.color + '88',
+            borderWidth: 1,
+          }}>
           <Ionicons name={cfg.icon} size={18} color={cfg.color} />
         </View>
       </View>
@@ -225,10 +231,10 @@ function NotificationsPanelInner({ notifications = [], onNotificationPress, onMa
                   Notifications
                 </Text>
                 {unreadCount > 0 && (
-                  <View className="rounded-full bg-brand px-2 py-0.5">
+                  <View className="h-6 w-6 items-center justify-center rounded-full bg-brand p-1">
                     <Text
                       className="text-xs text-white"
-                      style={{ fontFamily: 'Saira_600SemiBold' }}>
+                      style={{ fontFamily: 'Saira_600SemiBold', marginTop: 1 }}>
                       {unreadCount}
                     </Text>
                   </View>
@@ -241,7 +247,7 @@ function NotificationsPanelInner({ notifications = [], onNotificationPress, onMa
                     onPress={onMarkAllRead}
                     style={({ pressed }) => ({ opacity: pressed ? 0.6 : 1 })}>
                     <Text
-                      className="text-sm text-text-on-brand-2"
+                      className=" text-sm text-text-on-brand-2"
                       style={{ fontFamily: 'Saira_500Medium' }}>
                       Mark all read
                     </Text>
@@ -250,7 +256,7 @@ function NotificationsPanelInner({ notifications = [], onNotificationPress, onMa
                 <Pressable
                   onPress={close}
                   style={({ pressed }) => ({ opacity: pressed ? 0.6 : 1 })}
-                  className="h-8 w-8 items-center justify-center rounded-full bg-white/10">
+                  className="h-8 w-8 items-center justify-center rounded-full bg-brand">
                   <Ionicons name="close" size={18} color="rgba(255,255,255,0.8)" />
                 </Pressable>
               </View>
@@ -266,7 +272,7 @@ function NotificationsPanelInner({ notifications = [], onNotificationPress, onMa
                 keyExtractor={(item, index) => item.id?.toString() ?? `item-${index}`}
                 renderItem={renderItem}
                 showsVerticalScrollIndicator={false}
-                contentContainerStyle={{ paddingBottom: insets.bottom + 16 }}
+                contentContainerStyle={{ paddingBottom: insets.bottom + 16, gap: 8 }}
                 ItemSeparatorComponent={() => (
                   <View
                     className="mx-4"
@@ -342,8 +348,8 @@ export function NotificationsPanelProvider({ children }) {
     await supabase
       .from('Notifications')
       .update({ read: true, read_at: new Date().toISOString() })
-      .eq('user_id', player?.id);
-  }, []);
+      .eq('player_id', player?.id);
+  }, [player?.id]);
 
   return (
     <NotificationsPanelContext.Provider value={{ isOpen, open, close, toggle, unreadCount }}>

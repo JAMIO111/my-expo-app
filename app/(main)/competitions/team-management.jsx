@@ -13,15 +13,19 @@ import BottomSheetModal from '@components/BottomSheetModal';
 import { useState } from 'react';
 import ManageCompTeam from '@components/ManageCompTeam';
 import TeamInviteCard from '@components/TeamInviteCard2';
-import { useTeamInvites } from '@hooks/useTeamInvites';
+import { useChildTeamInvites } from '@hooks/useChildTeamInvites';
+import { useAcceptTeamInvite } from '@hooks/useAcceptTeamInvite';
+import { useDeclineTeamInvite } from '@hooks/useDeclineTeamInvite';
 
 const TeamManagement = () => {
   const [teamManagerVisible, setTeamManagerVisible] = useState(false);
   const [managerType, setManagerType] = useState(null);
   const [selectedTeam, setSelectedTeam] = useState(null);
   const { currentRole, player } = useUser();
-  const { data: invites } = useTeamInvites(player?.id, currentRole?.team.id);
+  const { data: invites } = useChildTeamInvites(player?.id, currentRole?.team.id);
 
+  const { mutate: acceptInvite, isPending: isAccepting } = useAcceptTeamInvite();
+  const { mutate: declineInvite, isPending: isDeclining } = useDeclineTeamInvite();
   console.log('invites:', invites);
 
   const childTeams = currentRole?.compTeams;
@@ -53,7 +57,43 @@ const TeamManagement = () => {
             <>
               <Heading text="My Invites" />
               {invites.map((invite) => (
-                <TeamInviteCard key={invite.id} invite={invite} />
+                <TeamInviteCard
+                  key={invite.id}
+                  invite={invite}
+                  isAccepting={isAccepting}
+                  onAccept={() =>
+                    acceptInvite(
+                      { inviteId: invite.id, playerId: player.id },
+                      {
+                        onError: (err) => {
+                          const messages = {
+                            INVITE_NOT_FOUND: 'This invite is no longer valid.',
+                          };
+                          Alert.alert(
+                            'Could not accept invite',
+                            messages[err.message] ?? err.message
+                          );
+                        },
+                      }
+                    )
+                  }
+                  onDecline={() =>
+                    declineInvite(
+                      { inviteId: invite.id, playerId: player.id },
+                      {
+                        onError: (err) => {
+                          const messages = {
+                            INVITE_NOT_FOUND: 'This invite is no longer valid.',
+                          };
+                          Alert.alert(
+                            'Could not decline invite',
+                            messages[err.message] ?? err.message
+                          );
+                        },
+                      }
+                    )
+                  }
+                />
               ))}
             </>
           )}
