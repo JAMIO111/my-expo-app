@@ -12,7 +12,7 @@ export function useCompetitionInstances(seasonId) {
           `
           *,
           CompetitionParticipants(*, player:Players(id, first_name, surname, avatar_url), team:Teams(id, display_name, crest)),
-          competition:Competitions(competitor_type, competition_type),
+          competition:Competitions(competitor_type, competition_type, team_type),
           division:Divisions(name, group_name, tier)
         `
         )

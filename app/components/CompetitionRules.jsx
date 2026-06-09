@@ -83,6 +83,8 @@ const CompetitionRules = ({ context }) => {
         text2: 'Your competition has been successfully initiated.',
       });
       queryClient.invalidateQueries(['CompetitionInstances', params.competitionId]);
+      router.back();
+      router.back();
       router.push(`/competitions/${data.id}`);
     } catch (error) {
       console.error('Error initiating competition:', error);
@@ -113,6 +115,7 @@ const CompetitionRules = ({ context }) => {
         name: params.compName,
         competitor_type: params.competitorType,
         competition_type: params.competitionType,
+        team_type: params.teamType,
         min_age: params.minAge ? parseInt(params.minAge) : null,
         max_age: params.maxAge ? parseInt(params.maxAge) : null,
         gender: params.gender ? params.gender : 'mixed',
@@ -177,9 +180,9 @@ const CompetitionRules = ({ context }) => {
             flexGrow: 1,
             gap: 12,
             paddingTop: 20,
-            paddingBottom: 60,
+            paddingBottom: 160,
           }}
-          className="mt-16 flex-1 bg-brand px-4">
+          className="mt-16 flex-1 bg-brand-dark px-4">
           <View className="gap-1">
             <CustomTextInput
               title={`Max No. of ${(context === 'create' ? params.competitorType : competition?.competitor_type) === 'team' ? 'Teams' : 'Players'}`}
@@ -277,7 +280,7 @@ const CompetitionRules = ({ context }) => {
 
           <View className="mb-4 gap-6">
             {/* Bye Rounds */}
-            <View className="flex-row items-center justify-between gap-5 rounded-xl bg-bg-1 p-3">
+            <View className="flex-row items-center justify-between gap-5 rounded-xl bg-bg-1 px-6 py-3">
               <View className="flex-1 items-start justify-center gap-1">
                 <Text className="font-saira-medium text-xl text-text-1">Auto-byes</Text>
                 <Text className="font-saira text-xs text-text-2">
@@ -294,7 +297,7 @@ const CompetitionRules = ({ context }) => {
             </View>
 
             {/* Consolation Match */}
-            <View className="flex-row items-center justify-between gap-5 rounded-xl bg-bg-1 p-3">
+            <View className="flex-row items-center justify-between gap-5 rounded-xl bg-bg-1 px-6 py-3">
               <View className="flex-1 items-start justify-center gap-1">
                 <Text className="font-saira-medium text-xl text-text-1">Consolation Match</Text>
 
@@ -311,13 +314,18 @@ const CompetitionRules = ({ context }) => {
               />
             </View>
           </View>
-
-          <CTAButton
-            text={context === 'create' ? 'Continue' : 'Initiate Competition'}
-            type="yellow"
-            callbackFn={context === 'create' ? handleContinue : handleInitiateCompetition}
-          />
         </ScrollView>
+        <View style={{ position: 'absolute', bottom: 0, left: 0, right: 0 }} className="p-6">
+          <View
+            style={{ borderRadius: 30 }}
+            className="border border-theme-gray-3 bg-bg-1/70 p-4 shadow-md backdrop-blur-lg">
+            <CTAButton
+              text={context === 'create' ? 'Continue' : 'Initiate Competition'}
+              type="yellow"
+              callbackFn={context === 'create' ? handleContinue : handleInitiateCompetition}
+            />
+          </View>
+        </View>
       </SafeViewWrapper>
     </>
   );

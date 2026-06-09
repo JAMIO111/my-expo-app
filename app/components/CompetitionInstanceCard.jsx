@@ -61,12 +61,13 @@ export function getStatusColors(status) {
 }
 
 export function checkEligibility(player, instance, currentRole) {
+  if (!player || !instance || !currentRole) return 'Ineligible';
+
+  const { dob, gender } = player;
+  const division = instance.division_id;
   const validParticipants = instance.CompetitionParticipants.filter(
     (p) => p.status !== 'left' && p.status !== 'cancelled'
   );
-  if (!player || !instance) return 'Ineligible';
-  const { dob, gender } = player;
-  const division = instance.division_id;
   const participant =
     instance.competition.competitor_type === 'team'
       ? validParticipants?.find((p) => p.team_id === currentRole?.team?.id)
@@ -75,22 +76,65 @@ export function checkEligibility(player, instance, currentRole) {
     if (participant.status === 'requested') return 'Requested';
     if (participant.status === 'active') return 'Entered';
   }
-  if (division && currentRole?.division?.id !== division) return 'Ineligible';
-  if (!dob) return 'Ineligible';
-  if (instance.gender && instance.gender !== 'mixed' && gender && instance.gender !== gender)
-    return 'Ineligible';
-  const birth = new Date(dob);
-  const today = new Date();
-  let age = today.getFullYear() - birth.getFullYear();
-  const m = today.getMonth() - birth.getMonth();
-  if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) age--;
-  if (instance.min_age != null && age < instance.min_age) return 'Ineligible';
-  if (instance.max_age != null && age > instance.max_age) return 'Ineligible';
+
   if (instance.entry_deadline) {
     const entryDeadline = new Date(instance.entry_deadline);
     if (!isNaN(entryDeadline) && new Date() > entryDeadline) return 'Closed';
   }
-  return 'Eligible';
+
+  if (instance.competition.competitor_type === 'team') {
+    if (instance.competition.team_type === 'child') {
+      if (currentRole?.compTeams.length === 0) return 'Ineligible';
+
+      const teamIsEligible = currentRole.compTeams.some((team) => {
+        // Get the active players for this comp team
+        const players = team.players.filter(
+          (tp) => tp.team_id === team.id && tp.status === 'active'
+        );
+        if (!players.length) return false;
+
+        return players.every((tp) => {
+          const p = tp.player;
+          if (!p?.dob) return false;
+
+          const birth = new Date(p.dob);
+          const today = new Date();
+          let age = today.getFullYear() - birth.getFullYear();
+          const m = today.getMonth() - birth.getMonth();
+          if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) age--;
+
+          if (instance.min_age != null && age < instance.min_age) return false;
+          if (instance.max_age != null && age > instance.max_age) return false;
+          if (
+            instance.gender &&
+            instance.gender !== 'mixed' &&
+            p.gender &&
+            instance.gender !== p.gender
+          )
+            return false;
+
+          return true;
+        });
+      });
+
+      return teamIsEligible ? 'Eligible' : 'Ineligible';
+    } else if (instance.competition.team_type === 'parent') {
+    }
+  } else if (instance.competition.competitor_type === 'individual') {
+    if (!dob) return 'Ineligible';
+    const birth = new Date(dob);
+    const today = new Date();
+    let age = today.getFullYear() - birth.getFullYear();
+    const m = today.getMonth() - birth.getMonth();
+    if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) age--;
+    if (instance.min_age != null && age < instance.min_age) return 'Ineligible';
+    if (instance.max_age != null && age > instance.max_age) return 'Ineligible';
+    if (instance.gender && instance.gender !== 'mixed' && gender && instance.gender !== gender)
+      return 'Ineligible';
+    if (division && currentRole?.division?.id !== division) return 'Ineligible';
+    return 'Eligible';
+  }
+  return 'Ineligible';
 }
 
 export const formatCompetitionType = (value) => {
@@ -166,7 +210,7 @@ const CompetitionInstanceCard = ({ instance }) => {
   const activeCount = instance.CompetitionParticipants.filter((p) =>
     ['active', 'champion', 'runner_up', 'eliminated'].includes(p.status)
   ).length;
-
+  const teamType = instance.competition.team_type === 'parent' ? 'League' : 'Competition';
   const competitorLabel =
     instance.competition.competitor_type.charAt(0).toUpperCase() +
     instance.competition.competitor_type.slice(1);
@@ -239,7 +283,7 @@ const CompetitionInstanceCard = ({ instance }) => {
                   color: 'rgba(255,255,255,0.4)',
                   letterSpacing: 0.3,
                 }}>
-                {competitorLabel} · {formatCompetitionType(instance.competition.competition_type)}
+                {`${teamType} ${competitorLabel} · ${formatCompetitionType(instance.competition.competition_type)}`}
               </Text>
             </View>
 

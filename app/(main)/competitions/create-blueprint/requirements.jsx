@@ -17,6 +17,7 @@ const Requirements = () => {
   const params = useLocalSearchParams();
   const [compName, setCompName] = useState('');
   const [competitorType, setCompetitorType] = useState(null); // 'team' or 'individual'
+  const [teamType, setTeamType] = useState('');
   const [minAge, setMinAge] = useState('');
   const [maxAge, setMaxAge] = useState('');
   const [gender, setGender] = useState('');
@@ -61,7 +62,19 @@ const Requirements = () => {
       });
       return;
     }
-    if (competitorType === 'team' && (!maxTeamSize || parseInt(maxTeamSize) < 2)) {
+    if (competitorType === 'team' && !teamType) {
+      Toast.show({
+        type: 'info',
+        text1: 'Team Type Required',
+        text2: 'Please select a team type for the competition.',
+      });
+      return;
+    }
+    if (
+      competitorType === 'team' &&
+      teamType === 'child' &&
+      (!maxTeamSize || parseInt(maxTeamSize) < 2)
+    ) {
       Toast.show({
         type: 'info',
         text1: 'Invalid Team Size',
@@ -74,10 +87,11 @@ const Requirements = () => {
       params: {
         ...params,
         competitorType,
+        teamType: competitorType === 'team' ? teamType : null,
         compName,
         minAge,
         maxAge,
-        maxTeamSize: competitorType === 'team' ? maxTeamSize : null,
+        maxTeamSize: competitorType === 'team' && teamType === 'child' ? maxTeamSize : null,
         gender,
         division,
       },
@@ -105,9 +119,9 @@ const Requirements = () => {
             flexGrow: 1,
             gap: 20,
             paddingTop: 20,
-            paddingBottom: 60,
+            paddingBottom: 160,
           }}
-          className="mt-16 flex-1 bg-brand px-4">
+          className="mt-16 flex-1 bg-brand-dark px-4">
           <CustomTextInput
             placeholder="e.g. Northern Cup"
             title="Competition Name"
@@ -157,21 +171,64 @@ const Requirements = () => {
             </Text>
           </View>
           {competitorType === 'team' && (
-            <View className="gap-3">
-              <View className="flex-row gap-5">
-                <View className="flex-1">
-                  <CustomTextInput
-                    title="Maximum Team Size"
-                    value={maxTeamSize}
-                    onChangeText={setMaxTeamSize}
-                    keyboardType="numeric"
-                    placeholder="e.g. 3"
-                    leftIconName="people"
-                    iconColor="#FFA500"
-                    clearButtonMode="never"
-                  />
+            <View className="gap-6">
+              <View className="gap-1">
+                <Text className="px-2 font-saira-medium text-xl text-text-on-brand">
+                  Competitor Type
+                </Text>
+                <View className="flex-row gap-5">
+                  <Pressable
+                    onPress={() => setTeamType('parent')}
+                    className={`flex-1 flex-row items-center gap-3 rounded-xl border-2 bg-bg-1 p-4 py-3 ${
+                      teamType === 'parent' ? 'border-[#007AFF]' : 'border-transparent'
+                    }`}>
+                    <Ionicons name="globe-outline" size={24} color="#007AFF" />
+                    <Text className="font-saira-medium text-lg text-text-1">Parent</Text>
+                    {teamType === 'parent' && (
+                      <View className="ml-auto h-6 w-6 items-center justify-center rounded-full bg-[#007AFF]">
+                        <Ionicons name="checkmark" size={14} color="white" />
+                      </View>
+                    )}
+                  </Pressable>
+                  <Pressable
+                    onPress={() => setTeamType('child')}
+                    className={`flex-1 flex-row items-center gap-3 rounded-xl border-2 bg-bg-1 p-4 py-3 ${
+                      teamType === 'child' ? 'border-theme-red' : 'border-transparent'
+                    }`}>
+                    <Ionicons name="medal" size={24} color="#FF0000" />
+                    <Text className="font-saira-medium text-lg text-text-1">Child</Text>
+                    {teamType === 'child' && (
+                      <View className="ml-auto h-6 w-6 items-center justify-center rounded-full bg-theme-red">
+                        <Ionicons name="checkmark" size={14} color="white" />
+                      </View>
+                    )}
+                  </Pressable>
                 </View>
+                <Text className="px-2 pt-2 font-saira text-xs text-text-on-brand-2">
+                  'Parent' enters the full parent team into the competition, whereas 'Child' allows
+                  multiple teams from the same parent team to compete (e.g. Doubles, Trebles).
+                </Text>
               </View>
+              {teamType === 'child' && (
+                <View className="gap-1">
+                  <View className="flex-1">
+                    <CustomTextInput
+                      title="Maximum Team Size"
+                      value={maxTeamSize}
+                      onChangeText={setMaxTeamSize}
+                      keyboardType="numeric"
+                      placeholder="e.g. 3"
+                      leftIconName="people"
+                      iconColor="#FFA500"
+                      clearButtonMode="never"
+                    />
+                  </View>
+                  <Text className="px-2 pt-2 font-saira text-xs text-text-on-brand-2">
+                    For child teams, specify the maximum team size (e.g. 2 for doubles, 3 for
+                    trebles). If you want to allow reserve players please account for this.
+                  </Text>
+                </View>
+              )}
             </View>
           )}
           <View className="gap-3">
@@ -260,8 +317,14 @@ const Requirements = () => {
               {`Only ${competitorType === 'individual' ? 'individuals' : 'teams'} in this division will be able to enter. Leave unselected for open competitions.`}
             </Text>
           </View>
-          <CTAButton text="Continue" type="yellow" callbackFn={handleContinue} />
         </ScrollView>
+        <View style={{ position: 'absolute', bottom: 0, left: 0, right: 0 }} className="p-6">
+          <View
+            style={{ borderRadius: 30 }}
+            className="border border-theme-gray-3 bg-bg-1/70 p-4 shadow-md backdrop-blur-lg">
+            <CTAButton text="Continue" type="yellow" callbackFn={handleContinue} />
+          </View>
+        </View>
       </SafeViewWrapper>
     </>
   );

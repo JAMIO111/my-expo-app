@@ -53,9 +53,9 @@ const index = () => {
             flexGrow: 1,
             gap: 20,
             paddingTop: 20,
-            paddingBottom: 60,
+            paddingBottom: 160,
           }}
-          className="mt-16 flex-1 bg-brand px-4">
+          className="mt-16 flex-1 bg-brand-dark px-4">
           <View className="flex-1 gap-4">
             <Text className="px-2 font-saira-medium text-xl text-text-on-brand">
               Select a competition format:
@@ -141,9 +141,20 @@ const index = () => {
                 />
               </View>
             </Pressable>
-            {selected && <CTAButton type="yellow" text="Continue" callbackFn={handleContinue} />}
           </View>
         </ScrollView>
+        <View style={{ position: 'absolute', bottom: 0, left: 0, right: 0 }} className="p-6">
+          <View
+            style={{ borderRadius: 30 }}
+            className="border border-theme-gray-3 bg-bg-1/70 p-4 shadow-md backdrop-blur-lg">
+            <CTAButton
+              type="yellow"
+              text="Continue"
+              disabled={!selected}
+              callbackFn={handleContinue}
+            />
+          </View>
+        </View>
       </SafeViewWrapper>
     </>
   );
