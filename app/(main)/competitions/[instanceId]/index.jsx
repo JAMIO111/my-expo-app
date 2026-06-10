@@ -90,7 +90,9 @@ const index = () => {
   const isTeam = competitionInstance?.competition?.competitor_type === 'team';
 
   const canJoin =
-    competitionInstance?.status === 'upcoming' && deadline >= new Date() && (!isTeam || isCaptain);
+    competitionInstance?.status === 'upcoming' &&
+    (deadline ? deadline >= new Date() : true) &&
+    (!isTeam || isCaptain);
 
   const entryType = competitionInstance;
 
@@ -177,51 +179,44 @@ const index = () => {
     }
   };
 
-  const insertParticipant = async ({ status, dateField }) => {
-    if (queryLoading) return; // prevent spam taps
-
-    // Captain check
-    if (isTeam && status === 'requested' && !isCaptain) {
-      alert('Only team captains can join this competition. Please ask your captain to join.');
-      return;
-    }
+  const insertParticipant = async () => {
+    if (queryLoading) return;
 
     try {
       setQueryLoading(true);
 
-      const payload = {
-        competition_instance_id: instanceId,
-        status,
-        [dateField]: new Date().toISOString(),
-        ...(isTeam ? { team_id: currentRole.team.id } : { player_id: player.id }),
-      };
-
-      const { error } = await supabase.from('CompetitionParticipants').insert(payload);
+      const { error } = await supabase.rpc('join_competition', {
+        p_instance_id: instanceId,
+        ...(isTeam ? { p_team_id: currentRole.team.id } : { p_player_id: player.id }),
+      });
 
       if (error) throw error;
 
-      // ✅ Success toast
-      // Replace with your toast lib if you have one
+      const isRequest = error?.message !== 'active'; // derived from RPC now — see note below
       Toast.show({
         type: 'success',
-        text1: status === 'active' ? 'Joined Competition' : 'Request Sent',
-        text2:
-          status === 'active'
-            ? 'You have successfully joined the competition.'
-            : 'Your request to join has been sent to the admin.',
+        text1: 'Joined Competition',
+        text2: 'You have successfully joined the competition.',
       });
 
-      // ✅ Invalidate queries
       queryClient.invalidateQueries(['CompetitionInstanceDetails', instanceId]);
       queryClient.invalidateQueries(['CompetitionInstances']);
     } catch (err) {
-      console.error(err);
+      const msg = err?.message ?? '';
 
-      // ❌ Error toast
+      console.error('Error joining competition:', err);
+
+      const messages = {
+        COMPETITION_FULL: 'This competition is now full.',
+        REGISTRATION_CLOSED: 'Registration has closed for this competition.',
+        NOT_CAPTAIN: 'Only the team captain can join this competition.',
+        ALREADY_PARTICIPATING: 'You are already participating in this competition.',
+      };
+
       Toast.show({
         type: 'error',
-        text1: 'Unexpected Error',
-        text2: 'An unexpected error occurred. Please try again.',
+        text1: messages[msg] ? 'Unable to Join' : 'Unexpected Error',
+        text2: messages[msg] ?? 'An unexpected error occurred. Please try again.',
       });
     } finally {
       setSheetConfig(null);
@@ -536,34 +531,35 @@ const index = () => {
                 </View>
               </ExpandableView>
               {canJoin &&
-                isAdmin &&
                 checkEligibility(player, competitionInstance, currentRole) === 'Eligible' && (
-                  <CTAButton
-                    callbackFn={() => {
-                      showSheet({
-                        title: entryType === 'request' ? 'Request to Join' : 'Join Competition',
-                        message:
-                          entryType === 'request'
-                            ? 'Are you sure you want to request to join this competition?'
-                            : 'Are you sure you want to join this competition?',
-                        confirmText:
-                          entryType === 'request' ? 'Request to Join' : 'Join Competition',
-                        confirmType: 'success',
-                        onConfirm: entryType === 'request' ? requestToJoin : joinCompetition,
-                      });
-                    }}
-                    text={
-                      entryType === 'open'
-                        ? 'Join Competition'
-                        : entryType === 'request'
-                          ? 'Request to Join'
-                          : 'Join Competition'
-                    }
-                    type="yellow"
-                    icon={
-                      <Ionicons name="log-in-outline" className="mb-1" size={26} color="black" />
-                    }
-                  />
+                  <View className="p-4 pt-0">
+                    <CTAButton
+                      callbackFn={() => {
+                        showSheet({
+                          title: entryType === 'request' ? 'Request to Join' : 'Join Competition',
+                          message:
+                            entryType === 'request'
+                              ? 'Are you sure you want to request to join this competition?'
+                              : 'Are you sure you want to join this competition?',
+                          confirmText:
+                            entryType === 'request' ? 'Request to Join' : 'Join Competition',
+                          confirmType: 'success',
+                          onConfirm: entryType === 'request' ? requestToJoin : joinCompetition,
+                        });
+                      }}
+                      text={
+                        entryType === 'open'
+                          ? 'Join Competition'
+                          : entryType === 'request'
+                            ? 'Request to Join'
+                            : 'Join Competition'
+                      }
+                      type="yellow"
+                      icon={
+                        <Ionicons name="log-in-outline" className="mb-1" size={26} color="black" />
+                      }
+                    />
+                  </View>
                 )}
               {isAdmin &&
                 (competitionInstance?.status === 'upcoming' ||

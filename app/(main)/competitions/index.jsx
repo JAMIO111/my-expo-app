@@ -57,7 +57,7 @@ const index = () => {
                 }, 500);
                 router.push('/competitions/team-management');
               }}>
-              <View className="flex-1 flex-row gap-8 rounded-2xl bg-brand p-4 shadow-sm">
+              <View className="flex-1 flex-row gap-8 rounded-2xl bg-brand-dark p-4 shadow-sm">
                 <View className="flex-1">
                   <Text className="font-saira-medium text-xl text-text-on-brand">
                     Competition Team Management

@@ -36,7 +36,7 @@ export function getStatusColors(status) {
     case 'Eligible':
       return { background: '#00800033', text: '#4ade80', border: '#4ade8044', accent: '#4ade80' };
     case 'Ineligible':
-      return { background: '#FF000022', text: '#f87171', border: '#f8717144', accent: '#f87171' };
+    case 'Full':
     case 'Closed':
     case 'closed':
       return { background: '#FF000022', text: '#f87171', border: '#f8717144', accent: '#f87171' };
@@ -63,15 +63,18 @@ export function getStatusColors(status) {
 export function checkEligibility(player, instance, currentRole) {
   if (!player || !instance || !currentRole) return 'Ineligible';
 
+  const activeParticipants =
+    instance?.CompetitionParticipants?.filter(
+      (p) => p.status !== 'left' && p.status !== 'cancelled'
+    ) || [];
+
   const { dob, gender } = player;
   const division = instance.division_id;
-  const validParticipants = instance.CompetitionParticipants.filter(
-    (p) => p.status !== 'left' && p.status !== 'cancelled'
-  );
+
   const participant =
     instance.competition.competitor_type === 'team'
-      ? validParticipants?.find((p) => p.team_id === currentRole?.team?.id)
-      : validParticipants?.find((p) => p.player_id === player.id);
+      ? activeParticipants?.find((p) => p.team_id === currentRole?.team?.id)
+      : activeParticipants?.find((p) => p.player_id === player.id);
   if (participant) {
     if (participant.status === 'requested') return 'Requested';
     if (participant.status === 'active') return 'Entered';
@@ -82,16 +85,24 @@ export function checkEligibility(player, instance, currentRole) {
     if (!isNaN(entryDeadline) && new Date() > entryDeadline) return 'Closed';
   }
 
+  if (
+    instance.max_competitors !== null &&
+    instance.max_competitors !== undefined &&
+    activeParticipants.length === instance.max_competitors
+  ) {
+    return 'Full';
+  }
+
   if (instance.competition.competitor_type === 'team') {
     if (instance.competition.team_type === 'child') {
-      if (currentRole?.compTeams.length === 0) return 'Ineligible';
+      if (currentRole?.compTeams?.length === 0) return 'Ineligible';
 
-      const teamIsEligible = currentRole.compTeams.some((team) => {
+      const teamIsEligible = currentRole?.compTeams?.some((team) => {
         // Get the active players for this comp team
-        const players = team.players.filter(
-          (tp) => tp.team_id === team.id && tp.status === 'active'
-        );
-        if (!players.length) return false;
+        const players = team?.players?.filter((tp) => tp.status === 'active');
+        if (!players?.length) return false;
+        if (instance.max_team_size && players.length > instance.max_team_size) return false;
+        if (division && division !== currentRole?.division?.id) return false;
 
         return players.every((tp) => {
           const p = tp.player;
@@ -119,9 +130,18 @@ export function checkEligibility(player, instance, currentRole) {
 
       return teamIsEligible ? 'Eligible' : 'Ineligible';
     } else if (instance.competition.team_type === 'parent') {
+      const divisionValid = instance.division_id
+        ? instance.division_id === currentRole?.division?.id
+          ? true
+          : false
+        : true;
+
+      const teamIsEligible = divisionValid;
+
+      return teamIsEligible ? 'Eligible' : 'Ineligible';
     }
   } else if (instance.competition.competitor_type === 'individual') {
-    if (!dob) return 'Ineligible';
+    if ((instance.min_age != null || instance.max_age != null) && !dob) return 'Ineligible';
     const birth = new Date(dob);
     const today = new Date();
     let age = today.getFullYear() - birth.getFullYear();
@@ -219,14 +239,21 @@ const CompetitionInstanceCard = ({ instance }) => {
 
   const statusLabel = instance.status.charAt(0).toUpperCase() + instance.status.slice(1);
 
-  const eligibilityIcon =
-    eligibility === 'Ineligible' || eligibility === 'Closed'
-      ? 'close-circle-outline'
-      : eligibility === 'Entered'
-        ? 'checkmark-circle-outline'
-        : eligibility === 'Requested'
-          ? 'time-outline'
-          : 'checkmark-circle-outline';
+  const eligibilityIcon = (() => {
+    switch (eligibility) {
+      case 'Ineligible':
+      case 'Closed':
+      case 'closed':
+      case 'Full':
+        return 'close-circle-outline';
+      case 'Entered':
+        return 'checkmark-circle-outline';
+      case 'Requested':
+        return 'time-outline';
+      default:
+        return 'checkmark-circle-outline';
+    }
+  })();
 
   return (
     <Animated.View style={{ transform: [{ scale }] }}>
@@ -328,7 +355,7 @@ const CompetitionInstanceCard = ({ instance }) => {
           colors={['#0f160f', '#0c130c']}
           style={{
             flexDirection: 'row',
-            alignItems: 'center',
+            alignItems: 'flex-end',
             justifyContent: 'space-between',
             paddingHorizontal: 12,
             paddingVertical: 10,
@@ -336,10 +363,17 @@ const CompetitionInstanceCard = ({ instance }) => {
             borderTopColor: 'rgba(255,255,255,0.05)',
           }}>
           {/* Left cluster */}
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+          <View
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              gap: 8,
+              flexWrap: 'wrap',
+              flex: 1,
+            }}>
             <StatPill
               icon={<Ionicons name="people-outline" size={14} color="rgba(255,255,255,0.45)" />}
-              label={String(activeCount)}
+              label={`${activeCount}${instance.max_competitors ? `/${instance.max_competitors}` : ''}`}
             />
             {(instance.max_age || instance.min_age) && (
               <StatPill
@@ -365,10 +399,12 @@ const CompetitionInstanceCard = ({ instance }) => {
           </View>
 
           {/* Right: deadline */}
-          <StatPill
-            icon={<Ionicons name="calendar-outline" size={14} color="rgba(255,255,255,0.45)" />}
-            label={deadline || 'No Deadline'}
-          />
+          <View style={{ flexShrink: 0, marginLeft: 8 }}>
+            <StatPill
+              icon={<Ionicons name="calendar-outline" size={14} color="rgba(255,255,255,0.45)" />}
+              label={deadline || 'No Deadline'}
+            />
+          </View>
         </LinearGradient>
       </Pressable>
     </Animated.View>
