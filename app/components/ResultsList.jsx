@@ -15,8 +15,8 @@ import colors from '@lib/colors';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import CTAButton from '@components/CTAButton';
 import { useDistricts } from '@hooks/useDistricts';
-import { useDivisions } from '@hooks/useDivisions';
 import { useSeasons } from '@hooks/useSeasons';
+import { useCompetitionInstances } from '@hooks/useCompetitionInstances';
 import { getActiveSeason } from '@lib/helperFunctions';
 import Avatar from './Avatar';
 import LoadingScreen from './LoadingScreen';
@@ -30,9 +30,6 @@ const ResultsList = () => {
   const themeColors = colors[colorScheme] || colors.light; // Fallback to light theme
 
   const bottomSheetRef = useRef(null);
-  const [activeFilter, setActiveFilter] = useState(null);
-
-  const [district, setDistrict] = useState(currentRole?.district ?? null);
 
   // Fetch districts (no id needed)
   const {
@@ -41,12 +38,22 @@ const ResultsList = () => {
     error: districtsError,
   } = useDistricts();
 
-  // Fetch divisions by district id
-  const {
-    data: divisions = [],
-    isLoading: isDivisionsLoading,
-    error: divisionsError,
-  } = useDivisions(district?.id);
+  const defaultDistrict = currentRole?.district || null;
+  const defaultSeason = currentRole?.activeSeason || null;
+  const defaultCompetitionInstance =
+    currentRole?.competitions
+      .filter((comp) => comp.competition_type === 'league')
+      .sort((a, b) => a.division_tier - b.division_tier)?.[0] || null;
+
+  const [activeFilter, setActiveFilter] = useState(null);
+  const [district, setDistrict] = useState(defaultDistrict);
+  const [tempDistrict, setTempDistrict] = useState(defaultDistrict);
+  const [season, setSeason] = useState(defaultSeason);
+  const [tempSeason, setTempSeason] = useState(defaultSeason);
+  const [competitionInstance, setCompetitionInstance] = useState(defaultCompetitionInstance);
+  const [tempCompetitionInstance, setTempCompetitionInstance] = useState(
+    defaultCompetitionInstance
+  );
 
   // Fetch seasons by district id
   const {
@@ -55,22 +62,28 @@ const ResultsList = () => {
     error: seasonsError,
   } = useSeasons(district?.id);
 
-  const [division, setDivision] = useState(
-    currentRole?.type === 'admin'
-      ? (currentRole?.divisions.find((div) => div.tier === 1 && div.group_id === 1) ?? null)
-      : (currentRole?.division ?? null)
+  // Fetch competition instances by season id
+  const {
+    data: competitionInstances = [],
+    isLoading: isCompetitionInstancesLoading,
+    error: competitionInstancesError,
+  } = useCompetitionInstances(season?.id);
+
+  const leagueCompetitions = competitionInstances.filter(
+    (comp) => comp?.competition?.competition_type === 'league'
   );
-  const [season, setSeason] = useState(currentRole?.activeSeason);
-  const [tempDistrict, setTempDistrict] = useState(district);
-  const [tempDivision, setTempDivision] = useState(division);
-  const [tempSeason, setTempSeason] = useState(season);
 
   useEffect(() => {
-    setDivision(null);
-    setTempDivision(null);
-    setSeason(null);
-    setTempSeason(null);
-  }, [district?.id]);
+    if (!district) return;
+
+    const init = async () => {
+      const active = await getActiveSeason(district?.id);
+      setSeason(active);
+      setTempSeason(active);
+    };
+
+    init();
+  }, [district]);
 
   useEffect(() => {
     if (district && !season) {
@@ -90,13 +103,23 @@ const ResultsList = () => {
     }
   }, [district, season]);
 
-  // Default to first division when divisions list changes and no division is selected
   useEffect(() => {
-    if (!division && divisions.length > 0) {
-      setDivision(divisions[0]);
-      setTempDivision(divisions[0]);
+    if (seasons.length && defaultSeason && !season) {
+      const found = seasons.find((s) => s.id === defaultSeason.id);
+      if (found) setSeason(found);
     }
-  }, [divisions, division]);
+    if (competitionInstance?.season_id !== season?.id) {
+      setCompetitionInstance(null); // 💥 Wipes the default
+      setTempCompetitionInstance(null);
+    }
+  }, [seasons, defaultSeason, season]);
+
+  useEffect(() => {
+    if (defaultCompetitionInstance && !competitionInstance) {
+      setCompetitionInstance(defaultCompetitionInstance);
+      setTempCompetitionInstance(defaultCompetitionInstance);
+    }
+  }, [defaultCompetitionInstance]);
 
   const openSheet = () => {
     bottomSheetRef.current?.expand();
@@ -111,8 +134,8 @@ const ResultsList = () => {
       case 'district':
         setDistrict(tempDistrict);
         break;
-      case 'division':
-        setDivision(tempDivision);
+      case 'competition':
+        setCompetitionInstance(tempCompetitionInstance);
         break;
       case 'season':
         setSeason(tempSeason);
@@ -136,7 +159,7 @@ const ResultsList = () => {
   } = useMonthlyResults({
     month: selectedMonth,
     seasonId: season?.id,
-    divisionId: division?.id,
+    competitionInstanceId: competitionInstance?.id,
   });
 
   console.log('ResultsList resultsData:', resultsData);
@@ -161,7 +184,7 @@ const ResultsList = () => {
   };
 
   const isInitialLoading =
-    (isDistrictsLoading || isDivisionsLoading || isSeasonsLoading) && !resultsData;
+    (isDistrictsLoading || isCompetitionInstancesLoading || isSeasonsLoading) && !resultsData;
 
   const isBackgroundRefreshing = !isInitialLoading && (isResultsLoading || isResultsFetching);
 
@@ -185,8 +208,8 @@ const ResultsList = () => {
     );
   }
 
-  if (districtsError || divisionsError || seasonsError) {
-    console.error('Error loading data:', districtsError, divisionsError, seasonsError);
+  if (districtsError || competitionInstancesError || seasonsError) {
+    console.error('Error loading data:', districtsError, competitionInstancesError, seasonsError);
     return (
       <SafeAreaView style={{ flex: 1, backgroundColor: themeColors.background }}>
         <Text style={{ color: themeColors.primaryText, textAlign: 'center', marginTop: 20 }}>
@@ -209,19 +232,19 @@ const ResultsList = () => {
                 openSheet();
               }}
             />
-          </View>
-          <View className="flex-row gap-3">
-            <DropdownFilterButton
-              text={division?.name || 'Select Division'}
-              callbackFn={() => {
-                setActiveFilter('division');
-                openSheet();
-              }}
-            />
             <DropdownFilterButton
               text={season?.name || 'Select Season'}
               callbackFn={() => {
                 setActiveFilter('season');
+                openSheet();
+              }}
+            />
+          </View>
+          <View className="flex-row gap-3">
+            <DropdownFilterButton
+              text={competitionInstance?.name || 'Select Competition'}
+              callbackFn={() => {
+                setActiveFilter('competition');
                 openSheet();
               }}
             />
@@ -443,22 +466,33 @@ const ResultsList = () => {
               </Pressable>
             ))}
 
-          {activeFilter === 'division' &&
-            divisions.map((d) => (
+          {activeFilter === 'competition' &&
+            leagueCompetitions.map((c) => (
               <Pressable
                 className="mb-3 flex-row items-center justify-between"
-                key={d.id}
-                onPress={() => setTempDivision(d)}>
-                <Text
-                  className={`font-saira text-2xl ${
-                    tempDivision?.id === d.id ? 'text-text-1' : 'text-text-2'
-                  }`}>
-                  {d.name}
-                </Text>
+                key={c.id}
+                onPress={() => setTempCompetitionInstance(c)}>
+                <View>
+                  <Text
+                    className={`font-saira-medium text-2xl ${
+                      tempCompetitionInstance?.id === c.id ? 'text-text-1' : 'text-text-2'
+                    }`}>
+                    {c.name}
+                  </Text>
+                  <Text
+                    className={`font-saira ${
+                      tempCompetitionInstance?.id === c.id ? 'text-text-1' : 'text-text-2'
+                    }`}>
+                    {c.division?.group_name} -{' '}
+                    {c.competition?.competitor_type?.slice(0, 1).toUpperCase() +
+                      c.competition?.competitor_type?.slice(1).toLowerCase()}{' '}
+                    Competitions
+                  </Text>
+                </View>
                 <Ionicons
                   size={24}
                   color={themeColors.primaryText}
-                  name={tempDivision?.id === d.id ? 'checkbox' : 'square-outline'}
+                  name={tempCompetitionInstance?.id === c.id ? 'checkbox' : 'square-outline'}
                 />
               </Pressable>
             ))}

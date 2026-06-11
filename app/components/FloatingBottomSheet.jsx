@@ -79,11 +79,11 @@ const ConfirmModal = ({
             transform: [{ translateY: slideAnim }],
             width: '100%',
             alignItems: 'center',
-            paddingBottom: 30,
+            paddingBottom: 15,
           }}>
           <View
             style={{ borderRadius: 40 }}
-            className="w-[90%] border border-theme-gray-4 bg-bg-grouped-2/90 p-8 shadow-md backdrop-blur-lg">
+            className="w-[95%] border border-theme-gray-4 bg-bg-grouped-2/90 p-8 shadow-md backdrop-blur-lg">
             <View className="mb-4 w-full flex-row items-start justify-between">
               <Text className="flex-1 font-saira-semibold text-3xl text-text-1">{title}</Text>
               <Ionicons name="close" size={26} color="gray" onPress={onCancel} />

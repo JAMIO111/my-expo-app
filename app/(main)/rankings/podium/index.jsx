@@ -124,7 +124,6 @@ const index = () => {
 const styles = StyleSheet.create({
   sheet: {
     flex: 1,
-    marginTop: 12,
     backgroundColor: '#111811',
     borderTopLeftRadius: 28,
     borderTopRightRadius: 28,

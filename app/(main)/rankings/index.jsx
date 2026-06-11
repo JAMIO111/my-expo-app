@@ -117,6 +117,7 @@ const Index = () => {
                 data={teamLeaderboards}
                 title="Matches Played"
                 loading={isLoadingTeams}
+                label="Matches"
               />
             </ProGate>
             <ProGate showCTA={false} intensity={blurIntensity}>

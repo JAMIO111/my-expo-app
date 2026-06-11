@@ -23,6 +23,7 @@ const Requirements = () => {
   const [gender, setGender] = useState('');
   const [division, setDivision] = useState(null);
   const [maxTeamSize, setMaxTeamSize] = useState('');
+  const [minTeamSize, setMinTeamSize] = useState('');
 
   console.log('Selected Division:', division);
 
@@ -82,6 +83,20 @@ const Requirements = () => {
       });
       return;
     }
+    if (
+      competitorType === 'team' &&
+      teamType === 'child' &&
+      minTeamSize &&
+      (parseInt(minTeamSize) < 2 || parseInt(minTeamSize) > parseInt(maxTeamSize))
+    ) {
+      Toast.show({
+        type: 'info',
+        text1: 'Invalid Team Size',
+        text2:
+          'Please enter a valid minimum team size (at least 2 and not greater than the maximum team size).',
+      });
+      return;
+    }
     router.push({
       pathname: '/competitions/create-blueprint/create-competition-rules',
       params: {
@@ -92,6 +107,7 @@ const Requirements = () => {
         minAge,
         maxAge,
         maxTeamSize: competitorType === 'team' && teamType === 'child' ? maxTeamSize : null,
+        minTeamSize: competitorType === 'team' && teamType === 'child' ? minTeamSize : null,
         gender,
         division,
       },
@@ -173,9 +189,7 @@ const Requirements = () => {
           {competitorType === 'team' && (
             <View className="gap-6">
               <View className="gap-1">
-                <Text className="px-2 font-saira-medium text-xl text-text-on-brand">
-                  Competitor Type
-                </Text>
+                <Text className="px-2 font-saira-medium text-xl text-text-on-brand">Team Type</Text>
                 <View className="flex-row gap-5">
                   <Pressable
                     onPress={() => setTeamType('parent')}
@@ -211,21 +225,36 @@ const Requirements = () => {
               </View>
               {teamType === 'child' && (
                 <View className="gap-1">
-                  <View className="flex-1">
-                    <CustomTextInput
-                      title="Maximum Team Size"
-                      value={maxTeamSize}
-                      onChangeText={setMaxTeamSize}
-                      keyboardType="numeric"
-                      placeholder="e.g. 3"
-                      leftIconName="people"
-                      iconColor="#FFA500"
-                      clearButtonMode="never"
-                    />
+                  <View className="flex-1 flex-row justify-between gap-5">
+                    <View className="flex-1">
+                      <CustomTextInput
+                        title="Minimum Team Size"
+                        value={minTeamSize}
+                        onChangeText={setMinTeamSize}
+                        keyboardType="numeric"
+                        placeholder="e.g. 2"
+                        leftIconName="people"
+                        iconColor="#FFA500"
+                        clearButtonMode="never"
+                      />
+                    </View>
+                    <View className="flex-1">
+                      <CustomTextInput
+                        title="Maximum Team Size"
+                        value={maxTeamSize}
+                        onChangeText={setMaxTeamSize}
+                        keyboardType="numeric"
+                        placeholder="e.g. 4"
+                        leftIconName="people"
+                        iconColor="#FFA500"
+                        clearButtonMode="never"
+                      />
+                    </View>
                   </View>
                   <Text className="px-2 pt-2 font-saira text-xs text-text-on-brand-2">
-                    For child teams, specify the maximum team size (e.g. 2 for doubles, 3 for
-                    trebles). If you want to allow reserve players please account for this.
+                    For child teams, specify the minimum and maximum team size (e.g. 2 for doubles,
+                    3 for trebles). If you want to allow additional reserve players please account
+                    for this.
                   </Text>
                 </View>
               )}

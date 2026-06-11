@@ -192,7 +192,6 @@ const index = () => {
 
       if (error) throw error;
 
-      const isRequest = error?.message !== 'active'; // derived from RPC now — see note below
       Toast.show({
         type: 'success',
         text1: 'Joined Competition',
@@ -204,13 +203,22 @@ const index = () => {
     } catch (err) {
       const msg = err?.message ?? '';
 
-      console.error('Error joining competition:', err);
-
       const messages = {
-        COMPETITION_FULL: 'This competition is now full.',
+        INSTANCE_NOT_FOUND: 'This competition could not be found.',
         REGISTRATION_CLOSED: 'Registration has closed for this competition.',
+        COMPETITION_FULL: 'This competition is now full.',
         NOT_CAPTAIN: 'Only the team captain can join this competition.',
         ALREADY_PARTICIPATING: 'You are already participating in this competition.',
+        TEAM_TOO_LARGE: 'Your team has too many players for this competition.',
+        TEAM_TOO_SMALL: 'Your team does not have enough players for this competition.',
+        TEAM_GENDER_MISMATCH:
+          'All team players must match the gender requirement for this competition.',
+        TEAM_PLAYER_TOO_YOUNG: 'One or more team players do not meet the minimum age requirement.',
+        TEAM_PLAYER_TOO_OLD: 'One or more team players exceed the maximum age requirement.',
+        UNAUTHORIZED: 'You are not authorised to join this competition.',
+        GENDER_MISMATCH: 'You do not meet the gender requirement for this competition.',
+        PLAYER_TOO_YOUNG: 'You do not meet the minimum age requirement for this competition.',
+        PLAYER_TOO_OLD: 'You exceed the maximum age requirement for this competition.',
       };
 
       Toast.show({

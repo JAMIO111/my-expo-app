@@ -2,8 +2,8 @@ import { useQuery } from '@tanstack/react-query';
 import { startOfMonth, endOfMonth } from 'date-fns';
 import { supabase } from '@/lib/supabase';
 
-export const useMonthlyResults = ({ month, seasonId, divisionId }) => {
-  const fetchResultsByMonth = async ({ month, seasonId, divisionId }) => {
+export const useMonthlyResults = ({ month, seasonId, competitionInstanceId }) => {
+  const fetchResultsByMonth = async ({ month, seasonId, competitionInstanceId }) => {
     const start = startOfMonth(month).toISOString();
     const end = endOfMonth(month).toISOString();
 
@@ -20,7 +20,7 @@ export const useMonthlyResults = ({ month, seasonId, divisionId }) => {
       `
       )
       .eq('season', seasonId)
-      .eq('division', divisionId)
+      .eq('competition_instance_id', competitionInstanceId)
       .eq('approved', true)
       .gte('date_time', start)
       .lte('date_time', end)
@@ -66,11 +66,11 @@ export const useMonthlyResults = ({ month, seasonId, divisionId }) => {
   };
 
   return useQuery({
-    queryKey: ['results-grouped', month?.toISOString(), seasonId, divisionId],
-    queryFn: () => fetchResultsByMonth({ month, seasonId, divisionId }),
+    queryKey: ['results-grouped', month?.toISOString(), seasonId, competitionInstanceId],
+    queryFn: () => fetchResultsByMonth({ month, seasonId, competitionInstanceId }),
     staleTime: 1000 * 60 * 5,
     gcTime: 1000 * 60 * 60,
-    enabled: !!month && !!seasonId && !!divisionId,
+    enabled: !!month && !!seasonId && !!competitionInstanceId,
     keepPreviousData: true,
   });
 };
