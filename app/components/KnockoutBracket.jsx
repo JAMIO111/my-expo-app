@@ -7,6 +7,7 @@ import CTAButton from './CTAButton';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useUser } from '@contexts/UserProvider';
 import BottomSheetModal from './BottomSheetModal';
+import { Trophy, Calendar, Repeat, Users, Layers, Swords } from 'lucide-react-native';
 
 // ─── Layout constants ─────────────────────────────────────
 const CARD_H = 68;
@@ -51,6 +52,16 @@ function buildRounds(stages, fixtures) {
   dfs(root);
   return rounds;
 }
+
+const StatCard = ({ icon, label, value, wide }) => (
+  <View className={`rounded-xl bg-bg-1 p-3 shadow-sm ${wide ? 'w-full' : 'min-w-[45%] flex-1'}`}>
+    <View className="bg-brand/20 mb-2 h-9 w-9 items-center justify-center rounded-full">
+      {icon}
+    </View>
+    <Text className="font-saira-medium text-text-2">{label}</Text>
+    <Text className="mt-0.5 font-saira-bold text-xl text-text-1">{value}</Text>
+  </View>
+);
 
 // ─── Slot ────────────────────────────────────────────────
 const Slot = ({ name, isWinner, isBye, isHome, isFrames, score }) => {
@@ -314,79 +325,124 @@ export default function KnockoutBracket({ competitionInstanceId }) {
           </View>
         </View>
       </ScrollView>
+
       <BottomSheetModal
         showModal={stageModalVisible}
         setShowModal={setStageModalVisible}
         title="Stage Details">
-        <View className="flex-1 p-4">
-          <View className="mb-4 flex-row items-center gap-3">
-            <Text className="flex-1 font-saira-medium text-lg text-text-2">Competition Stage</Text>
-            <Text className="flex-1 text-right font-saira-medium text-lg text-text-1">
+        <View className="flex-1 bg-bg-2 p-4">
+          {/* Hero header */}
+          <View className="mb-5 rounded-2xl bg-brand p-5">
+            <Text className="font-saira-medium text-sm uppercase tracking-wider text-text-on-brand-2">
+              Competition Stage
+            </Text>
+            <Text className="mt-1 font-saira-bold text-2xl text-white" numberOfLines={1}>
               {activeStage?.name}
             </Text>
-          </View>
-          <View className="mb-4 flex-row items-center gap-3">
-            <Text className="flex-1 font-saira-medium text-lg text-text-2">Stage Type</Text>
-            <Text className="flex-1 text-right font-saira-medium text-lg text-text-1">
-              {activeStage?.stage_type === 'round_robin'
-                ? 'Round Robin'
-                : activeStage?.stage_type === 'knockout'
-                  ? 'Knockout'
-                  : activeStage?.stage_type === 'league'
-                    ? 'League'
-                    : activeStage?.stage_type === 'group'
-                      ? 'Groups Stage'
-                      : activeStage?.stage_type === 'playoff'
-                        ? 'Play-offs'
-                        : activeStage?.stage_type}
-            </Text>
-          </View>
-          <View className="mb-4 flex-row items-center gap-3">
-            <Text className="flex-1 font-saira-medium text-lg text-text-2">Stage Status</Text>
-            <Text className="flex-1 text-right font-saira-medium text-lg text-text-1">
-              {activeStage?.status === 'completed'
-                ? 'Completed'
-                : activeStage?.status === 'active'
-                  ? 'In Progress'
-                  : 'Upcoming'}
-            </Text>
-          </View>
-          {activeStage?.stage_type === 'knockout' && (
-            <View className="mb-4 flex-row items-center gap-3">
-              <Text className="flex-1 font-saira-medium text-lg text-text-2">No. of Legs</Text>
-              <Text className="flex-1 text-right font-saira-medium text-lg text-text-1">
-                {activeStage?.legs || '–'}
-              </Text>
-            </View>
-          )}
-          {activeStage?.stage_type == 'round_robin' && (
-            <View className="mb-4 flex-row items-center gap-3">
-              <Text className="flex-1 font-saira-medium text-lg text-text-2">
-                No. of Round Robins
-              </Text>
-              <Text className="flex-1 text-right font-saira-medium text-lg text-text-1">
-                {activeStage?.round_robins || '–'}
-              </Text>
-            </View>
-          )}
-          {activeStage?.stage_type === 'group' && (
-            <>
-              <View className="mb-4 flex-row items-center gap-3">
-                <Text className="flex-1 font-saira-medium text-lg text-text-2">No. of Groups</Text>
-                <Text className="flex-1 text-right font-saira-medium text-lg text-text-1">
-                  {activeStage?.groups || '–'}
+
+            <View className="mt-4 flex-row items-center gap-2">
+              {/* Stage type badge */}
+              <View className="flex-row items-center gap-1.5 rounded-full bg-white/15 px-3 py-1.5">
+                <Layers size={14} color="#FFFFFF" />
+                <Text className="font-saira-medium text-sm text-white">
+                  {activeStage?.stage_type === 'round_robin'
+                    ? 'Round Robin'
+                    : activeStage?.stage_type === 'knockout'
+                      ? 'Knockout'
+                      : activeStage?.stage_type === 'league'
+                        ? 'League'
+                        : activeStage?.stage_type === 'group'
+                          ? 'Groups Stage'
+                          : activeStage?.stage_type === 'playoff'
+                            ? 'Play-offs'
+                            : activeStage?.stage_type}
                 </Text>
               </View>
-              <View className="mb-4 flex-row items-center gap-3">
-                <Text className="flex-1 font-saira-medium text-lg text-text-2">
-                  Teams per Group
-                </Text>
-                <Text className="flex-1 text-right font-saira-medium text-lg text-text-1">
-                  {activeStage?.teams_per_group || '–'}
+
+              {/* Status badge */}
+              <View
+                className={`flex-row items-center gap-1.5 rounded-full px-3 py-1.5 ${
+                  activeStage?.status === 'completed'
+                    ? 'bg-green-500/20'
+                    : activeStage?.status === 'active'
+                      ? 'bg-amber-400/20'
+                      : 'bg-white/15'
+                }`}>
+                <View
+                  className={`h-2 w-2 rounded-full ${
+                    activeStage?.status === 'completed'
+                      ? 'bg-green-400'
+                      : activeStage?.status === 'active'
+                        ? 'bg-amber-300'
+                        : 'bg-slate-300'
+                  }`}
+                />
+                <Text className="font-saira-medium text-sm text-white">
+                  {activeStage?.status === 'completed'
+                    ? 'Completed'
+                    : activeStage?.status === 'active'
+                      ? 'In Progress'
+                      : 'Upcoming'}
                 </Text>
               </View>
-            </>
-          )}
+            </View>
+          </View>
+
+          {/* Stat cards grid */}
+          <View className="flex-row flex-wrap gap-3">
+            {activeStage?.best_of && (
+              <StatCard
+                icon={<Swords size={20} color="#D4AF37" />}
+                label="Best of"
+                value={`${activeStage.best_of} frames`}
+              />
+            )}
+
+            {activeStage?.complete_by && (
+              <StatCard
+                icon={<Calendar size={20} color="#D4AF37" />}
+                label="Complete By"
+                value={new Date(activeStage.complete_by).toLocaleDateString('en-GB', {
+                  weekday: 'short',
+                  day: 'numeric',
+                  month: 'short',
+                  year: 'numeric',
+                })}
+                wide
+              />
+            )}
+
+            {activeStage?.stage_type === 'knockout' && (
+              <StatCard
+                icon={<Trophy size={20} color="#D4AF37" />}
+                label="No. of Legs"
+                value={activeStage?.legs ?? '–'}
+              />
+            )}
+
+            {activeStage?.stage_type === 'round_robin' && (
+              <StatCard
+                icon={<Repeat size={20} color="#D4AF37" />}
+                label="Round Robins"
+                value={activeStage?.round_robins ?? '–'}
+              />
+            )}
+
+            {activeStage?.stage_type === 'group' && (
+              <>
+                <StatCard
+                  icon={<Layers size={20} color="#D4AF37" />}
+                  label="No. of Groups"
+                  value={activeStage?.groups ?? '–'}
+                />
+                <StatCard
+                  icon={<Users size={20} color="#D4AF37" />}
+                  label="Teams per Group"
+                  value={activeStage?.teams_per_group ?? '–'}
+                />
+              </>
+            )}
+          </View>
         </View>
       </BottomSheetModal>
     </>

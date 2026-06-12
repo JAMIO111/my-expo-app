@@ -90,13 +90,51 @@ const SignUpPage = () => {
     }
   };
 
+  const signInWithProvider = async (provider) => {
+    try {
+      const redirectTo = makeRedirectUri({
+        scheme: 'breakroom',
+        path: 'auth',
+        useProxy: true, // true in Expo Go, false for production builds
+      });
+
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider, // 'google' | 'facebook'
+        options: { redirectTo },
+      });
+
+      if (error) throw error;
+
+      if (data?.url) {
+        const result = await WebBrowser.openAuthSessionAsync(data.url, redirectTo);
+
+        if (result.type === 'success') {
+          // ✅ Session should now be set by Supabase after the redirect
+          const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+
+          if (sessionError) throw sessionError;
+
+          if (sessionData?.session?.user) {
+            await Purchases.logIn(sessionData.session.user.id);
+          }
+        } else if (result.type === 'cancel' || result.type === 'dismiss') {
+          // User backed out of the auth flow — nothing to do
+          console.log(`${provider} sign-in cancelled`);
+        }
+      }
+    } catch (err) {
+      console.error(`${provider} login error`, err);
+      Alert.alert('Login Error', err.message || 'Something went wrong');
+    }
+  };
+
   const signInWithGoogle = async () => {
     try {
       // Use proxy for dev (Expo Go), scheme for production
       const redirectTo = makeRedirectUri({
         scheme: 'breakroom',
         path: 'auth',
-        useProxy: true, // true in Expo Go
+        useProxy: false, // true in Expo Go
       });
 
       const { data, error } = await supabase.auth.signInWithOAuth({

@@ -347,12 +347,16 @@ const FixturePage = ({ fixtureDetails, isLoading, context }) => {
                 onFormTypeChange={setFormType}
               />
             </View>
-            <Text className="mt-2 font-saira-medium text-2xl text-text-1">Current Season</Text>
-            <SeasonStats
-              fixtureDetails={fixtureDetails}
-              homeTeam={fixtureDetails?.homeCompetitor}
-              awayTeam={fixtureDetails?.awayCompetitor}
-            />
+            {fixtureDetails?.competition?.competition_type?.competition_type === 'league' && (
+              <>
+                <Text className="mt-2 font-saira-medium text-2xl text-text-1">Current Season</Text>
+                <SeasonStats
+                  fixtureDetails={fixtureDetails}
+                  homeTeam={fixtureDetails?.homeCompetitor}
+                  awayTeam={fixtureDetails?.awayCompetitor}
+                />
+              </>
+            )}
             <Text className="mt-2 pl-2 font-saira-medium text-2xl text-text-1">
               Head to Head - All Time
             </Text>

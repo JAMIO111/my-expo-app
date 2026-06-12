@@ -1,13 +1,14 @@
 import { useRouter, Slot } from 'expo-router';
 import { useEffect } from 'react';
 import { useUser } from '@contexts/UserProvider';
+import LoadingScreen from '@components/LoadingScreen';
 
 export default function LoginLayout() {
   const { user, loading, roles, setCurrentRole } = useUser();
   const router = useRouter();
 
   useEffect(() => {
-    if (loading) return; // Wait for auth state to load{
+    if (loading) return; // Wait for auth state to load
     if (user) {
       console.log('User is authenticated, redirecting to (main)');
       router.replace('/(main)');
