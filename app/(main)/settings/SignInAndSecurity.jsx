@@ -12,6 +12,7 @@ import CustomHeader from '@components/CustomHeader';
 import Purchases from 'react-native-purchases';
 import IonIcons from 'react-native-vector-icons/Ionicons';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
+import Toast from 'react-native-toast-message';
 
 // ─── Password strength helper ─────────────────────────────
 const getPasswordStrength = (pw) => {
@@ -66,6 +67,7 @@ const SignInAndSecurity = () => {
   const [passwordError, setPasswordError] = useState(null);
   const [passwordSuccess, setPasswordSuccess] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   // Animate the password panel open/close
   const panelHeight = useRef(new Animated.Value(0)).current;
@@ -324,13 +326,24 @@ const SignInAndSecurity = () => {
         )}
 
         {/* ── Danger zone ── */}
-        <Text style={[styles.sectionLabel, { color: '#ef4444' }]}>DANGER ZONE</Text>
-        <View style={styles.dangerSection}>
-          <CTAButton
-            text="Delete Account"
-            type="error"
-            callbackFn={() => setDeleteAccountModal(true)}
-          />
+        <View className="mt-8 rounded-3xl border border-theme-red bg-bg-1 p-4 pb-2">
+          <Text style={[styles.sectionLabel, { color: '#ef4444', marginTop: 8 }]}>DANGER ZONE</Text>
+          <View style={styles.dangerSection}>
+            <Text className="mb-2 px-1 pt-4 font-saira-medium text-text-1">
+              Time to hang up the cue?
+            </Text>
+            <Text className="mb-2 px-1 py-2 font-saira-medium text-sm text-text-2">
+              Delete your account and all associated data. This action is permanent and cannot be
+              undone.
+            </Text>
+            <CTAButton
+              text="Delete Account"
+              type="error"
+              callbackFn={() => setDeleteAccountModal(true)}
+              loading={isDeleting}
+              loadingText={isDeleting ? 'Deleting...' : undefined}
+            />
+          </View>
         </View>
       </KeyboardAwareScrollView>
 
@@ -339,20 +352,52 @@ const SignInAndSecurity = () => {
         title="Are you sure you want to delete your account?"
         message="You will lose access to your account and all of your stats and history will be permanently deleted."
         topButtonText="Cancel"
-        bottomButtonText="Delete Account"
+        bottomButtonText={isDeleting ? 'Deleting…' : 'Delete Account'}
         topButtonType="default"
         bottomButtonType="error"
         topButtonFn={() => setDeleteAccountModal(false)}
         bottomButtonFn={async () => {
+          setIsDeleting(true);
           try {
-            await supabase.rpc('delete_user_data');
+            const { data, error } = await supabase.rpc('delete_user_account');
+            if (error) throw error;
+
+            if (data?.photo_path) {
+              await supabase.storage.from('avatars').remove([data.photo_path]);
+            }
+
             const isAnonymous = await Purchases.isAnonymous();
             if (!isAnonymous) {
               await Purchases.logOut();
             }
+
+            // Server-side deletion of the auth user — never use service role client-side
+            const {
+              data: { session },
+            } = await supabase.auth.getSession();
+            const res = await fetch(
+              `https://ionhcfjampzewimsgsmr.supabase.co/functions/v1/delete-auth-user`,
+              {
+                method: 'POST',
+                headers: {
+                  Authorization: `Bearer ${session.access_token}`,
+                  'Content-Type': 'application/json',
+                },
+              }
+            );
+            if (!res.ok) throw new Error('Failed to delete account');
+
             await supabase.auth.signOut();
+            setDeleteAccountModal(false);
+            Toast.show({ type: 'success', text1: 'Account deleted successfully.' });
+            // navigate to sign-in / onboarding
           } catch (err) {
             console.error('Error during account deletion:', err);
+            setDeleteAccountModal(false);
+            // show an error toast — don't silently fail
+            Toast.show({ type: 'error', text1: 'Could not delete account. Please try again.' });
+          } finally {
+            setIsDeleting(false);
           }
         }}
         onCancel={() => setDeleteAccountModal(false)}

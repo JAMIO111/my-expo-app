@@ -93,8 +93,8 @@ const ProfilePage = () => {
             </Text>
             <Text className="text-center font-saira text-xl text-text-2">
               {player?.nickname} | {getAgeInYearsAndDays(player?.dob).years} |{' '}
-              {currentRole.type === 'admin'
-                ? `${currentRole.district?.name} Admin` || 'Admin'
+              {currentRole?.type === 'admin'
+                ? `${currentRole?.district?.name} Admin` || 'Admin'
                 : currentRole?.team?.display_name || 'No Team'}
             </Text>
           </View>

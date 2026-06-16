@@ -24,7 +24,6 @@ import ToggleTransferWindowCard from '@components/ToggleTransferWindowCard';
 import { useQueryClient } from '@tanstack/react-query';
 import BottomSheetModal from '@components/BottomSheetModal';
 import { useRevenueCat } from '@contexts/RevenueCatProvider';
-import { isCallOrNewExpression } from 'typescript';
 import { useNotificationsPanel } from '@contexts/NotificationsPanelProvider';
 
 const Home = () => {
@@ -353,9 +352,9 @@ const Home = () => {
                 </View>
               )}
               <View className="w-full gap-5 p-3 pb-20 pt-5">
-                {currentRole.type === 'player' && currentRole.district?.transfer_window_open ? (
+                {currentRole?.type === 'player' && currentRole.district?.transfer_window_open ? (
                   <TransferWindowCard />
-                ) : currentRole.type === 'admin' ? (
+                ) : currentRole?.type === 'admin' ? (
                   <ToggleTransferWindowCard
                     loading={fetching}
                     isOpen={currentRole.district?.transfer_window_open}
@@ -387,7 +386,7 @@ const Home = () => {
                   title="Welcome to Break Room!"
                   body="We're so glad you can join us in this community of pool enthusiasts. Click to learn about all the features we have to offer."
                   category="Help & Support"
-                  image={require('@assets/pool-table-image.jpg')}
+                  image={require('@assets/welcome_image.png')}
                   onPress={() => {
                     router.push('/(main)/home/help');
                   }}
