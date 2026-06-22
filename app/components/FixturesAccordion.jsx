@@ -10,6 +10,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useGroupedFixtures } from '@hooks/useGroupedFixtures';
+import { useGroupedResults } from '@hooks/useGroupedResults';
 import TeamLogo from '@components/TeamLogo';
 import Avatar from '@components/Avatar';
 import BottomSheetModal from '@components/BottomSheetModal';
@@ -24,26 +25,46 @@ const FixturesAccordion = ({ season, competitionInstance, isExpanded, onPress })
   const [showModal, setShowModal] = useState(false);
   const [selectedFixture, setSelectedFixture] = useState(null);
 
-  console.log(
-    'FixturesAccordion Props - season:',
-    season,
-    'competitionInstance:',
-    competitionInstance
-  );
+  console.log('competitionInstance:', competitionInstance);
 
   const { data: fixturesGrouped, isLoading } = useGroupedFixtures({
     competitionInstanceId: competitionInstance?.id,
     month: null,
   });
 
-  console.log('FixturesAccordion - grouped fixtures:', fixturesGrouped);
+  const { data: resultsGrouped } = useGroupedResults({
+    competitionInstanceId: competitionInstance?.id,
+    month: null,
+  });
+
+  const combinedGrouped = Object.keys({
+    ...fixturesGrouped,
+    ...resultsGrouped,
+  })
+    .sort((a, b) => new Date(a) - new Date(b))
+    .reduce((acc, date) => {
+      acc[date] = [
+        ...(fixturesGrouped?.[date] || []).map((item) => ({
+          ...item,
+          type: 'fixture',
+        })),
+        ...(resultsGrouped?.[date] || []).map((item) => ({
+          ...item,
+          type: 'result',
+        })),
+      ];
+
+      return acc;
+    }, {});
+
+  console.log('FixturesAccordion - combinedGrouped:', combinedGrouped);
 
   const toggleDate = (date) => {
     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
     setExpandedDate((prev) => (prev === date ? null : date));
   };
 
-  const hasFixtures = fixturesGrouped && Object.keys(fixturesGrouped).length > 0;
+  const hasFixtures = combinedGrouped && Object.keys(combinedGrouped).length > 0;
 
   return (
     <View className="w-full rounded-2xl bg-bg-2 shadow-sm">
@@ -80,7 +101,7 @@ const FixturesAccordion = ({ season, competitionInstance, isExpanded, onPress })
           {isLoading ? (
             <Text className="text-text-2">Loading fixtures...</Text>
           ) : (
-            Object.entries(fixturesGrouped || {}).map(([date, fixturesForDate]) => (
+            Object.entries(combinedGrouped || {}).map(([date, fixturesForDate]) => (
               <View key={date} className="rounded-2xl bg-bg-1 shadow-sm">
                 {/* Date header */}
                 <Pressable
@@ -95,7 +116,7 @@ const FixturesAccordion = ({ season, competitionInstance, isExpanded, onPress })
                     })}
                   </Text>
                   <Text className="flex flex-1 px-5 text-right font-saira text-text-2">
-                    {fixturesForDate.length} Fixture{fixturesForDate.length !== 1 ? 's' : ''}
+                    {fixturesForDate.length} {fixturesForDate.length !== 1 ? 'Fixtures' : 'Fixture'}
                   </Text>
                   <Ionicons
                     name="chevron-down"
@@ -108,89 +129,107 @@ const FixturesAccordion = ({ season, competitionInstance, isExpanded, onPress })
                 {/* Fixtures for this date */}
                 {expandedDate === date && (
                   <View className="gap-2 p-3">
-                    {fixturesForDate.map((fixture) => (
-                      <View key={fixture.id}>
-                        <Pressable
-                          onPress={() => {
-                            setSelectedFixture(fixture);
-                            setShowModal(true);
-                          }}
-                          className="flex flex-1 flex-col items-center justify-between gap-2 rounded-2xl bg-bg-2 p-2 shadow-sm">
-                          <View className="flex flex-row items-center justify-between gap-2">
-                            <View className="flex-1 flex-col items-center justify-between gap-2">
-                              <View className="flex-1 flex-row items-center justify-between gap-2">
-                                {fixture?.competitor_type === 'team' ? (
-                                  <TeamLogo
-                                    size={20}
-                                    type={fixture?.home_team?.crest?.type}
-                                    color1={fixture?.home_team?.crest?.color1}
-                                    color2={fixture?.home_team?.crest?.color2}
-                                    thickness={fixture?.home_team?.crest?.thickness}
-                                  />
-                                ) : (
-                                  <Avatar
-                                    size={20}
-                                    borderRadius={10}
-                                    player={fixture?.home_player}
-                                  />
-                                )}
-                                <Text className="font-saira-semibold text-lg text-text-1">
-                                  {fixture?.competitor_type === 'team'
-                                    ? fixture?.home_team?.abbreviation || 'Home Team'
-                                    : `(${fixture?.home_player?.nickname})` || 'Home Player'}
-                                </Text>
-                                <Text
-                                  numberOfLines={1}
-                                  ellipsizeMode="tail"
-                                  className={`flex-1 text-left font-saira text-lg text-text-2`}>
-                                  {fixture?.competitor_type === 'team'
-                                    ? fixture?.home_team?.display_name || 'Home Team'
-                                    : `${fixture?.home_player?.first_name || 'Home'} ${fixture?.home_player?.surname || 'Player'}`}
-                                </Text>
+                    {fixturesForDate.map((fixture) => {
+                      const homeScore =
+                        fixture?.frames?.filter((f) => f.winner_side === 'home').length || 0;
+                      const awayScore =
+                        fixture?.frames?.filter((f) => f.winner_side === 'away').length || 0;
+
+                      return (
+                        <View key={fixture.id}>
+                          <Pressable
+                            onPress={() => {
+                              setSelectedFixture(fixture);
+                              setShowModal(true);
+                            }}
+                            className="flex flex-1 flex-col items-center justify-between gap-2 rounded-2xl bg-bg-2 p-2 shadow-sm">
+                            <View className="flex flex-row items-center justify-between gap-2">
+                              <View className="flex-1 flex-col items-center justify-between gap-2">
+                                <View className="flex-1 flex-row items-center justify-between gap-2">
+                                  {fixture?.competitor_type === 'team' ? (
+                                    <TeamLogo
+                                      size={20}
+                                      type={fixture?.home_team?.crest?.type}
+                                      color1={fixture?.home_team?.crest?.color1}
+                                      color2={fixture?.home_team?.crest?.color2}
+                                      thickness={fixture?.home_team?.crest?.thickness}
+                                    />
+                                  ) : (
+                                    <Avatar
+                                      size={20}
+                                      borderRadius={10}
+                                      player={fixture?.home_player}
+                                    />
+                                  )}
+                                  <Text className="font-saira-semibold text-lg text-text-1">
+                                    {fixture?.competitor_type === 'team'
+                                      ? fixture?.home_team?.abbreviation || 'Home Team'
+                                      : `(${fixture?.home_player?.nickname})` || 'Home Player'}
+                                  </Text>
+                                  <Text
+                                    numberOfLines={1}
+                                    ellipsizeMode="tail"
+                                    className={`flex-1 text-left font-saira text-lg text-text-2`}>
+                                    {fixture?.competitor_type === 'team'
+                                      ? fixture?.home_team?.display_name || 'Home Team'
+                                      : `${fixture?.home_player?.first_name || 'Home'} ${fixture?.home_player?.surname || 'Player'}`}
+                                  </Text>
+                                </View>
+                                <View className="flex-1 flex-row items-center justify-between gap-2">
+                                  {fixture?.competitor_type === 'team' ? (
+                                    <TeamLogo
+                                      size={20}
+                                      type={fixture?.away_team?.crest?.type}
+                                      color1={fixture?.away_team?.crest?.color1}
+                                      color2={fixture?.away_team?.crest?.color2}
+                                      thickness={fixture?.away_team?.crest?.thickness}
+                                    />
+                                  ) : (
+                                    <Avatar
+                                      size={20}
+                                      borderRadius={10}
+                                      player={fixture?.away_player}
+                                    />
+                                  )}
+                                  <Text className="font-saira-semibold text-lg text-text-1">
+                                    {fixture?.competitor_type === 'team'
+                                      ? fixture?.away_team?.abbreviation || 'Away Team'
+                                      : `(${fixture?.away_player?.nickname})` || 'Away Player'}
+                                  </Text>
+                                  <Text
+                                    numberOfLines={1}
+                                    ellipsizeMode="tail"
+                                    className={`flex-1 text-left font-saira text-lg text-text-2`}>
+                                    {fixture?.competitor_type === 'team'
+                                      ? fixture?.away_team?.display_name || 'Away Team'
+                                      : `${fixture?.away_player?.first_name || 'Away'} ${fixture?.away_player?.surname || 'Player'}`}
+                                  </Text>
+                                </View>
                               </View>
-                              <View className="flex-1 flex-row items-center justify-between gap-2">
-                                {fixture?.competitor_type === 'team' ? (
-                                  <TeamLogo
-                                    size={20}
-                                    type={fixture?.away_team?.crest?.type}
-                                    color1={fixture?.away_team?.crest?.color1}
-                                    color2={fixture?.away_team?.crest?.color2}
-                                    thickness={fixture?.away_team?.crest?.thickness}
-                                  />
-                                ) : (
-                                  <Avatar
-                                    size={20}
-                                    borderRadius={10}
-                                    player={fixture?.away_player}
-                                  />
-                                )}
-                                <Text className="font-saira-semibold text-lg text-text-1">
-                                  {fixture?.competitor_type === 'team'
-                                    ? fixture?.away_team?.abbreviation || 'Away Team'
-                                    : `(${fixture?.away_player?.nickname})` || 'Away Player'}
-                                </Text>
-                                <Text
-                                  numberOfLines={1}
-                                  ellipsizeMode="tail"
-                                  className={`flex-1 text-left font-saira text-lg text-text-2`}>
-                                  {fixture?.competitor_type === 'team'
-                                    ? fixture?.away_team?.display_name || 'Away Team'
-                                    : `${fixture?.away_player?.first_name || 'Away'} ${fixture?.away_player?.surname || 'Player'}`}
-                                </Text>
-                              </View>
+                              {fixture?.frames?.length > 0 ? (
+                                <View className="gap-2 px-3">
+                                  <Text className="font-saira-medium text-lg text-text-2">
+                                    {homeScore}
+                                  </Text>
+                                  <Text className="font-saira-medium text-lg text-text-2">
+                                    {awayScore}
+                                  </Text>
+                                </View>
+                              ) : (
+                                <View className="flex-row items-center justify-end gap-2">
+                                  <Text className="font-saira-medium text-lg text-text-2">
+                                    {new Date(fixture.date_time).toLocaleTimeString('en-GB', {
+                                      hour: '2-digit',
+                                      minute: '2-digit',
+                                    })}
+                                  </Text>
+                                </View>
+                              )}
                             </View>
-                            <View className="flex-row items-center justify-end gap-2">
-                              <Text className="font-saira-medium text-lg text-text-2">
-                                {new Date(fixture.date_time).toLocaleTimeString('en-GB', {
-                                  hour: '2-digit',
-                                  minute: '2-digit',
-                                })}
-                              </Text>
-                            </View>
-                          </View>
-                        </Pressable>
-                      </View>
-                    ))}
+                          </Pressable>
+                        </View>
+                      );
+                    })}
                   </View>
                 )}
               </View>

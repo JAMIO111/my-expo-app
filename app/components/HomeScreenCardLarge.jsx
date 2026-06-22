@@ -3,6 +3,7 @@ import { useRef } from 'react';
 
 const HomeScreenCardLarge = ({ title, body, category, image, onPress }) => {
   const scale = useRef(new Animated.Value(1)).current;
+  const hasNavigated = useRef(false);
 
   const handlePressIn = () => {
     Animated.spring(scale, {
@@ -28,6 +29,11 @@ const HomeScreenCardLarge = ({ title, body, category, image, onPress }) => {
         onPressIn={handlePressIn}
         onPressOut={resetScale}
         onPress={() => {
+          if (hasNavigated.current) return;
+          hasNavigated.current = true;
+          setTimeout(() => {
+            hasNavigated.current = false;
+          }, 500);
           onPress?.();
           resetScale(); // 👈 THIS is the key fix
         }}

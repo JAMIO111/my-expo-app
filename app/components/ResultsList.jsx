@@ -1,6 +1,6 @@
 import { useRef, useState, useEffect } from 'react';
 import { View, Text, Pressable, FlatList, SafeAreaView, Animated } from 'react-native';
-import { useMonthlyResults } from '@/hooks/useGroupedResults';
+import { useGroupedResults } from '@/hooks/useGroupedResults';
 import { format, addMonths, parseISO, startOfMonth, isBefore } from 'date-fns';
 import IonIcons from 'react-native-vector-icons/Ionicons';
 import TeamLogo from '@components/TeamLogo';
@@ -156,10 +156,9 @@ const ResultsList = () => {
     isLoading: isResultsLoading,
     isFetching: isResultsFetching,
     error,
-  } = useMonthlyResults({
-    month: selectedMonth,
-    seasonId: season?.id,
+  } = useGroupedResults({
     competitionInstanceId: competitionInstance?.id,
+    month: selectedMonth,
   });
 
   console.log('ResultsList resultsData:', resultsData);

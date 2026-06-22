@@ -161,10 +161,10 @@ export default function AppRealtimeProvider({ children }) {
             (newMonth !== oldMonth || newVenue !== oldVenue)
           ) {
             queryClient.invalidateQueries({
-              queryKey: ['fixtures-grouped', oldMonth, seasonId, competitionInstanceId],
+              queryKey: ['fixtures-grouped', competitionInstanceId, oldMonth],
             });
             queryClient.invalidateQueries({
-              queryKey: ['fixtures-grouped', newMonth, seasonId, competitionInstanceId],
+              queryKey: ['fixtures-grouped', competitionInstanceId, newMonth],
             });
           }
           if (
@@ -175,10 +175,10 @@ export default function AppRealtimeProvider({ children }) {
             competitionInstanceId
           ) {
             queryClient.invalidateQueries({
-              queryKey: ['results-grouped', oldMonth, seasonId, competitionInstanceId],
+              queryKey: ['results-grouped', competitionInstanceId, oldMonth],
             });
             queryClient.invalidateQueries({
-              queryKey: ['results-grouped', newMonth, seasonId, competitionInstanceId],
+              queryKey: ['results-grouped', competitionInstanceId, newMonth],
             });
           }
         })

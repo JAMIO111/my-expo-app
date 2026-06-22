@@ -2,11 +2,8 @@ import { useQuery } from '@tanstack/react-query';
 import { startOfMonth, endOfMonth } from 'date-fns';
 import { supabase } from '@/lib/supabase';
 
-export const useMonthlyResults = ({ month, seasonId, competitionInstanceId }) => {
-  const fetchResultsByMonth = async ({ month, seasonId, competitionInstanceId }) => {
-    const start = startOfMonth(month).toISOString();
-    const end = endOfMonth(month).toISOString();
-
+export const useGroupedResults = ({ competitionInstanceId, month }) => {
+  const fetchResultsByMonth = async ({ competitionInstanceId, month }) => {
     const { data, error } = await supabase
       .from('Fixtures')
       .select(
@@ -19,12 +16,15 @@ export const useMonthlyResults = ({ month, seasonId, competitionInstanceId }) =>
         frames:Results!Results_fixture_id_fkey(*)
       `
       )
-      .eq('season', seasonId)
       .eq('competition_instance_id', competitionInstanceId)
       .eq('approved', true)
-      .gte('date_time', start)
-      .lte('date_time', end)
       .order('date_time', { ascending: true });
+
+    if (month) {
+      const start = startOfMonth(month).toISOString();
+      const end = endOfMonth(month).toISOString();
+      query = query.gte('date_time', start).lte('date_time', end);
+    }
 
     if (error) throw new Error(error.message);
 
@@ -66,13 +66,13 @@ export const useMonthlyResults = ({ month, seasonId, competitionInstanceId }) =>
   };
 
   return useQuery({
-    queryKey: ['results-grouped', month?.toISOString(), seasonId, competitionInstanceId],
-    queryFn: () => fetchResultsByMonth({ month, seasonId, competitionInstanceId }),
+    queryKey: ['results-grouped', competitionInstanceId, month?.toISOString()],
+    queryFn: () => fetchResultsByMonth({ competitionInstanceId, month }),
     staleTime: 1000 * 60 * 5,
     gcTime: 1000 * 60 * 60,
-    enabled: !!month && !!seasonId && !!competitionInstanceId,
+    enabled: !!competitionInstanceId,
     keepPreviousData: true,
   });
 };
 
-export default useMonthlyResults;
+export default useGroupedResults;

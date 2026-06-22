@@ -15,6 +15,8 @@ import { useUser } from '@contexts/UserProvider';
 import Toast from 'react-native-toast-message';
 import { supabase } from '@/lib/supabase';
 import { useQueryClient } from '@tanstack/react-query';
+import FloatingBottomSheet from '@components/FloatingBottomSheet';
+import CustomTextInput from '@components/CustomTextInput';
 
 export const PickerRow = ({
   icon,
@@ -35,7 +37,7 @@ export const PickerRow = ({
       onPress={onToggle}
       className={`flex-row items-center gap-2 p-4 pr-3 ${isExpanded && !disabled ? 'border-b border-theme-gray-4' : ''}`}
       disabled={disabled}>
-      <Ionicons name={icon} size={24} color="#8B5CF6" />
+      <Ionicons name={icon} size={24} color="#610166" />
 
       <View className="flex-1 flex-row items-center justify-between gap-3">
         <Text
@@ -54,7 +56,7 @@ export const PickerRow = ({
       <Ionicons
         name={isExpanded && !disabled ? 'chevron-up' : 'chevron-down'}
         size={20}
-        color="#9CA3AF"
+        color="#610166"
         style={{ marginLeft: 6 }}
       />
     </Pressable>
@@ -95,6 +97,10 @@ const FixtureManagement = ({ fixtureId, closeModal }) => {
   const isHomeVenue = fixture?.venue_id === null;
   const venueIdToUse = isHomeVenue ? fixture?.address?.id : fixture?.venue_id;
 
+  const [modalVisible, setModalVisible] = useState(false);
+  const [modalConfig, setModalConfig] = useState(null);
+  const [isForfeiting, setIsForfeiting] = useState(false);
+  const [forfeitReason, setForfeitReason] = useState('');
   const [dateTime, setDateTime] = useState(new Date());
   const [isSaving, setIsSaving] = useState(false);
   const [venueId, setVenueId] = useState(venueIdToUse);
@@ -187,6 +193,9 @@ const FixtureManagement = ({ fixtureId, closeModal }) => {
   const isDisputed = fixture?.is_disputed;
   const isEscalated = fixture?.is_escalated;
 
+  const homeScore = fixture?.frames?.filter((f) => f.winner_side === 'home').length || 0;
+  const awayScore = fixture?.frames?.filter((f) => f.winner_side === 'away').length || 0;
+
   const getStatus = () => {
     let status1 = 'Error';
     let status2 = 'Unknown Status';
@@ -245,15 +254,13 @@ const FixtureManagement = ({ fixtureId, closeModal }) => {
         queryClient.invalidateQueries(['fixture-details', fixtureId]),
         queryClient.invalidateQueries([
           'fixtures-grouped',
-          new Date(fixture?.date_time).getMonth(),
-          fixture.season,
           fixture.competition_instance_id,
+          new Date(fixture?.date_time).getMonth(),
         ]),
         queryClient.invalidateQueries([
           'fixtures-grouped',
-          new Date(dateTime).getMonth(),
-          fixture.season,
           fixture.competition_instance_id,
+          new Date(dateTime).getMonth(),
         ]),
       ]);
       Toast.show({
@@ -275,6 +282,74 @@ const FixtureManagement = ({ fixtureId, closeModal }) => {
     }
   };
 
+  const confirmForfeit = async (side) => {
+    setIsForfeiting(true);
+    try {
+      const { data, error } = await supabase.rpc('forfeit_fixture', {
+        p_fixture_id: fixtureId,
+        p_side: side,
+        p_reason: forfeitReason || null,
+      });
+
+      if (error) throw error;
+      if (!data?.success) throw new Error(data?.error || 'Forfeit failed');
+
+      await Promise.all([
+        queryClient.invalidateQueries(['fixture-details', fixtureId]),
+        queryClient.invalidateQueries([
+          'fixtures-grouped',
+          fixture.competition_instance_id,
+          new Date(fixture?.date_time).getMonth(),
+        ]),
+        queryClient.invalidateQueries([
+          'fixtures-grouped',
+          fixture.competition_instance_id,
+          new Date(dateTime).getMonth(),
+        ]),
+      ]);
+      setForfeitReason('');
+      Toast.show({
+        type: 'success',
+        text1: 'Fixture Forfeited',
+        text2: `The fixture has been successfully forfeited for the ${side === 'home' ? 'home team' : 'away team'}.`,
+      });
+    } catch (error) {
+      console.error('Error forfeiting fixture:', error);
+
+      Toast.show({
+        type: 'error',
+        text1: 'Error Forfeiting Fixture',
+        text2: error?.message || 'Something went wrong while forfeiting the fixture.',
+      });
+    } finally {
+      setIsForfeiting(false);
+    }
+  };
+
+  const handleForfeitModal = (side) => {
+    setModalConfig({
+      title: `Confirm ${side === 'home' ? 'Home Team' : 'Away Team'} Forfeit`,
+      message: `Are you sure you want to forfeit this fixture for the ${side === 'home' ? 'home team' : 'away team'}? This action cannot be undone and will award the ${side === 'home' ? 'away team' : 'home team'} a win.`,
+      topButtonText: 'No, Cancel',
+      topButtonType: 'default',
+      bottomButtonText: `Confirm Forfeit`,
+      bottomButtonType: 'error',
+      bottomButtonFn: () => {
+        confirmForfeit(side);
+        setModalVisible(false);
+      },
+    });
+    setModalVisible(true);
+  };
+
+  const handleAnimationEnd = () => {
+    setModalConfig(null);
+  };
+
+  const closeFloatingModal = () => {
+    setModalVisible(false);
+  };
+
   if (isLoading) return <LoadingScreen />;
 
   return (
@@ -291,7 +366,7 @@ const FixtureManagement = ({ fixtureId, closeModal }) => {
             )}
             <Text
               style={{ lineHeight: 50 }}
-              className={`font-saira-semibold ${isIndividual ? 'text-3xl' : 'text-4xl'}`}>
+              className={`font-saira-semibold ${isIndividual ? 'text-xl' : 'text-4xl'}`}>
               {isIndividual
                 ? fixture?.homeCompetitor?.nickname?.toUpperCase() ||
                   `(${fixture?.homeCompetitor?.first_name})`
@@ -303,12 +378,20 @@ const FixtureManagement = ({ fixtureId, closeModal }) => {
           </Text>
         </View>
 
+        <View className="flex-1 flex-row items-start justify-center">
+          <View className="flex-row items-center justify-center gap-2 rounded-xl bg-theme-gray-4 px-3 py-1.5">
+            <Text className="font-michroma text-2xl text-text-1">{homeScore}</Text>
+            <Text className="font-michroma text-2xl text-text-2">-</Text>
+            <Text className="font-michroma text-2xl text-text-1">{awayScore}</Text>
+          </View>
+        </View>
+
         {/* Away */}
         <View className="items-end">
           <View className="flex-row items-center justify-start gap-4">
             <Text
               style={{ lineHeight: 50 }}
-              className={`font-saira-semibold ${isIndividual ? 'text-3xl' : 'text-4xl'}`}>
+              className={`font-saira-semibold ${isIndividual ? 'text-xl' : 'text-4xl'}`}>
               {isIndividual
                 ? fixture?.awayCompetitor?.nickname?.toUpperCase() ||
                   `(${fixture?.awayCompetitor?.first_name})`
@@ -328,7 +411,7 @@ const FixtureManagement = ({ fixtureId, closeModal }) => {
 
       <ScrollView
         className="flex-1 bg-bg-2"
-        contentContainerStyle={{ flexGrow: 1, paddingTop: 8, gap: 8, paddingBottom: 160 }}
+        contentContainerStyle={{ flexGrow: 1, paddingTop: 8, gap: 8, paddingBottom: 380 }}
         keyboardShouldPersistTaps="handled">
         <View className="gap-2 bg-bg-1 p-5">
           {/* Fixture details summary */}
@@ -430,7 +513,52 @@ const FixtureManagement = ({ fixtureId, closeModal }) => {
             placeholder="Select a Venue..."
           />
         </View>
+        <View className="w-full gap-5 bg-bg-1 p-5">
+          <Heading text="Forfeit Fixture" />
+          <CustomTextInput
+            title="Forfeit Reason (Optional)"
+            titleColor="text-text-1"
+            placeholder="e.g. Away team did not show up..."
+            value={forfeitReason}
+            onChangeText={setForfeitReason}
+            multiline
+            autoCorrect={true}
+            numberOfLines={3}
+            leftIconName="information-circle-outline"
+          />
+          <View className="w-full flex-row gap-5">
+            <View className="flex-1">
+              <CTAButton
+                icon={<Ionicons name="flag" size={20} color="white" />}
+                text="Home Forfeit"
+                type="error"
+                callbackFn={() => handleForfeitModal('home')}
+              />
+            </View>
+            <View className="flex-1">
+              <CTAButton
+                icon={<Ionicons name="flag" size={20} color="white" />}
+                text="Away Forfeit"
+                type="error"
+                callbackFn={() => handleForfeitModal('away')}
+              />
+            </View>
+          </View>
+        </View>
       </ScrollView>
+      <FloatingBottomSheet
+        visible={modalVisible}
+        onCancel={closeFloatingModal}
+        title={modalConfig?.title}
+        message={modalConfig?.message}
+        topButtonText="Cancel"
+        topButtonFn={closeFloatingModal}
+        topButtonType={modalConfig?.topButtonType}
+        bottomButtonText={modalConfig?.bottomButtonText}
+        bottomButtonType={modalConfig?.bottomButtonType}
+        bottomButtonFn={modalConfig?.bottomButtonFn}
+        onAnimationEnd={handleAnimationEnd}
+      />
       <View className="absolute bottom-0 left-0 right-0 p-5 pb-8">
         <View
           style={{ borderRadius: 28 }}
