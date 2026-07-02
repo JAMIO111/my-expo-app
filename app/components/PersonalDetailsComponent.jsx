@@ -13,6 +13,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import SafeViewWrapper from '@components/SafeViewWrapper';
 import CustomHeader from '@components/CustomHeader'; // Adjust the import path as necessary
 import Toast from 'react-native-toast-message';
+import Ionicons from '@expo/vector-icons/Ionicons';
 
 const PersonalDetailsComponent = () => {
   const queryClient = useQueryClient();
@@ -21,7 +22,9 @@ const PersonalDetailsComponent = () => {
   const [surname, setSurname] = useState(player?.surname || '');
   const [nickname, setNickname] = useState(player?.nickname || '');
   const [dob, setDob] = useState(player?.dob ? new Date(player.dob) : new Date());
+  const [gender, setGender] = useState(player?.gender || '');
   const [showDatePicker, setShowDatePicker] = useState(false); // inline for iOS
+  const [showGenderPicker, setShowGenderPicker] = useState(false); // inline for iOS
   const [isSaving, setIsSaving] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
   const { colorScheme } = useColorScheme();
@@ -36,6 +39,7 @@ const PersonalDetailsComponent = () => {
       setSurname(player.surname || '');
       setNickname(player.nickname || '');
       setDob(player.dob ? new Date(player.dob) : new Date());
+      setGender(player.gender || '');
     }
   }, [player]);
 
@@ -50,7 +54,8 @@ const PersonalDetailsComponent = () => {
       surname.trim() !== '' &&
       nickname.trim() !== '' &&
       dob instanceof Date &&
-      !isNaN(dob);
+      !isNaN(dob) &&
+      gender.trim() !== '';
 
     const dobStr = dob.toISOString().split('T')[0] || '';
     const playerDobStr = player.dob || '';
@@ -59,28 +64,36 @@ const PersonalDetailsComponent = () => {
       firstName !== player.first_name ||
       surname !== player.surname ||
       nickname !== player.nickname ||
-      dobStr !== playerDobStr;
+      dobStr !== playerDobStr ||
+      gender !== player.gender;
 
     setHasChanges(requiredFieldsFilled && changed);
-  }, [firstName, surname, nickname, dob, player]);
+  }, [firstName, surname, nickname, dob, gender, player]);
 
   const handleSave = async () => {
     if (!hasChanges || isSaving || !player) return;
 
     setIsSaving(true);
 
-    const updates = {};
-    if (firstName !== player.first_name) updates.first_name = firstName;
-    if (surname !== player.surname) updates.surname = surname;
-    if (nickname !== player.nickname) updates.nickname = nickname;
-
     const dobStr = dob.toISOString().split('T')[0];
-    if (dobStr !== player.dob) updates.dob = dobStr;
 
-    const { error } = await supabase.from('Players').update(updates).eq('id', player.id);
+    const { data, error } = await supabase.rpc('update_player_profile', {
+      p_player_id: player.id,
+      p_first_name: firstName !== player.first_name ? firstName : null,
+      p_surname: surname !== player.surname ? surname : null,
+      p_nickname: nickname !== player.nickname ? nickname : null,
+      p_dob: dobStr !== player.dob ? dobStr : null,
+      p_gender: gender !== player.gender ? gender : null,
+    });
 
-    if (error) {
-      console.error('Failed to save changes:', error.message);
+    if (error || !data?.success) {
+      console.error('Failed to save changes:', error?.message || data?.error, data?.detail);
+      Toast.show({
+        type: 'error',
+        text1: 'Update Failed',
+        text2: 'Something went wrong while updating your profile.',
+        props: { colorScheme },
+      });
     } else {
       await queryClient.invalidateQueries({ queryKey: ['PlayerProfile', player.id] });
       await refetch();
@@ -148,6 +161,56 @@ const PersonalDetailsComponent = () => {
             lastItem={true}
           />
         </MenuContainer>
+
+        <View className="mb-8 w-full rounded-2xl bg-bg-grouped-2 shadow-sm">
+          <Pressable
+            onPress={() => setShowGenderPicker((prev) => !prev)}
+            className="flex-row items-center justify-between px-4 py-4">
+            <Text className="text-lg font-medium text-text-1">Gender</Text>
+            <View className="flex-1 flex-row items-center justify-end gap-3">
+              <Text className="text-xl text-text-2">
+                {gender === 'male' ? 'Male' : gender === 'female' ? 'Female' : 'Not Specified'}
+              </Text>
+              <IonIcons
+                name={showGenderPicker ? 'chevron-down' : 'chevron-forward'}
+                size={18}
+                color={themeColors.icon}
+              />
+            </View>
+          </Pressable>
+
+          {showGenderPicker && (
+            <View className="gap-2 px-4 pb-2">
+              <Pressable
+                className="flex-row items-center justify-between gap-4 border-t border-theme-gray-3 pt-4"
+                onPress={() => {
+                  setGender('male');
+                  setShowGenderPicker(false);
+                }}>
+                <Text className="text-lg text-text-1">Male</Text>
+                <Ionicons name="male" size={22} color="blue" />
+              </Pressable>
+              <Pressable
+                className="mt-2 flex-row items-center justify-between gap-4 border-t border-theme-gray-3 pt-4"
+                onPress={() => {
+                  setGender('female');
+                  setShowGenderPicker(false);
+                }}>
+                <Text className="text-lg text-text-1">Female</Text>
+                <Ionicons name="female" size={22} color="red" />
+              </Pressable>
+              <Pressable
+                className="mt-2 flex-row items-center justify-between gap-4 border-t border-theme-gray-3 py-4"
+                onPress={() => {
+                  setGender(null);
+                  setShowGenderPicker(false);
+                }}>
+                <Text className="text-lg text-text-1">Prefer Not to Say</Text>
+                <Ionicons name="help-circle" size={22} color="gray" />
+              </Pressable>
+            </View>
+          )}
+        </View>
 
         <View className="w-full rounded-2xl bg-bg-grouped-2 shadow-sm">
           <Pressable

@@ -138,7 +138,3 @@ export default function SevenSegmentScoreboard({ homeScore = 0, awayScore = 0, s
     </View>
   );
 }
-
-// Usage:
-// <SevenSegmentScoreboard homeScore={3} awayScore={1} />
-// <SevenSegmentScoreboard homeScore={3} awayScore={1} scale={0.5} />

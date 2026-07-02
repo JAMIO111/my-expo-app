@@ -278,7 +278,7 @@ const Home = () => {
             />
           }
           className="mt-16 flex-1 bg-brand"
-          contentContainerStyle={{ allignItems: 'center', justifyContent: 'center' }}>
+          contentContainerStyle={{ justifyContent: 'center' }}>
           <View className="">
             <View className="w-full items-center justify-center gap-4 p-0 pb-5">
               {currentRole?.team && (
@@ -307,7 +307,7 @@ const Home = () => {
                 <LeagueHomeCard standings={standings} isLoading={isStandingsLoading} />
               </View>
             </View>
-            <View className="w-full bg-bg-1 pb-24">
+            <View className="w-full bg-bg-1 pb-8">
               {(currentRole?.team?.captain === player?.id ||
                 currentRole?.team?.vice_captain === player?.id) && (
                 <View className="w-full bg-bg-grouped-1">
@@ -351,9 +351,13 @@ const Home = () => {
                   </View>
                 </View>
               )}
-              <View className="w-full gap-5 p-3 pb-20 pt-5">
+              <View className="w-full gap-5 p-3 pt-5">
                 {currentRole?.type === 'player' && currentRole.district?.transfer_window_open ? (
-                  <TransferWindowCard />
+                  <TransferWindowCard
+                    onPress={() => {
+                      router.push('/(main)/home/transfers');
+                    }}
+                  />
                 ) : currentRole?.type === 'admin' ? (
                   <ToggleTransferWindowCard
                     loading={fetching}
@@ -410,23 +414,6 @@ const Home = () => {
                   image={require('@assets/premium-card.jpg')}
                   onPress={() => {
                     router.push('/(main)/home/paywall');
-                  }}
-                />
-                <CTAButton
-                  text="Check Badges"
-                  callbackFn={async () => {
-                    try {
-                      const { data, error } = await supabase.rpc('check_player_badges', {
-                        _player_id: player.id,
-                      });
-                      if (error) {
-                        console.error('Badge check RPC error:', error);
-                      } else {
-                        console.log('Badge check RPC success:', data);
-                      }
-                    } catch (err) {
-                      console.error('Unexpected error calling badge check RPC:', err);
-                    }
                   }}
                 />
               </View>

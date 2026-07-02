@@ -83,7 +83,7 @@ const SearchResultsOverlay = ({ searchActive, searchQuery, sendJoinRequest }) =>
     if (!searchQuery) {
       return (
         <View className="h-40 p-5">
-          <Text className="w-full rounded-2xl border border-theme-gray-5 bg-bg-grouped-2 p-8 py-12 text-center font-saira text-lg text-text-2">
+          <Text className="w-full rounded-2xl bg-bg-grouped-2 p-8 py-12 text-center font-saira text-lg text-text-2 shadow-sm">
             Start typing to search for results
           </Text>
         </View>
@@ -93,7 +93,7 @@ const SearchResultsOverlay = ({ searchActive, searchQuery, sendJoinRequest }) =>
     if (isLoading) {
       return (
         <View className="h-40 p-5">
-          <View className="flex-1 flex-row items-center justify-center gap-5 rounded-2xl border border-theme-gray-5 bg-bg-grouped-2 p-5">
+          <View className="flex-1 flex-row items-center justify-center gap-5 rounded-2xl bg-bg-grouped-2 p-5 shadow-sm">
             <ActivityIndicator size="small" color="#ccc" />
             <Text className="text-lg text-text-2">Loading...</Text>
           </View>
@@ -104,7 +104,7 @@ const SearchResultsOverlay = ({ searchActive, searchQuery, sendJoinRequest }) =>
     if (results.length === 0) {
       return (
         <View className="h-40 p-5">
-          <Text className="w-full rounded-2xl border border-theme-gray-5 bg-bg-grouped-2 p-8 py-12 text-center font-saira text-lg text-text-2">
+          <Text className="w-full rounded-2xl bg-bg-grouped-2 p-8 py-12 text-center font-saira text-lg text-text-2 shadow-sm">
             No results found
           </Text>
         </View>
@@ -128,7 +128,7 @@ const SearchResultsOverlay = ({ searchActive, searchQuery, sendJoinRequest }) =>
 
   return (
     <>
-      <View style={{ position: 'absolute', top: 67, left: 0, right: 0, bottom: 0, zIndex: 50 }}>
+      <View style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, zIndex: 50 }}>
         <View className=" flex-1 bg-bg-grouped-1">{renderContent()}</View>
       </View>
 

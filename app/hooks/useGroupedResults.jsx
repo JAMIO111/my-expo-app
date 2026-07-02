@@ -4,7 +4,7 @@ import { supabase } from '@/lib/supabase';
 
 export const useGroupedResults = ({ competitionInstanceId, month }) => {
   const fetchResultsByMonth = async ({ competitionInstanceId, month }) => {
-    const { data, error } = await supabase
+    let query = supabase
       .from('Fixtures')
       .select(
         `
@@ -25,6 +25,8 @@ export const useGroupedResults = ({ competitionInstanceId, month }) => {
       const end = endOfMonth(month).toISOString();
       query = query.gte('date_time', start).lte('date_time', end);
     }
+
+    const { data, error } = await query;
 
     if (error) throw new Error(error.message);
 

@@ -291,7 +291,7 @@ function NotificationsPanelInner({ notifications = [], onNotificationPress, onMa
 // ─── Provider ─────────────────────────────────────────────────────────────────
 
 export function NotificationsPanelProvider({ children }) {
-  const { player } = useUser();
+  const { player, currentRole } = useUser();
   const [isOpen, setIsOpen] = useState(false);
   const router = useRouter();
 
@@ -309,8 +309,12 @@ export function NotificationsPanelProvider({ children }) {
   console.log('NotificationsPanelProvider notifications:', rawNotifications);
 
   useEffect(() => {
-    if (rawNotifications) setNotifications(rawNotifications);
-  }, [rawNotifications]);
+    if (!rawNotifications) return;
+    const filtered = rawNotifications.filter(
+      (n) => n.role_id === null || n.role_id === currentRole?.id
+    );
+    setNotifications(filtered);
+  }, [rawNotifications, currentRole?.id]);
 
   const onNotificationPress = useCallback(
     async (notification) => {

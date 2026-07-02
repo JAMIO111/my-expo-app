@@ -243,14 +243,13 @@ export function useTeamPlayerActions(teamId, callbacks = {}) {
 
   const leaveTeam = useMutation({
     mutationFn: async ({ team, player }) => {
-      const { error } = await supabase
-        .from('TeamPlayers')
-        .update({ status: 'left', left_at: new Date() })
-        .eq('team_id', team.id)
-        .eq('player_id', player.id)
-        .eq('status', 'active');
+      const { data, error } = await supabase.rpc('leave_team', {
+        _team_id: team.id,
+        _player_id: player.id,
+      });
 
       if (error) throw error;
+      if (!data?.success) throw new Error(data?.message || 'Failed to leave team');
     },
     onSuccess: (data, variables) => {
       queryClient.invalidateQueries({ queryKey: ['TeamPlayers', variables.team.id] });
@@ -260,12 +259,10 @@ export function useTeamPlayerActions(teamId, callbacks = {}) {
         text1: 'Left team',
         text2: `You have left ${variables.team.display_name}`,
       });
-      console.log('Left team');
       callbacks.leaveTeam?.onSuccess?.(data, variables);
     },
     onError: (error) => {
-      Toast.show({ type: 'error', text1: 'Failed to leave team' });
-      console.log('Failed to leave team:', error);
+      Toast.show({ type: 'error', text1: 'Failed to leave team', text2: error.message });
       callbacks.leaveTeam?.onError?.(error);
     },
   });

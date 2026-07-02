@@ -292,7 +292,7 @@ const FixtureManagement = ({ fixtureId, closeModal }) => {
       });
 
       if (error) throw error;
-      if (!data?.success) throw new Error(data?.error || 'Forfeit failed');
+      if (!data?.success) throw new Error(data?.detail || data?.error || 'Forfeit failed');
 
       await Promise.all([
         queryClient.invalidateQueries(['fixture-details', fixtureId]),
