@@ -339,8 +339,12 @@ const ResultsList = () => {
               {results.map((f, index) => {
                 const competitorType = f.home_competitor.type; // 'team' or 'player'
                 const isLive = new Date() >= new Date(f.date_time);
-                const homeScore = f.frames.filter((frame) => frame.winner_side === 'home').length;
-                const awayScore = f.frames.filter((frame) => frame.winner_side === 'away').length;
+                const homeScore = f.is_forfeited
+                  ? f.home_score
+                  : f.frames.filter((frame) => frame.winner_side === 'home').length;
+                const awayScore = f.is_forfeited
+                  ? f.away_score
+                  : f.frames.filter((frame) => frame.winner_side === 'away').length;
                 return (
                   <Pressable
                     onPress={() => {

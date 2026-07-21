@@ -55,7 +55,7 @@ const EditableSettingsItem = ({
             </Text>
 
             <TextInput
-              className="flex-1 py-1 text-left text-xl text-text-2"
+              className="flex-1 py-1 pr-5 text-right text-xl text-text-2"
               style={{ lineHeight: 22, padding: 0 }}
               value={value}
               onChangeText={onChangeText}

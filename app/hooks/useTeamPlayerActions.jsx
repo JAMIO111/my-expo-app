@@ -267,7 +267,7 @@ export function useTeamPlayerActions(teamId, callbacks = {}) {
     },
   });
 
-  const sendJoinRequest = useMutation({
+  /*const sendJoinRequest = useMutation({
     mutationFn: async (teamId) => {
       const { error } = await supabase.from('TeamPlayers').insert({
         team_id: teamId,
@@ -287,6 +287,28 @@ export function useTeamPlayerActions(teamId, callbacks = {}) {
     }, callbacks.sendJoinRequest?.onSuccess),
     onError: handleCallbacks((error) => {
       Toast.show({ type: 'error', text1: 'Failed to send join request' });
+      console.log('Failed to send join request:', error);
+    }, callbacks.sendJoinRequest?.onError),
+  });*/
+
+  const sendJoinRequest = useMutation({
+    mutationFn: async (teamId) => {
+      const { data, error } = await supabase.rpc('send_join_request', {
+        p_team_id: teamId,
+      });
+
+      if (error) throw error;
+      if (!data?.success) throw new Error(data?.error || 'Failed to send join request');
+
+      return { teamId, data };
+    },
+    onSuccess: handleCallbacks(({ teamId }) => {
+      queryClient.invalidateQueries({ queryKey: ['PlayerInvitesAndRequests', { teamId }] });
+      Toast.show({ type: 'success', text1: 'Join request sent' });
+      console.log('Join request sent for team:', teamId);
+    }, callbacks.sendJoinRequest?.onSuccess),
+    onError: handleCallbacks((error) => {
+      Toast.show({ type: 'error', text1: 'Failed to send join request', text2: error.message });
       console.log('Failed to send join request:', error);
     }, callbacks.sendJoinRequest?.onError),
   });

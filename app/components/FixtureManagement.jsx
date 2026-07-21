@@ -90,6 +90,7 @@ const FixtureManagement = ({ fixtureId, closeModal }) => {
   const queryClient = useQueryClient();
   const { currentRole } = useUser();
   const { data: fixture, isLoading } = useFixtureDetails(fixtureId);
+  console.log('Fixture details for fixtureId', fixtureId, fixture);
 
   const { data: addresses } = useAddresses(currentRole?.district?.id);
   console.log('Addresses for district', currentRole?.district?.id, addresses);
@@ -115,7 +116,7 @@ const FixtureManagement = ({ fixtureId, closeModal }) => {
       ]
         .filter(Boolean)
         .join(', ')
-    : 'Select Venue';
+    : 'No Venue Set';
 
   const [openPicker, setOpenPicker] = useState(null);
 
@@ -192,15 +193,26 @@ const FixtureManagement = ({ fixtureId, closeModal }) => {
   const isAmended = fixture?.is_amended;
   const isDisputed = fixture?.is_disputed;
   const isEscalated = fixture?.is_escalated;
+  const isForfeited = fixture?.is_forfeited;
+  const winnerSide = fixture?.winner_side; // 'home', 'away', or null
 
-  const homeScore = fixture?.frames?.filter((f) => f.winner_side === 'home').length || 0;
-  const awayScore = fixture?.frames?.filter((f) => f.winner_side === 'away').length || 0;
+  const homeScore = isForfeited
+    ? fixture?.home_score
+    : fixture?.frames?.filter((f) => f.winner_side === 'home').length || 0;
+  const awayScore = isForfeited
+    ? fixture?.away_score
+    : fixture?.frames?.filter((f) => f.winner_side === 'away').length || 0;
 
   const getStatus = () => {
     let status1 = 'Error';
     let status2 = 'Unknown Status';
     let color = '#9CA3AF'; // default gray
 
+    if (isForfeited) {
+      status1 = 'Forfeited';
+      status2 = `${winnerSide === 'home' ? 'Away' : 'Home'} Team Forfeited`;
+      color = '#EF4444'; // red
+    }
     if (isComplete && !isApproved && isDisputed && !isAmended) {
       status1 = 'Disputed';
       status2 = 'Pending Home Amendment';
@@ -289,6 +301,7 @@ const FixtureManagement = ({ fixtureId, closeModal }) => {
         p_fixture_id: fixtureId,
         p_side: side,
         p_reason: forfeitReason || null,
+        p_admin: currentRole?.role === 'admin' ? true : false,
       });
 
       if (error) throw error;
@@ -357,7 +370,7 @@ const FixtureManagement = ({ fixtureId, closeModal }) => {
       {/* Match header */}
       <View className="flex-row items-center justify-between gap-10 rounded-t-2xl bg-bg-3 p-3 shadow-sm">
         {/* Home */}
-        <View className="items-start">
+        <View className="flex-1 items-start">
           <View className="flex-row items-center justify-start gap-4">
             {isIndividual ? (
               <Avatar size={40} player={fixture?.homeCompetitor} />
@@ -378,7 +391,7 @@ const FixtureManagement = ({ fixtureId, closeModal }) => {
           </Text>
         </View>
 
-        <View className="flex-1 flex-row items-start justify-center">
+        <View className="w-24 flex-row items-start justify-center">
           <View className="flex-row items-center justify-center gap-2 rounded-xl bg-theme-gray-4 px-3 py-1.5">
             <Text className="font-michroma text-2xl text-text-1">{homeScore}</Text>
             <Text className="font-michroma text-2xl text-text-2">-</Text>
@@ -387,7 +400,7 @@ const FixtureManagement = ({ fixtureId, closeModal }) => {
         </View>
 
         {/* Away */}
-        <View className="items-end">
+        <View className="flex-1 items-end">
           <View className="flex-row items-center justify-start gap-4">
             <Text
               style={{ lineHeight: 50 }}
@@ -403,7 +416,7 @@ const FixtureManagement = ({ fixtureId, closeModal }) => {
               <TeamLogo size={40} {...fixture?.awayCompetitor?.crest} />
             )}
           </View>
-          <Text className="pr-1 font-saira-medium text-lg text-text-2">
+          <Text className="pr-1 text-right font-saira-medium text-lg text-text-2">
             {fixture?.awayCompetitor?.display_name}
           </Text>
         </View>
@@ -441,7 +454,7 @@ const FixtureManagement = ({ fixtureId, closeModal }) => {
                 <Text className="font-saira text-lg text-text-1">Location</Text>
               </View>
               <Text
-                className={`flex-1 text-right font-saira-medium text-lg ${selectedVenueLabel === 'Select Venue' ? 'text-text-2' : 'text-text-1'}`}>
+                className={`flex-1 text-right font-saira-medium text-lg ${selectedVenueLabel === 'No Venue Set' ? 'text-text-2' : 'text-text-1'}`}>
                 {selectedVenueLabel}
               </Text>
             </View>
@@ -515,35 +528,56 @@ const FixtureManagement = ({ fixtureId, closeModal }) => {
         </View>
         <View className="w-full gap-5 bg-bg-1 p-5">
           <Heading text="Forfeit Fixture" />
-          <CustomTextInput
-            title="Forfeit Reason (Optional)"
-            titleColor="text-text-1"
-            placeholder="e.g. Away team did not show up..."
-            value={forfeitReason}
-            onChangeText={setForfeitReason}
-            multiline
-            autoCorrect={true}
-            numberOfLines={3}
-            leftIconName="information-circle-outline"
-          />
-          <View className="w-full flex-row gap-5">
-            <View className="flex-1">
-              <CTAButton
-                icon={<Ionicons name="flag" size={20} color="white" />}
-                text="Home Forfeit"
-                type="error"
-                callbackFn={() => handleForfeitModal('home')}
+          {!isForfeited ? (
+            <>
+              <CustomTextInput
+                title="Forfeit Reason (Optional)"
+                titleColor="text-text-1"
+                placeholder="e.g. Away team did not show up..."
+                value={forfeitReason}
+                onChangeText={setForfeitReason}
+                multiline
+                autoCorrect={true}
+                numberOfLines={3}
+                leftIconName="information-circle-outline"
               />
+              <View className="w-full flex-row gap-5">
+                <View className="flex-1">
+                  <CTAButton
+                    icon={<Ionicons name="flag" size={20} color="white" />}
+                    text="Home Forfeit"
+                    type="error"
+                    callbackFn={() => handleForfeitModal('home')}
+                  />
+                </View>
+                <View className="flex-1">
+                  <CTAButton
+                    icon={<Ionicons name="flag" size={20} color="white" />}
+                    text="Away Forfeit"
+                    type="error"
+                    callbackFn={() => handleForfeitModal('away')}
+                  />
+                </View>
+              </View>
+            </>
+          ) : (
+            <View className="flex-col items-center justify-center gap-4">
+              <View className="flex-1 flex-row gap-6">
+                <View className="flex items-center justify-center rounded-full bg-red-500 p-4">
+                  <Ionicons name="flag" size={20} color="white" />
+                </View>
+                <Text className="flex-1 text-left font-saira text-lg text-text-1">
+                  {`This fixture has already been forfeited by the ${winnerSide === 'home' ? 'Away' : 'Home'} Team.`}
+                </Text>
+              </View>
+              <Text className="flex-1 text-left font-saira text-text-2">
+                Reason: {fixture?.forfeit_reason || 'No reason provided.'}
+              </Text>
             </View>
-            <View className="flex-1">
-              <CTAButton
-                icon={<Ionicons name="flag" size={20} color="white" />}
-                text="Away Forfeit"
-                type="error"
-                callbackFn={() => handleForfeitModal('away')}
-              />
-            </View>
-          </View>
+          )}
+        </View>
+        <View className="w-full gap-5 bg-bg-1 p-5">
+          <Text className="text-center text-xs">{`Fixture ID: ${fixture?.id}`}</Text>
         </View>
       </ScrollView>
       <FloatingBottomSheet

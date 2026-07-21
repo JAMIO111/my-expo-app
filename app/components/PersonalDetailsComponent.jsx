@@ -55,7 +55,7 @@ const PersonalDetailsComponent = () => {
       nickname.trim() !== '' &&
       dob instanceof Date &&
       !isNaN(dob) &&
-      gender.trim() !== '';
+      gender !== '';
 
     const dobStr = dob.toISOString().split('T')[0] || '';
     const playerDobStr = player.dob || '';
@@ -82,8 +82,10 @@ const PersonalDetailsComponent = () => {
       p_first_name: firstName !== player.first_name ? firstName : null,
       p_surname: surname !== player.surname ? surname : null,
       p_nickname: nickname !== player.nickname ? nickname : null,
-      p_dob: dobStr !== player.dob ? dobStr : null,
-      p_gender: gender !== player.gender ? gender : null,
+      p_dob: dob !== player.dob ? dob : null,
+
+      p_gender: gender,
+      p_gender_changed: gender !== player.gender,
     });
 
     if (error || !data?.success) {
@@ -162,7 +164,7 @@ const PersonalDetailsComponent = () => {
           />
         </MenuContainer>
 
-        <View className="mb-8 w-full rounded-2xl bg-bg-grouped-2 shadow-sm">
+        <View className="mb-8 w-full rounded-2xl border border-theme-gray-5 bg-bg-grouped-2">
           <Pressable
             onPress={() => setShowGenderPicker((prev) => !prev)}
             className="flex-row items-center justify-between px-4 py-4">
@@ -212,7 +214,7 @@ const PersonalDetailsComponent = () => {
           )}
         </View>
 
-        <View className="w-full rounded-2xl bg-bg-grouped-2 shadow-sm">
+        <View className="w-full rounded-2xl border border-theme-gray-5 bg-bg-grouped-2">
           <Pressable
             onPress={() => setShowDatePicker((prev) => !prev)}
             className="flex-row items-center justify-between px-4 py-4">

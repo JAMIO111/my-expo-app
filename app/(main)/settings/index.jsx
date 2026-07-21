@@ -65,9 +65,13 @@ const index = () => {
         )}
 
         <MenuContainer>
-          <SettingsItem title="Privacy" icon="lock-closed-outline" routerPath="/settings/Privacy" />
           <SettingsItem title="Help" icon="help-circle-outline" routerPath="/home/help" />
-          <SettingsItem lastItem={true} title="About" icon="information-circle-outline" />
+          <SettingsItem
+            lastItem={true}
+            title="Boring (Legal) Stuff"
+            icon="information-circle-outline"
+            routerPath="/settings/Boring"
+          />
         </MenuContainer>
       </ScrollView>
       <NavBar />

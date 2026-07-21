@@ -1,5 +1,14 @@
-import { StyleSheet, Text, View, ScrollView, TextInput, Pressable, Animated } from 'react-native';
-import { useState, useRef } from 'react';
+import {
+  StyleSheet,
+  Text,
+  View,
+  ScrollView,
+  TextInput,
+  Pressable,
+  Animated,
+  ActivityIndicator,
+} from 'react-native';
+import { useState, useRef, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 import { Stack } from 'expo-router';
 import SettingsItem from '@components/SettingsItem';
@@ -13,6 +22,10 @@ import Purchases from 'react-native-purchases';
 import IonIcons from 'react-native-vector-icons/Ionicons';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import Toast from 'react-native-toast-message';
+import { makeRedirectUri } from 'expo-auth-session';
+import * as WebBrowser from 'expo-web-browser';
+
+WebBrowser.maybeCompleteAuthSession();
 
 // ─── Password strength helper ─────────────────────────────
 const getPasswordStrength = (pw) => {
@@ -23,7 +36,6 @@ const getPasswordStrength = (pw) => {
   if (/[A-Z]/.test(pw)) score++;
   if (/[0-9]/.test(pw)) score++;
   if (/[^A-Za-z0-9]/.test(pw)) score++;
-
   if (score <= 1) return { label: 'Weak', color: '#ef4444', width: '25%' };
   if (score <= 2) return { label: 'Fair', color: '#f97316', width: '50%' };
   if (score <= 3) return { label: 'Good', color: '#eab308', width: '75%' };
@@ -33,7 +45,6 @@ const getPasswordStrength = (pw) => {
 // ─── Secure input ─────────────────────────────────────────
 const PasswordInput = ({ placeholder, value, onChangeText, hasError }) => {
   const [visible, setVisible] = useState(false);
-
   return (
     <View style={[styles.inputWrap, hasError && styles.inputWrapError]}>
       <TextInput
@@ -54,12 +65,226 @@ const PasswordInput = ({ placeholder, value, onChangeText, hasError }) => {
   );
 };
 
+// ─── Provider config ──────────────────────────────────────
+const PROVIDERS = [
+  {
+    key: 'email',
+    label: 'Email',
+    icon: 'mail-outline',
+    color: '#6b7280',
+    bgColor: '#f3f4f6',
+    canUnlink: false, // email is the base identity
+  },
+  {
+    key: 'google',
+    label: 'Google',
+    icon: 'logo-google',
+    color: '#ea4335',
+    bgColor: '#fef2f2',
+    canUnlink: true,
+  },
+  {
+    key: 'facebook',
+    label: 'Facebook',
+    icon: 'logo-facebook',
+    color: '#1877f2',
+    bgColor: '#eff6ff',
+    canUnlink: true,
+  },
+];
+
+// ─── Connected Logins Section ─────────────────────────────
+const ConnectedLoginsSection = ({ user, onIdentitiesChange }) => {
+  const [identities, setIdentities] = useState(user?.identities ?? []);
+  const [loadingKey, setLoadingKey] = useState(null);
+  const [confirmUnlink, setConfirmUnlink] = useState(null);
+
+  useEffect(() => {
+    setIdentities(user?.identities ?? []);
+  }, [user]);
+
+  const isConnected = (providerKey) => identities.some((i) => i.provider === providerKey);
+
+  const handleLink = async (providerKey) => {
+    setLoadingKey(providerKey);
+
+    try {
+      const redirectTo = makeRedirectUri({
+        scheme: 'breakroom',
+        path: 'auth',
+        useProxy: false,
+      });
+
+      const { data, error } = await supabase.auth.linkIdentity({
+        provider: providerKey,
+        options: {
+          redirectTo,
+        },
+      });
+
+      if (error) throw error;
+
+      console.log('LinkIdentity response:', data);
+
+      if (data?.url) {
+        const result = await WebBrowser.openAuthSessionAsync(data.url, redirectTo);
+
+        console.log('OAuth result:', result);
+
+        if (result.type === 'success') {
+          const {
+            data: { user },
+          } = await supabase.auth.getUser();
+
+          console.log('Identities:', user.identities);
+
+          setIdentities(user.identities);
+          onIdentitiesChange?.(user.identities);
+
+          Toast.show({
+            type: 'success',
+            text1: `${providerKey} linked successfully`,
+          });
+        }
+      }
+    } catch (err) {
+      console.error(err);
+
+      Toast.show({
+        type: 'error',
+        text1: 'Failed to link account',
+        text2: err.message,
+      });
+    } finally {
+      setLoadingKey(null);
+    }
+  };
+
+  const handleUnlink = async (providerKey) => {
+    setLoadingKey(providerKey);
+    setConfirmUnlink(null);
+    try {
+      const identity = identities.find((i) => i.provider === providerKey);
+      if (!identity) throw new Error('Identity not found');
+
+      const { error } = await supabase.auth.unlinkIdentity(identity);
+      if (error) throw error;
+
+      const updated = identities.filter((i) => i.provider !== providerKey);
+      setIdentities(updated);
+      onIdentitiesChange?.(updated);
+
+      Toast.show({ type: 'success', text1: `${providerKey} unlinked` });
+    } catch (err) {
+      Toast.show({ type: 'error', text1: 'Failed to unlink account', text2: err.message });
+    } finally {
+      setLoadingKey(null);
+    }
+  };
+
+  const linkedCount = identities.length;
+
+  return (
+    <>
+      <Text style={styles.sectionLabel}>CONNECTED LOGINS</Text>
+      <View style={styles.providerList}>
+        {PROVIDERS.map((provider, index) => {
+          const connected = isConnected(provider.key);
+          const isLoading = loadingKey === provider.key;
+          const isLast = index === PROVIDERS.length - 1;
+          // Prevent unlinking if it's the only identity
+          const canUnlink = provider.canUnlink && linkedCount > 1;
+
+          return (
+            <View key={provider.key}>
+              <View style={[styles.providerRow, isLast && { borderBottomWidth: 0 }]}>
+                {/* Icon */}
+                <View style={[styles.providerIconWrap, { backgroundColor: provider.bgColor }]}>
+                  <IonIcons name={provider.icon} size={20} color={provider.color} />
+                </View>
+
+                {/* Label + status */}
+                <View style={styles.providerInfo}>
+                  <Text style={styles.providerLabel}>{provider.label}</Text>
+                  <Text
+                    style={[styles.providerStatus, { color: connected ? '#22c55e' : '#9ca3af' }]}>
+                    {connected ? 'Connected' : 'Not connected'}
+                  </Text>
+                </View>
+
+                {/* Action */}
+                {isLoading ? (
+                  <ActivityIndicator size="small" color="#6b7280" />
+                ) : provider.key === 'email' ? (
+                  <View
+                    style={[
+                      styles.providerBadge,
+                      { backgroundColor: '#f0fdf4', borderColor: '#bbf7d0' },
+                    ]}>
+                    <Text style={[styles.providerBadgeText, { color: '#16a34a' }]}>Primary</Text>
+                  </View>
+                ) : connected ? (
+                  <Pressable
+                    onPress={() => (canUnlink ? setConfirmUnlink(provider) : null)}
+                    style={({ pressed }) => [
+                      styles.providerBadge,
+                      {
+                        backgroundColor: canUnlink ? '#fef2f2' : '#f9fafb',
+                        borderColor: canUnlink ? '#fecaca' : '#e5e7eb',
+                        opacity: pressed ? 0.7 : 1,
+                      },
+                    ]}>
+                    <Text
+                      style={[
+                        styles.providerBadgeText,
+                        { color: canUnlink ? '#ef4444' : '#9ca3af' },
+                      ]}>
+                      {canUnlink ? 'Unlink' : 'Linked'}
+                    </Text>
+                  </Pressable>
+                ) : (
+                  <Pressable
+                    onPress={() => handleLink(provider.key)}
+                    style={({ pressed }) => [
+                      styles.providerBadge,
+                      {
+                        backgroundColor: '#f0f9ff',
+                        borderColor: '#bae6fd',
+                        opacity: pressed ? 0.7 : 1,
+                      },
+                    ]}>
+                    <Text style={[styles.providerBadgeText, { color: '#0284c7' }]}>Link</Text>
+                  </Pressable>
+                )}
+              </View>
+              {!isLast && <View style={styles.providerDivider} />}
+            </View>
+          );
+        })}
+      </View>
+
+      {/* Unlink confirmation */}
+      <FloatingBottomSheet
+        visible={!!confirmUnlink}
+        title={`Unlink ${confirmUnlink?.label}?`}
+        message={`You will no longer be able to sign in with ${confirmUnlink?.label}. Make sure you have another login method available.`}
+        topButtonText="Unlink"
+        bottomButtonText="Cancel"
+        topButtonType="error"
+        bottomButtonType="default"
+        topButtonFn={() => handleUnlink(confirmUnlink?.key)}
+        bottomButtonFn={() => setConfirmUnlink(null)}
+        onCancel={() => setConfirmUnlink(null)}
+      />
+    </>
+  );
+};
+
 // ─── Main page ────────────────────────────────────────────
 const SignInAndSecurity = () => {
   const { user, player } = useUser();
   const [deleteAccountModal, setDeleteAccountModal] = useState(false);
 
-  // Password change state
   const [isChangingPassword, setIsChangingPassword] = useState(false);
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
@@ -69,7 +294,6 @@ const SignInAndSecurity = () => {
   const [isSaving, setIsSaving] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
 
-  // Animate the password panel open/close
   const panelHeight = useRef(new Animated.Value(0)).current;
   const panelOpacity = useRef(new Animated.Value(0)).current;
 
@@ -102,11 +326,8 @@ const SignInAndSecurity = () => {
   };
 
   const strength = getPasswordStrength(newPassword);
-
-  // Is this an OAuth user? They can't change a password they don't have.
   const provider = user?.identities?.[0]?.provider ?? 'email';
   const isOAuthUser = provider !== 'email';
-
   const providerLabel = `${provider.slice(0, 1).toUpperCase()}${provider.slice(1)}`;
 
   const waitForAuthSettle = () =>
@@ -119,7 +340,6 @@ const SignInAndSecurity = () => {
 
   const handleChangePassword = async () => {
     setPasswordError(null);
-
     if (!currentPassword) return setPasswordError('Please enter your current password.');
     if (newPassword.length < 8)
       return setPasswordError('New password must be at least 8 characters.');
@@ -128,47 +348,31 @@ const SignInAndSecurity = () => {
       return setPasswordError('New password must be different from your current password.');
 
     setIsSaving(true);
-
     try {
-      // Step 1 — verify current password
       const { error: reAuthError } = await supabase.auth.signInWithPassword({
         email: user.email,
         password: currentPassword,
       });
-
       if (reAuthError) {
         setPasswordError('Current password is incorrect.');
         return;
       }
-
-      // Step 2 — wait for the auth listener to finish processing the re-auth
-      // before calling updateUser, otherwise the session refresh races it
       await waitForAuthSettle();
-
-      // Step 3 — now safe to update
-      const { error: updateError } = await supabase.auth.updateUser({
-        password: newPassword,
-      });
-
+      const { error: updateError } = await supabase.auth.updateUser({ password: newPassword });
       if (updateError) {
         setPasswordError(updateError.message);
         return;
       }
-
       setPasswordSuccess(true);
       setTimeout(() => closePanel(), 1800);
     } catch (err) {
-      console.error('Password change error:', err);
       setPasswordError('Something went wrong. Please try again.');
     } finally {
       setIsSaving(false);
     }
   };
 
-  const animatedMaxHeight = panelHeight.interpolate({
-    inputRange: [0, 1],
-    outputRange: [0, 420],
-  });
+  const animatedMaxHeight = panelHeight.interpolate({ inputRange: [0, 1], outputRange: [0, 420] });
 
   return (
     <SafeViewWrapper topColor="bg-brand" useBottomInset={false}>
@@ -184,21 +388,18 @@ const SignInAndSecurity = () => {
 
       <KeyboardAwareScrollView
         style={{ flex: 1 }}
-        contentContainerStyle={{
-          padding: 16,
-          gap: 12,
-        }}
         enableOnAndroid
         keyboardShouldPersistTaps="handled"
         extraScrollHeight={40}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: 48 }}
-        className="mt-16 flex-1 bg-bg-grouped-1 p-5"
-        keyboardShouldPersistTaps="handled">
+        className="mt-16 flex-1 bg-bg-grouped-1 p-5">
+        {/* ── Connected logins ── */}
+        <ConnectedLoginsSection user={user} />
+
         {/* ── Account info ── */}
         <Text style={styles.sectionLabel}>ACCOUNT INFO</Text>
         <MenuContainer>
-          <SettingsItem disabled title="Auth Provider" text={providerLabel} />
           <SettingsItem disabled title="Email" text={user?.email} />
           <SettingsItem disabled title="Auth ID" text={user?.id} />
           <SettingsItem disabled lastItem title="Player ID" text={player?.id} />
@@ -209,7 +410,6 @@ const SignInAndSecurity = () => {
           <>
             <Text style={styles.sectionLabel}>PASSWORD</Text>
             <View style={styles.passwordSection}>
-              {/* Header row */}
               <Pressable
                 style={styles.passwordHeader}
                 onPress={isChangingPassword ? closePanel : openPanel}>
@@ -234,7 +434,6 @@ const SignInAndSecurity = () => {
                 </Animated.View>
               </Pressable>
 
-              {/* Animated panel */}
               <Animated.View
                 style={{ maxHeight: animatedMaxHeight, opacity: panelOpacity, overflow: 'hidden' }}>
                 <View style={styles.passwordForm}>
@@ -251,7 +450,6 @@ const SignInAndSecurity = () => {
                         onChangeText={setCurrentPassword}
                         hasError={!!passwordError && !currentPassword}
                       />
-
                       <View style={{ gap: 6 }}>
                         <PasswordInput
                           placeholder="New password"
@@ -259,8 +457,6 @@ const SignInAndSecurity = () => {
                           onChangeText={setNewPassword}
                           hasError={!!passwordError && newPassword.length < 8}
                         />
-
-                        {/* Strength bar */}
                         {newPassword.length > 0 && strength && (
                           <View style={styles.strengthRow}>
                             <View style={styles.strengthTrack}>
@@ -277,7 +473,6 @@ const SignInAndSecurity = () => {
                           </View>
                         )}
                       </View>
-
                       <PasswordInput
                         placeholder="Confirm new password"
                         value={confirmPassword}
@@ -288,14 +483,12 @@ const SignInAndSecurity = () => {
                           confirmPassword !== newPassword
                         }
                       />
-
                       {passwordError && (
                         <View style={styles.errorBanner}>
                           <IonIcons name="alert-circle-outline" size={16} color="#ef4444" />
                           <Text style={styles.errorText}>{passwordError}</Text>
                         </View>
                       )}
-
                       <CTAButton
                         text={isSaving ? 'Updating...' : 'Update Password'}
                         type="yellow"
@@ -311,7 +504,6 @@ const SignInAndSecurity = () => {
           </>
         )}
 
-        {/* OAuth users see a notice instead */}
         {isOAuthUser && (
           <>
             <Text style={styles.sectionLabel}>PASSWORD</Text>
@@ -361,17 +553,9 @@ const SignInAndSecurity = () => {
           try {
             const { data, error } = await supabase.rpc('delete_user_account');
             if (error) throw error;
-
-            if (data?.photo_path) {
-              await supabase.storage.from('avatars').remove([data.photo_path]);
-            }
-
+            if (data?.photo_path) await supabase.storage.from('avatars').remove([data.photo_path]);
             const isAnonymous = await Purchases.isAnonymous();
-            if (!isAnonymous) {
-              await Purchases.logOut();
-            }
-
-            // Server-side deletion of the auth user — never use service role client-side
+            if (!isAnonymous) await Purchases.logOut();
             const {
               data: { session },
             } = await supabase.auth.getSession();
@@ -386,15 +570,11 @@ const SignInAndSecurity = () => {
               }
             );
             if (!res.ok) throw new Error('Failed to delete account');
-
             await supabase.auth.signOut();
             setDeleteAccountModal(false);
             Toast.show({ type: 'success', text1: 'Account deleted successfully.' });
-            // navigate to sign-in / onboarding
           } catch (err) {
-            console.error('Error during account deletion:', err);
             setDeleteAccountModal(false);
-            // show an error toast — don't silently fail
             Toast.show({ type: 'error', text1: 'Could not delete account. Please try again.' });
           } finally {
             setIsDeleting(false);
@@ -419,6 +599,64 @@ const styles = StyleSheet.create({
     marginLeft: 4,
   },
 
+  // ── Provider list ──
+  providerList: {
+    backgroundColor: '#ffffff',
+    borderRadius: 16,
+    overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: '#e5e7eb',
+  },
+
+  providerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    gap: 12,
+  },
+
+  providerDivider: {
+    height: 1,
+    backgroundColor: '#f3f4f6',
+    marginHorizontal: 16,
+  },
+
+  providerIconWrap: {
+    width: 38,
+    height: 38,
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+
+  providerInfo: {
+    flex: 1,
+    gap: 2,
+  },
+
+  providerLabel: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: '#111827',
+  },
+
+  providerStatus: {
+    fontSize: 12,
+  },
+
+  providerBadge: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 8,
+    borderWidth: 1,
+  },
+
+  providerBadgeText: {
+    fontSize: 13,
+    fontWeight: '600',
+  },
+
   // ── Password section ──
   passwordSection: {
     backgroundColor: '#ffffff',
@@ -435,25 +673,11 @@ const styles = StyleSheet.create({
     padding: 16,
   },
 
-  passwordTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#111827',
-  },
+  passwordTitle: { fontSize: 16, fontWeight: '600', color: '#111827' },
+  passwordSubtitle: { fontSize: 13, color: '#6b7280', marginTop: 2 },
 
-  passwordSubtitle: {
-    fontSize: 13,
-    color: '#6b7280',
-    marginTop: 2,
-  },
+  passwordForm: { paddingHorizontal: 16, paddingBottom: 16, gap: 12 },
 
-  passwordForm: {
-    paddingHorizontal: 16,
-    paddingBottom: 16,
-    gap: 12,
-  },
-
-  // ── Inputs ──
   inputWrap: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -465,28 +689,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
   },
 
-  inputWrapError: {
-    borderColor: '#ef4444',
-    backgroundColor: '#fff5f5',
-  },
+  inputWrapError: { borderColor: '#ef4444', backgroundColor: '#fff5f5' },
+  input: { flex: 1, fontSize: 16, color: '#111827' },
+  eyeBtn: { paddingLeft: 8 },
 
-  input: {
-    flex: 1,
-    fontSize: 16,
-    color: '#111827',
-  },
-
-  eyeBtn: {
-    paddingLeft: 8,
-  },
-
-  // ── Strength bar ──
-  strengthRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-
+  strengthRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   strengthTrack: {
     flex: 1,
     height: 4,
@@ -494,20 +701,9 @@ const styles = StyleSheet.create({
     backgroundColor: '#e5e7eb',
     overflow: 'hidden',
   },
+  strengthFill: { height: '100%', borderRadius: 4 },
+  strengthLabel: { fontSize: 12, fontWeight: '600', width: 44, textAlign: 'right' },
 
-  strengthFill: {
-    height: '100%',
-    borderRadius: 4,
-  },
-
-  strengthLabel: {
-    fontSize: 12,
-    fontWeight: '600',
-    width: 44,
-    textAlign: 'right',
-  },
-
-  // ── Banners ──
   errorBanner: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -517,12 +713,7 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     paddingHorizontal: 12,
   },
-
-  errorText: {
-    fontSize: 13,
-    color: '#ef4444',
-    flex: 1,
-  },
+  errorText: { fontSize: 13, color: '#ef4444', flex: 1 },
 
   successBanner: {
     flexDirection: 'row',
@@ -534,14 +725,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     marginBottom: 4,
   },
+  successText: { fontSize: 14, fontWeight: '600', color: '#16a34a' },
 
-  successText: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#16a34a',
-  },
-
-  // ── OAuth notice ──
   oauthNotice: {
     flexDirection: 'row',
     alignItems: 'flex-start',
@@ -552,16 +737,7 @@ const styles = StyleSheet.create({
     borderWidth: 0.5,
     borderColor: '#e5e7eb',
   },
+  oauthNoticeText: { fontSize: 13, color: '#6b7280', flex: 1, lineHeight: 20 },
 
-  oauthNoticeText: {
-    fontSize: 13,
-    color: '#6b7280',
-    flex: 1,
-    lineHeight: 20,
-  },
-
-  // ── Danger zone ──
-  dangerSection: {
-    marginBottom: 8,
-  },
+  dangerSection: { marginBottom: 8 },
 });

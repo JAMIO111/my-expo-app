@@ -1,5 +1,14 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
-import { View, Text, Pressable, Switch, Platform, UIManager, StyleSheet } from 'react-native';
+import {
+  View,
+  Text,
+  Pressable,
+  Switch,
+  Platform,
+  UIManager,
+  StyleSheet,
+  Modal,
+} from 'react-native';
 import { supabase } from '@/lib/supabase';
 import { Stack, useRouter, useLocalSearchParams } from 'expo-router';
 import colors from '@lib/colors';
@@ -21,6 +30,7 @@ import { BottomSheetFooter, BottomSheetScrollView, BottomSheetView } from '@gorh
 import SlidingTabButton from '@components/SlidingTabButton';
 import { useActiveFrame } from '@hooks/useActiveFrame';
 import LoadingScreen from '@components/LoadingScreen';
+import ForfeitRequestModal from '@components/ForfeitRequestModal';
 // ─── NEW: drag-and-drop ───────────────────────────────────────────────────────
 import DraggableFlatList, { ScaleDecorator } from 'react-native-draggable-flatlist';
 // ─────────────────────────────────────────────────────────────────────────────
@@ -28,6 +38,7 @@ import DraggableFlatList, { ScaleDecorator } from 'react-native-draggable-flatli
 const SubmitResultsScreen = () => {
   const [confirmDeleteModalVisible, setConfirmDeleteModalVisible] = useState(false);
   const [confirmSubmitModalVisible, setConfirmSubmitModalVisible] = useState(false);
+  const [forfeitModalVisible, setForfeitModalVisible] = useState(false);
   const [frameToDelete, setFrameToDelete] = useState(null);
   const [editingPlayer, setEditingPlayer] = useState(null);
   const [selectedPlayer, setSelectedPlayer] = useState(null);
@@ -365,6 +376,41 @@ const SubmitResultsScreen = () => {
       });
     } finally {
       setQueryLoading(false);
+    }
+  };
+
+  const handleRequestForfeit = () => {
+    setForfeitModalVisible(true);
+  };
+
+  const handleCancelForfeit = () => {
+    setForfeitModalVisible(false);
+  };
+
+  const handleConfirmForfeit = async () => {
+    setIsForfeiting(true);
+    try {
+      const { data, error } = await supabase.rpc('forfeit_fixture', {
+        p_fixture_id: fixtureId,
+        p_side: side,
+        p_reason: forfeitReason || null,
+        p_admin: currentRole?.role === 'admin' ? true : false,
+      });
+
+      if (error) throw error;
+      if (!data?.success) throw new Error(data?.detail || data?.error || 'Forfeit failed');
+      Toast.show({
+        type: 'success',
+        text1: 'Forfeit Requested',
+        text2: 'Your opponent has been notified.',
+      });
+      router.back();
+    } catch (err) {
+      console.error(err);
+      Toast.show({ type: 'error', text1: 'Error', text2: 'Failed to request forfeit.' });
+    } finally {
+      setIsForfeiting(false);
+      setForfeitModalVisible(false);
     }
   };
 
@@ -1127,6 +1173,15 @@ const SubmitResultsScreen = () => {
                       />
                     </View>
                   )}
+                  {!amendMode && (
+                    <CTAButton
+                      text={'Request Forfeit'}
+                      type="error"
+                      icon={<Ionicons name="alert-circle-outline" size={20} color="#FFF" />}
+                      disabled={submitting || saving}
+                      callbackFn={handleRequestForfeit}
+                    />
+                  )}
                 </View>
               </View>
             </View>
@@ -1198,6 +1253,11 @@ const SubmitResultsScreen = () => {
               </Pressable>
             );
           })}
+          <ForfeitRequestModal
+            visible={forfeitModalVisible}
+            onCancel={handleCancelForfeit}
+            onConfirm={handleConfirmForfeit}
+          />
         </BottomSheetScrollView>
       </BottomSheetWrapper>
     </SafeViewWrapper>

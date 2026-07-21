@@ -18,9 +18,21 @@ const SwitchSettingsItem = ({
   const colorScheme = useColorScheme();
   const themeColors = colors[colorScheme];
   const [enabled, setEnabled] = useState(defaultValue);
+  const [saving, setSaving] = useState(false);
 
   const handlePress = () => {
-    setEnabled((prev) => !prev);
+    handleToggle(!enabled);
+  };
+
+  const handleToggle = async (newValue) => {
+    setEnabled(newValue);
+    setSaving(true);
+
+    if (setValue) {
+      await setValue(newValue);
+    }
+
+    setSaving(false);
   };
 
   return (
@@ -40,15 +52,18 @@ const SwitchSettingsItem = ({
             )}
             <Text className="flex-1 text-lg font-medium text-text-1">{title}</Text>
 
-            <Switch
-              value={enabled}
-              onValueChange={setEnabled}
-              thumbColor={enabled ? 'white' : 'white'}
-              trackColor={{
-                false: 'gray',
-                true: '#4CAF50',
-              }}
-            />
+            <View className="justify-center">
+              <Switch
+                disabled={saving}
+                value={enabled}
+                onValueChange={handleToggle}
+                thumbColor="white"
+                trackColor={{
+                  false: 'gray',
+                  true: '#4CAF50',
+                }}
+              />
+            </View>
           </View>
 
           {!lastItem && (

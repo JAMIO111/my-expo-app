@@ -78,10 +78,12 @@ function FloatingTabBar({ tabs, activeTab, onTabPress }) {
                 <Ionicons
                   name={isActive ? tab.iconActive : tab.icon}
                   size={24}
-                  color={isActive ? '#D4AF37' : 'rgba(255,255,255,0.35)'}
+                  color={isActive ? '#D4AF37' : 'rgba(255,255,255,0.7)'}
                 />
                 {tab.badge > 0 && (
-                  <View className="absolute -right-2 -top-1 h-4 min-w-4 items-center justify-center rounded-full bg-brand px-1">
+                  <View
+                    style={{ height: 16, minWidth: 16, position: 'absolute', top: -6, right: -8 }}
+                    className="items-center justify-center rounded-full bg-theme-red px-1">
                     <Text className="font-saira-medium text-[10px] text-white">{tab.badge}</Text>
                   </View>
                 )}
@@ -90,7 +92,7 @@ function FloatingTabBar({ tabs, activeTab, onTabPress }) {
                 className="text-sm"
                 style={{
                   fontFamily: isActive ? 'Saira_500Medium' : 'Saira_400Regular',
-                  color: isActive ? '#D4AF37' : 'rgba(255,255,255,0.35)',
+                  color: isActive ? '#D4AF37' : 'rgba(255,255,255,0.7)',
                 }}>
                 {tab.label}
               </Text>

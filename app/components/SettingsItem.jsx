@@ -1,4 +1,4 @@
-import { Pressable, Text, View } from 'react-native';
+import { Pressable, Text, View, Linking } from 'react-native';
 import { useRef } from 'react';
 import IonIcons from 'react-native-vector-icons/Ionicons';
 import { useRouter } from 'expo-router';
@@ -17,6 +17,7 @@ const SettingsItem = ({
   disabled = false,
   callbackFn,
   player,
+  link,
 }) => {
   const colorScheme = useColorScheme();
   const themeColors = colors[colorScheme];
@@ -31,13 +32,15 @@ const SettingsItem = ({
     }, 750); // Reset navigation state after 750ms
     if (routerPath) {
       router.push(routerPath);
+    } else if (link) {
+      Linking.openURL(link);
     }
   };
 
   return (
     <Pressable
       disabled={disabled}
-      onPress={routerPath ? handlePress : callbackFn}
+      onPress={routerPath || link ? handlePress : callbackFn}
       className="w-full">
       {({ pressed }) => (
         <View className="w-full">
@@ -74,6 +77,7 @@ const SettingsItem = ({
             )}
 
             {routerPath && <IonIcons name="chevron-forward" size={18} color={themeColors?.icon} />}
+            {link && <IonIcons name="open-outline" size={26} color={themeColors?.icon} />}
           </View>
 
           {!lastItem && (

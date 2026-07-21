@@ -130,10 +130,12 @@ const FixturesAccordion = ({ season, competitionInstance, isExpanded, onPress })
                 {expandedDate === date && (
                   <View className="gap-2 p-3">
                     {fixturesForDate.map((fixture) => {
-                      const homeScore =
-                        fixture?.frames?.filter((f) => f.winner_side === 'home').length || 0;
-                      const awayScore =
-                        fixture?.frames?.filter((f) => f.winner_side === 'away').length || 0;
+                      const homeScore = fixture?.is_forfeited
+                        ? fixture?.home_score
+                        : fixture?.frames?.filter((f) => f.winner_side === 'home').length || 0;
+                      const awayScore = fixture?.is_forfeited
+                        ? fixture?.away_score
+                        : fixture?.frames?.filter((f) => f.winner_side === 'away').length || 0;
 
                       return (
                         <View key={fixture.id}>
@@ -174,6 +176,11 @@ const FixturesAccordion = ({ season, competitionInstance, isExpanded, onPress })
                                       ? fixture?.home_team?.display_name || 'Home Team'
                                       : `${fixture?.home_player?.first_name || 'Home'} ${fixture?.home_player?.surname || 'Player'}`}
                                   </Text>
+                                  {fixture?.is_forfeited && fixture?.winner_side === 'away' && (
+                                    <Text className="font-saira-medium text-sm text-red-500">
+                                      FF
+                                    </Text>
+                                  )}
                                 </View>
                                 <View className="flex-1 flex-row items-center justify-between gap-2">
                                   {fixture?.competitor_type === 'team' ? (
@@ -204,14 +211,19 @@ const FixturesAccordion = ({ season, competitionInstance, isExpanded, onPress })
                                       ? fixture?.away_team?.display_name || 'Away Team'
                                       : `${fixture?.away_player?.first_name || 'Away'} ${fixture?.away_player?.surname || 'Player'}`}
                                   </Text>
+                                  {fixture?.is_forfeited && fixture?.winner_side === 'home' && (
+                                    <Text className="font-saira-medium text-sm text-red-500">
+                                      FF
+                                    </Text>
+                                  )}
                                 </View>
                               </View>
                               {fixture?.frames?.length > 0 ? (
                                 <View className="gap-2 px-3">
-                                  <Text className="font-saira-medium text-lg text-text-2">
+                                  <Text className="text-right font-saira-medium text-lg text-text-2">
                                     {homeScore}
                                   </Text>
-                                  <Text className="font-saira-medium text-lg text-text-2">
+                                  <Text className="text-right font-saira-medium text-lg text-text-2">
                                     {awayScore}
                                   </Text>
                                 </View>
