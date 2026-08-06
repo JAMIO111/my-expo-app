@@ -24,6 +24,14 @@ export default ({ config }) => {
       'expo-font',
       'expo-web-browser',
       [
+        'expo-build-properties',
+        {
+          ios: {
+            useFrameworks: 'static',
+          },
+        },
+      ],
+      [
         '@react-native-google-signin/google-signin',
         {
           iosUrlScheme: 'com.googleusercontent.apps.415242977318-ngh1diqg41aki3dbp70vd5h7qatdne66',
