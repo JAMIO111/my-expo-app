@@ -236,8 +236,7 @@ const Home = () => {
     isTeamAmendedFixturesLoading ||
     isPlayerAmendedFixturesLoading ||
     isTeamFixturesAwaitingResultsLoading ||
-    isPlayerFixturesAwaitingResultsLoading ||
-    windowLoading;
+    isPlayerFixturesAwaitingResultsLoading;
 
   if (!player || isLoading) {
     return (

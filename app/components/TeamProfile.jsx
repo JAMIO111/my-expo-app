@@ -66,8 +66,8 @@ const TeamProfile = ({ context, profile, isLoading }) => {
   });
 
   const isMyTeam = currentRole?.team?.id === profile?.id;
-  const isCaptain = isMyTeam && player?.id === profile?.captain;
-  const isViceCaptain = isMyTeam && player?.id === profile?.vice_captain;
+  const isCaptain = isMyTeam && currentRole?.role === 'captain';
+  const isViceCaptain = isMyTeam && currentRole?.role === 'vice_captain';
 
   const canEditStats = isCaptain || isViceCaptain;
 

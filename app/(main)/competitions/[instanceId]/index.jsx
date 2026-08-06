@@ -383,6 +383,41 @@ const index = () => {
     }
   };
 
+  const handleCloseEntriesPress = () => {
+    const deadline = competitionInstance?.entry_deadline;
+
+    // No deadline or deadline has already passed
+    if (!deadline || new Date() >= new Date(deadline)) {
+      showSheet({
+        title: 'Close Competition Entries',
+        message:
+          'Are you sure you want to close the entries for this competition? No more participants will be able to join.',
+        confirmText: 'Close Entries',
+        confirmType: 'error',
+        onConfirm: handleCloseEntries,
+      });
+      return;
+    }
+
+    // Deadline hasn't been reached yet
+    showSheet({
+      title: 'Close Entries Early?',
+      message: `The entry deadline is ${new Date(deadline).toLocaleDateString()}. Closing entries now will prevent participants from joining before the deadline. Are you sure you want to continue?`,
+      confirmText: 'Close Early',
+      confirmType: 'error',
+      onConfirm: () => {
+        showSheet({
+          title: 'Close Competition Entries',
+          message:
+            'Are you sure you want to close the entries for this competition? No more participants will be able to join.',
+          confirmText: 'Close Entries',
+          confirmType: 'error',
+          onConfirm: handleCloseEntries,
+        });
+      },
+    });
+  };
+
   const handleGenerateFixtures = async () => {
     if (queryLoading) return;
     try {
@@ -590,15 +625,7 @@ const index = () => {
                       }
                       callbackFn={
                         competitionInstance?.status === 'upcoming'
-                          ? () =>
-                              showSheet({
-                                title: 'Close Competition Entries',
-                                message:
-                                  'Are you sure you want to close the entries for this competition? No more participants will be able to join.',
-                                confirmText: 'Close Entries',
-                                confirmType: 'error',
-                                onConfirm: handleCloseEntries,
-                              })
+                          ? handleCloseEntriesPress
                           : competitionInstance?.status === 'closed'
                             ? handleGenerateFixtures
                             : null

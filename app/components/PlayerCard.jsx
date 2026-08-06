@@ -69,8 +69,8 @@ const PlayerCard = ({ player, team, context }) => {
 
   console.log('PlayerCard Team', team);
 
-  const isCaptain = team?.captain === player?.id;
-  const isViceCaptain = team?.vice_captain === player?.id;
+  const isCaptain = player?.role === 'captain';
+  const isViceCaptain = player?.role === 'vice_captain';
 
   return (
     <Animated.View className="shadow-sm" style={{ transform: [{ scale }] }}>

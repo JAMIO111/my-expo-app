@@ -127,6 +127,12 @@ const CompetitionRules = ({ context }) => {
               ? parseInt(params.maxTeamSize)
               : null
             : null,
+        min_team_size:
+          params.competitorType === 'team'
+            ? params.minTeamSize
+              ? parseInt(params.minTeamSize)
+              : null
+            : null,
         bracket_generation: bracketGeneration,
         legs: legs ? parseInt(legs) : 1,
         best_of: bestOf ? parseInt(bestOf) : null,

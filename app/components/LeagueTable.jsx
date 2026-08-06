@@ -51,11 +51,11 @@ const LeagueTable = ({ context, season, division }) => {
   }
   return (
     <View className="w-full flex-1 items-center bg-bg-grouped-1 p-3">
-      <Text className="mb-1 mt-2 w-full pl-2 text-left font-saira-medium text-xl text-text-1">
-        {standings?.division?.name} Standings
-      </Text>
-      <View className="mb-16 w-full rounded-3xl border-theme-gray-3 bg-bg-grouped-2 p-3 shadow-md">
-        <View className="h-8 flex-row items-center justify-around border-b-[0.5px] border-separator">
+      <View className="mb-16 w-full rounded-2xl border border-theme-gray-4 bg-bg-grouped-2">
+        <Text className="w-full border-b border-theme-gray-4 p-2 pb-1 pl-3 text-left font-saira-semibold text-xl text-text-1">
+          {standings?.division?.name} Standings
+        </Text>
+        <View className="flex-row items-center justify-around p-2">
           <Text className="w-18 text-center font-saira font-bold text-text-2">Pos</Text>
           <Text className="flex-1 pl-3 text-left font-saira font-bold text-text-2">Team</Text>
           <Text className="w-8 text-center font-saira font-bold text-text-2">PL</Text>
@@ -80,7 +80,7 @@ const LeagueTable = ({ context, season, division }) => {
                   style={{ height: 1.5, width: '100%' }}
                 />
               )}
-            <View className="flex-row items-center justify-around">
+            <View className="flex-row items-center justify-around px-2">
               <Text className="w-8 text-center font-saira-medium text-lg text-text-1">
                 {index + 1}
               </Text>
@@ -96,7 +96,7 @@ const LeagueTable = ({ context, season, division }) => {
                 />
                 <Text
                   numberOfLines={1}
-                  ellipsizeMode="tail"
+                  ellipsizeMode="middle"
                   className="flex-1 text-left font-saira-medium text-lg text-text-1">
                   {team.display_name}
                 </Text>

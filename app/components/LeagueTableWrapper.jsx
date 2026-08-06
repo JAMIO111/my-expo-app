@@ -87,10 +87,10 @@ const LeagueTableWrapper = ({ context }) => {
   // When seasons load, set default season if none selected yet
   useEffect(() => {
     if (seasons.length && defaultSeason && !season) {
-      const found = seasons.find((s) => s.id === defaultSeason.id);
+      const found = seasons.find((s) => s?.id === defaultSeason?.id);
       if (found) setSeason(found);
     }
-    if (competitionInstance?.season_id !== season.id) {
+    if (competitionInstance?.season_id !== season?.id) {
       setCompetitionInstance(null); // 💥 Wipes the default
       setTempCompetitionInstance(null);
     }
@@ -221,59 +221,71 @@ const LeagueTableWrapper = ({ context }) => {
             districts.map((d) => (
               <Pressable
                 className="mb-3 flex-row items-center justify-between"
-                key={d.id}
+                key={d?.id}
                 onPress={() => setTempDistrict(d)}>
                 <Text
                   className={`font-saira text-2xl ${
-                    tempDistrict?.id === d.id ? 'text-text-1' : 'text-text-2'
+                    tempDistrict?.id === d?.id ? 'text-text-1' : 'text-text-2'
                   }`}>
                   {d.name}
                 </Text>
                 <Ionicons
                   size={24}
                   color={themeColors.primaryText}
-                  name={tempDistrict?.id === d.id ? 'checkbox' : 'square-outline'}
+                  name={tempDistrict?.id === d?.id ? 'checkbox' : 'square-outline'}
                 />
               </Pressable>
             ))}
 
           {activeFilter === 'season' &&
-            seasons.map((s) => (
-              <Pressable
-                className="mb-3 flex-row items-center justify-between"
-                key={s.id}
-                onPress={() => setTempSeason(s)}>
-                <Text
-                  className={`font-saira text-2xl ${
-                    tempSeason?.id === s.id ? 'text-text-1' : 'text-text-2'
-                  }`}>
-                  {s.name}
-                </Text>
-                <Ionicons
-                  size={24}
-                  color={themeColors.primaryText}
-                  name={tempSeason?.id === s.id ? 'checkbox' : 'square-outline'}
-                />
-              </Pressable>
+            (seasons.length > 0 ? (
+              seasons.map((s) => (
+                <Pressable
+                  className="mb-3 flex-row items-center justify-between"
+                  key={s?.id}
+                  onPress={() => setTempSeason(s)}>
+                  <Text
+                    className={`font-saira text-2xl ${
+                      tempSeason?.id === s?.id ? 'text-text-1' : 'text-text-2'
+                    }`}>
+                    {s.name}
+                  </Text>
+                  <Ionicons
+                    size={24}
+                    color={themeColors.primaryText}
+                    name={tempSeason?.id === s?.id ? 'checkbox' : 'square-outline'}
+                  />
+                </Pressable>
+              ))
+            ) : (
+              <Text className="font-saira text-2xl text-text-2">
+                No seasons available for this League
+              </Text>
             ))}
           {activeFilter === 'competition' &&
-            leagueCompetitions.map((c) => (
-              <Pressable
-                className="mb-3 flex-row items-center justify-between"
-                key={c.id}
-                onPress={() => setTempCompetitionInstance(c)}>
-                <Text
-                  className={`font-saira text-2xl ${
-                    tempCompetitionInstance?.id === c.id ? 'text-text-1' : 'text-text-2'
-                  }`}>
-                  {c.name}
-                </Text>
-                <Ionicons
-                  size={24}
-                  color={themeColors.primaryText}
-                  name={tempCompetitionInstance?.id === c.id ? 'checkbox' : 'square-outline'}
-                />
-              </Pressable>
+            (leagueCompetitions.length > 0 ? (
+              leagueCompetitions.map((c) => (
+                <Pressable
+                  className="mb-3 flex-row items-center justify-between"
+                  key={c?.id}
+                  onPress={() => setTempCompetitionInstance(c)}>
+                  <Text
+                    className={`font-saira text-2xl ${
+                      tempCompetitionInstance?.id === c?.id ? 'text-text-1' : 'text-text-2'
+                    }`}>
+                    {c.name}
+                  </Text>
+                  <Ionicons
+                    size={24}
+                    color={themeColors.primaryText}
+                    name={tempCompetitionInstance?.id === c?.id ? 'checkbox' : 'square-outline'}
+                  />
+                </Pressable>
+              ))
+            ) : (
+              <Text className="font-saira text-2xl text-text-2">
+                No competitions available for this season.
+              </Text>
             ))}
         </BottomSheetScrollView>
       </BottomSheetWrapper>

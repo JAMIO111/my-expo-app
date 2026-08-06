@@ -21,6 +21,7 @@ export function useUserProfile(userId) {
             Teams (
               name,
               display_name,
+              parent_team_id,
               Divisions (
                 name,
                 Districts (
@@ -44,6 +45,7 @@ export function useUserProfile(userId) {
             team_id: entry?.team_id ?? null,
             team_name: team?.name ?? null,
             team_display_name: team?.display_name ?? null,
+            parent_team_id: team?.parent_team_id ?? null,
             division_name: team?.Divisions?.name ?? null,
             district_name: team?.Divisions?.Districts?.name ?? null,
             role: entry?.role ?? null,

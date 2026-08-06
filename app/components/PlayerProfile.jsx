@@ -71,10 +71,14 @@ const PlayerProfile = ({ context, isLoading, playerProfile, error }) => {
   console.log('Current Teams:', playerProfile.teams);
   const inMyTeam = currentTeam?.team_id === currentRole?.team?.id;
   const isMe = playerProfile?.id === player?.id;
-  const iAmCaptain = currentRole?.team?.captain === player?.id;
-  const iAmViceCaptain = currentRole?.team?.vice_captain === player?.id;
-  const playerIsCaptain = currentTeam?.captain === playerProfile?.id;
-  const playerIsViceCaptain = currentTeam?.vice_captain === playerProfile?.id;
+  const iAmCaptain = currentRole?.role === 'captain';
+  const iAmViceCaptain = currentRole?.role === 'vice_captain';
+  const playerIsCaptain = playerProfile?.teams.some(
+    (t) => t.team_id === currentTeam?.team_id && t.role === 'captain'
+  );
+  const playerIsViceCaptain = playerProfile?.teams.some(
+    (t) => t.team_id === currentTeam?.team_id && t.role === 'vice_captain'
+  );
 
   console.log('Current Team:', currentTeam);
   console.log('In My Team:', inMyTeam);
@@ -283,9 +287,8 @@ const PlayerProfile = ({ context, isLoading, playerProfile, error }) => {
       bottomButtonType: confirmType,
 
       bottomButtonFn: () => {
-        if (!modalConfig) return;
         confirmFn();
-        setModalConfig(null);
+        setModalVisible(false);
       },
     });
     setModalVisible(true);

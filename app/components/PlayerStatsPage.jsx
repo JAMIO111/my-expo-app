@@ -31,11 +31,13 @@ const PlayerStatsPage = ({ userId }) => {
               className="font-saira-medium text-text-on-brand">
               {playerProfile?.first_name} {playerProfile?.surname}
             </Text>
-            <Text
-              style={{ fontSize: 18 }}
-              className="rounded-lg bg-brand-light px-3 font-saira-medium text-text-on-brand">
-              {playerProfile?.nickname || ''}
-            </Text>
+            {playerProfile?.nickname && (
+              <Text
+                style={{ fontSize: 18 }}
+                className="rounded-lg bg-brand-light px-3 font-saira-medium text-text-on-brand">
+                {playerProfile?.nickname || ''}
+              </Text>
+            )}
           </View>
         </View>
         <ScrollView className="w-full flex-1 gap-5 bg-bg-grouped-1">

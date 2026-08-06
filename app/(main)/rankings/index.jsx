@@ -38,8 +38,10 @@ const Index = () => {
       />
 
       <View className="flex-1">
-        <ScrollView className="mt-16 flex-1 bg-brand px-3 py-5">
-          <Text className="px-2 font-saira-medium text-2xl text-white">All-time Player Stats</Text>
+        <ScrollView className="mt-16 flex-1 bg-brand py-5">
+          <Text className="px-2 pl-4 font-saira-medium text-2xl text-white">
+            All-time Player Stats
+          </Text>
 
           <ScrollView
             horizontal
@@ -47,6 +49,7 @@ const Index = () => {
             contentContainerStyle={{
               gap: 16,
               alignItems: 'flex-start',
+              paddingHorizontal: 12,
             }}
             className="mb-8 flex-row space-x-5">
             <ProGate intensity={blurIntensity}>
@@ -101,13 +104,16 @@ const Index = () => {
               />
             </ProGate>
           </ScrollView>
-          <Text className="px-2 font-saira-medium text-2xl text-white">All-time Team Stats</Text>
+          <Text className="px-2 pl-4 font-saira-medium text-2xl text-white">
+            All-time Team Stats
+          </Text>
           <ScrollView
             horizontal
             showsHorizontalScrollIndicator={false}
             contentContainerStyle={{
               gap: 16,
               alignItems: 'flex-start',
+              paddingHorizontal: 12,
             }}
             className="mb-8 flex-row space-x-5">
             <ProGate intensity={blurIntensity}>

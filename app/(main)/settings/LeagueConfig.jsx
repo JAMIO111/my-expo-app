@@ -43,7 +43,7 @@ const LeagueConfig = () => {
     const regex = /^[0-9]{6}$/;
 
     if (!regex.test(joinCode)) {
-      Toast.show({ type: 'info', text1: 'Join code must be exactly 6 digits long.' });
+      Toast.show({ type: 'info', text1: 'Join code must be exactly 6 numerical digits.' });
       return;
     }
 
