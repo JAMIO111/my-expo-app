@@ -43,7 +43,7 @@ export default ({ config }) => {
     assetBundlePatterns: ['**/*'],
     ios: {
       bundleIdentifier: 'com.jdigital.breakroom',
-      googleServicesFile: './GoogleService-Info.plist',
+      googleServicesFile: process.env.GOOGLE_SERVICES_PLIST ?? './GoogleService-Info.plist',
       supportsTablet: true,
       infoPlist: {
         ITSAppUsesNonExemptEncryption: false,
