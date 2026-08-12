@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Text, View, ScrollView, Image } from 'react-native';
+import { Text, View, ScrollView, Image, Pressable } from 'react-native';
 import { Stack } from 'expo-router';
 import SafeViewWrapper from '@components/SafeViewWrapper';
 import NavBar from '@components/NavBar2';
@@ -98,7 +98,7 @@ const ProfilePage = () => {
                 : currentRole?.team?.display_name || 'No Team'}
             </Text>
           </View>
-          <View className="px-5">
+          <Pressable className="px-5" onPress={() => router.push('/profile/leaderboard')}>
             <View style={{ borderRadius: 18 }} className="mb-8 bg-brand-dark p-2 shadow-sm">
               <View className="flex-row items-center justify-around gap-2 rounded-2xl bg-brand p-4 shadow">
                 <View className="flex-1 items-center">
@@ -122,7 +122,7 @@ const ProfilePage = () => {
                 </View>
               </View>
             </View>
-          </View>
+          </Pressable>
           <View className="rounded-t-3xl bg-bg-grouped-2 pt-4 shadow-md">
             <View className="px-5">
               <SlidingTabButton option1="Badges" option2="Stats" onChange={setView} value={view} />

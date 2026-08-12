@@ -66,51 +66,82 @@ const CrestEditor = ({ crest, handleSave, buttonText = 'Save Changes' }) => {
         type={type}
         size={150}
       />
-      <View style={{ borderRadius: 20 }} className="w-full gap-3 bg-bg-1 p-3 shadow-sm">
+      <View
+        style={{ borderRadius: 16 }}
+        className="w-full overflow-hidden border border-theme-gray-5 bg-bg-1">
         <Pressable
           onPress={() => {
             setActiveMenu('Crest Type');
           }}
-          className="flex-row items-center justify-between rounded-2xl bg-bg-2 p-2 py-4 shadow-sm">
-          <Text className="font-saira text-2xl text-text-2">Type</Text>
-          <Text className="font-saira-medium text-2xl text-text-1">
-            {TYPES.find((item) => item === type) || 'Horizontal Stripe'}
-          </Text>
+          className="flex-row items-center justify-between">
+          {({ pressed }) => (
+            <View
+              className={`flex-1 flex-row items-center justify-between px-6 py-4 ${pressed ? 'bg-theme-gray-5' : 'bg-bg-grouped-2'}`}>
+              <Text className="font-saira-medium text-xl text-text-1">Type</Text>
+              <Text className="font-saira-medium text-xl text-text-2">
+                {TYPES.find((item) => item === type) || 'Horizontal Stripe'}
+              </Text>
+            </View>
+          )}
         </Pressable>
+        <View className="ml-6 border-b border-theme-gray-4" />
         <Pressable
           onPress={() => {
             setActiveMenu('Primary Color');
-          }}
-          className="flex-row items-center justify-between rounded-2xl bg-bg-2 p-2 shadow-sm">
-          <Text className="font-saira text-2xl text-text-2">Primary Team Color</Text>
-          <View
-            className="h-12 w-12 rounded-full border border-theme-gray-5"
-            style={{
-              backgroundColor: primaryColor || '#000000',
-            }}></View>
+          }}>
+          {({ pressed }) => (
+            <View
+              className={`flex-row items-center justify-between px-6 py-2 ${
+                pressed ? 'bg-theme-gray-5' : 'bg-bg-grouped-2'
+              }`}>
+              <Text className="font-saira-medium text-xl text-text-1">Primary Team Color</Text>
+              <View
+                className="h-12 w-12 rounded-full border border-theme-gray-5"
+                style={{
+                  backgroundColor: primaryColor || '#000000',
+                }}
+              />
+            </View>
+          )}
         </Pressable>
-
+        <View className="ml-6 border-b border-theme-gray-4" />
         <Pressable
           onPress={() => {
             setActiveMenu('Secondary Color');
-          }}
-          className="flex-row items-center justify-between rounded-2xl bg-bg-2 p-2 shadow-sm">
-          <Text className="font-saira text-2xl text-text-2">Secondary Team Color</Text>
-          <View
-            className="h-12 w-12 rounded-full border border-theme-gray-5"
-            style={{ backgroundColor: secondaryColor || '#FFFFFF' }}></View>
+          }}>
+          {({ pressed }) => (
+            <View
+              className={`flex-row items-center justify-between px-6 py-2 ${
+                pressed ? 'bg-theme-gray-5' : 'bg-bg-grouped-2'
+              }`}>
+              <Text className="font-saira-medium text-xl text-text-1">Secondary Team Color</Text>
+              <View
+                className="h-12 w-12 rounded-full border border-theme-gray-5"
+                style={{ backgroundColor: secondaryColor || '#FFFFFF' }}
+              />
+            </View>
+          )}
         </Pressable>
         {type !== 'Solids' && type !== 'Quartered' && (
-          <Pressable
-            onPress={() => {
-              setActiveMenu('Style Weight');
-            }}
-            className="flex-row items-center justify-between rounded-2xl bg-bg-2 p-2 py-4 shadow-sm">
-            <Text className="font-saira text-2xl text-text-2">Thickness</Text>
-            <Text className="font-saira-medium text-2xl text-text-1">
-              {THICKNESSES.find((item) => item.value === thickness)?.label}
-            </Text>
-          </Pressable>
+          <>
+            <View className="ml-6 border-b border-theme-gray-4" />
+            <Pressable
+              onPress={() => {
+                setActiveMenu('Style Weight');
+              }}>
+              {({ pressed }) => (
+                <View
+                  className={`flex-row items-center justify-between px-6 py-4 ${
+                    pressed ? 'bg-theme-gray-5' : 'bg-bg-grouped-2'
+                  }`}>
+                  <Text className="font-saira-medium text-xl text-text-1">Thickness</Text>
+                  <Text className="font-saira-medium text-xl text-text-2">
+                    {THICKNESSES.find((item) => item.value === thickness)?.label}
+                  </Text>
+                </View>
+              )}
+            </Pressable>
+          </>
         )}
       </View>
       {hasChanges() && (

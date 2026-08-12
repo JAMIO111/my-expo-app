@@ -33,7 +33,7 @@ const ImageUploader = forwardRef(
       }
 
       const result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        mediaTypes: ['images'],
         allowsEditing: true,
         aspect: aspectRatio,
         quality: 1,
@@ -108,7 +108,10 @@ const ImageUploader = forwardRef(
 
               {editable && (
                 <Pressable
-                  onPress={removeImage}
+                  onPress={(e) => {
+                    e.stopPropagation();
+                    removeImage();
+                  }}
                   hitSlop={10}
                   style={{
                     position: 'absolute',

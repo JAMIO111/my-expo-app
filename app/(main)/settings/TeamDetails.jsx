@@ -113,7 +113,7 @@ const TeamDetails = () => {
             text={abbreviation}
           />
           <SettingsItem
-            routerPath="/settings/Address"
+            routerPath="/settings/ManageAddress"
             title="Address"
             text={
               [address.line_1, address.line_2, address.city, address.county, address.postcode]

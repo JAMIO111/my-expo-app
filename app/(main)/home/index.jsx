@@ -25,6 +25,9 @@ import { useQueryClient } from '@tanstack/react-query';
 import BottomSheetModal from '@components/BottomSheetModal';
 import { useRevenueCat } from '@contexts/RevenueCatProvider';
 import { useNotificationsPanel } from '@contexts/NotificationsPanelProvider';
+import TicketCard from '@components/TicketCard';
+import TicketCarousel from '@components/TicketCarousel';
+import Heading from '@components/Heading';
 
 const Home = () => {
   const { isPro, isCore } = useRevenueCat();
@@ -306,10 +309,34 @@ const Home = () => {
                 <LeagueHomeCard standings={standings} isLoading={isStandingsLoading} />
               </View>
             </View>
-            <View className="w-full bg-bg-1 pb-8">
+            <View className="w-full bg-bg-2 pb-8">
+              <View className="w-full gap-3 pb-8">
+                <View className="w-full p-3">
+                  <Heading text="Invites & Requests" />
+                </View>
+
+                <TicketCarousel
+                  tickets={[
+                    {
+                      title: 'You have been invited to join Shankhouse B Team!',
+                      accentColor: '#C96F3C',
+                    },
+                    {
+                      title: 'You have been invited to join Doubles League!',
+                      accentColor: '#C9A6D8',
+                    },
+                    {
+                      title: 'Break Room\nSeason Pass',
+                      accentColor: '#0F3D2E',
+                      textColor: '#D4AF37',
+                    },
+                  ]}
+                />
+              </View>
               {(currentRole?.team?.captain === player?.id ||
                 currentRole?.team?.vice_captain === player?.id) && (
-                <View className="w-full bg-bg-grouped-1">
+                <View className="w-full gap-3 p-3">
+                  <Heading text="Pending Match Results" />
                   {disputedFixtures &&
                     disputedFixtures.length > 0 &&
                     disputedFixtures.map((fixture) => (
@@ -337,7 +364,7 @@ const Home = () => {
                         refetch={teamResultsPendingApprovalRefetch}
                       />
                     ))}
-                  <View className="w-full bg-bg-grouped-1">
+                  <View className="w-full gap-3">
                     {fixturesAwaitingResults &&
                       fixturesAwaitingResults.length > 0 &&
                       fixturesAwaitingResults.map((fixture) => (
@@ -350,7 +377,7 @@ const Home = () => {
                   </View>
                 </View>
               )}
-              <View className="w-full gap-5 p-3 pt-5">
+              <View className="w-full gap-5 px-3 pt-5">
                 {currentRole?.type === 'player' && currentRole.district?.transfer_window_open ? (
                   <TransferWindowCard
                     onPress={() => {

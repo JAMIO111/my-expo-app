@@ -2,20 +2,36 @@ import { StyleSheet, Text, View, Pressable } from 'react-native';
 import TeamLogo from './TeamLogo';
 import Avatar from './Avatar';
 import { useRouter } from 'expo-router';
+import { Swords } from 'lucide-react-native';
 
 const PendingResultCard = ({ fixture }) => {
   const router = useRouter();
   return (
-    <Pressable onPress={() => router.push(`/home/${fixture.id}/submit-results`)}>
-      <View className="relative items-center justify-between gap-5 border-b border-separator bg-bg-grouped-2 px-4 py-3 shadow-[0_2px_4px_rgba(0,0,0,0.1)]">
+    <Pressable
+      className="rounded-xl border border-theme-gray-5 bg-bg-1"
+      onPress={() => router.push(`/home/${fixture.id}/submit-results`)}>
+      <View className="relative items-center justify-between gap-5 p-3">
         <View className="w-full flex-1 flex-row items-center justify-between">
           <View className="flex-col">
-            <Text className="font-saira-medium text-2xl text-text-1">Submit Result</Text>
-            <Text className="text-md font-saira text-text-2">
-              {fixture?.competition_instance?.name} Fixture
+            <Text className="font-saira-medium text-lg text-text-1">
+              {`${new Date(fixture.date_time).toLocaleDateString('en-GB', {
+                weekday: 'short',
+                day: 'numeric',
+                month: 'short',
+                year: '2-digit',
+              })} | ${new Date(fixture.date_time).toLocaleTimeString('en-GB', {
+                hour: '2-digit',
+                minute: '2-digit',
+              })}`}
             </Text>
+            <View className="flex-row items-center gap-2">
+              <Swords size={14} color="#000" />
+              <Text className="text-md font-saira text-text-1">
+                {fixture?.competition_instance?.name} Fixture
+              </Text>
+            </View>
           </View>
-          <Text className="absolute right-0 top-0 w-fit rounded-xl border border-theme-teal bg-theme-teal/20 px-3 py-1 text-center font-saira-medium text-theme-teal">
+          <Text className="absolute right-0 top-0 w-fit rounded-lg border border-theme-teal bg-theme-teal/20 px-2 py-0.5 text-center font-saira-medium text-sm text-theme-teal">
             Awaiting Submission
           </Text>
         </View>
@@ -45,14 +61,6 @@ const PendingResultCard = ({ fixture }) => {
                 ? fixture?.home_team?.display_name
                 : `${fixture?.home_player?.first_name} ${fixture?.home_player?.surname}`}
             </Text>
-            <Text className="text-center font-saira-medium text-lg text-text-1">
-              {new Date(fixture.date_time).toLocaleDateString('en-GB', {
-                weekday: 'short',
-                day: 'numeric',
-                month: 'short',
-                year: '2-digit',
-              })}
-            </Text>
           </View>
           <View className="flex-1 flex-row items-center justify-between gap-3">
             {fixture?.competitor_type === 'team' ? (
@@ -78,13 +86,6 @@ const PendingResultCard = ({ fixture }) => {
               {fixture?.competitor_type === 'team'
                 ? fixture?.away_team?.display_name
                 : `${fixture?.away_player?.first_name} ${fixture?.away_player?.surname}`}
-            </Text>
-            <Text className="text-center font-saira-medium text-lg text-text-1">
-              {' '}
-              {new Date(fixture.date_time).toLocaleTimeString('en-GB', {
-                hour: '2-digit',
-                minute: '2-digit',
-              })}
             </Text>
           </View>
         </View>

@@ -1,4 +1,7 @@
 import { StyleSheet, View, useColorScheme, Alert } from 'react-native';
+import { Stack } from 'expo-router';
+import CustomHeader from '@components/CustomHeader';
+import SafeViewWrapper from '@components/SafeViewWrapper';
 import ImageUploader from '@components/ImageUploader';
 import CTAButton from '@components/CTAButton';
 import { useUser } from '@contexts/UserProvider';
@@ -6,7 +9,7 @@ import { useRouter } from 'expo-router';
 import useCompressAndUploadImage from '@hooks/useCompressAndUploadImage';
 import { supabase } from '@/lib/supabase';
 import Toast from 'react-native-toast-message';
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 
 const TeamCoverImage = () => {
   console.log(supabase, 'Supabase Client in TeamCoverImage');
@@ -14,6 +17,7 @@ const TeamCoverImage = () => {
   const { currentRole } = useUser();
   const { colorScheme } = useColorScheme();
   const [imageUri, setImageUri] = useState(currentRole?.team?.cover_image_url || null);
+  const imageUploaderRef = useRef(null);
 
   const { uploadToSupabase, uploading } = useCompressAndUploadImage();
 
@@ -79,23 +83,44 @@ const TeamCoverImage = () => {
   };
 
   return (
-    <View>
-      <ImageUploader
-        initialUri={imageUri || currentRole?.team?.cover_image_url}
-        onImageChange={setImageUri}
-        aspectRatio={[16, 12]}
-        borderRadius={0}
-        editable={true}
+    <SafeViewWrapper topColor="bg-brand" useBottomInset={false}>
+      <Stack.Screen
+        options={{
+          header: () => (
+            <SafeViewWrapper useBottomInset={false}>
+              <CustomHeader title="Crest Editor" />
+            </SafeViewWrapper>
+          ),
+        }}
       />
-      <View className="mt-5 w-full p-4">
-        <CTAButton
-          type="success"
-          text="Save Cover Photo"
-          callbackFn={handleSaveProfile}
-          disabled={uploading}
-        />
+      <View className="mt-16">
+        <View className="bg-brand-light p-2 py-4">
+          <ImageUploader
+            ref={imageUploaderRef}
+            initialUri={imageUri || currentRole?.team?.cover_image_url}
+            onImageChange={setImageUri}
+            aspectRatio={[16, 9]}
+            borderRadius={24}
+            editable={true}
+          />
+        </View>
+        <View className="mt-5 w-full gap-5 p-4">
+          <CTAButton
+            type="yellow"
+            text="Change Cover Photo"
+            callbackFn={() => imageUploaderRef.current?.openPicker()}
+            disabled={uploading}
+          />
+
+          <CTAButton
+            type="success"
+            text="Save Cover Photo"
+            callbackFn={handleSaveProfile}
+            disabled={uploading}
+          />
+        </View>
       </View>
-    </View>
+    </SafeViewWrapper>
   );
 };
 

@@ -14,7 +14,7 @@ export function generateQuadraticTiers(startValue, endValue, numTiers, curveStre
 }
 
 export function calculateLevel(xp) {
-  const level = Math.floor(Math.sqrt(xp / 100));
+  const level = 1 + Math.floor(Math.sqrt(xp / 100));
   const currentLevelXp = 100 * level * level;
   const nextLevel = level + 1;
   const nextLevelXp = 100 * nextLevel * nextLevel;
@@ -812,6 +812,86 @@ export async function createNewSeason(districtId, districtName, startDate) {
     console.error('Create season failed:', err.message);
     throw err;
   }
+}
+
+/**
+ * Shifts a hex color's lightness by `amount` percentage points.
+ * Positive amount = lighter, negative = darker. Clamped to 0–100.
+ */
+export function shiftLightness(hex, amount) {
+  const { h, s, l } = hexToHsl(hex);
+  const newL = Math.min(100, Math.max(0, l + amount));
+  return hslToHex(h, s, newL);
+}
+
+function hexToHsl(hex) {
+  const clean = hex.replace('#', '');
+  const full =
+    clean.length === 3
+      ? clean
+          .split('')
+          .map((c) => c + c)
+          .join('')
+      : clean;
+  const r = parseInt(full.slice(0, 2), 16) / 255;
+  const g = parseInt(full.slice(2, 4), 16) / 255;
+  const b = parseInt(full.slice(4, 6), 16) / 255;
+
+  const max = Math.max(r, g, b);
+  const min = Math.min(r, g, b);
+  let h = 0;
+  let s = 0;
+  const l = (max + min) / 2;
+
+  if (max !== min) {
+    const d = max - min;
+    s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+    switch (max) {
+      case r:
+        h = (g - b) / d + (g < b ? 6 : 0);
+        break;
+      case g:
+        h = (b - r) / d + 2;
+        break;
+      case b:
+        h = (r - g) / d + 4;
+        break;
+    }
+    h /= 6;
+  }
+
+  return { h: h * 360, s: s * 100, l: l * 100 };
+}
+
+function hslToHex(h, s, l) {
+  h /= 360;
+  s /= 100;
+  l /= 100;
+  let r, g, b;
+
+  if (s === 0) {
+    r = g = b = l;
+  } else {
+    const hue2rgb = (p, q, t) => {
+      if (t < 0) t += 1;
+      if (t > 1) t -= 1;
+      if (t < 1 / 6) return p + (q - p) * 6 * t;
+      if (t < 1 / 2) return q;
+      if (t < 2 / 3) return p + (q - p) * (2 / 3 - t) * 6;
+      return p;
+    };
+    const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+    const p = 2 * l - q;
+    r = hue2rgb(p, q, h + 1 / 3);
+    g = hue2rgb(p, q, h);
+    b = hue2rgb(p, q, h - 1 / 3);
+  }
+
+  const toHex = (x) =>
+    Math.round(x * 255)
+      .toString(16)
+      .padStart(2, '0');
+  return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
 }
 
 export default {

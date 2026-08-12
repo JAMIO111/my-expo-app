@@ -29,7 +29,7 @@ const PlayerManagement = () => {
         options={{
           header: () => (
             <SafeViewWrapper useBottomInset={false}>
-              <CustomHeader title="Player Management" />
+              <CustomHeader title="Manage Roster" />
             </SafeViewWrapper>
           ),
         }}
