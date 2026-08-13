@@ -327,8 +327,11 @@ const Home = () => {
                     },
                     {
                       title: 'Break Room\nSeason Pass',
-                      accentColor: '#0F3D2E',
-                      textColor: '#D4AF37',
+                      accentColor: '#869577',
+                    },
+                    {
+                      title: 'You have been invited to join Shankhouse B Team!',
+                      accentColor: '#CFD5ED',
                     },
                   ]}
                 />

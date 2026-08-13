@@ -162,10 +162,10 @@ const ManageAddress = () => {
         </MenuContainer>
         <MenuContainer>
           <EditableSettingsItem
-            title="Number of Tables"
+            title="No. of Tables"
             value={numberOfTables}
             onChangeText={setNumberOfTables}
-            placeholder="Enter number of tables"
+            placeholder="Enter No. of pool tables"
           />
         </MenuContainer>
       </ScrollView>

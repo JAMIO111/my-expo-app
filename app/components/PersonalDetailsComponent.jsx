@@ -75,39 +75,73 @@ const PersonalDetailsComponent = () => {
 
     setIsSaving(true);
 
-    const dobStr = dob.toISOString().split('T')[0];
+    try {
+      const dobStr = dob.toISOString().split('T')[0];
 
-    const { data, error } = await supabase.rpc('update_player_profile', {
-      p_player_id: player.id,
-      p_first_name: firstName !== player.first_name ? firstName : null,
-      p_surname: surname !== player.surname ? surname : null,
-      p_nickname: nickname !== player.nickname ? nickname : null,
-      p_dob: dob !== player.dob ? dob : null,
-
-      p_gender: gender,
-      p_gender_changed: gender !== player.gender,
-    });
-
-    if (error || !data?.success) {
-      console.error('Failed to save changes:', error?.message || data?.error, data?.detail);
-      Toast.show({
-        type: 'error',
-        text1: 'Update Failed',
-        text2: 'Something went wrong while updating your profile.',
-        props: { colorScheme },
+      const { data, error } = await supabase.rpc('update_player_profile', {
+        p_player_id: player.id,
+        p_first_name: firstName !== player.first_name ? firstName : null,
+        p_surname: surname !== player.surname ? surname : null,
+        p_nickname: nickname !== player.nickname ? nickname : null,
+        p_dob: dob !== player.dob ? dob : null,
+        p_dob_changed: dobStr !== player.dob,
+        p_gender: gender,
+        p_gender_changed: gender !== player.gender,
       });
-    } else {
-      await queryClient.invalidateQueries({ queryKey: ['PlayerProfile', player.id] });
+
+      if (error || !data?.success) {
+        console.error('Failed to save changes:', error?.message || data?.error, data?.detail);
+
+        const errorMessages = {
+          PLAYER_NOT_FOUND: "We couldn't find your player profile.",
+          NO_DOB_CHANGES_REMAINING:
+            "You've used up your date of birth changes. Please contact your administrator if you need to update it.",
+          NO_GENDER_CHANGES_REMAINING:
+            "You've used up your gender changes. Please contact your administrator if you need to update it.",
+          UNEXPECTED_ERROR: 'Something went wrong while updating your profile.',
+        };
+
+        const errorCode = data?.error;
+
+        const message =
+          errorMessages[errorCode] ?? 'Something went wrong while updating your profile.';
+
+        Toast.show({
+          type: 'error',
+          text1: 'Update Failed',
+          text2: message,
+          props: { colorScheme },
+        });
+
+        return;
+      }
+
+      await queryClient.invalidateQueries({
+        queryKey: ['PlayerProfile', player.id],
+      });
+
       await refetch();
+
       Toast.show({
         type: 'success',
         text1: 'Profile Updated',
         text2: 'Your personal details have been successfully updated.',
         props: { colorScheme },
       });
-    }
+    } catch (error) {
+      console.error('Unexpected error while saving profile:', error);
 
-    setIsSaving(false);
+      Toast.show({
+        type: 'error',
+        text1: 'Update Failed',
+        text2: 'Something went wrong while updating your profile.',
+        props: { colorScheme },
+      });
+    } finally {
+      setIsSaving(false);
+      setShowDatePicker(false);
+      setShowGenderPicker(false);
+    }
   };
 
   <View className="h-16 flex-row items-center justify-between bg-brand px-4">
@@ -140,7 +174,11 @@ const PersonalDetailsComponent = () => {
       />
 
       <ScrollView
-        contentContainerStyle={{ alignItems: 'center', justifyContent: 'center' }}
+        contentContainerStyle={{
+          alignItems: 'center',
+          justifyContent: 'center',
+          paddingBottom: 50,
+        }}
         className="mt-16 flex-1 bg-bg-grouped-1 p-5">
         <MenuContainer>
           <EditableSettingsItem
@@ -164,7 +202,7 @@ const PersonalDetailsComponent = () => {
           />
         </MenuContainer>
 
-        <View className="mb-8 w-full rounded-2xl border border-theme-gray-5 bg-bg-grouped-2">
+        <View className="w-full rounded-2xl border border-theme-gray-5 bg-bg-grouped-2">
           <Pressable
             onPress={() => setShowGenderPicker((prev) => !prev)}
             className="flex-row items-center justify-between px-4 py-4">
@@ -184,7 +222,7 @@ const PersonalDetailsComponent = () => {
           {showGenderPicker && (
             <View className="gap-2 px-4 pb-2">
               <Pressable
-                className="flex-row items-center justify-between gap-4 border-t border-theme-gray-3 pt-4"
+                className="flex-row items-center justify-between gap-4 border-t border-theme-gray-5 pt-4"
                 onPress={() => {
                   setGender('male');
                   setShowGenderPicker(false);
@@ -193,7 +231,7 @@ const PersonalDetailsComponent = () => {
                 <Ionicons name="male" size={22} color="blue" />
               </Pressable>
               <Pressable
-                className="mt-2 flex-row items-center justify-between gap-4 border-t border-theme-gray-3 pt-4"
+                className="mt-2 flex-row items-center justify-between gap-4 border-t border-theme-gray-5 pt-4"
                 onPress={() => {
                   setGender('female');
                   setShowGenderPicker(false);
@@ -202,7 +240,7 @@ const PersonalDetailsComponent = () => {
                 <Ionicons name="female" size={22} color="red" />
               </Pressable>
               <Pressable
-                className="mt-2 flex-row items-center justify-between gap-4 border-t border-theme-gray-3 py-4"
+                className="mt-2 flex-row items-center justify-between gap-4 border-t border-theme-gray-5 py-4"
                 onPress={() => {
                   setGender(null);
                   setShowGenderPicker(false);
@@ -212,6 +250,15 @@ const PersonalDetailsComponent = () => {
               </Pressable>
             </View>
           )}
+        </View>
+        <View className="mb-8 mt-2 flex-row items-center justify-between px-2">
+          <Text className="flex-1 text-left text-xs text-text-2">
+            Can only be changed up to 2 times.
+          </Text>
+          <Text
+            className={`text-right text-xs ${player?.gender_changes_remaining <= 1 ? 'text-theme-red' : 'text-text-2'}`}>
+            {player?.gender_changes_remaining} / 2 remaining
+          </Text>
         </View>
 
         <View className="w-full rounded-2xl border border-theme-gray-5 bg-bg-grouped-2">
@@ -251,6 +298,15 @@ const PersonalDetailsComponent = () => {
               />
             </View>
           )}
+        </View>
+        <View className="mb-8 mt-2 flex-row items-center justify-between px-2">
+          <Text className="flex-1 text-left text-xs text-text-2">
+            Can only be changed up to 2 times.
+          </Text>
+          <Text
+            className={`text-right text-xs ${player?.dob_changes_remaining <= 1 ? 'text-theme-red' : 'text-text-2'}`}>
+            {player?.dob_changes_remaining} / 2 remaining
+          </Text>
         </View>
       </ScrollView>
     </SafeViewWrapper>

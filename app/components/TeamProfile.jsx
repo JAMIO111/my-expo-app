@@ -141,19 +141,25 @@ const TeamProfile = ({ context, profile, isLoading }) => {
   return (
     <>
       <ScrollView className="flex-1 bg-brand" contentContainerStyle={{ flexGrow: 1 }}>
-        <View className="bg-brand p-2">
-          {profile.cover_image_url && (
-            <View style={{ borderWidth: 8 }} className="overflow-hidden rounded-3xl border-red-950">
-              <CachedImage
-                avatarUrl={profile.cover_image_url}
-                userId={profile?.id}
-                width={Dimensions.get('window').width - 24}
-                height={((Dimensions.get('window').width - 24) * 9) / 16}
-                borderRadius={0}
-              />
-            </View>
-          )}
-        </View>
+        {profile.cover_image_url && (
+          <View
+            style={{
+              overflow: 'hidden',
+              borderTopColor: '#fff',
+              borderBottomColor: '#fff',
+              borderTopWidth: 1,
+              borderBottomWidth: 1,
+            }}>
+            <CachedImage
+              avatarUrl={profile.cover_image_url}
+              userId={profile?.id}
+              width={Dimensions.get('window').width}
+              height={(Dimensions.get('window').width * 9) / 16}
+              borderRadius={0}
+            />
+          </View>
+        )}
+
         <TeamProfileHeader profile={profile} />
         <View className="gap-1 bg-bg-grouped-1">
           <View className="mt-1 bg-bg-grouped-2 px-4 py-6">

@@ -41,7 +41,7 @@ export default function ChipSelector({
     <ScrollView
       horizontal
       showsHorizontalScrollIndicator={false}
-      className="flex-grow-0 pb-3"
+      className="flex-grow-0 bg-bg-1 py-3"
       contentContainerClassName={`flex-row w-full py-1 px-4 gap-3 ${contentContainerClassName}`}>
       {options.map((option) => {
         const selected = isSelected(option.value);
@@ -50,8 +50,8 @@ export default function ChipSelector({
           <Pressable
             key={String(option.value)}
             onPress={() => handlePress(option.value)}
-            className={`flex-1 flex-row items-center justify-center rounded-full border px-4 py-2 ${
-              selected ? 'border-brand bg-brand' : 'border-theme-gray-5 bg-bg-grouped-2'
+            className={`flex-1 flex-row items-center justify-center rounded-full border px-4 py-1.5 ${
+              selected ? 'border-brand bg-brand' : 'border-theme-gray-4 bg-bg-1'
             }`}>
             {option.icon ? (
               <View className="mr-2">
@@ -59,6 +59,7 @@ export default function ChipSelector({
               </View>
             ) : null}
             <Text
+              style={{ paddingTop: 2 }}
               className={`font-saira-semibold text-sm ${selected ? 'text-white' : 'text-text-2'}`}>
               {option.label}
             </Text>

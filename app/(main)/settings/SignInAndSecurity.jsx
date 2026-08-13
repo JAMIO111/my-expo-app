@@ -7,8 +7,10 @@ import {
   Pressable,
   Animated,
   ActivityIndicator,
+  Image,
 } from 'react-native';
 import { useState, useRef, useEffect } from 'react';
+import { Check, X, Link, Unlink } from 'lucide-react-native';
 import { supabase } from '@/lib/supabase';
 import { Stack } from 'expo-router';
 import SettingsItem from '@components/SettingsItem';
@@ -78,17 +80,13 @@ const PROVIDERS = [
   {
     key: 'google',
     label: 'Google',
-    icon: 'logo-google',
-    color: '#ea4335',
-    bgColor: '#fef2f2',
+    icon: require('../../assets/google-logo.png'),
     canUnlink: true,
   },
   {
     key: 'facebook',
     label: 'Facebook',
-    icon: 'logo-facebook',
-    color: '#1877f2',
-    bgColor: '#eff6ff',
+    icon: require('../../assets/Facebook-logo.png'),
     canUnlink: true,
   },
 ];
@@ -199,15 +197,23 @@ const ConnectedLoginsSection = ({ user, onIdentitiesChange }) => {
             <View key={provider.key}>
               <View style={[styles.providerRow, isLast && { borderBottomWidth: 0 }]}>
                 {/* Icon */}
-                <View style={[styles.providerIconWrap, { backgroundColor: provider.bgColor }]}>
-                  <IonIcons name={provider.icon} size={20} color={provider.color} />
+                <View style={[styles.providerIconWrap]}>
+                  {provider.key === 'email' ? (
+                    <IonIcons name="mail-outline" size={28} color={provider.color} />
+                  ) : (
+                    <Image
+                      source={provider.icon}
+                      style={{ width: 28, height: 28, tintColor: provider.color }}
+                    />
+                  )}
                 </View>
 
                 {/* Label + status */}
                 <View style={styles.providerInfo}>
                   <Text style={styles.providerLabel}>{provider.label}</Text>
                   <Text
-                    style={[styles.providerStatus, { color: connected ? '#22c55e' : '#9ca3af' }]}>
+                    className="font-saira-medium text-sm"
+                    style={[styles.providerStatus, { color: connected ? '#199345' : '#9ca3af' }]}>
                     {connected ? 'Connected' : 'Not connected'}
                   </Text>
                 </View>
@@ -217,11 +223,12 @@ const ConnectedLoginsSection = ({ user, onIdentitiesChange }) => {
                   <ActivityIndicator size="small" color="#6b7280" />
                 ) : provider.key === 'email' ? (
                   <View
+                    className="bg-brand-light/10 w-32 items-center justify-center rounded-xl border p-2"
                     style={[
                       styles.providerBadge,
-                      { backgroundColor: '#f0fdf4', borderColor: '#bbf7d0' },
+                      { borderColor: '#199345', backgroundColor: '#19934515' },
                     ]}>
-                    <Text style={[styles.providerBadgeText, { color: '#16a34a' }]}>Primary</Text>
+                    <Text style={[styles.providerBadgeText, { color: '#199345' }]}>Primary</Text>
                   </View>
                 ) : connected ? (
                   <Pressable
@@ -234,13 +241,21 @@ const ConnectedLoginsSection = ({ user, onIdentitiesChange }) => {
                         opacity: pressed ? 0.7 : 1,
                       },
                     ]}>
-                    <Text
-                      style={[
-                        styles.providerBadgeText,
-                        { color: canUnlink ? '#ef4444' : '#9ca3af' },
-                      ]}>
-                      {canUnlink ? 'Unlink' : 'Linked'}
-                    </Text>
+                    <View
+                      className={`w-32 flex-row items-center justify-center gap-2 rounded-xl border ${canUnlink ? 'border-theme-red' : 'border-gray-300'} p-2`}>
+                      {canUnlink ? (
+                        <Unlink size={16} color="#ef4444" />
+                      ) : (
+                        <Link size={16} color="#9ca3af" />
+                      )}
+                      <Text
+                        style={[
+                          styles.providerBadgeText,
+                          { color: canUnlink ? '#ef4444' : '#9ca3af' },
+                        ]}>
+                        {canUnlink ? 'Unlink' : 'Linked'}
+                      </Text>
+                    </View>
                   </Pressable>
                 ) : (
                   <Pressable
@@ -253,7 +268,10 @@ const ConnectedLoginsSection = ({ user, onIdentitiesChange }) => {
                         opacity: pressed ? 0.7 : 1,
                       },
                     ]}>
-                    <Text style={[styles.providerBadgeText, { color: '#0284c7' }]}>Link</Text>
+                    <View className="w-32 flex-row items-center justify-center gap-2 rounded-xl border border-theme-blue p-2">
+                      <Link size={16} color="#0284c7" />
+                      <Text style={[styles.providerBadgeText, { color: '#0284c7' }]}>Link Now</Text>
+                    </View>
                   </Pressable>
                 )}
               </View>
@@ -358,7 +376,11 @@ const SignInAndSecurity = () => {
         return;
       }
       await waitForAuthSettle();
-      const { error: updateError } = await supabase.auth.updateUser({ password: newPassword });
+      const { error: updateError } = await supabase.auth.updateUser({
+        email: user.email,
+        current_password: currentPassword,
+        password: newPassword,
+      });
       if (updateError) {
         setPasswordError(updateError.message);
         return;
@@ -372,7 +394,13 @@ const SignInAndSecurity = () => {
     }
   };
 
-  const animatedMaxHeight = panelHeight.interpolate({ inputRange: [0, 1], outputRange: [0, 420] });
+  const animatedMaxHeight = panelHeight.interpolate({ inputRange: [0, 1], outputRange: [0, 500] });
+
+  const minimumLength = newPassword.length >= 8;
+  const passwordsMatch = newPassword === confirmPassword;
+  const hasNumber = /[0-9]/.test(newPassword);
+  const hasUppercase = /[A-Z]/.test(newPassword);
+  const isValidPassword = minimumLength && passwordsMatch && hasNumber && hasUppercase;
 
   return (
     <SafeViewWrapper topColor="bg-brand" useBottomInset={false}>
@@ -390,9 +418,9 @@ const SignInAndSecurity = () => {
         style={{ flex: 1 }}
         enableOnAndroid
         keyboardShouldPersistTaps="handled"
-        extraScrollHeight={40}
+        extraScrollHeight={120}
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: 48 }}
+        contentContainerStyle={{ paddingBottom: 60 }}
         className="mt-16 flex-1 bg-bg-grouped-1 p-5">
         {/* ── Connected logins ── */}
         <ConnectedLoginsSection user={user} />
@@ -408,7 +436,7 @@ const SignInAndSecurity = () => {
         {/* ── Password ── */}
         {!isOAuthUser && (
           <>
-            <Text style={styles.sectionLabel}>PASSWORD</Text>
+            <Text style={styles.sectionLabel}>YOUR PASSWORD</Text>
             <View style={styles.passwordSection}>
               <Pressable
                 style={styles.passwordHeader}
@@ -435,7 +463,11 @@ const SignInAndSecurity = () => {
               </Pressable>
 
               <Animated.View
-                style={{ maxHeight: animatedMaxHeight, opacity: panelOpacity, overflow: 'hidden' }}>
+                style={{
+                  maxHeight: animatedMaxHeight,
+                  opacity: panelOpacity,
+                  overflow: 'hidden',
+                }}>
                 <View style={styles.passwordForm}>
                   {passwordSuccess ? (
                     <View style={styles.successBanner}>
@@ -457,21 +489,6 @@ const SignInAndSecurity = () => {
                           onChangeText={setNewPassword}
                           hasError={!!passwordError && newPassword.length < 8}
                         />
-                        {newPassword.length > 0 && strength && (
-                          <View style={styles.strengthRow}>
-                            <View style={styles.strengthTrack}>
-                              <View
-                                style={[
-                                  styles.strengthFill,
-                                  { width: strength.width, backgroundColor: strength.color },
-                                ]}
-                              />
-                            </View>
-                            <Text style={[styles.strengthLabel, { color: strength.color }]}>
-                              {strength.label}
-                            </Text>
-                          </View>
-                        )}
                       </View>
                       <PasswordInput
                         placeholder="Confirm new password"
@@ -483,18 +500,65 @@ const SignInAndSecurity = () => {
                           confirmPassword !== newPassword
                         }
                       />
+                      {newPassword.length > 0 && strength && (
+                        <View style={styles.strengthRow}>
+                          <View style={styles.strengthTrack}>
+                            <View
+                              style={[
+                                styles.strengthFill,
+                                { width: strength.width, backgroundColor: strength.color },
+                              ]}
+                            />
+                          </View>
+                          <Text style={[styles.strengthLabel, { color: strength.color }]}>
+                            {strength.label}
+                          </Text>
+                        </View>
+                      )}
                       {passwordError && (
                         <View style={styles.errorBanner}>
                           <IonIcons name="alert-circle-outline" size={16} color="#ef4444" />
                           <Text style={styles.errorText}>{passwordError}</Text>
                         </View>
                       )}
+                      <View className="mt-2 flex-row gap-2 px-1">
+                        {minimumLength ? (
+                          <Check size={16} color="#22c55e" />
+                        ) : (
+                          <X size={16} color="#ef4444" />
+                        )}
+                        <Text>Minimum 8 characters long.</Text>
+                      </View>
+                      <View className="flex-row gap-2 px-1">
+                        {hasNumber ? (
+                          <Check size={16} color="#22c55e" />
+                        ) : (
+                          <X size={16} color="#ef4444" />
+                        )}
+                        <Text>Contains at least one number.</Text>
+                      </View>
+                      <View className="flex-row gap-2 px-1">
+                        {hasUppercase ? (
+                          <Check size={16} color="#22c55e" />
+                        ) : (
+                          <X size={16} color="#ef4444" />
+                        )}
+                        <Text>Contains at least one uppercase letter.</Text>
+                      </View>
+                      <View className="mb-2 flex-row gap-2 px-1">
+                        {passwordsMatch ? (
+                          <Check size={16} color="#22c55e" />
+                        ) : (
+                          <X size={16} color="#ef4444" />
+                        )}
+                        <Text>Passwords must match.</Text>
+                      </View>
                       <CTAButton
-                        text={isSaving ? 'Updating...' : 'Update Password'}
+                        text={isSaving ? 'Updating...' : 'Change Password'}
                         type="yellow"
                         textColor="black"
                         callbackFn={handleChangePassword}
-                        disabled={isSaving}
+                        disabled={isSaving || !isValidPassword}
                       />
                     </>
                   )}
@@ -594,7 +658,6 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#6b7280',
     letterSpacing: 0.8,
-    marginTop: 24,
     marginBottom: 8,
     marginLeft: 4,
   },
@@ -606,6 +669,7 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     borderWidth: 1,
     borderColor: '#e5e7eb',
+    marginBottom: 36,
   },
 
   providerRow: {
@@ -660,10 +724,9 @@ const styles = StyleSheet.create({
   // ── Password section ──
   passwordSection: {
     backgroundColor: '#ffffff',
-    borderRadius: 16,
-    overflow: 'hidden',
-    borderWidth: 0.5,
-    borderColor: '#e5e7eb',
+    borderRadius: 24,
+    borderWidth: 1,
+    borderColor: '#e5e5ea',
   },
 
   passwordHeader: {
@@ -681,7 +744,7 @@ const styles = StyleSheet.create({
   inputWrap: {
     flexDirection: 'row',
     alignItems: 'center',
-    height: 52,
+    height: 50,
     borderRadius: 12,
     borderWidth: 1,
     borderColor: '#e5e7eb',

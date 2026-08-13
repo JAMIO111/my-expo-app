@@ -187,13 +187,13 @@ const Account = () => {
             <MenuContainer>
               <SettingsItem
                 routerPath="/settings/PersonalDetails"
-                iconBGColor="gray"
+                iconBGColor="blue"
                 title="Personal Information"
                 icon="id-card-outline"
               />
               <SettingsItem
                 routerPath="/settings/SignInAndSecurity"
-                iconBGColor="gray"
+                iconBGColor="orange"
                 title="Sign-In & Security"
                 icon="key-outline"
                 lastItem={roles.length > 1 ? false : true}
@@ -202,7 +202,8 @@ const Account = () => {
                 <Pressable className="w-full" onPress={() => console.log('Switch Role')}>
                   <SettingsItem
                     callbackFn={openSwitchRoleBottomSheet}
-                    iconBGColor="gray"
+                    iconBGColor="green"
+                    text={`Current: ${currentRole?.type === 'admin' ? currentRole?.district?.name : currentRole?.team?.display_name}`}
                     title="Switch Role"
                     icon="shield-checkmark-outline"
                     lastItem
@@ -210,16 +211,17 @@ const Account = () => {
                 </Pressable>
               )}
             </MenuContainer>
-          </View>
-
-          {/* Sign Out button */}
-          <View className="my-10">
-            <CTAButton
-              type="error"
-              text={isSigningOut ? 'Signing Out...' : 'Sign Out'}
-              callbackFn={handleSignOut}
-              disabled={isSigningOut}
-            />
+            <MenuContainer>
+              <SettingsItem
+                iconBGColor="red"
+                textColor="text-theme-red"
+                title={isSigningOut ? 'Logging Out...' : 'Log Out'}
+                icon="power"
+                callbackFn={handleSignOut}
+                disabled={isSigningOut}
+                lastItem
+              />
+            </MenuContainer>
           </View>
         </View>
       </ScrollView>

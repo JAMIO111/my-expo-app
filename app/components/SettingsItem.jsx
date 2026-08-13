@@ -8,8 +8,10 @@ import Avatar from './Avatar';
 
 const SettingsItem = ({
   title,
+  titleColor,
   icon,
   text,
+  textColor,
   routerPath,
   iconBGColor = 'gray',
   iconColor = '#fff',
@@ -45,7 +47,7 @@ const SettingsItem = ({
       {({ pressed }) => (
         <View className="w-full">
           <View
-            className={`flex-row items-center gap-3 px-4 py-3 ${
+            className={`flex-row items-center gap-3 px-4 py-4 ${
               pressed ? 'bg-theme-gray-5' : 'bg-bg-grouped-2'
             }`}>
             {icon ? (
@@ -62,7 +64,7 @@ const SettingsItem = ({
               numberOfLines={1}
               ellipsizeMode="tail"
               style={{ flexShrink: 0 }}
-              className={`${text ? '' : 'flex-1'} pl-2 text-lg font-medium text-text-1`}>
+              className={`${text ? '' : 'flex-1'} pl-2 text-lg font-medium ${titleColor ? titleColor : 'text-text-1'}`}>
               {title}
             </Text>
 
@@ -71,7 +73,7 @@ const SettingsItem = ({
                 numberOfLines={1}
                 ellipsizeMode="tail"
                 adjustsFontSizeToFit={true}
-                className="text ml-2 flex-1 text-right text-lg text-text-2">
+                className={`text ml-2 flex-1 text-right text-lg ${textColor ? textColor : 'text-text-2'}`}>
                 {text}
               </Text>
             )}
@@ -82,7 +84,8 @@ const SettingsItem = ({
 
           {!lastItem && (
             <View
-              className={`${icon ? 'ml-16' : 'ml-5'} h-[0.5px] w-full ${!pressed ? 'bg-separator' : 'bg-transparent'}`}
+              style={{ marginRight: 16, height: 0.5 }}
+              className={`${icon ? 'ml-16' : 'ml-5'} ${!pressed ? 'bg-separator' : 'bg-transparent'}`}
             />
           )}
         </View>
