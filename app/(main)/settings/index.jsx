@@ -10,6 +10,8 @@ import NavBar from '@components/NavBar2';
 const index = () => {
   const { currentRole, player } = useUser();
 
+  console.log('Current Role in Settings Index:', currentRole, 'Player Info:', player);
+
   return (
     <SafeViewWrapper topColor="bg-brand" bottomColor="bg-brand" useBottomInset={true}>
       <Stack.Screen
@@ -32,7 +34,7 @@ const index = () => {
             title="Account"
             icon="person-outline"
           />
-          {currentRole?.type === 'player' && currentRole?.team?.captain === player?.id && (
+          {currentRole?.type === 'player' && currentRole?.role === 'captain' && (
             <SettingsItem
               routerPath="/settings/TeamManagement"
               iconBGColor="green"

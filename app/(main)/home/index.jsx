@@ -28,6 +28,7 @@ import { useNotificationsPanel } from '@contexts/NotificationsPanelProvider';
 import TicketCard from '@components/TicketCard';
 import TicketCarousel from '@components/TicketCarousel';
 import Heading from '@components/Heading';
+import TicketTapeBanner from '@components/TicketTapeBanner';
 
 const Home = () => {
   const { isPro, isCore } = useRevenueCat();
@@ -259,7 +260,7 @@ const Home = () => {
   return (
     <SafeViewWrapper topColor="bg-brand" bottomColor="bg-brand">
       <StatusBar style="light" backgroundColor="#000" />
-      <View className="flex-1">
+      <View className="flex-1 bg-brand">
         <Stack.Screen
           options={{
             header: () => (
@@ -279,14 +280,16 @@ const Home = () => {
               tintColor="#fff" // iOS spinner color
             />
           }
-          className="mt-16 flex-1 bg-brand"
-          contentContainerStyle={{ justifyContent: 'center' }}>
+          className="mt-16 flex-1 rounded-t-3xl bg-bg-2 pt-4"
+          contentContainerStyle={{
+            justifyContent: 'center',
+          }}>
           <View className="">
             <View className="w-full items-center justify-center gap-4 p-0 pb-5">
               {currentRole?.team && (
                 <>
                   <View className="w-full items-center justify-between">
-                    <Text className="mb-2 w-full px-3 text-left font-saira-semibold text-xl text-white">
+                    <Text className="mb-2 w-full px-4 text-left font-saira-semibold text-xl text-text-1">
                       {currentRole?.team?.display_name} Fixtures
                     </Text>
                     <HorizontalScrollUpcomingFixtures
@@ -294,7 +297,14 @@ const Home = () => {
                       isLoading={isUpcomingFixturesLoading}
                     />
                   </View>
-                  <View className="mb-2 h-1 w-full items-center justify-between border-b border-brand-light"></View>
+                  <TicketTapeBanner
+                    items={[
+                      { id: 1, text: 'Division 2 fixtures released', icon: 'calendar-outline' },
+                      { id: 2, text: 'New season starts 1st Sept', icon: 'trophy-outline' },
+                      { id: 3, text: 'Jake Smith reached rank #4', icon: 'trending-up-outline' },
+                    ]}
+                    speed={35}
+                  />
                 </>
               )}
               <View className="w-full items-center justify-center gap-4 px-3">
@@ -318,7 +328,7 @@ const Home = () => {
                 <TicketCarousel
                   tickets={[
                     {
-                      title: 'You have been invited to join Shankhouse B Team!',
+                      title: 'You have been invited to join Shankhouse B Team on tomorrow wow!',
                       accentColor: '#C96F3C',
                     },
                     {

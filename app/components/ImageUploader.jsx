@@ -18,6 +18,14 @@ const ImageUploader = forwardRef(
   ) => {
     const [imageUri, setImageUri] = useState(initialUri);
     const [containerWidth, setContainerWidth] = useState(0);
+    const [status, setStatus] = useState(null);
+
+    useEffect(() => {
+      (async () => {
+        const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+        setStatus(status);
+      })();
+    }, []);
 
     const [aspectW, aspectH] = aspectRatio;
     const isSquare = aspectW === aspectH;
@@ -27,14 +35,13 @@ const ImageUploader = forwardRef(
     }, [initialUri]);
 
     const pickImage = async () => {
-      const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
       if (status !== 'granted') {
         return Alert.alert('Permission Denied', 'You need to allow media access.');
       }
 
       const result = await ImagePicker.launchImageLibraryAsync({
         mediaTypes: ['images'],
-        allowsEditing: true,
+        allowsEditing: false,
         aspect: aspectRatio,
         quality: 1,
       });

@@ -146,8 +146,8 @@ const PlayerProfile = ({ context, isLoading, playerProfile, error }) => {
       } else {
         Toast.show({
           type: 'success',
-          text1: 'Success',
-          text2: 'Your team captain has been changed.',
+          text1: 'Captaincy Transferred',
+          text2: `${playerProfile?.first_name} ${playerProfile?.surname} has been promoted to team captain.`,
           props: {
             colorScheme: colorScheme,
             position: 'top',
@@ -196,8 +196,8 @@ const PlayerProfile = ({ context, isLoading, playerProfile, error }) => {
       } else {
         Toast.show({
           type: 'success',
-          text1: 'Success',
-          text2: 'Your vice captain has been changed.',
+          text1: 'Vice Captaincy Transferred',
+          text2: `${playerProfile?.first_name} ${playerProfile?.surname} has been promoted to vice captain.`,
           props: {
             colorScheme: colorScheme,
             position: 'top',
@@ -226,11 +226,12 @@ const PlayerProfile = ({ context, isLoading, playerProfile, error }) => {
 
   const handlePlayerRemove = async () => {
     try {
-      const { error } = await supabase.rpc('remove_player_from_team', {
-        p_team_id: currentTeam.team_id,
-        p_player_id: playerProfile.id,
+      const { error } = await supabase.rpc('leave_team', {
+        _player_id: playerProfile.id,
+        _team_id: currentTeam.team_id,
       });
       if (error) {
+        console.error('Leaving error:', error);
         Toast.show({
           type: 'error',
           text1: 'Update Failed',
@@ -245,6 +246,15 @@ const PlayerProfile = ({ context, isLoading, playerProfile, error }) => {
       queryClient.invalidateQueries(['PlayerProfile', playerProfile.id]);
       queryClient.invalidateQueries(['TeamPlayers', currentTeam.team_id]);
       queryClient.invalidateQueries(['authUserProfile']);
+      Toast.show({
+        type: 'success',
+        text1: 'Left Successfully',
+        text2: `${isMe ? 'You have ' : `${playerProfile?.first_name} has `} been removed from ${currentTeam?.display_name}.`,
+        props: {
+          colorScheme: colorScheme,
+          position: 'top',
+        },
+      });
     } catch (err) {
       Toast.show({
         type: 'error',

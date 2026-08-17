@@ -141,8 +141,9 @@ const LeagueTableWrapper = ({ context }) => {
     <View className="flex-1">
       <ScrollView
         contentContainerStyle={{ alignItems: 'center', justifyContent: 'flex-start' }}
+        showsVerticalScrollIndicator={false}
         className="w-full bg-brand-dark">
-        <View className="h-fit w-full items-center justify-between gap-3 border-b border-brand bg-brand-dark p-3">
+        <View className="h-fit w-full items-center justify-between gap-3 bg-brand-dark p-3">
           <View className="flex-row gap-3">
             <DropdownFilterButton
               text={district?.name || 'Select District'}

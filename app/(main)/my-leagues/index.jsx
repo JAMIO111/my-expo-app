@@ -11,11 +11,13 @@ import { ScrollView } from 'react-native-gesture-handler';
 import SeasonControlCard from '@components/SeasonControlCard';
 import Toast from 'react-native-toast-message';
 import TeamJoinRequests from '@components/TeamJoinRequests';
+import { usePlayerRankings } from '@hooks/usePlayerRankings';
 
 const index = () => {
   const router = useRouter();
   const { loading, currentRole } = useUser();
   const { data: teamProfile, isLoading } = useTeamProfile(currentRole?.team?.id);
+  const { data: playerRankings, isLoading: isRankingsLoading } = usePlayerRankings();
 
   console.log('Debug Team Profile:', teamProfile);
   console.log('Current Role in My Leagues:', currentRole);

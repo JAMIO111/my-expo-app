@@ -21,7 +21,7 @@ const ResultsHomeCard = ({ result }) => {
         }, 500); // Reset navigation state after 500ms
         router.push('/home/results');
       }}
-      className="w-full rounded-2xl border border-theme-gray-5 bg-bg-grouped-2 shadow"
+      className="w-full rounded-2xl bg-bg-grouped-2 shadow-sm"
       style={{ minHeight: 100 }} // prevents vertical collapse
     >
       <View className="mx-3 flex-row items-center justify-between border-b border-theme-gray-5 px-1 pb-1 pt-2">

@@ -36,30 +36,92 @@ const EntityStats = ({ entityId, entityType }) => {
         <Text className="mb-2 font-saira-semibold text-3xl text-text-1">{title}</Text>
 
         <View className="mb-8 w-full flex-row items-center justify-between gap-8">
-          <View className="gap-3 rounded-full border border-theme-gray-5 bg-bg-2 p-2 shadow-sm">
+          <View className="relative rounded-full border border-theme-gray-5 bg-bg-2 p-1">
+            {/* Dark inner edge */}
+            <View
+              pointerEvents="none"
+              className="absolute inset-0 rounded-full border-l-2 border-t-2 border-black/15"
+            />
+
+            {/* Light inner edge */}
+            <View
+              pointerEvents="none"
+              className="absolute inset-0 rounded-full border-b-2 border-r-2 border-white/60"
+            />
+
             <DonutChart wins={won} draws={drawn} losses={lost} statTitle={`${title} Played`} />
           </View>
 
-          <View className="flex-1 gap-3 rounded-2xl border border-theme-gray-5 bg-bg-2 px-4 py-3 shadow-sm">
-            <StatRow label="Won" value={won} color="bg-green-700" />
-            <Divider />
-            <StatRow label="Drawn" value={drawn} color="bg-yellow-500" />
-            <Divider />
-            <StatRow label="Lost" value={lost} color="bg-red-500" />
+          <View
+            style={{ borderRadius: 15 }}
+            className="relative flex-1 overflow-hidden border border-theme-gray-4 bg-bg-2 px-4 py-3">
+            {/* Dark inner edge — top/left */}
+            <View
+              pointerEvents="none"
+              style={{ borderTopWidth: 2, borderLeftWidth: 2, borderColor: 'rgba(0, 0, 0, 0.15)' }}
+              className="absolute inset-0 rounded-2xl"
+            />
+
+            {/* Light inner edge — bottom/right */}
+            <View
+              pointerEvents="none"
+              style={{
+                borderBottomWidth: 2,
+                borderRightWidth: 2,
+                borderColor: 'rgba(255, 255, 255, 0.5)',
+              }}
+              className="absolute inset-0 rounded-2xl"
+            />
+
+            <View className="gap-2">
+              <StatRow label="Won" value={won} color="bg-green-700" />
+              <Divider />
+              <StatRow label="Drawn" value={drawn} color="bg-yellow-500" />
+              <Divider />
+              <StatRow label="Lost" value={lost} color="bg-red-500" />
+            </View>
           </View>
         </View>
 
-        <View className="mt-2 flex flex-row gap-8 rounded-2xl border border-theme-gray-5 bg-bg-2 px-2 py-6 shadow-sm">
-          <StatBlock label="Win Rate" value={`${winPercent}%`} />
-          <StatBlock label="Best Win Streak" value={bestStreak} />
-          <StatBlock
-            label="Current Win Streak"
-            value={
-              currentStreak > 0 && currentStreak === bestStreak
-                ? `${currentStreak} 🔥`
-                : currentStreak
-            }
+        <View
+          style={{ borderRadius: 15 }}
+          className="relative mt-2 overflow-hidden border border-theme-gray-4 bg-bg-2 px-2 py-6">
+          {/* Dark inner edge — top/left */}
+          <View
+            pointerEvents="none"
+            style={{
+              borderTopWidth: 2,
+              borderLeftWidth: 2,
+              borderColor: 'rgba(0, 0, 0, 0.15)',
+            }}
+            className="absolute inset-0 rounded-2xl"
           />
+
+          {/* Light inner edge — bottom/right */}
+          <View
+            pointerEvents="none"
+            style={{
+              borderBottomWidth: 2,
+              borderRightWidth: 2,
+              borderColor: 'rgba(255, 255, 255, 0.5)',
+            }}
+            className="absolute inset-0 rounded-2xl"
+          />
+
+          <View className="flex flex-row gap-8">
+            <StatBlock label="Win Rate" value={`${winPercent}%`} />
+
+            <StatBlock label="Best Win Streak" value={bestStreak} />
+
+            <StatBlock
+              label="Current Win Streak"
+              value={
+                currentStreak > 0 && currentStreak === bestStreak
+                  ? `${currentStreak} 🔥`
+                  : currentStreak
+              }
+            />
+          </View>
         </View>
       </View>
     );

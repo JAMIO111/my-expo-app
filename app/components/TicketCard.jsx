@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { View, Text, ViewStyle, Pressable } from 'react-native';
+import { View, Text, ViewStyle, Pressable, Image } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import Svg, { Line } from 'react-native-svg';
 import { useFonts } from 'expo-font';
@@ -12,7 +12,6 @@ export default function TicketCard({
   eyebrowSub = 'From John Dryden',
   title = 'You have been invited to join Shankhouse B Team!',
   stubLabel = 'Click the button below to handle the invitation.',
-  price = '$0',
   requirements = [],
   footerLabel = 'Invitation issued 16/04/2026',
   barcodeValue = '06a83fab-122b-4ad8-ae34-73f7c6b3b839',
@@ -40,64 +39,33 @@ export default function TicketCard({
   return (
     <View
       className="w-full overflow-hidden rounded-[18px] shadow-sm"
-      style={[{ backgroundColor: accentColor, height: 550 }, style]}>
+      style={[{ backgroundColor: accentColor, height: 510 }, style]}>
       {/* ---- Top stub ---- */}
       <View style={[{ backgroundColor: darkenedAccent }]} className="px-[18px] pb-4 pt-4">
-        <Text
-          className="font-saira-bold text-[14px] tracking-wide"
-          style={{ color: hexWithAlpha(fg, 0.7) }}>
-          {eyebrow}
-        </Text>
-        <Text className="font-saira-medium text-[12px]" style={{ color: hexWithAlpha(fg, 0.55) }}>
-          {eyebrowSub}
-        </Text>
+        <View className="flex-row items-center justify-between">
+          <View className="flex-1">
+            <Text
+              className="font-saira-bold text-[14px] tracking-wide"
+              style={{ color: hexWithAlpha(fg, 0.7) }}>
+              {eyebrow}
+            </Text>
+            <Text
+              className="font-saira-medium text-[12px]"
+              style={{ color: hexWithAlpha(fg, 0.55) }}>
+              {eyebrowSub}
+            </Text>
+          </View>
+          <Image
+            source={require('../assets/Break-Room-Logo-1024-Background-removebg.png')}
+            style={{ width: 40, height: 40, opacity: 0.6 }}
+          />
+        </View>
       </View>
 
-      <View className="flex-1 px-[18px] pb-5 pt-6">
-        <Text className="flex-1 font-michroma" style={{ color: fg, fontSize: 30, lineHeight: 40 }}>
+      <View className="flex-1 px-4 py-4">
+        <Text className="flex-1 font-michroma" style={{ color: fg, fontSize: 26, lineHeight: 40 }}>
           {title}
         </Text>
-        <Text className="mt-3.5 font-saira text-[13px]" style={{ color: hexWithAlpha(fg, 0.75) }}>
-          {stubLabel}
-        </Text>
-        <View>
-          {!handling && (
-            <Pressable
-              className="mt-4 flex-row items-center justify-center gap-3 rounded-xl border border-white/50 bg-bg-1/10 px-4 py-3 pr-8"
-              onPress={() => setHandling(true)}>
-              <Ionicons name="ticket-outline" size={20} color={fg} />
-              <Text className="text-center font-saira-semibold text-[14px]" style={{ color: fg }}>
-                Handle Invitation
-              </Text>
-            </Pressable>
-          )}
-          {handling && (
-            <View className="flex-row items-center justify-between gap-3">
-              <Pressable
-                className="mt-4 flex-1 flex-row items-center justify-center gap-3 rounded-xl border border-white/50 bg-bg-1/10 px-4 py-3 pr-8"
-                onPress={() => {
-                  setHandling(false);
-                  onDecline();
-                }}>
-                <Ionicons name="close-outline" size={20} color={'red'} />
-                <Text className="text-center font-saira-semibold text-[14px]" style={{ color: fg }}>
-                  Decline
-                </Text>
-              </Pressable>
-              <Pressable
-                className="mt-4 flex-1 flex-row items-center justify-center gap-3 rounded-xl border border-white/50 bg-bg-1/10 px-4 py-3 pr-8"
-                onPress={() => {
-                  setHandling(false);
-                  onAccept();
-                }}>
-                <Ionicons name="checkmark-outline" size={20} color={'green'} />
-                <Text className="text-center font-saira-semibold text-[14px]" style={{ color: fg }}>
-                  Accept
-                </Text>
-              </Pressable>
-            </View>
-          )}
-        </View>
       </View>
 
       {/* ---- Perforation with tear notches ---- */}
@@ -141,18 +109,47 @@ export default function TicketCard({
 
       {/* ---- Bottom section ---- */}
       <View className="px-[18px] pb-[18px] pt-[18px]">
-        {!!price && (
-          <View className="mb-2.5">
-            <Text
-              className="mb-1 font-saira-bold text-[11px]"
-              style={{ color: hexWithAlpha(fg, 0.6) }}>
-              Price
-            </Text>
-            <Text className="font-saira-bold text-xl" style={{ color: fg }}>
-              {price}
-            </Text>
-          </View>
-        )}
+        <Text className="font-saira text-[11px]" style={{ color: hexWithAlpha(fg, 0.75) }}>
+          {stubLabel}
+        </Text>
+        <View className="pb-6">
+          {!handling && (
+            <Pressable
+              className="mt-4 flex-row items-center justify-center gap-3 rounded-xl border border-white/50 bg-bg-1/10 px-4 py-3 pr-8"
+              onPress={() => setHandling(true)}>
+              <Ionicons name="ticket-outline" size={20} color={fg} />
+              <Text className="text-center font-saira-semibold text-[14px]" style={{ color: fg }}>
+                Handle Invitation
+              </Text>
+            </Pressable>
+          )}
+          {handling && (
+            <View className="flex-row items-center justify-between gap-3">
+              <Pressable
+                className="mt-4 flex-1 flex-row items-center justify-center gap-3 rounded-xl border border-white/50 bg-bg-1/10 px-4 py-3 pr-8"
+                onPress={() => {
+                  setHandling(false);
+                  onDecline();
+                }}>
+                <Ionicons name="close-outline" size={20} color={'red'} />
+                <Text className="text-center font-saira-semibold text-[14px]" style={{ color: fg }}>
+                  Decline
+                </Text>
+              </Pressable>
+              <Pressable
+                className="mt-4 flex-1 flex-row items-center justify-center gap-3 rounded-xl border border-white/50 bg-bg-1/10 px-4 py-3 pr-8"
+                onPress={() => {
+                  setHandling(false);
+                  onAccept();
+                }}>
+                <Ionicons name="checkmark-outline" size={20} color={'green'} />
+                <Text className="text-center font-saira-semibold text-[14px]" style={{ color: fg }}>
+                  Accept
+                </Text>
+              </Pressable>
+            </View>
+          )}
+        </View>
 
         {requirements.length > 0 && (
           <View className="mb-4">

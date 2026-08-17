@@ -26,9 +26,12 @@ const index = () => {
 
   const playerValid =
     competitorType === 'team'
-      ? player?.id === currentRole?.team?.captain &&
-        currentRole?.team.id === fixtureDetails?.homeCompetitor?.id
+      ? currentRole?.role === 'captain' &&
+        currentRole?.team?.id === fixtureDetails?.homeCompetitor?.id
       : player?.id === fixtureDetails?.homeCompetitor?.id;
+
+  console.log('Fixture Valid:', fixtureValid);
+  console.log('Player Valid:', playerValid);
 
   const canSubmit = fixtureValid && playerValid;
 

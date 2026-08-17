@@ -40,7 +40,7 @@ const LeagueHomeCard = ({ standings }) => {
         }, 500); // Reset navigation state after 500ms
         router.push('/home/league');
       }}
-      className={`h-28 w-full rounded-2xl border border-theme-gray-5 bg-bg-grouped-2 shadow`}>
+      className={`h-28 w-full rounded-2xl bg-bg-grouped-2 shadow-sm`}>
       <View className="mx-3 flex-row items-center justify-between border-b border-theme-gray-5 px-1 pb-1 pt-2">
         <Text className="font-saira-medium text-2xl text-text-1">
           League Table{' '}

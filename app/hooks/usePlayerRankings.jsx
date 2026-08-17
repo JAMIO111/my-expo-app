@@ -18,5 +18,7 @@ export const usePlayerRankings = ({ districtId = null, divisionId = null } = {})
 
       return data;
     },
+    staleTime: 15 * 60 * 1000, // 5 minutes
+    gCTime: 60 * 60 * 1000, // 1 hour
   });
 };

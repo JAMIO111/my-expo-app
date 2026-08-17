@@ -113,19 +113,40 @@ const DivisionsList = ({ districtId }) => {
                     },
                   });
                 }}
-                className="w-full flex-row items-center justify-between rounded-2xl bg-bg-2 p-2 shadow-sm">
-                <View className="flex-row items-center gap-4">
-                  {romanNumerals[division.tier] && (
-                    <Image
-                      source={romanNumerals[division.tier]}
-                      style={{ width: 40, height: 48 }}
-                      resizeMode="contain"
-                    />
-                  )}
-                  <Text className="font-saira-semibold text-xl text-text-1">{division.name}</Text>
-                </View>
+                className="shadow-sm">
+                {/* Tier accent strip */}
+                <View className="w-full flex-row items-center justify-between overflow-hidden rounded-2xl bg-bg-2">
+                  <View className="h-full w-1.5 bg-brand" />
 
-                <Ionicons name="chevron-forward-outline" size={22} color="gray" />
+                  <View className="flex-1 flex-row items-center justify-between p-4">
+                    <View className="flex-row items-center gap-4">
+                      {romanNumerals[division.tier] && (
+                        <View className="h-14 w-14 items-center justify-center rounded-xl bg-bg-grouped-2">
+                          <Image
+                            source={romanNumerals[division.tier]}
+                            style={{ width: 32, height: 40 }}
+                            resizeMode="contain"
+                          />
+                        </View>
+                      )}
+
+                      <View>
+                        <Text className="font-saira-semibold text-xl text-text-1">
+                          {division.name}
+                        </Text>
+                        {division.teamCount != null && (
+                          <Text className="font-saira text-sm text-text-2">
+                            {division.teamCount} {division.teamCount === 1 ? 'team' : 'teams'}
+                          </Text>
+                        )}
+                      </View>
+                    </View>
+
+                    <View className="h-9 w-9 items-center justify-center rounded-full bg-bg-grouped-2">
+                      <Ionicons name="chevron-forward-outline" size={18} color="#d4922a" />
+                    </View>
+                  </View>
+                </View>
               </Pressable>
             ))}
           </View>

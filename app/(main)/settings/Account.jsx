@@ -17,6 +17,7 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import colors from '@lib/colors';
 import TeamLogo from '@components/TeamLogo';
 import Purchases from 'react-native-purchases';
+import { ShieldCheck } from 'lucide-react-native';
 
 const Account = () => {
   const [isSigningOut, setIsSigningOut] = useState(false);
@@ -277,11 +278,7 @@ const Account = () => {
                 onPress={() => setTempRole(r)}>
                 <View className="flex-row items-center gap-5">
                   {r.type === 'admin' ? (
-                    <Ionicons
-                      name="shield-checkmark-outline"
-                      size={40}
-                      color={themeColors.primaryText}
-                    />
+                    <ShieldCheck size={40} color={themeColors.primaryText} />
                   ) : (
                     <TeamLogo
                       thickness={r.team?.crest?.thickness}

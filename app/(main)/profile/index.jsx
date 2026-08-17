@@ -17,11 +17,13 @@ import CachedImage from '@components/CachedImage';
 import usePlayerBadges from '@hooks/usePlayerBadges';
 import { BlurView } from 'expo-blur';
 import ProGate from '@components/ProGate';
+import { useGlobalRank } from '@hooks/useGlobalRank';
 
 const ProfilePage = () => {
   const router = useRouter();
   const { user, player, currentRole } = useUser();
   const { data: playerStats, isLoading: isStatsLoading } = usePlayerStats(player?.id);
+  const { data: globalRank, isLoading: isGlobalRankLoading } = useGlobalRank(player?.id);
   const { badges } = usePlayerBadges(player?.id);
   const [view, setView] = useState('left');
   console.log('Badges:', badges);
@@ -118,7 +120,9 @@ const ProfilePage = () => {
                 <View className="flex-1 items-center">
                   <Ionicons name="earth" size={24} color="white" />
                   <Text className="text-center font-saira text-xl text-gray-300">Rank</Text>
-                  <Text className="text-center font-saira-semibold text-2xl text-white">#23</Text>
+                  <Text className="text-center font-saira-semibold text-2xl text-white">
+                    {isGlobalRankLoading ? '...' : (globalRank?.rank ?? 'N/A')}
+                  </Text>
                 </View>
               </View>
             </View>

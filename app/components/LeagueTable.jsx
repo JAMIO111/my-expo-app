@@ -38,7 +38,7 @@ const LeagueTable = ({ context, season, division }) => {
   if (!isLoading && !isFetching && hasNoStandings) {
     return (
       <View className="mt-4 w-full flex-1 items-center justify-center px-3">
-        <View className="w-full gap-5 rounded-3xl border border-theme-gray-5 bg-bg-grouped-2 px-10 py-16">
+        <View className="w-full gap-5 rounded-3xl bg-bg-grouped-2 px-10 py-16 shadow-sm">
           <Text className="w-full text-center font-saira-medium text-lg text-text-1">
             No standings available yet for this season.
           </Text>
@@ -50,9 +50,9 @@ const LeagueTable = ({ context, season, division }) => {
     );
   }
   return (
-    <View className="w-full flex-1 items-center bg-bg-grouped-1 p-3">
-      <View className="mb-16 w-full rounded-2xl border border-theme-gray-4 bg-bg-grouped-2">
-        <Text className="w-full border-b border-theme-gray-4 p-2 pb-1 pl-3 text-left font-saira-semibold text-xl text-text-1">
+    <View className="w-full flex-1 items-center rounded-t-3xl bg-bg-grouped-2 p-1">
+      <View className="mb-20 w-full rounded-3xl bg-bg-grouped-2">
+        <Text className="w-full border-b border-theme-gray-5 p-3 pb-1 text-left font-saira-semibold text-xl text-text-1">
           {standings?.division?.name} Standings
         </Text>
         <View className="flex-row items-center justify-around p-2">
