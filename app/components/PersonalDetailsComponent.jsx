@@ -202,7 +202,7 @@ const PersonalDetailsComponent = () => {
           />
         </MenuContainer>
 
-        <View className="w-full rounded-2xl border border-theme-gray-5 bg-bg-grouped-2">
+        <View className="w-full rounded-3xl bg-bg-grouped-2">
           <Pressable
             onPress={() => setShowGenderPicker((prev) => !prev)}
             className="flex-row items-center justify-between px-4 py-4">
@@ -220,9 +220,9 @@ const PersonalDetailsComponent = () => {
           </Pressable>
 
           {showGenderPicker && (
-            <View className="gap-2 px-4 pb-2">
+            <View className="">
               <Pressable
-                className="flex-row items-center justify-between gap-4 border-t border-theme-gray-5 pt-4"
+                className={`flex-row items-center justify-between gap-4 p-4 ${gender === 'male' ? 'bg-theme-gray-5' : ''}`}
                 onPress={() => {
                   setGender('male');
                   setShowGenderPicker(false);
@@ -231,7 +231,7 @@ const PersonalDetailsComponent = () => {
                 <Ionicons name="male" size={22} color="blue" />
               </Pressable>
               <Pressable
-                className="mt-2 flex-row items-center justify-between gap-4 border-t border-theme-gray-5 pt-4"
+                className={`mt-2 flex-row items-center justify-between gap-4 p-4 ${gender === 'female' ? 'bg-theme-gray-5' : ''}`}
                 onPress={() => {
                   setGender('female');
                   setShowGenderPicker(false);
@@ -240,7 +240,8 @@ const PersonalDetailsComponent = () => {
                 <Ionicons name="female" size={22} color="red" />
               </Pressable>
               <Pressable
-                className="mt-2 flex-row items-center justify-between gap-4 border-t border-theme-gray-5 py-4"
+                style={{ borderBottomLeftRadius: 20, borderBottomRightRadius: 20 }}
+                className={`mt-2 flex-row items-center justify-between gap-4 p-4 ${gender === null ? 'bg-theme-gray-5' : ''}`}
                 onPress={() => {
                   setGender(null);
                   setShowGenderPicker(false);
@@ -261,7 +262,7 @@ const PersonalDetailsComponent = () => {
           </Text>
         </View>
 
-        <View className="w-full rounded-2xl border border-theme-gray-5 bg-bg-grouped-2">
+        <View className="w-full rounded-3xl bg-bg-grouped-2">
           <Pressable
             onPress={() => setShowDatePicker((prev) => !prev)}
             className="flex-row items-center justify-between px-4 py-4">

@@ -175,30 +175,9 @@ const Account = () => {
                   Change Avatar
                 </Text>
               </Pressable>
-              <View className="mt-8 items-center gap-2">
-                <Text style={{ lineHeight: 40 }} className="font-saira-medium text-4xl text-text-1">
-                  {player?.first_name} {player?.surname}
-                </Text>
-                <Text className="flex items-center justify-center rounded-lg bg-theme-gray-4 px-4 pt-2 text-center font-saira-medium text-3xl text-text-2">
-                  {player?.nickname?.toUpperCase() || initials?.toUpperCase()}
-                </Text>
-              </View>
             </View>
 
             <MenuContainer>
-              <SettingsItem
-                routerPath="/settings/PersonalDetails"
-                iconBGColor="blue"
-                title="Personal Information"
-                icon="id-card-outline"
-              />
-              <SettingsItem
-                routerPath="/settings/SignInAndSecurity"
-                iconBGColor="orange"
-                title="Sign-In & Security"
-                icon="key-outline"
-                lastItem={roles.length > 1 ? false : true}
-              />
               {roles.length > 1 && (
                 <Pressable className="w-full" onPress={() => console.log('Switch Role')}>
                   <SettingsItem
@@ -211,17 +190,6 @@ const Account = () => {
                   />
                 </Pressable>
               )}
-            </MenuContainer>
-            <MenuContainer>
-              <SettingsItem
-                iconBGColor="red"
-                textColor="text-theme-red"
-                title={isSigningOut ? 'Logging Out...' : 'Log Out'}
-                icon="power"
-                callbackFn={handleSignOut}
-                disabled={isSigningOut}
-                lastItem
-              />
             </MenuContainer>
           </View>
         </View>

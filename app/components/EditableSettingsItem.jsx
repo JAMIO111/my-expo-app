@@ -68,13 +68,6 @@ const EditableSettingsItem = ({
 
             {routerPath && <IonIcons name="chevron-forward" size={18} color={themeColors.icon} />}
           </View>
-
-          {!lastItem && (
-            <View
-              style={{ marginRight: 16, height: 0.5 }}
-              className={`${icon ? 'ml-16' : 'ml-5'} ${!pressed ? 'bg-separator' : 'bg-transparent'}`}
-            />
-          )}
         </View>
       )}
     </Pressable>

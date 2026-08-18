@@ -99,6 +99,7 @@ const styles = StyleSheet.create({
     width: '100%',
     overflow: 'hidden',
     justifyContent: 'center',
+    marginVertical: 32,
   },
   track: {
     flexDirection: 'row',

@@ -1,10 +1,46 @@
 import { Pressable, Text, View, Linking } from 'react-native';
 import { useRef } from 'react';
-import IonIcons from 'react-native-vector-icons/Ionicons';
 import { useRouter } from 'expo-router';
 import { useColorScheme } from 'react-native';
 import colors from '@lib/colors';
 import Avatar from './Avatar';
+import {
+  User,
+  Users,
+  Bell,
+  CircleQuestionMark,
+  Info,
+  IdCard,
+  KeyRound,
+  ChevronRight,
+  ExternalLink,
+  FileText,
+  Eye,
+  LogOut,
+  MessageCircleQuestionMark,
+  Trash,
+  Wallet,
+  CalendarCog,
+  Scale,
+} from 'lucide-react-native';
+
+const iconMap = {
+  user: User,
+  users: Users,
+  bell: Bell,
+  question: CircleQuestionMark,
+  info: Info,
+  idCard: IdCard,
+  keyRound: KeyRound,
+  fileText: FileText,
+  eye: Eye,
+  logout: LogOut,
+  messageCircleQuestionMark: MessageCircleQuestionMark,
+  trash: Trash,
+  wallet: Wallet,
+  calendarCog: CalendarCog,
+  scale: Scale,
+};
 
 const SettingsItem = ({
   title,
@@ -14,8 +50,7 @@ const SettingsItem = ({
   textColor,
   routerPath,
   iconBGColor = 'gray',
-  iconColor = '#fff',
-  lastItem = false,
+  iconColor = '#333',
   disabled = false,
   callbackFn,
   player,
@@ -25,6 +60,8 @@ const SettingsItem = ({
   const themeColors = colors[colorScheme];
   const router = useRouter();
   const hasNavigated = useRef(false);
+
+  const Icon = icon ? iconMap[icon] : null;
 
   const handlePress = () => {
     if (hasNavigated.current) return;
@@ -41,6 +78,7 @@ const SettingsItem = ({
 
   return (
     <Pressable
+      style={{ pointerEvents: disabled ? 'none' : 'auto' }}
       disabled={disabled}
       onPress={routerPath || link ? handlePress : callbackFn}
       className="w-full">
@@ -50,12 +88,8 @@ const SettingsItem = ({
             className={`flex-row items-center gap-3 px-4 py-4 ${
               pressed ? 'bg-theme-gray-5' : 'bg-bg-grouped-2'
             }`}>
-            {icon ? (
-              <View
-                className="h-9 w-9 items-center justify-center rounded-[10px]"
-                style={{ backgroundColor: iconBGColor }}>
-                <IonIcons name={icon} size={22} color={iconColor} />
-              </View>
+            {Icon ? (
+              <Icon size={24} color={iconColor} strokeWidth={2} />
             ) : player ? (
               <Avatar size={40} player={player} />
             ) : null}
@@ -78,16 +112,9 @@ const SettingsItem = ({
               </Text>
             )}
 
-            {routerPath && <IonIcons name="chevron-forward" size={18} color={themeColors?.icon} />}
-            {link && <IonIcons name="open-outline" size={26} color={themeColors?.icon} />}
+            {routerPath && <ChevronRight size={18} color={themeColors?.icon} />}
+            {link && <ExternalLink size={24} color="#444" />}
           </View>
-
-          {!lastItem && (
-            <View
-              style={{ marginRight: 16, height: 0.5 }}
-              className={`${icon ? 'ml-16' : 'ml-5'} ${!pressed ? 'bg-separator' : 'bg-transparent'}`}
-            />
-          )}
         </View>
       )}
     </Pressable>

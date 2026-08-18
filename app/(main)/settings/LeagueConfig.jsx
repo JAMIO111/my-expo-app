@@ -103,7 +103,7 @@ const LeagueConfig = () => {
       <ScrollView
         contentContainerStyle={{ alignItems: 'center', justifyContent: 'center' }}
         className="mt-16 flex-1 bg-bg-grouped-1 p-5">
-        <MenuContainer>
+        <MenuContainer title="League Settings">
           <EditableSettingsItem
             iconBGColor="gray"
             title="District Name"

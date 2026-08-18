@@ -184,7 +184,7 @@ const ConnectedLoginsSection = ({ user, onIdentitiesChange }) => {
 
   return (
     <>
-      <Text style={styles.sectionLabel}>CONNECTED LOGINS</Text>
+      <Text className="pb-3 pl-1 font-saira-bold text-xl">Social Logins</Text>
       <View style={styles.providerList}>
         {PROVIDERS.map((provider, index) => {
           const connected = isConnected(provider.key);
@@ -302,7 +302,6 @@ const ConnectedLoginsSection = ({ user, onIdentitiesChange }) => {
 const SignInAndSecurity = () => {
   const { user, player } = useUser();
   const [deleteAccountModal, setDeleteAccountModal] = useState(false);
-
   const [isChangingPassword, setIsChangingPassword] = useState(false);
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
@@ -426,8 +425,7 @@ const SignInAndSecurity = () => {
         <ConnectedLoginsSection user={user} />
 
         {/* ── Account info ── */}
-        <Text style={styles.sectionLabel}>ACCOUNT INFO</Text>
-        <MenuContainer>
+        <MenuContainer title="Account Info">
           <SettingsItem disabled title="Email" text={user?.email} />
           <SettingsItem disabled title="Auth ID" text={user?.id} />
           <SettingsItem disabled lastItem title="Player ID" text={player?.id} />
@@ -436,7 +434,7 @@ const SignInAndSecurity = () => {
         {/* ── Password ── */}
         {!isOAuthUser && (
           <>
-            <Text style={styles.sectionLabel}>YOUR PASSWORD</Text>
+            <Text className="pb-3 pl-1 font-saira-bold text-xl">Your Password</Text>
             <View style={styles.passwordSection}>
               <Pressable
                 style={styles.passwordHeader}
@@ -583,7 +581,11 @@ const SignInAndSecurity = () => {
 
         {/* ── Danger zone ── */}
         <View className="mt-8 rounded-3xl border border-theme-red bg-bg-1 p-4 pb-2">
-          <Text style={[styles.sectionLabel, { color: '#ef4444', marginTop: 8 }]}>DANGER ZONE</Text>
+          <Text
+            className="pb-3 pl-1 font-saira-bold text-xl"
+            style={[styles.sectionLabel, { color: '#ef4444', marginTop: 8 }]}>
+            DANGER ZONE
+          </Text>
           <View style={styles.dangerSection}>
             <Text className="mb-2 px-1 pt-4 font-saira-medium text-text-1">
               Time to hang up the cue?
@@ -653,22 +655,11 @@ const SignInAndSecurity = () => {
 export default SignInAndSecurity;
 
 const styles = StyleSheet.create({
-  sectionLabel: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: '#6b7280',
-    letterSpacing: 0.8,
-    marginBottom: 8,
-    marginLeft: 4,
-  },
-
   // ── Provider list ──
   providerList: {
     backgroundColor: '#ffffff',
-    borderRadius: 16,
+    borderRadius: 24,
     overflow: 'hidden',
-    borderWidth: 1,
-    borderColor: '#e5e7eb',
     marginBottom: 36,
   },
 
@@ -725,8 +716,6 @@ const styles = StyleSheet.create({
   passwordSection: {
     backgroundColor: '#ffffff',
     borderRadius: 24,
-    borderWidth: 1,
-    borderColor: '#e5e5ea',
   },
 
   passwordHeader: {

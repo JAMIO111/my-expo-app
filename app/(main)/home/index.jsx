@@ -272,6 +272,7 @@ const Home = () => {
         />
 
         <ScrollView
+          showsVerticalScrollIndicator={false}
           refreshControl={
             <RefreshControl
               refreshing={refreshing}
@@ -297,14 +298,6 @@ const Home = () => {
                       isLoading={isUpcomingFixturesLoading}
                     />
                   </View>
-                  <TicketTapeBanner
-                    items={[
-                      { id: 1, text: 'Division 2 fixtures released', icon: 'calendar-outline' },
-                      { id: 2, text: 'New season starts 1st Sept', icon: 'trophy-outline' },
-                      { id: 3, text: 'Jake Smith reached rank #4', icon: 'trending-up-outline' },
-                    ]}
-                    speed={35}
-                  />
                 </>
               )}
               <View className="w-full items-center justify-center gap-4 px-3">
@@ -318,6 +311,14 @@ const Home = () => {
                 />
                 <LeagueHomeCard standings={standings} isLoading={isStandingsLoading} />
               </View>
+              <TicketTapeBanner
+                items={[
+                  { id: 1, text: 'Division 2 fixtures released', icon: 'calendar-outline' },
+                  { id: 2, text: 'New season starts 1st Sept', icon: 'trophy-outline' },
+                  { id: 3, text: 'Jake Smith reached rank #4', icon: 'trending-up-outline' },
+                ]}
+                speed={40}
+              />
             </View>
             <View className="w-full bg-bg-2 pb-8">
               <View className="w-full gap-3 pb-8">

@@ -14,6 +14,7 @@ const BottomSheetWrapper = forwardRef(
       marginTop = 100,
       backgroundColor,
       indicatorColor = 'themeGray3',
+      onChange = () => {},
     },
     ref
   ) => {
@@ -46,6 +47,7 @@ const BottomSheetWrapper = forwardRef(
             // sheet is closed
             Keyboard.dismiss();
           }
+          onChange(index);
         }}
         enablePanDownToClose
         backgroundStyle={{

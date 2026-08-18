@@ -1,5 +1,5 @@
 import { Pressable, StyleSheet, Text, View, useColorScheme } from 'react-native';
-import Ioconicons from 'react-native-vector-icons/Ionicons';
+import Ionicons from 'react-native-vector-icons/Ionicons';
 import { useRouter } from 'expo-router';
 import colors from '@lib/colors';
 import TeamLogo from './TeamLogo';
@@ -26,7 +26,7 @@ const ResultsHomeCard = ({ result }) => {
     >
       <View className="mx-3 flex-row items-center justify-between border-b border-theme-gray-5 px-1 pb-1 pt-2">
         <Text className="font-saira-medium text-2xl text-text-1">Results</Text>
-        <Ioconicons name="chevron-forward" size={20} color={themeColors?.icon} />
+        <Ionicons name="chevron-forward" size={20} color={themeColors?.icon} />
       </View>
 
       {!result ? (
@@ -39,7 +39,7 @@ const ResultsHomeCard = ({ result }) => {
         <View className="gap-1 py-3">
           {/* Home */}
           <View className="flex-row justify-between px-5">
-            <View className="flex-shrink flex-row items-center">
+            <View className="flex-shrink flex-row items-center gap-2">
               <TeamLogo {...result?.homeTeam?.crest} size={20} />
               <Text className="mx-2 font-saira-semibold text-xl text-text-1">
                 {result?.homeTeam?.abbreviation}
@@ -53,7 +53,7 @@ const ResultsHomeCard = ({ result }) => {
 
           {/* Away */}
           <View className="flex-row justify-between px-5">
-            <View className="flex-shrink flex-row items-center">
+            <View className="flex-shrink flex-row items-center gap-2">
               <TeamLogo {...result?.awayTeam?.crest} size={20} />
               <Text className="mx-2 font-saira-semibold text-xl text-text-1">
                 {result?.awayTeam?.abbreviation}

@@ -101,8 +101,10 @@ const ProfilePage = () => {
             </Text>
           </View>
           <Pressable className="px-5" onPress={() => router.push('/profile/leaderboard')}>
-            <View style={{ borderRadius: 18 }} className="mb-8 bg-brand-dark p-2 shadow-sm">
-              <View className="flex-row items-center justify-around gap-2 rounded-2xl bg-brand p-4 shadow">
+            <View style={{ borderRadius: 24 }} className="mb-8 bg-brand-dark p-2 shadow-sm">
+              <View
+                style={{ borderRadius: 18 }}
+                className="flex-row items-center justify-around gap-2 bg-brand p-4 shadow">
                 <View className="flex-1 items-center">
                   <Ionicons name="star-outline" size={24} color="white" />
                   <Text className="text-center font-saira text-xl text-gray-300">XP</Text>
