@@ -43,13 +43,13 @@ function RankBadge({ rank }) {
 function LeaderboardRow({ player, isLast }) {
   const { player: currentPlayer } = useUser();
   const { rank, imageUrl, first_name, surname, xp, level } = player;
-  const ring = RANK_STYLES[rank]?.ring ?? 'border-bg-grouped-3';
+  const ring = RANK_STYLES[rank]?.ring ?? 'border-theme-gray-3';
   const { level: calculatedLevel } = calculateLevel(xp);
   const isMe = player.id === currentPlayer?.id;
 
   return (
     <View
-      className={`flex-row items-center ${isMe ? 'bg-bg-grouped-1' : 'bg-bg-grouped-2'} px-4 py-3 ${
+      className={`flex-row items-center ${isMe ? 'bg-[#00550e25]' : 'bg-bg-grouped-2'} px-4 py-3 ${
         !isLast ? 'border-b border-bg-grouped-3' : ''
       }`}>
       {/* Rank */}
@@ -101,7 +101,7 @@ export default function LeaderboardScreen({ players = [], scope }) {
       </View>
 
       {/* List */}
-      <View className="mx-4 overflow-hidden rounded-3xl border border-theme-gray-4 bg-bg-1">
+      <View className="mx-4 overflow-hidden rounded-3xl">
         <FlatList
           data={sorted}
           keyExtractor={(item) => String(item.id ?? item.rank)}

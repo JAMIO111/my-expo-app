@@ -6,11 +6,13 @@ import { getAgeInYearsAndDays, isBirthdayToday } from '@lib/helperFunctions';
 import { useUser } from '@contexts/UserProvider';
 import Heading from './Heading';
 import Avatar from './Avatar';
+import TeamLogo from './TeamLogo';
 
 // Drop this in place of your existing player header View
 // Props: playerProfile, currentTeam, years, days, isBirthdayToday
 
 const PlayerProfileHeader = ({ playerProfile, currentTeam }) => {
+  console.log('PlayerProfileHeader - currentTeam:', currentTeam);
   const fullName =
     [playerProfile?.first_name, playerProfile?.surname].filter(Boolean).join(' ') || 'No Name';
 
@@ -61,17 +63,20 @@ const PlayerProfileHeader = ({ playerProfile, currentTeam }) => {
 
           {/* Team chip — mirrors division chip in TeamProfileHeader */}
           {currentTeam?.team_name && (
-            <View className="flex-row items-center gap-2 rounded-lg bg-brand-light px-3 py-1">
-              <View style={styles.teamDot} />
-              <Text style={styles.teamText} numberOfLines={1}>
-                {currentTeam.team_name}
-              </Text>
+            <View className="flex-row items-center gap-2">
+              <TeamLogo {...currentTeam.crest} size={16} />
+              <View className="flex-row items-center gap-2 rounded-lg bg-brand-light px-3 py-1">
+                <View style={styles.teamDot} />
+                <Text style={styles.teamText} numberOfLines={1}>
+                  {currentTeam.team_name}
+                </Text>
+              </View>
             </View>
           )}
 
           {/* DOB & age row — mirrors address row in TeamProfileHeader */}
           <View className="mt-2 flex-row items-center gap-2">
-            <Ionicons name="calendar-outline" size={14} color="#ffffff" />
+            <Ionicons name="calendar-outline" size={15} color="#ffffff" />
             <Text className="font-saira text-text-on-brand" numberOfLines={1}>
               {dob ? `${dob} · ${ageLabel}` : 'No DOB'}
             </Text>
@@ -81,7 +86,7 @@ const PlayerProfileHeader = ({ playerProfile, currentTeam }) => {
           <View className="mt-1 flex-row items-center gap-2">
             <Image
               source={require('@assets/Break-Room-Logo-1024-Background.png')}
-              style={{ width: 15, height: 15 }}
+              style={{ width: 16, height: 16 }}
             />
             <Text className="font-saira text-text-on-brand" numberOfLines={1}>
               Since {sinceDate || 'Unknown'}

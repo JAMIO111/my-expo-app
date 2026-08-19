@@ -98,7 +98,9 @@ const index = () => {
           paddingBottom: 40,
         }}
         className="mt-16 flex-1 bg-bg-grouped-1 p-5">
-        <View className="mb-8 w-full flex-row items-center justify-center rounded-3xl bg-bg-1 p-4">
+        <Pressable
+          onPress={() => router.push('/settings/PersonalDetails')}
+          className="mb-8 w-full flex-row items-center justify-center rounded-3xl bg-bg-1 p-4">
           <Avatar player={player} size={76} borderRadius={14} />
           <View className="ml-6 flex-1 gap-1">
             <Text className="mt-2 font-saira-medium text-3xl text-text-1">
@@ -106,7 +108,7 @@ const index = () => {
             </Text>
             <Text className="font-saira text-text-2">{user?.email}</Text>
           </View>
-        </View>
+        </Pressable>
         <Text className="w-full pb-3 pl-1 font-saira-bold text-xl">Your Role</Text>
         <Pressable
           onPress={openSwitchRoleBottomSheet}
@@ -165,7 +167,7 @@ const index = () => {
             icon="bell"
           />
           <SettingsItem
-            routerPath="/settings/Account"
+            routerPath="/settings/Subscriptions"
             iconBGColor="green"
             title="Subscriptions & Billing"
             icon="wallet"
@@ -208,8 +210,8 @@ const index = () => {
         </MenuContainer>
         <MenuContainer>
           <SettingsItem
-            iconColor="red"
-            titleColor="text-theme-red"
+            iconColor="#FF0000"
+            titleColor="text-[#FF0000]"
             title={isSigningOut ? 'Logging Out...' : 'Log Out'}
             icon="logout"
             callbackFn={handleSignOut}

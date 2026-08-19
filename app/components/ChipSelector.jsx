@@ -40,9 +40,11 @@ export default function ChipSelector({
   return (
     <ScrollView
       horizontal
+      scrollEnabled={false}
+      showsVerticalScrollIndicator={false}
       showsHorizontalScrollIndicator={false}
       className="flex-grow-0 bg-bg-1 py-3"
-      contentContainerClassName={`flex-row w-full py-1 px-4 gap-3 ${contentContainerClassName}`}>
+      contentContainerClassName={`flex-row w-full h-12 py-1 px-4 gap-3 ${contentContainerClassName}`}>
       {options.map((option) => {
         const selected = isSelected(option.value);
 

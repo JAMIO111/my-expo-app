@@ -22,6 +22,7 @@ import {
   Wallet,
   CalendarCog,
   Scale,
+  RefreshCw,
 } from 'lucide-react-native';
 
 const iconMap = {
@@ -40,6 +41,7 @@ const iconMap = {
   wallet: Wallet,
   calendarCog: CalendarCog,
   scale: Scale,
+  refresh: RefreshCw,
 };
 
 const SettingsItem = ({

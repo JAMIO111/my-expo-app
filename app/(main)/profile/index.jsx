@@ -129,13 +129,13 @@ const ProfilePage = () => {
               </View>
             </View>
           </Pressable>
-          <View className="rounded-t-3xl bg-bg-grouped-2 pt-4 shadow-md">
+          <View className="rounded-t-3xl bg-bg-grouped-2 pt-4">
             <View className="px-5">
               <SlidingTabButton option1="Badges" option2="Stats" onChange={setView} value={view} />
             </View>
 
             <View style={{ display: view === 'left' ? 'flex' : 'none' }}>
-              <ProGate>
+              <ProGate intensity={30}>
                 <BadgeList badges={badges} />
               </ProGate>
             </View>

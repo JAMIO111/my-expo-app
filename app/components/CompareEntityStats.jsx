@@ -24,10 +24,13 @@ import CompareTeamStatsRows from './CompareTeamStatsRows';
 import Avatar from './Avatar';
 import MultiOptionSlidingToggle from './MultiOptionSlidingToggle';
 import ProGate from './ProGate';
+import ChipSelector from './ChipSelector';
+import { Globe, List, Landmark } from 'lucide-react-native';
 
 export default function CompareTeamStats() {
   const { currentRole } = useUser();
   const { defaultEntity, entityType } = useLocalSearchParams();
+  const [selectedScope, setSelectedScope] = useState('District');
   const [changingEntity, setChangingEntity] = useState(null);
   const [entity1, setEntity1] = useState(defaultEntity ? JSON.parse(defaultEntity) : null);
   const [entity2, setEntity2] = useState(null);
@@ -111,6 +114,20 @@ export default function CompareTeamStats() {
           return acc;
         }, {})
       : null;
+
+  const EmptySearchState = ({ type }) => (
+    <View className="w-full items-center justify-center rounded-2xl bg-bg-2 py-8">
+      <Ionicons name="search-outline" size={36} color="#333" />
+
+      <Text className="mt-3 text-lg text-text-1" style={{ fontFamily: 'Saira-SemiBold' }}>
+        No {type} found
+      </Text>
+
+      <Text className="mt-1 text-center text-text-3" style={{ fontFamily: 'Saira-Regular' }}>
+        Try searching for a different {type.slice(0, -1)}.
+      </Text>
+    </View>
+  );
 
   return (
     <>
@@ -322,7 +339,7 @@ export default function CompareTeamStats() {
       </View>
 
       {/* Bottom Sheet */}
-      <BottomSheetWrapper ref={bottomSheetRef} initialIndex={-1} snapPoints={['90%']}>
+      <BottomSheetWrapper ref={bottomSheetRef} initialIndex={-1} snapPoints={['100%']}>
         <AnimatedSearchBar
           cancelColor="text-text-2"
           backColor="bg-bg-1"
@@ -332,27 +349,122 @@ export default function CompareTeamStats() {
           onDebouncedChange={setSearchQuery}
           placeholder={`Search for ${entityType === 'team' ? 'teams' : 'players'}...`}
         />
+        <ChipSelector
+          options={[
+            {
+              value: 'Global',
+              label: 'Global',
+              icon: <Globe size={14} color="#000" />,
+              selectedIcon: <Globe size={14} color="#fff" />,
+            },
+            {
+              value: 'District',
+              label: 'My District',
+              icon: <Landmark size={14} color="#000" />,
+              selectedIcon: <Landmark size={14} color="#fff" />,
+            },
+            {
+              value: 'Division',
+              label: 'My Division',
+              icon: <List size={14} color="#000" />,
+              selectedIcon: <List size={14} color="#fff" />,
+            },
+          ]}
+          value={selectedScope}
+          onChange={setSelectedScope}
+        />
         <Text
-          className="pl-1 font-saira-semibold text-2xl text-text-1"
-          style={{ fontSize: 24, paddingVertical: 4, paddingLeft: 12 }}>
+          className="pl-1 pt-6 font-saira-bold text-2xl text-text-1"
+          style={{ fontSize: 20, paddingVertical: 4, paddingLeft: 12 }}>
           {defaultDistrict.name} {entityType === 'team' ? 'Teams' : 'Players'}
         </Text>
-        <BottomSheetScrollView contentContainerStyle={{ padding: 10, paddingBottom: 140 }}>
+        <BottomSheetScrollView contentContainerStyle={{ padding: 10, paddingBottom: 200 }}>
           <View style={{ marginTop: 0 }}>
             {entityType === 'team' ? (
-              // ✅ GROUPED TEAMS
-              Object.entries(groupedEntities || {}).map(([division, teams]) => (
-                <View key={division} style={{ marginBottom: 12 }}>
-                  {/* Division Header */}
-                  <Text
-                    style={{ fontFamily: 'Saira-semibold', marginBottom: 6 }}
-                    className="pl-1 text-lg text-text-1">
-                    {division}
-                  </Text>
+              Object.entries(groupedEntities || {}).length > 0 ? (
+                Object.entries(groupedEntities).map(([division, teams]) => (
+                  <View key={division} style={{ marginBottom: 12 }}>
+                    {/* Division Header */}
+                    <Text
+                      style={{ fontFamily: 'Saira-semibold', marginBottom: 6 }}
+                      className="pl-1 text-lg text-text-2">
+                      {division}
+                    </Text>
 
-                  {/* Grid */}
+                    {/* Grid */}
+                    <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
+                      {teams.map((entity, index) => (
+                        <Pressable
+                          key={entity.id}
+                          className={`relative rounded-xl bg-bg-2 py-4 ${
+                            (changingEntity === 'entity1' && entity.id === entity1?.id) ||
+                            (changingEntity === 'entity2' && entity.id === entity2?.id)
+                              ? 'border-2 border-brand'
+                              : ''
+                          }`}
+                          style={{
+                            gap: 2,
+                            width: '32%',
+                            marginRight: (index + 1) % 3 === 0 ? 0 : '2%',
+                            marginBottom: 6,
+                            paddingHorizontal: 8,
+                            alignItems: 'center',
+                          }}
+                          onPress={() => {
+                            changingEntity === 'entity1' ? setEntity1(entity) : setEntity2(entity);
+                            closeSheet();
+                          }}>
+                          <TeamLogo
+                            type={entity.crest.type}
+                            color1={entity.crest.color1}
+                            color2={entity.crest.color2}
+                            thickness={entity.crest.thickness}
+                            size={44}
+                          />
+
+                          <View
+                            style={{
+                              flex: 1,
+                              justifyContent: 'center',
+                              marginTop: 4,
+                              width: '100%',
+                            }}>
+                            <Text
+                              className="text-text-1"
+                              style={{
+                                fontFamily: 'Saira-Medium',
+                                textAlign: 'center',
+                              }}
+                              numberOfLines={2}>
+                              {entity.display_name}
+                            </Text>
+                          </View>
+
+                          {(changingEntity === 'entity1' && entity.id === entity1?.id) ||
+                          (changingEntity === 'entity2' && entity.id === entity2?.id) ? (
+                            <View
+                              className="absolute right-0 top-0 flex h-6 w-6 items-center justify-center bg-brand"
+                              style={{
+                                borderTopRightRadius: 6,
+                                borderBottomLeftRadius: 4,
+                              }}>
+                              <Ionicons name="checkmark" size={16} color="#fff" />
+                            </View>
+                          ) : null}
+                        </Pressable>
+                      ))}
+                    </View>
+                  </View>
+                ))
+              ) : (
+                <EmptySearchState type="teams" />
+              )
+            ) : (
+              // ✅ PLAYERS (FLAT FILTERED LIST)
+              <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
+                {filteredEntities?.length > 0 ? (
                   <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
-                    {teams.map((entity, index) => (
+                    {filteredEntities.map((entity, index) => (
                       <Pressable
                         key={entity.id}
                         className={`relative rounded-xl bg-bg-2 py-4 ${
@@ -373,13 +485,7 @@ export default function CompareTeamStats() {
                           changingEntity === 'entity1' ? setEntity1(entity) : setEntity2(entity);
                           closeSheet();
                         }}>
-                        <TeamLogo
-                          type={entity.crest.type}
-                          color1={entity.crest.color1}
-                          color2={entity.crest.color2}
-                          thickness={entity.crest.thickness}
-                          size={44}
-                        />
+                        <Avatar player={entity} size={60} borderRadius={30} />
 
                         <View
                           style={{
@@ -395,7 +501,7 @@ export default function CompareTeamStats() {
                               textAlign: 'center',
                             }}
                             numberOfLines={2}>
-                            {entity.display_name}
+                            {entity.first_name} {entity.surname}
                           </Text>
                         </View>
 
@@ -413,60 +519,9 @@ export default function CompareTeamStats() {
                       </Pressable>
                     ))}
                   </View>
-                </View>
-              ))
-            ) : (
-              // ✅ PLAYERS (FLAT FILTERED LIST)
-              <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
-                {filteredEntities?.map((entity, index) => (
-                  <Pressable
-                    key={entity.id}
-                    className={`relative rounded-xl bg-bg-2 py-4 ${
-                      (changingEntity === 'entity1' && entity.id === entity1?.id) ||
-                      (changingEntity === 'entity2' && entity.id === entity2?.id)
-                        ? 'border-2 border-brand'
-                        : ''
-                    }`}
-                    style={{
-                      gap: 2,
-                      width: '32%',
-                      marginRight: (index + 1) % 3 === 0 ? 0 : '2%',
-                      marginBottom: 6,
-                      paddingHorizontal: 8,
-                      alignItems: 'center',
-                    }}
-                    onPress={() => {
-                      changingEntity === 'entity1' ? setEntity1(entity) : setEntity2(entity);
-                      closeSheet();
-                    }}>
-                    <Avatar player={entity} size={60} borderRadius={30} />
-
-                    <View
-                      style={{ flex: 1, justifyContent: 'center', marginTop: 4, width: '100%' }}>
-                      <Text
-                        className="text-text-1"
-                        style={{
-                          fontFamily: 'Saira-Medium',
-                          textAlign: 'center',
-                        }}
-                        numberOfLines={2}>
-                        {entity.first_name} {entity.surname}
-                      </Text>
-                    </View>
-
-                    {(changingEntity === 'entity1' && entity.id === entity1?.id) ||
-                    (changingEntity === 'entity2' && entity.id === entity2?.id) ? (
-                      <View
-                        className="absolute right-0 top-0 flex h-6 w-6 items-center justify-center bg-brand"
-                        style={{
-                          borderTopRightRadius: 6,
-                          borderBottomLeftRadius: 4,
-                        }}>
-                        <Ionicons name="checkmark" size={16} color="#fff" />
-                      </View>
-                    ) : null}
-                  </Pressable>
-                ))}
+                ) : (
+                  <EmptySearchState type="players" />
+                )}
               </View>
             )}
           </View>

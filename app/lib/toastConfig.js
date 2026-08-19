@@ -31,8 +31,6 @@ const renderToast = (type, { text1, text2, props }) => {
     <View
       style={{
         backgroundColor: theme.background,
-        borderColor: theme.border,
-        borderWidth: 1,
         borderRadius: 16,
         width: '90%',
         overflow: 'hidden',
@@ -70,7 +68,7 @@ const renderToast = (type, { text1, text2, props }) => {
       <View
         style={{
           backgroundColor: config.bar,
-          height: 6,
+          height: 5,
           width: '100%',
         }}
       />

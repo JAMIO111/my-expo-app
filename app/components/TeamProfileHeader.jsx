@@ -58,7 +58,7 @@ const TeamProfileHeader = ({ profile }) => {
           <View className="mt-1 flex-row items-center gap-2">
             <Image
               source={require('@assets/Break-Room-Logo-1024-Background.png')}
-              style={{ width: 15, height: 15 }}
+              style={{ width: 16, height: 16 }}
             />
             <Text className="font-saira text-text-on-brand" numberOfLines={1}>
               Since {sinceDate || 'Unknown'}
@@ -67,7 +67,7 @@ const TeamProfileHeader = ({ profile }) => {
 
           {/* Address */}
           <View className="mt-4 flex-row items-center gap-2">
-            <Ionicons name="location-sharp" size={14} color="#ffffff" />
+            <Ionicons name="location-sharp" size={15} color="#ffffff" />
             <Text className="font-saira text-text-on-brand" numberOfLines={2}>
               {address}
             </Text>
