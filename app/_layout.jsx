@@ -18,6 +18,8 @@ import { AdminProvider } from '@contexts/AdminContext';
 import AppRealtimeProvider from '@contexts/AppRealtimeProvider';
 import RevenueCatProvider from '@contexts/RevenueCatProvider';
 import { NotificationsPanelProvider } from '@contexts/NotificationsPanelProvider';
+import { BadgeUnlockProvider } from '@contexts/BadgeUnlockProvider';
+import { useUnseenBadgesTrigger } from '@hooks/useUnseenBadgesTrigger';
 
 export default function RootLayout() {
   const [fontsLoaded] = useFonts({
@@ -54,16 +56,19 @@ export default function RootLayout() {
               androidApiKey="goog_yTNNoAuahqqKnkHPLDcDmmaPrXG">
               <AppRealtimeProvider>
                 <NotificationsPanelProvider>
-                  <View className={`flex-1 bg-brand`}>
-                    <Slot />
-                  </View>
-                  <Toast
-                    config={toastConfig}
-                    position="top"
-                    visibilityTime={5000}
-                    autoHide={true}
-                    topOffset={80}
-                  />
+                  <BadgeUnlockProvider>
+                    <BadgeTrigger />
+                    <View className={`flex-1 bg-brand`}>
+                      <Slot />
+                    </View>
+                    <Toast
+                      config={toastConfig}
+                      position="top"
+                      visibilityTime={5000}
+                      autoHide={true}
+                      topOffset={80}
+                    />
+                  </BadgeUnlockProvider>
                 </NotificationsPanelProvider>
               </AppRealtimeProvider>
             </RevenueCatProvider>
@@ -72,4 +77,9 @@ export default function RootLayout() {
       </QueryClientProvider>
     </GestureHandlerRootView>
   );
+}
+
+function BadgeTrigger() {
+  useUnseenBadgesTrigger();
+  return null;
 }
