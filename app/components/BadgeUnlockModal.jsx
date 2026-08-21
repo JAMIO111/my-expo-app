@@ -16,7 +16,7 @@ const bgColors = {
   1: { color: '#773F00', text: '#fff' },
   2: { color: '#A7A7A7', text: '#000' },
   3: { color: '#FFE225', text: '#000' },
-  4: { color: '#24F8FF', text: '#000' },
+  4: { color: '#24FFDF', text: '#000' },
   5: { color: '#FF0000', text: '#fff' },
   6: { color: '#00B518', text: '#fff' },
   7: { color: '#4C00E5', text: '#fff' },
@@ -124,7 +124,7 @@ export default function BadgeUnlockModal({ visible, badges = [], onComplete }) {
             style={styles.cardInner}>
             {/* Full-bleed hero: the spinning sun + badge icon sit behind everything else */}
             <View style={styles.victoryContainer}>
-              <SpinningSun size={600} color={color} rayOpacity={0.32} speed={8000} />
+              <SpinningSun size={600} color={color} rayOpacity={0.32} speed={7000} />
 
               <View
                 style={{

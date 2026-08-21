@@ -20,10 +20,6 @@ const BadgeList = ({ badges }) => {
     setModalVisible(true);
   };
 
-  const closeModal = () => {
-    setModalVisible(false);
-  };
-
   const onLayout = (event) => {
     const { width } = event.nativeEvent.layout;
     setParentWidth(width);
@@ -33,8 +29,13 @@ const BadgeList = ({ badges }) => {
     if (!parentWidth) return null;
 
     const itemWidth = (parentWidth - ITEM_MARGIN * (NUM_COLUMNS + 1)) / NUM_COLUMNS;
-    const unlockedTier = badge?.unlocked_tier;
+    const unlockedTier =
+      badge?.unlockedBadges?.length > 0
+        ? Math.max(...badge.unlockedBadges.map((unlock) => unlock.tier))
+        : null;
+
     const unlockedEntry = badge?.meta_data?.find((entry) => entry.tier === unlockedTier);
+
     const iconKey = unlockedEntry?.icon;
 
     // 2. Fallback to locked icon if nothing found

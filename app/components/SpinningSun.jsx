@@ -10,7 +10,7 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 
-const RAY_COUNT = 12;
+const RAY_COUNT = 10;
 
 export default function SpinningSun({
   size = 500,

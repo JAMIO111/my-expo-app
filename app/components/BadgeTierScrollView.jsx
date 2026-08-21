@@ -6,84 +6,92 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 const screenWidth = Dimensions.get('window').width;
 
 const BadgeTierScrollView = ({ selectedBadge, currentValue = 16 }) => {
-  const [cardWidth, setCardWidth] = useState(screenWidth * 0.5); // fallback width
+  const [cardWidth, setCardWidth] = useState(screenWidth * 0.5);
 
   if (!selectedBadge) return null;
 
   const data = Array.isArray(selectedBadge.meta_data) ? selectedBadge.meta_data : [];
 
+  const unlockedBadges = Array.isArray(selectedBadge.unlockedBadges)
+    ? selectedBadge.unlockedBadges
+    : [];
+
+  // Highest tier the player has unlocked
+  const unlockedTier =
+    unlockedBadges.length > 0
+      ? Math.max(...unlockedBadges.map((unlock) => Number(unlock.tier)))
+      : 0;
+
+  // Get the unlock record for a particular tier
+  const getUnlockedBadge = (tier) => {
+    return unlockedBadges.find((unlock) => Number(unlock.tier) === Number(tier));
+  };
+
   const getProgressForEntry = (entry) => {
-    const unlockedTier = selectedBadge.unlocked_tier;
     const progressValue = currentValue;
     const requirementValue = entry?.requirement?.value ?? 1;
 
-    if (entry.tier <= unlockedTier) return 1;
-    if (entry.tier === unlockedTier + 1) return Math.min(progressValue / requirementValue, 1);
+    // Already unlocked
+    if (entry.tier <= unlockedTier) {
+      return 1;
+    }
+
+    // Next tier to unlock
+    if (entry.tier === unlockedTier + 1) {
+      return Math.min(progressValue / requirementValue, 1);
+    }
+
+    // Future tier
     return 0;
   };
 
   const XpBadge = ({ xp = 350 }) => {
     return (
-      <View
-        style={{ height: 52, width: 52, transform: [{ rotate: '-20deg' }] }}
-        className="relative items-center justify-center">
-        <Ionicons
-          name="star"
-          size={52}
-          color="#facc15"
-          style={{ position: 'absolute', opacity: 0.55 }}
-        />
-        <Ionicons
-          name="star"
-          size={52}
-          color="#fde047"
-          style={{ position: 'absolute', transform: [{ rotate: '24deg' }], opacity: 0.8 }}
-        />
-        <Ionicons
-          name="star"
-          size={52}
-          color="#fde047"
-          style={{ position: 'absolute', transform: [{ rotate: '48deg' }], opacity: 0.8 }}
-        />
-        <View style={{ transform: [{ rotate: '20deg' }] }}>
-          <Text className="font-saira-bold text-[10px] text-text-1">+{xp}</Text>
-          <Text className="font-saira-bold text-[7px] text-text-1" style={{ textAlign: 'center' }}>
-            XP
-          </Text>
-        </View>
+      <View className="relative items-center justify-center rounded-xl border border-theme-yellow bg-theme-yellow/20 px-2 py-1">
+        <Text className="font-saira-bold text-[12px] text-text-1">+{xp} XP</Text>
       </View>
     );
   };
 
   return (
-    <View style={{ width: '100%' }}>
-      <ScrollView contentContainerStyle={{ padding: 12, paddingBottom: 120, gap: 14 }}>
+    <View style={{ width: '100%' }} className="bg-bg-2">
+      <ScrollView
+        contentContainerStyle={{
+          padding: 12,
+          paddingBottom: 120,
+          gap: 14,
+        }}>
         {data.map((entry, index) => {
-          const isUnlocked =
-            typeof entry?.tier === 'number' &&
-            typeof selectedBadge?.unlocked_tier === 'number' &&
-            entry.tier <= selectedBadge.unlocked_tier;
-          const currentTier = entry?.tier === selectedBadge.unlocked_tier + 1;
-          const isLocked = entry.tier > selectedBadge?.unlocked_tier + 1;
+          const tier = Number(entry?.tier);
+
+          const isUnlocked = tier <= unlockedTier;
+          const currentTier = tier === unlockedTier + 1;
+          const isLocked = tier > unlockedTier + 1;
+
           const iconKey = entry?.icon;
           const icon = iconKey && badgeIcons?.[iconKey];
+
           const source = isUnlocked && icon ? icon : require('@assets/LockedBadge.png');
+
           const progress = getProgressForEntry(entry);
+
+          // Get the actual unlock record for this tier
+          const unlockedBadge = getUnlockedBadge(tier);
 
           return (
             <View
               key={index}
-              className={`overflow-hidden rounded-3xl ${
+              className={`rounded-3xl bg-bg-1 ${
                 currentTier
-                  ? 'border-2 border-theme-green bg-bg-2 shadow-md shadow-black/10'
+                  ? 'border-2 border-theme-blue bg-bg-2 shadow-sm'
                   : isUnlocked
-                    ? 'border border-theme-green/40 bg-bg-1'
-                    : 'border border-theme-gray-4 bg-bg-1 opacity-70'
+                    ? 'bg-bg-1'
+                    : 'opacity-70'
               }`}>
               <View className="relative">
                 {isUnlocked && (
-                  <View className="absolute right-3 top-3 z-10">
-                    <XpBadge xp={entry?.xp_reward} />
+                  <View className="absolute right-4 top-4 z-10">
+                    <XpBadge xp={entry?.xp} />
                   </View>
                 )}
 
@@ -91,21 +99,28 @@ const BadgeTierScrollView = ({ selectedBadge, currentValue = 16 }) => {
                   onLayout={
                     index === 0 ? (e) => setCardWidth(e.nativeEvent.layout.width) : undefined
                   }
-                  className="flex-row items-center gap-3 p-4">
-                  <View
-                    className={`items-center justify-center rounded-2xl ${
-                      isUnlocked ? 'bg-theme-green/10' : 'bg-theme-gray-4/30'
-                    }`}
-                    style={{ width: cardWidth * 0.28, height: cardWidth * 0.28 }}>
-                    <Image
-                      source={source}
-                      style={{ width: cardWidth * 0.22, height: cardWidth * 0.22 }}
-                      resizeMode="contain"
-                    />
+                  className="flex-row gap-5 p-4">
+                  <View className="rounded-xl border border-theme-gray-4 bg-bg-2 p-1 shadow-sm">
+                    <View
+                      className="items-center justify-center bg-bg-1 shadow-sm"
+                      style={{
+                        width: cardWidth * 0.25,
+                        height: cardWidth * 0.28,
+                        borderRadius: 8,
+                      }}>
+                      <Image
+                        source={source}
+                        style={{
+                          width: cardWidth * 0.2,
+                          height: cardWidth * 0.22,
+                        }}
+                        resizeMode="contain"
+                      />
+                    </View>
                   </View>
 
-                  <View className="flex-1 items-start gap-1">
-                    <View className="mb-1 flex-row items-center gap-2">
+                  <View className="flex-1 items-start justify-between py-1">
+                    <View className="flex-row items-center gap-2">
                       <View
                         className={`rounded-full px-3 py-1 ${
                           isUnlocked ? 'bg-theme-green/15' : 'bg-theme-gray-4/40'
@@ -114,45 +129,59 @@ const BadgeTierScrollView = ({ selectedBadge, currentValue = 16 }) => {
                           className={`font-saira-bold text-sm ${
                             isUnlocked ? 'text-theme-green' : 'text-text-3'
                           }`}>
-                          TIER {entry?.tier ?? '–'}
+                          TIER {tier || '–'}
                         </Text>
                       </View>
+
                       {isUnlocked && !currentTier && (
                         <Ionicons name="checkmark-circle" size={20} color="#22c55e" />
                       )}
                     </View>
 
-                    <Text className="text-left font-saira-semibold text-lg text-text-1">
-                      {entry?.title ?? 'Unnamed Tier'}
-                    </Text>
+                    <View className="gap-2">
+                      <Text className="pt-3 text-left font-saira-semibold text-2xl text-text-1">
+                        {entry?.title ?? 'Unnamed Tier'}
+                      </Text>
 
-                    <Text
-                      className="text-left font-saira-medium leading-5 text-text-2"
-                      numberOfLines={2}>
-                      {isLocked
-                        ? `Unlock tier ${entry?.tier - 1} to view requirements.`
-                        : entry?.description}
-                    </Text>
+                      <Text
+                        className="text-left font-saira-medium leading-5 text-text-2"
+                        numberOfLines={2}>
+                        {isLocked
+                          ? `Unlock tier ${tier - 1} to view requirements.`
+                          : entry?.description}
+                      </Text>
+                    </View>
 
-                    {!isLocked && (
-                      <Text className="mt-0.5 text-left font-saira text-sm text-text-2">
-                        {Math.min(entry?.requirement?.value, currentValue)} /{' '}
-                        {entry?.requirement?.value} achieved
+                    {isUnlocked && unlockedBadge?.unlocked_at && (
+                      <Text className="pt-1 font-saira-medium text-xs text-text-3">
+                        Unlocked {new Date(unlockedBadge.unlocked_at).toLocaleDateString()}
                       </Text>
                     )}
                   </View>
                 </View>
 
-                {currentTier && (
-                  <View className="px-4 pb-4">
-                    <View className="h-2.5 w-full overflow-hidden rounded-full bg-theme-gray-4/50">
-                      <View
-                        className="h-full rounded-full bg-theme-green"
-                        style={{ width: `${progress * 100}%` }}
-                      />
-                    </View>
+                <View className="flex-row items-center gap-3 px-4 pb-2">
+                  <View className="h-3 flex-1 overflow-hidden rounded-full bg-theme-gray-4/50 p-[2px]">
+                    <View
+                      className={`h-full rounded-full ${
+                        currentTier ? 'bg-theme-blue' : 'bg-theme-green'
+                      }`}
+                      style={{
+                        width: `${progress * 100}%`,
+                      }}
+                    />
                   </View>
-                )}
+
+                  {!isLocked && (
+                    <Text
+                      className={`text-left font-saira-semibold text-sm ${
+                        currentTier ? 'text-theme-blue' : 'text-theme-green'
+                      }`}>
+                      {Math.min(entry?.requirement?.value ?? 0, currentValue)} /{' '}
+                      {entry?.requirement?.value ?? 0}
+                    </Text>
+                  )}
+                </View>
               </View>
             </View>
           );

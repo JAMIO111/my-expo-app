@@ -15,7 +15,6 @@ import { calculateLevel } from '@lib/helperFunctions';
 import EntityStats from '@components/EntityStats';
 import CachedImage from '@components/CachedImage';
 import usePlayerBadges from '@hooks/usePlayerBadges';
-import { BlurView } from 'expo-blur';
 import ProGate from '@components/ProGate';
 import { useGlobalRank } from '@hooks/useGlobalRank';
 
