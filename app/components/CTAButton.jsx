@@ -6,6 +6,7 @@ const CTAButton = ({
   type = 'default',
   text,
   icon,
+  lucideIcon,
   iconColor = 'white',
   callbackFn,
   disabled,
@@ -70,7 +71,13 @@ const CTAButton = ({
           borderRadius: borderRadius,
         }}>
         <View className="flex-row items-center justify-center gap-3 px-2">
-          {loading ? <ActivityIndicator size="small" color={iconColor} /> : icon ? icon : null}
+          {loading ? (
+            <ActivityIndicator size="small" color={iconColor} />
+          ) : icon ? (
+            icon
+          ) : lucideIcon ? (
+            <View className="pb-1">{lucideIcon}</View>
+          ) : null}
           <Text
             style={{ color: buttonTheme.text }}
             className={`py-1 text-center ${fontWeight} ${textSize}`}>

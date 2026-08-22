@@ -29,6 +29,7 @@ import TicketCard from '@components/TicketCard';
 import TicketCarousel from '@components/TicketCarousel';
 import Heading from '@components/Heading';
 import TicketTapeBanner from '@components/TicketTapeBanner';
+import PlayerStatSelector from '../../components/PlayerStatSelector';
 
 const Home = () => {
   const { isPro, isCore } = useRevenueCat();

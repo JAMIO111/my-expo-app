@@ -21,10 +21,13 @@ export function useSaveMatchResults(fixtureId, existingResults) {
         awayPlayer1: f.awayPlayer1.id || null, // REQUIRED
         awayPlayer2: f.awayPlayer2?.id || null, // OPTIONAL
         winnerSide: f.winnerSide || null,
-        breakDish: f.breakDish || false,
-        reverseDish: f.reverseDish || false,
+        breakDish1: f.breakDish1 || null,
+        breakDish2: f.breakDish2 || null,
+        reverseDish1: f.reverseDish1 || null,
+        reverseDish2: f.reverseDish2 || null,
         lagWon: f.lagWon || null,
         bonusFrame: f.bonusFrame || false,
+        frameType: f.frameType || 'singles',
         frameNumber: i + 1,
         status: 'pending',
       }));
@@ -39,6 +42,8 @@ export function useSaveMatchResults(fixtureId, existingResults) {
       // - _frames: array of frames to upsert/update
       // - _deleted_ids: array of frame IDs to delete
       // - _fixture_id: current fixture ID
+
+      console.log('Frames to save:', framesWithNumbers);
 
       const { error } = await supabase.rpc('save_match_results', {
         _frames: framesWithNumbers,
