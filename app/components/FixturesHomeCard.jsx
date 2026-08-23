@@ -4,6 +4,7 @@ import { useRouter } from 'expo-router';
 import TeamLogo from './TeamLogo';
 import colors from '@lib/colors';
 import { useRef } from 'react';
+import { CalendarFold } from 'lucide-react-native';
 
 const FixturesHomeCard = ({ fixture, isLoading }) => {
   const colorScheme = useColorScheme();
@@ -35,13 +36,10 @@ const FixturesHomeCard = ({ fixture, isLoading }) => {
       ) : (
         <View className="flex-1 flex-row items-center justify-center px-5">
           <View className="flex-1 flex-row items-center justify-start">
-            <Ioconicons
-              className="pb-1"
-              name="calendar-outline"
-              size={20}
-              color={themeColors?.icon}
-            />
-            <Text className="ml-2 font-saira text-lg text-text-2">
+            <View className="pb-1">
+              <CalendarFold size={20} color="#666" />
+            </View>
+            <Text className="ml-3 font-saira-medium text-lg text-text-2">
               {new Date(fixture?.date_time).toLocaleString('en-GB', {
                 timeZone: 'Europe/London',
                 weekday: 'short',

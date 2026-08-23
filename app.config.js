@@ -23,12 +23,20 @@ export default ({ config }) => {
       'expo-router',
       'expo-font',
       'expo-web-browser',
+      'expo-apple-authentication',
       [
         'expo-build-properties',
         {
           ios: {
             useFrameworks: 'static',
           },
+        },
+      ],
+      [
+        'react-native-google-mobile-ads',
+        {
+          androidAppId: process.env.ADMOB_ANDROID_APP_ID,
+          iosAppId: process.env.ADMOB_IOS_APP_ID,
         },
       ],
       [
@@ -51,6 +59,7 @@ export default ({ config }) => {
     assetBundlePatterns: ['**/*'],
     ios: {
       bundleIdentifier: 'com.jdigital.breakroom',
+      usesAppleSignIn: true,
       googleServicesFile: process.env.GOOGLE_SERVICES_PLIST ?? './GoogleService-Info.plist',
       supportsTablet: true,
       infoPlist: {

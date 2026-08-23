@@ -69,7 +69,9 @@ const LeagueHomeCard = ({ standings }) => {
               color2={displayTeam?.crest?.color2}
               thickness={displayTeam?.crest?.thickness}
             />
-            <Text className="font-saira text-xl text-text-2">{displayTeam?.display_name}</Text>
+            <Text className="font-saira-medium text-xl text-text-2">
+              {displayTeam?.display_name}
+            </Text>
           </View>
           <Text className="font-saira text-2xl font-semibold text-text-1">{`${displayTeam?.points} Pts`}</Text>
         </View>

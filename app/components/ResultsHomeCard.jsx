@@ -44,7 +44,7 @@ const ResultsHomeCard = ({ result }) => {
               <Text className="mx-2 font-saira-semibold text-xl text-text-1">
                 {result?.homeTeam?.abbreviation}
               </Text>
-              <Text className="font-saira text-xl text-text-2">
+              <Text className="font-saira-medium text-xl text-text-2">
                 {result?.homeTeam?.display_name}
               </Text>
             </View>
@@ -58,7 +58,7 @@ const ResultsHomeCard = ({ result }) => {
               <Text className="mx-2 font-saira-semibold text-xl text-text-1">
                 {result?.awayTeam?.abbreviation}
               </Text>
-              <Text className="font-saira text-xl text-text-2">
+              <Text className="font-saira-medium text-xl text-text-2">
                 {result?.awayTeam?.display_name}
               </Text>
             </View>

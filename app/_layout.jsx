@@ -11,7 +11,7 @@ import {
 import { Michroma_400Regular } from '@expo-google-fonts/michroma';
 import Toast from 'react-native-toast-message';
 import toastConfig from '@lib/toastConfig';
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useRef } from 'react';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { UserProvider } from '@contexts/UserProvider';
 import { AdminProvider } from '@contexts/AdminContext';
@@ -20,6 +20,7 @@ import RevenueCatProvider from '@contexts/RevenueCatProvider';
 import { NotificationsPanelProvider } from '@contexts/NotificationsPanelProvider';
 import { BadgeUnlockProvider } from '@contexts/BadgeUnlockProvider';
 import { useUnseenBadgesTrigger } from '@hooks/useUnseenBadgesTrigger';
+import mobileAds from 'react-native-google-mobile-ads';
 
 export default function RootLayout() {
   const [fontsLoaded] = useFonts({
@@ -30,6 +31,17 @@ export default function RootLayout() {
     Michroma_400Regular,
     DelaGothicOne: require('@assets/fonts/DelaGothicOne-Regular.ttf'),
   });
+
+  useEffect(() => {
+    mobileAds()
+      .initialize()
+      .then(() => {
+        console.log('Google Mobile Ads initialized');
+      })
+      .catch((error) => {
+        console.error('Google Mobile Ads initialization failed:', error);
+      });
+  }, []);
 
   const queryClientRef = useRef();
   if (!queryClientRef.current) {

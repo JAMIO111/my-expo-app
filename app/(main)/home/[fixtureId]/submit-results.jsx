@@ -939,8 +939,8 @@ const SubmitResultsScreen = () => {
                   {frame.winnerSide === 'home' && (
                     <View
                       style={{ backgroundColor: trophyColor }}
-                      className="items-center justify-center rounded-lg bg-bg-1 p-2 shadow-sm">
-                      <Crown size={14} color="#000" />
+                      className="items-center justify-center rounded-lg border border-[#c9a227] bg-[#ffe483] p-1 shadow-sm">
+                      <Crown size={18} color="#B8860B" />
                     </View>
                   )}
                 </View>
@@ -967,10 +967,8 @@ const SubmitResultsScreen = () => {
                   style={{ borderRadius: 8 }}
                   className="flex h-10 flex-1 flex-row items-center justify-start gap-2 bg-bg-2 p-1">
                   {frame.winnerSide === 'away' && (
-                    <View
-                      style={{ backgroundColor: trophyColor }}
-                      className="items-center justify-center rounded-lg bg-bg-1 p-2 shadow-sm">
-                      <Crown size={14} color="#000" />
+                    <View className="items-center justify-center rounded-lg border border-[#c9a227] bg-[#ffe483] p-1 shadow-sm">
+                      <Crown size={18} color="#B8860B" />
                     </View>
                   )}
                   {(frame.breakDish1 || frame.breakDish2) && frame.winnerSide === 'away' && (
@@ -1078,7 +1076,7 @@ const SubmitResultsScreen = () => {
             activationDistance={10}
             ListHeaderComponent={() => ScoreHeader}
             contentContainerStyle={{ paddingBottom: 300, paddingHorizontal: 12 }}
-            containerStyle={{ flex: 1, marginTop: 64 }}
+            containerStyle={{ flex: 1, marginTop: 56 }}
             style={{ flex: 1 }}
           />
 
