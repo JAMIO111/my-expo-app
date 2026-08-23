@@ -10,6 +10,7 @@ import {
   Animated,
   Easing,
   ScrollView,
+  Platform,
 } from 'react-native';
 import { supabase } from '@/lib/supabase';
 import { useRouter, Link } from 'expo-router';
@@ -18,6 +19,7 @@ import * as WebBrowser from 'expo-web-browser';
 import SafeViewWrapper from '@components/SafeViewWrapper';
 import Purchases from 'react-native-purchases'; // ✅ default import, not named
 import Toast from 'react-native-toast-message';
+import AppleSignInButton from '@components/AppleSignInButton';
 
 const SignUpPage = () => {
   const router = useRouter();
@@ -243,27 +245,27 @@ const SignUpPage = () => {
               <View className="h-0.5 flex-1 bg-border-color" />
             </View>
 
+            {Platform.OS === 'ios' && <AppleSignInButton />}
+
             <Pressable
-              className="mt-4 h-16 flex-row items-center justify-center gap-5 rounded-xl border border-border-color bg-input-background"
+              className="mt-4 h-16 flex-row items-center justify-center gap-2 rounded-xl border border-border-color bg-input-background"
               onPress={() => signInWithProvider('facebook')}>
-              <Image
-                source={require('@assets/Facebook-logo.png')}
-                className="absolute left-3 h-12 w-12"
-              />
-              <Text className="text-center text-lg text-text-1">Continue with Facebook</Text>
+              <Image source={require('@assets/Facebook-logo.png')} className="h-7 w-7" />
+              <Text className="text-center text-xl font-semibold text-text-1">
+                Sign in with Facebook
+              </Text>
             </Pressable>
 
             <Pressable
-              className="mt-4 h-16 flex-row items-center justify-center gap-5 rounded-xl border border-border-color bg-input-background"
+              className="mt-4 h-16 flex-row items-center justify-center gap-2 rounded-xl border border-border-color bg-input-background"
               onPress={() => signInWithGoogle()}>
-              <Image
-                source={require('@assets/google-logo.png')}
-                className="absolute left-3 h-11 w-11"
-              />
-              <Text className="text-center text-lg text-text-1">Continue with Google</Text>
+              <Image source={require('@assets/google-logo.png')} className="h-6 w-6" />
+              <Text className="text-center text-xl font-semibold text-text-1">
+                Sign in with Google
+              </Text>
             </Pressable>
 
-            <Text className="mt-4 text-center text-lg text-text-2">
+            <Text className="mt-6 text-center text-lg text-text-2">
               Already have an account?{' '}
               <Link className="text-theme-blue underline" href="/auth/login">
                 Login

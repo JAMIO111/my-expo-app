@@ -1,4 +1,5 @@
-import { useState, useEffect, useRef } from 'react';
+import { useEffect, useState, useRef } from 'react';
+import AppleSignInButton from '@components/AppleSignInButton';
 import {
   View,
   TextInput,
@@ -9,9 +10,10 @@ import {
   Animated,
   Easing,
   ScrollView,
+  Platform,
 } from 'react-native';
 import SafeViewWrapper from '@components/SafeViewWrapper';
-import { useRouter, Link } from 'expo-router';
+import { Link } from 'expo-router';
 import { useFonts } from 'expo-font';
 import { Michroma_400Regular } from '@expo-google-fonts/michroma';
 import { supabase } from '@/lib/supabase';
@@ -20,7 +22,6 @@ import { useUser } from '@contexts/UserProvider';
 import Purchases from 'react-native-purchases'; // ✅ default import, not named
 
 const LoginPage = () => {
-  const router = useRouter();
   const { signInWithProvider } = useUser();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -216,28 +217,27 @@ const LoginPage = () => {
               <Text className="text-text-2">Or</Text>
               <View className="h-0.5 flex-1 bg-border-color" />
             </View>
+            {Platform.OS === 'ios' && <AppleSignInButton />}
 
             <Pressable
-              className="mt-4 h-16 flex-row items-center justify-center gap-5 rounded-xl border border-border-color bg-input-background"
+              className="mt-4 h-[50px] flex-row items-center justify-center gap-2 rounded-xl border border-border-color bg-input-background"
               onPress={() => signInWithProvider('facebook')}>
-              <Image
-                source={require('@assets/Facebook-logo.png')}
-                className="absolute left-3 h-12 w-12"
-              />
-              <Text className="text-center text-lg text-text-1">Continue with Facebook</Text>
+              <Image source={require('@assets/Facebook-logo.png')} className="h-7 w-7" />
+              <Text className="text-center text-xl font-semibold text-text-1">
+                Sign in with Facebook
+              </Text>
             </Pressable>
 
             <Pressable
-              className="mt-4 h-16 flex-row items-center justify-center gap-5 rounded-xl border border-border-color bg-input-background"
+              className="mt-4 h-[50px] flex-row items-center justify-center gap-2 rounded-xl border border-border-color bg-input-background"
               onPress={() => signInWithProvider('google')}>
-              <Image
-                source={require('@assets/google-logo.png')}
-                className="absolute left-3 h-11 w-11"
-              />
-              <Text className="text-center text-lg text-text-1">Continue with Google</Text>
+              <Image source={require('@assets/google-logo.png')} className="h-6 w-6" />
+              <Text className="text-center text-xl font-semibold text-text-1">
+                Sign in with Google
+              </Text>
             </Pressable>
 
-            <Text className="mt-4 text-center text-lg text-text-2">
+            <Text className="mt-6 text-center text-lg text-text-2">
               Don't have an account?{' '}
               <Link className="text-theme-blue underline" href="/auth/signup">
                 Sign Up

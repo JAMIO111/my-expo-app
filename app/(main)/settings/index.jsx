@@ -21,6 +21,7 @@ import CTAButton from '@components/CTAButton';
 
 const index = () => {
   const bottomSheetRef = useRef(null);
+  const isAnimatingRef = useRef(false); // ✅ guards rapid open/close taps
   const [isSigningOut, setIsSigningOut] = useState(false);
   const [isBottomSheetOpen, setBottomSheetOpen] = useState(false);
   const router = useRouter();
@@ -226,9 +227,7 @@ const index = () => {
         ref={bottomSheetRef}
         initialIndex={-1}
         snapPoints={['20%']}
-        onChange={(index) => {
-          setBottomSheetOpen(index >= 0);
-        }}
+        onBackdropPress={closeSheet} // ✅ new — lets the parent own the close path
         footerComponent={(props) => (
           <BottomSheetFooter {...props}>
             <View

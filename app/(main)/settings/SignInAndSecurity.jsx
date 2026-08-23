@@ -2,7 +2,6 @@ import {
   StyleSheet,
   Text,
   View,
-  ScrollView,
   TextInput,
   Pressable,
   Animated,
@@ -89,6 +88,12 @@ const PROVIDERS = [
     icon: require('../../assets/Facebook-logo.png'),
     canUnlink: true,
   },
+  {
+    key: 'apple',
+    label: 'Apple',
+    icon: require('../../assets/apple-logo.png'),
+    canUnlink: true,
+  },
 ];
 
 // ─── Connected Logins Section ─────────────────────────────
@@ -97,11 +102,66 @@ const ConnectedLoginsSection = ({ user, onIdentitiesChange }) => {
   const [loadingKey, setLoadingKey] = useState(null);
   const [confirmUnlink, setConfirmUnlink] = useState(null);
 
+  const refreshIdentities = async () => {
+    const { data, error } = await supabase.auth.getUserIdentities();
+    if (error) {
+      console.error('[ConnectedLogins] Failed to fetch identities:', error);
+      return;
+    }
+    setIdentities(data.identities);
+    onIdentitiesChange?.(data.identities);
+  };
+
   useEffect(() => {
-    setIdentities(user?.identities ?? []);
+    refreshIdentities();
+  }, []);
+
+  useEffect(() => {
+    if (user?.identities) setIdentities(user.identities);
   }, [user]);
 
   const isConnected = (providerKey) => identities.some((i) => i.provider === providerKey);
+
+  const handleLinkApple = async () => {
+    setLoadingKey('apple');
+    try {
+      const credential = await AppleAuthentication.signInAsync({
+        requestedScopes: [
+          AppleAuthentication.AppleAuthenticationScope.FULL_NAME,
+          AppleAuthentication.AppleAuthenticationScope.EMAIL,
+        ],
+      });
+
+      if (!credential.identityToken) {
+        throw new Error('No identity token returned from Apple');
+      }
+
+      const { error } = await supabase.auth.linkIdentityWithIdToken({
+        provider: 'apple',
+        token: credential.identityToken,
+      });
+
+      if (error) throw error;
+
+      await refreshIdentities();
+
+      Toast.show({ type: 'success', text1: 'Apple linked successfully' });
+    } catch (err) {
+      if (err.code === 'ERR_REQUEST_CANCELED') return; // user dismissed the sheet
+
+      console.error('[Apple link]', err);
+
+      // This is the most common failure here — see note below
+      const message =
+        err.message?.includes('already') || err.code === 'identity_already_exists'
+          ? 'This Apple ID is already linked to a different account.'
+          : err.message;
+
+      Toast.show({ type: 'error', text1: 'Failed to link Apple', text2: message });
+    } finally {
+      setLoadingKey(null);
+    }
+  };
 
   const handleLink = async (providerKey) => {
     setLoadingKey(providerKey);
@@ -112,6 +172,8 @@ const ConnectedLoginsSection = ({ user, onIdentitiesChange }) => {
         path: 'auth',
         useProxy: false,
       });
+
+      console.log('[Apple link] redirectTo generated:', redirectTo); // ✅ add this
 
       const { data, error } = await supabase.auth.linkIdentity({
         provider: providerKey,
@@ -130,18 +192,15 @@ const ConnectedLoginsSection = ({ user, onIdentitiesChange }) => {
         console.log('OAuth result:', result);
 
         if (result.type === 'success') {
-          const {
-            data: { user },
-          } = await supabase.auth.getUser();
+          await refreshIdentities();
 
-          console.log('Identities:', user.identities);
+          console.log('[Apple link] Redirect URL:', result.url); // ✅ add this — check for error params
 
-          setIdentities(user.identities);
-          onIdentitiesChange?.(user.identities);
+          console.log('Identities refreshed');
 
           Toast.show({
             type: 'success',
-            text1: `${providerKey} linked successfully`,
+            text1: `${providerKey.slice(0, 1).toUpperCase() + providerKey.slice(1)} linked successfully`,
           });
         }
       }
@@ -172,7 +231,10 @@ const ConnectedLoginsSection = ({ user, onIdentitiesChange }) => {
       setIdentities(updated);
       onIdentitiesChange?.(updated);
 
-      Toast.show({ type: 'success', text1: `${providerKey} unlinked` });
+      Toast.show({
+        type: 'success',
+        text1: `${providerKey.slice(0, 1).toUpperCase() + providerKey.slice(1)} unlinked`,
+      });
     } catch (err) {
       Toast.show({ type: 'error', text1: 'Failed to unlink account', text2: err.message });
     } finally {
@@ -203,7 +265,7 @@ const ConnectedLoginsSection = ({ user, onIdentitiesChange }) => {
                   ) : (
                     <Image
                       source={provider.icon}
-                      style={{ width: 28, height: 28, tintColor: provider.color }}
+                      style={{ width: 28, height: 28, tintColor: provider.color, paddingBottom: 2 }}
                     />
                   )}
                 </View>

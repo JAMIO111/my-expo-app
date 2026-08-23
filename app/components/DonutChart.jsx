@@ -6,7 +6,8 @@ const DonutChart = ({
   draws = 0,
   losses = 0,
   size = 128,
-  strokeWidth = 12,
+  strokeWidth = 20,
+  statValue = 0,
   statTitle = 'Total',
 }) => {
   const total = wins + draws + losses;
@@ -88,7 +89,7 @@ const DonutChart = ({
       </Svg>
 
       <View className="absolute inset-0 items-center justify-center">
-        <Text className="font-saira-semibold text-2xl text-text-1">{total}</Text>
+        <Text className="font-saira-semibold text-2xl text-text-1">{statValue}</Text>
         <Text
           style={{ lineHeight: 18 }}
           className="text-md px-8 text-center font-saira-medium text-text-2">

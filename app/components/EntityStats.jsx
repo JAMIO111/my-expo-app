@@ -2,6 +2,7 @@ import { StyleSheet, Text, View } from 'react-native';
 import { usePlayerStats } from '@hooks/usePlayerStats';
 import { useTeamStats } from '@hooks/useTeamStats';
 import DonutChart from './DonutChart';
+import { Zap, Undo2, ArrowUpDown } from 'lucide-react-native';
 
 const EntityStats = ({ entityId, entityType }) => {
   console.log('PlayerStats Component Rendered with entityId:', entityId);
@@ -21,6 +22,27 @@ const EntityStats = ({ entityId, entityType }) => {
     console.log('Stats Data:', data);
   }
 
+  const StatRow = ({ label, value, color }) => (
+    <View className="flex flex-row items-center gap-3">
+      <View className={`h-4 w-4 rounded-full ${color}`} />
+      <Text className="flex-1 font-saira-medium text-xl text-text-2">{label}</Text>
+      <Text className="pr-4 font-saira-semibold text-2xl text-text-1">{value}</Text>
+    </View>
+  );
+
+  const StatBlock = ({ label, subLabel, value, icon }) => (
+    <View className="relative flex-1 items-center justify-between px-5 py-3 pb-2">
+      <View className="w-full flex-col items-start">
+        <Text className="font-saira-semibold text-xl text-text-1">{label}</Text>
+        <Text className="font-saira-medium text-lg text-text-2">{subLabel}</Text>
+      </View>
+
+      <Text style={{ fontSize: 40 }} className="w-full text-left font-saira-semibold text-text-1">
+        {value}
+      </Text>
+    </View>
+  );
+
   const StatSection = ({ title, stats, type }) => {
     const prefix = type; // "frames" or "matches"
 
@@ -32,126 +54,121 @@ const EntityStats = ({ entityId, entityType }) => {
     const currentStreak = stats?.[`current_${prefix.slice(0, -1)}_streak`] ?? 0;
 
     return (
-      <View className="bg-bg-grouped-2 px-6 py-8">
-        <Text className="mb-2 font-saira-semibold text-3xl text-text-1">{title}</Text>
-
-        <View className="mb-8 w-full flex-row items-center justify-between gap-8">
-          <View className="relative rounded-full border border-theme-gray-5 bg-bg-2 p-1">
-            {/* Dark inner edge */}
-            <View
-              pointerEvents="none"
-              className="absolute inset-0 rounded-full border-l-2 border-t-2 border-black/15"
+      <View className="gap-3 bg-bg-grouped-1">
+        <View className="flex-col items-center rounded-3xl border border-theme-gray-5 bg-bg-1 p-3">
+          <Text className="w-full flex-1 px-2 pt-2 text-left font-saira-medium text-3xl text-text-1">
+            {title}
+          </Text>
+          <View className="flex-row gap-10 rounded-3xl bg-bg-1 p-4">
+            <DonutChart
+              wins={won}
+              draws={drawn}
+              losses={lost}
+              statValue={`${winPercent}%`}
+              statTitle={`Win Rate`}
             />
-
-            {/* Light inner edge */}
-            <View
-              pointerEvents="none"
-              className="absolute inset-0 rounded-full border-b-2 border-r-2 border-white/60"
-            />
-
-            <DonutChart wins={won} draws={drawn} losses={lost} statTitle={`${title} Played`} />
-          </View>
-
-          <View
-            style={{ borderRadius: 15 }}
-            className="relative flex-1 overflow-hidden border border-theme-gray-4 bg-bg-2 px-4 py-3">
-            {/* Dark inner edge — top/left */}
-            <View
-              pointerEvents="none"
-              style={{ borderTopWidth: 2, borderLeftWidth: 2, borderColor: 'rgba(0, 0, 0, 0.15)' }}
-              className="absolute inset-0 rounded-2xl"
-            />
-
-            {/* Light inner edge — bottom/right */}
-            <View
-              pointerEvents="none"
-              style={{
-                borderBottomWidth: 2,
-                borderRightWidth: 2,
-                borderColor: 'rgba(255, 255, 255, 0.5)',
-              }}
-              className="absolute inset-0 rounded-2xl"
-            />
-
-            <View className="gap-2">
+            <View className="flex-1 justify-between">
               <StatRow label="Won" value={won} color="bg-green-700" />
-              <Divider />
-              <StatRow label="Drawn" value={drawn} color="bg-yellow-500" />
-              <Divider />
+              <StatRow label="Tied" value={drawn} color="bg-yellow-500" />
               <StatRow label="Lost" value={lost} color="bg-red-500" />
+              <StatRow label="Played" value={won + drawn + lost} color="bg-blue-500" />
             </View>
           </View>
         </View>
-
-        <View
-          style={{ borderRadius: 15 }}
-          className="relative mt-2 overflow-hidden border border-theme-gray-4 bg-bg-2 px-2 py-6">
-          {/* Dark inner edge — top/left */}
-          <View
-            pointerEvents="none"
-            style={{
-              borderTopWidth: 2,
-              borderLeftWidth: 2,
-              borderColor: 'rgba(0, 0, 0, 0.15)',
-            }}
-            className="absolute inset-0 rounded-2xl"
-          />
-
-          {/* Light inner edge — bottom/right */}
-          <View
-            pointerEvents="none"
-            style={{
-              borderBottomWidth: 2,
-              borderRightWidth: 2,
-              borderColor: 'rgba(255, 255, 255, 0.5)',
-            }}
-            className="absolute inset-0 rounded-2xl"
-          />
-
-          <View className="flex flex-row gap-8">
-            <StatBlock label="Win Rate" value={`${winPercent}%`} />
-
-            <StatBlock label="Best Win Streak" value={bestStreak} />
-
+        <View className="flex-row gap-3">
+          <View style={{ borderRadius: 24 }} className="flex-1 border border-theme-gray-5 bg-bg-1">
             <StatBlock
-              label="Current Win Streak"
+              label="Win Streak"
+              subLabel="Current"
+              icon={
+                <View className="items-center justify-center">
+                  <Zap size={40} color="#7e0fd9" />
+                </View>
+              }
               value={
                 currentStreak > 0 && currentStreak === bestStreak
-                  ? `${currentStreak} 🔥`
+                  ? `🔥 ${currentStreak}`
                   : currentStreak
               }
             />
+          </View>
+          <View style={{ borderRadius: 24 }} className="flex-1 border border-theme-gray-5 bg-bg-1">
+            <StatBlock label="Win Streak" subLabel="Career Best" value={bestStreak} />
           </View>
         </View>
       </View>
     );
   };
 
-  const StatRow = ({ label, value, color }) => (
-    <View className="flex flex-row items-center gap-2">
-      <View className={`h-3 w-3 rounded-full ${color}`} />
-      <Text className="flex-1 font-saira-medium text-xl text-text-2">{label}</Text>
-      <Text className="pr-4 font-saira-semibold text-2xl text-text-1">{value}</Text>
-    </View>
-  );
-
-  const StatBlock = ({ label, value }) => (
-    <View className="flex-1 items-center justify-center">
-      <Text className="flex-1 font-saira-semibold text-3xl text-text-1">{value}</Text>
-      <Text
-        style={{ lineHeight: 18 }}
-        className="flex-1 text-center text-lg font-semibold text-text-2">
-        {label}
-      </Text>
-    </View>
-  );
-
-  const Divider = () => <View className="border-b border-theme-gray-5" />;
-
   return (
-    <View className="w-full gap-1">
+    <View className="w-full gap-3 p-3 pb-24">
       <StatSection title="Frames" stats={data?.totalStats} type="frames" />
+      <View className="gap-3">
+        <View className="flex-row items-center gap-8 rounded-3xl border border-theme-gray-5 bg-bg-1 px-3 py-3">
+          <View
+            style={{ width: 60, height: 60, borderRadius: 16, backgroundColor: '#7e0fd922' }}
+            className="items-center justify-center">
+            <ArrowUpDown size={40} color="#7e0fd9" />
+          </View>
+          <View className="flex-1">
+            <Text className="font-saira-semibold text-xl text-text-1">Lags Won</Text>
+            <Text className="font-saira-light text-xs text-text-2">
+              Roll closest to the cushion to win the lag and choose who breaks first.
+            </Text>
+          </View>
+          <Text
+            style={{
+              fontSize: 40,
+              lineHeight: 60,
+            }}
+            className="px-3 font-saira-semibold text-text-1">
+            {data?.totalStats?.lags_won ?? 0}
+          </Text>
+        </View>
+        <View className="flex-row items-center gap-8 rounded-3xl border border-theme-gray-5 bg-bg-1 px-3 py-3">
+          <View
+            style={{ width: 60, height: 60, borderRadius: 16, backgroundColor: '#d95c0f33' }}
+            className="items-center justify-center">
+            <Zap size={40} color="#d95c0f" />
+          </View>
 
+          <View className="flex-1">
+            <Text className="font-saira-semibold text-xl text-text-1">Break Dishes</Text>
+            <Text className="font-saira-light text-xs text-text-2">
+              Win the frame off break without your opponent coming to the table
+            </Text>
+          </View>
+          <Text
+            style={{
+              fontSize: 40,
+              lineHeight: 60,
+            }}
+            className="px-3 font-saira-semibold text-text-1">
+            {data?.totalStats?.break_dishes ?? 0}
+          </Text>
+        </View>
+        <View className="flex-row items-center gap-8 rounded-3xl border border-theme-gray-5 bg-bg-1 px-3 py-3">
+          <View
+            style={{ width: 60, height: 60, borderRadius: 16, backgroundColor: '#1e870e33' }}
+            className="items-center justify-center">
+            <Undo2 size={40} color="#1e870e" />
+          </View>
+          <View className="flex-1">
+            <Text className="font-saira-semibold text-xl text-text-1">Reverse Dishes</Text>
+            <Text className="font-saira-light text-xs text-text-2">
+              Win the frame at your first visit after your opponent's dry break.
+            </Text>
+          </View>
+          <Text
+            style={{
+              fontSize: 40,
+              lineHeight: 60,
+            }}
+            className="px-3 font-saira-semibold text-text-1">
+            {data?.totalStats?.reverse_dishes ?? 0}
+          </Text>
+        </View>
+      </View>
       <StatSection title="Matches" stats={data?.totalStats} type="matches" />
     </View>
   );

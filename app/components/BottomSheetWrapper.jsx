@@ -15,6 +15,7 @@ const BottomSheetWrapper = forwardRef(
       backgroundColor,
       indicatorColor = 'themeGray3',
       onChange = () => {},
+      onBackdropPress = null, // ✅ new — lets the parent own the close path
     },
     ref
   ) => {
@@ -28,7 +29,8 @@ const BottomSheetWrapper = forwardRef(
           {...props}
           appearsOnIndex={0}
           disappearsOnIndex={-1}
-          pressBehavior="close"
+          pressBehavior={onBackdropPress ? 'close' : 'close'} // ✅ hand off control when a handler is given
+          onPress={onBackdropPress ?? undefined} // ✅ BottomSheetBackdrop forwards onPress through its internal Pressable
         />
       ),
       []
