@@ -20,6 +20,7 @@ import {
   formatAgeRestrictions,
 } from '@components/CompetitionInstanceCard';
 import Ionicons from '@expo/vector-icons/Ionicons';
+import { Crown, Ban, CircleStar, ShieldCheck } from 'lucide-react-native';
 import Toast from 'react-native-toast-message';
 import FloatingBottomSheet from '@components/FloatingBottomSheet';
 import BottomSheetWrapper from '@/components/BottomSheetWrapper';
@@ -33,17 +34,19 @@ export function getStatusColors(status) {
     case 'removed':
     case 'closed':
     case 'left':
-      return { background: '#FF000033', text: '#FF0000', border: '#FF000066' }; // Red
+      return { background: '#FF000022', text: '#FF0000', border: '#FF000066' }; // Red
     case 'closed':
-      return { background: '#FF000033', text: '#FF0000', border: '#FF000066' }; // Red
+      return { background: '#FF000022', text: '#FF0000', border: '#FF000066' }; // Red
     case 'active':
-      return { background: '#00800033', text: '#008000', border: '#00800066' }; // Green
+      return { background: '#00800022', text: '#008000', border: '#00800066' }; // Green
     case 'champion':
       return { background: '#FFA50022', text: '#ff9100', border: '#ff910066' }; // Orange
     case 'eliminated':
-      return { background: '#FF000033', text: '#FF0000', border: '#FF000066' }; // Red
+      return { background: '#FF000022', text: '#FF0000', border: '#FF000066' }; // Red
+    case 'runner_up':
+      return { background: '#C0C0C044', text: '#666', border: '#C0C0C088' }; // Silver
     default:
-      return { background: '#00000033', text: '#000000', border: '#00000066' }; // Default to black
+      return { background: '#00000022', text: '#000000', border: '#00000066' }; // Default to black
   }
 }
 
@@ -719,17 +722,31 @@ const index = () => {
                               className="flex-1 px-1 font-saira-medium text-lg text-text-1">
                               {participantName}
                             </Text>
-                            <Text
+                            <View
+                              className="flex-row items-center justify-center"
                               style={{
-                                color: statusColors.text,
                                 backgroundColor: statusColors.background,
                                 borderColor: statusColors.border,
                                 borderWidth: 1,
-                                borderRadius: 10,
-                              }}
-                              className="px-2 font-saira text-sm text-text-2">
-                              {formatStatus(entity.status)}
-                            </Text>
+                                borderRadius: 6,
+                                padding: 2,
+                              }}>
+                              {entity.status === 'champion' && <Crown size={16} color="#ff9100" />}
+                              {entity.status === 'runner_up' && (
+                                <CircleStar size={16} color="#666" />
+                              )}
+                              {entity.status === 'eliminated' && <Ban size={16} color="#FF0000" />}
+                              {entity.status === 'active' && (
+                                <ShieldCheck size={16} color="#008000" />
+                              )}
+                              <Text
+                                style={{
+                                  color: statusColors.text,
+                                }}
+                                className="px-2 font-saira-medium text-sm text-text-2">
+                                {formatStatus(entity.status)}
+                              </Text>
+                            </View>
                             {entity.status === 'requested' && (
                               <Text
                                 style={{

@@ -3,11 +3,10 @@ import { View, Text, ScrollView, Pressable, Animated, StyleSheet, Modal } from '
 import { useRouter } from 'expo-router';
 import Svg, { Path } from 'react-native-svg';
 import { useKnockoutBracket } from '@/hooks/useKnockoutBracket';
-import CTAButton from './CTAButton';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useUser } from '@contexts/UserProvider';
 import BottomSheetModal from './BottomSheetModal';
-import { Trophy, Calendar, Repeat, Users, Layers, Swords } from 'lucide-react-native';
+import { Trophy, Calendar, Repeat, Users, Layers, Swords, Crown } from 'lucide-react-native';
 
 // ─── Layout constants ─────────────────────────────────────
 const CARD_H = 68;
@@ -71,7 +70,7 @@ const Slot = ({ name, isWinner, isBye, isHome, isFrames, score }) => {
 
   return (
     <View style={[styles.slot, isWinner && styles.slotWinner, isHome && styles.slotDivider]}>
-      {isWinner && <View style={styles.winnerDot} />}
+      {isWinner && <Crown size={14} color="#d97706" />}
 
       <Text
         className="flex-1"
@@ -392,7 +391,7 @@ export default function KnockoutBracket({ competitionInstanceId }) {
           <View className="flex-row flex-wrap gap-3">
             {activeStage?.best_of && (
               <StatCard
-                icon={<Swords size={20} color="#D4AF37" />}
+                icon={<Swords size={20} color="#668855" />}
                 label="Best of"
                 value={`${activeStage.best_of} frames`}
               />
@@ -400,7 +399,7 @@ export default function KnockoutBracket({ competitionInstanceId }) {
 
             {activeStage?.complete_by && (
               <StatCard
-                icon={<Calendar size={20} color="#D4AF37" />}
+                icon={<Calendar size={20} color="#668855" />}
                 label="Complete By"
                 value={new Date(activeStage.complete_by).toLocaleDateString('en-GB', {
                   weekday: 'short',
@@ -414,7 +413,7 @@ export default function KnockoutBracket({ competitionInstanceId }) {
 
             {activeStage?.stage_type === 'knockout' && (
               <StatCard
-                icon={<Trophy size={20} color="#D4AF37" />}
+                icon={<Trophy size={20} color="#668855" />}
                 label="No. of Legs"
                 value={activeStage?.legs ?? '–'}
               />
@@ -422,7 +421,7 @@ export default function KnockoutBracket({ competitionInstanceId }) {
 
             {activeStage?.stage_type === 'round_robin' && (
               <StatCard
-                icon={<Repeat size={20} color="#D4AF37" />}
+                icon={<Repeat size={20} color="#668855" />}
                 label="Round Robins"
                 value={activeStage?.round_robins ?? '–'}
               />
@@ -431,12 +430,12 @@ export default function KnockoutBracket({ competitionInstanceId }) {
             {activeStage?.stage_type === 'group' && (
               <>
                 <StatCard
-                  icon={<Layers size={20} color="#D4AF37" />}
+                  icon={<Layers size={20} color="#668855" />}
                   label="No. of Groups"
                   value={activeStage?.groups ?? '–'}
                 />
                 <StatCard
-                  icon={<Users size={20} color="#D4AF37" />}
+                  icon={<Users size={20} color="#668855" />}
                   label="Teams per Group"
                   value={activeStage?.teams_per_group ?? '–'}
                 />
@@ -491,23 +490,18 @@ const styles = StyleSheet.create({
     backgroundColor: '#fef3c7',
   },
 
-  winnerDot: {
-    width: 6,
-    height: 6,
-    borderRadius: 6,
-    backgroundColor: '#d97706',
-    marginRight: 6,
-  },
-
   slotText: {
-    fontSize: 12,
+    fontSize: 14,
     color: '#111827',
     flexShrink: 1,
+    fontFamily: 'Saira',
+    fontWeight: '500',
   },
 
   winnerText: {
     fontWeight: '600',
     color: '#92400e',
+    paddingLeft: 6,
   },
 
   byeText: {

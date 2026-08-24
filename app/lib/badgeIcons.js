@@ -41,6 +41,14 @@ export const badgeIcons = {
   'cup-collector-5': require('@assets/badges/cup-collector-5.png'),
   'cup-collector-6': require('@assets/badges/cup-collector-6.png'),
   'cup-collector-7': require('@assets/badges/cup-collector-7.png'),
+  'diehard-1': require('@assets/badges/die-hard-1.png'),
+  'diehard-2': require('@assets/badges/die-hard-2.png'),
+  'diehard-3': require('@assets/badges/die-hard-3.png'),
+  'diehard-4': require('@assets/badges/die-hard-4.png'),
+  'diehard-5': require('@assets/badges/die-hard-5.png'),
+  'diehard-6': require('@assets/badges/die-hard-6.png'),
+  'diehard-7': require('@assets/badges/die-hard-7.png'),
+  // Add more badges as needed
   // Add others as needed
 };
 
