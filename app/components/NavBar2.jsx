@@ -106,7 +106,7 @@ const NavBar = ({ type = 'main' }) => {
       <View className="absolute top-6 h-4 w-full bg-brand-light" />
 
       {/* LEFT SIDE */}
-      <View className="flex-1 flex-row items-center justify-evenly gap-3 pl-2">
+      <View className="flex-1 flex-row items-center justify-evenly gap-3 pl-2 pr-1">
         {leftItems.map(({ name, href, icon: Icon }, index) => {
           const isActive = pathname === href;
 
@@ -125,7 +125,7 @@ const NavBar = ({ type = 'main' }) => {
       </View>
 
       {/* CENTER BUTTON SPACE (fixed position) */}
-      <View style={{ paddingBottom: 70 }} className="h-40 w-20 items-center justify-center">
+      <View style={{ paddingBottom: 45 }} className="h-40 w-20 items-center justify-center">
         <Pressable
           onPress={() => {
             if (pathname !== centerItem.href) {
@@ -140,8 +140,8 @@ const NavBar = ({ type = 'main' }) => {
               opacity: opacityValue,
               transform: [{ rotate: spinInterpolate }, { scale: scaleValues[2] }],
             }}
-            className="h-8 w-8 items-center justify-center rounded-full bg-white">
-            <Text className="text-2xl text-black">8</Text>
+            className="mt-1 h-8 w-8 items-center justify-center rounded-full bg-[#D9D9D9]">
+            <Text className="font-tektur-semibold text-2xl text-black">8</Text>
           </Animated.View>
         </Pressable>
 
@@ -149,7 +149,7 @@ const NavBar = ({ type = 'main' }) => {
       </View>
 
       {/* RIGHT SIDE */}
-      <View className="flex-1 flex-row items-center justify-evenly gap-3 pr-2">
+      <View className="flex-1 flex-row items-center justify-evenly gap-3 pl-1 pr-2">
         {rightItems.map(({ name, href, icon: Icon }, i) => {
           const realIndex = i + 3;
           const isActive = pathname === href;

@@ -14,7 +14,7 @@ export default ({ config }) => {
     slug: 'break-room',
     version: '1.0.0',
     web: {
-      favicon: './app/assets/Break-Room-Logo-2-1024-Background.png',
+      favicon: './app/assets/BR-Logo-1024-Background.png',
     },
     experiments: {
       tsconfigPaths: true,
@@ -47,7 +47,7 @@ export default ({ config }) => {
       ],
     ],
     orientation: 'portrait',
-    icon: './app/assets/Break-Room-Logo-2-1024-Background.png',
+    icon: './app/assets/BR-Logo-1024-Background.png',
     userInterfaceStyle: 'automatic',
     jsEngine: 'hermes',
     newArchEnabled: true,

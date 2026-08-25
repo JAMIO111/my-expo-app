@@ -101,7 +101,7 @@ export default function LeaderboardScreen({ players = [], scope }) {
       </View>
 
       {/* List */}
-      <View className="mx-4 overflow-hidden rounded-3xl">
+      <View className="mx-4 overflow-hidden rounded-3xl border border-theme-gray-5">
         <FlatList
           data={sorted}
           keyExtractor={(item) => String(item.id ?? item.rank)}

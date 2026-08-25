@@ -1,6 +1,5 @@
 import { Text, View, Image, Pressable } from 'react-native';
 import { useColorScheme } from 'react-native';
-import Ionicons from '@expo/vector-icons/Ionicons';
 import { BellDot, Bell } from 'lucide-react-native';
 import { useNotificationsPanel } from '@contexts/NotificationsPanelProvider';
 
@@ -13,21 +12,21 @@ const BrandHeader = ({
   const colorScheme = useColorScheme();
   const { open, unreadCount } = useNotificationsPanel();
   return (
-    <View className={`h-16 flex-row items-center justify-center ${backgroundColor}`}>
+    <View className={`h-16 flex-row items-center justify-center gap-2 ${backgroundColor}`}>
       {showNotification && <View className="w-12" />}
-      <Text className="flex-1 pb-2 text-right font-michroma text-2xl font-bold text-white">
+      <Text className="mt-2 flex-1 pb-2 text-right font-michroma text-3xl text-[#D9D9D9]">
         {text1}
       </Text>
       <Image
         source={
           colorScheme === 'dark'
-            ? require('@assets/Break-Room-Logo-2-1024-Background-Dark.png')
-            : require('@assets/Break-Room-Logo-2-1024-Background.png')
+            ? require('@assets/BR-Logo-1024-No-Background.png')
+            : require('@assets/BR-Logo-1024-No-Background.png')
         }
-        className="mx-1 h-14 w-14"
+        className="mx-1 h-12 w-12"
         resizeMode="contain"
       />
-      <Text className="flex-1 pb-2 text-left font-michroma text-2xl font-bold text-white">
+      <Text className="mt-2 flex-1 pb-2 text-left font-michroma text-3xl text-[#D9D9D9]">
         {text2}
       </Text>
       {showNotification && (

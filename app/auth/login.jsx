@@ -140,11 +140,11 @@ const LoginPage = () => {
       <SafeViewWrapper useBottomInset={false} topColor="bg-brand">
         <View className="flex-1">
           <View className="w-full justify-center bg-brand">
-            <View className="flex-row items-center justify-center gap-2">
+            <View className="flex-row items-center justify-center gap-4">
               <Text style={styles.title}>Break</Text>
               <Image
-                source={require('@assets/Break-Room-Logo-2-1024-Background.png')}
-                className="mt-2 h-14 w-14"
+                source={require('@assets/BR-Logo-1024-No-Background.png')}
+                className="mt-2 h-16 w-16"
                 resizeMode="contain"
               />
               <Text style={styles.title}>Room</Text>
@@ -255,12 +255,12 @@ export default LoginPage;
 const styles = StyleSheet.create({
   container: { flex: 1, justifyContent: 'center', padding: 32 },
   title: {
-    color: 'white',
+    color: '#D9D9D9',
     fontFamily: 'Michroma',
     fontSize: 32,
-    fontWeight: 'bold',
     textAlign: 'center',
     marginVertical: 20,
+    paddingTop: 4,
   },
   errorText: { color: 'red', marginBottom: 10, paddingLeft: 10, textAlign: 'left' },
 });

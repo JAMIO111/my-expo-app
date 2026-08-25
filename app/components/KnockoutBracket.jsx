@@ -198,11 +198,35 @@ export default function KnockoutBracket({ competitionInstanceId }) {
 
   console.log('KnockoutBracket - data:', data);
 
-  const stages = data?.stages ?? [];
-  const fixtures = data?.fixtures ?? [];
+  const allStages = data?.stages ?? [];
+  const allFixtures = data?.fixtures ?? [];
   const teams = data?.teams ?? {};
   const players = data?.players ?? {};
   const frames = data?.frames ?? {};
+
+  // 3rd place playoff is a sibling bracket (stage_order === -1), not reachable
+  // via parent_fixture_id recursion from the final — pull it out before
+  // building the main tree, then render it as its own trailing column.
+  const thirdPlaceStage = useMemo(
+    () => allStages.find((s) => s.stage_order === -1) ?? null,
+    [allStages]
+  );
+
+  const stages = useMemo(() => allStages.filter((s) => s.stage_order !== -1), [allStages]);
+
+  const thirdPlaceFixture = useMemo(
+    () =>
+      thirdPlaceStage ? (allFixtures.find((f) => f.stage_id === thirdPlaceStage.id) ?? null) : null,
+    [allFixtures, thirdPlaceStage]
+  );
+
+  const fixtures = useMemo(
+    () =>
+      thirdPlaceStage ? allFixtures.filter((f) => f.stage_id !== thirdPlaceStage.id) : allFixtures,
+    [allFixtures, thirdPlaceStage]
+  );
+
+  const hasThirdPlace = Boolean(thirdPlaceStage && thirdPlaceFixture);
 
   const rounds = useMemo(() => {
     if (!stages.length || !fixtures.length) return [];
@@ -238,8 +262,16 @@ export default function KnockoutBracket({ competitionInstanceId }) {
 
   const HORIZONTAL_PADDING = COL_GAP / 2;
 
-  const h = getTotalH(n0);
-  const w = getTotalW(nR) + 2 * HORIZONTAL_PADDING;
+  // Extend width by one more column when there's a 3rd place playoff
+  const totalCols = hasThirdPlace ? nR + 1 : nR;
+  const w = getTotalW(totalCols) + 2 * HORIZONTAL_PADDING;
+
+  const finalCenterY = getCenterY(nR - 1, 0);
+  // Sits one row-slot below the final's card
+  const thirdPlaceCenterY = finalCenterY + S;
+
+  const baseH = getTotalH(n0);
+  const h = hasThirdPlace ? Math.max(baseH, thirdPlaceCenterY + CARD_H / 2) : baseH;
 
   return (
     <>
@@ -248,7 +280,9 @@ export default function KnockoutBracket({ competitionInstanceId }) {
           {/* Headers */}
           <View className="mb-4 mt-4 flex-row">
             {stages.map((stage, ri) => (
-              <View key={stage.id} style={{ width: ri < nR - 1 ? ROUND_W : COL_W }}>
+              <View
+                key={stage.id}
+                style={{ width: ri < nR - 1 || hasThirdPlace ? ROUND_W : COL_W }}>
                 <Pressable
                   onPress={() => {
                     setActiveStage(stage);
@@ -270,6 +304,30 @@ export default function KnockoutBracket({ competitionInstanceId }) {
                 </Pressable>
               </View>
             ))}
+
+            {hasThirdPlace && (
+              <View key={thirdPlaceStage.id} style={{ width: COL_W }}>
+                <Pressable
+                  onPress={() => {
+                    setActiveStage(thirdPlaceStage);
+                    setStageModalVisible(true);
+                  }}
+                  className="flex-row items-center justify-center gap-2">
+                  <Ionicons
+                    name={
+                      currentRole?.role === 'admin'
+                        ? 'settings-outline'
+                        : 'information-circle-outline'
+                    }
+                    size={16}
+                    color="#1f84d1"
+                  />
+                  <Text className="text-center font-saira-medium uppercase text-text-2">
+                    {thirdPlaceStage.name ?? '3rd Place Playoff'}
+                  </Text>
+                </Pressable>
+              </View>
+            )}
           </View>
 
           {/* Canvas */}
@@ -320,6 +378,26 @@ export default function KnockoutBracket({ competitionInstanceId }) {
                   />
                 </View>
               ))
+            )}
+
+            {/* 3rd place playoff — own trailing column, below the final */}
+            {hasThirdPlace && (
+              <View
+                style={{
+                  position: 'absolute',
+                  left: nR * ROUND_W,
+                  top: thirdPlaceCenterY - CARD_H / 2,
+                }}>
+                <MatchCard
+                  fixture={thirdPlaceFixture}
+                  frames={frames[thirdPlaceFixture.id] ?? []}
+                  teams={teams}
+                  players={players}
+                  isFinal={false}
+                  animDelay={nR * 3 * 55}
+                  competitionInstanceId={competitionInstanceId}
+                />
+              </View>
             )}
           </View>
         </View>

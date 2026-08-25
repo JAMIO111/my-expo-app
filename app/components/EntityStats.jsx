@@ -1,10 +1,14 @@
+import { useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { usePlayerStats } from '@hooks/usePlayerStats';
 import { useTeamStats } from '@hooks/useTeamStats';
 import DonutChart from './DonutChart';
 import { Zap, Undo2, ArrowUpDown } from 'lucide-react-native';
+import ChipSelector from './ChipSelector';
 
 const EntityStats = ({ entityId, entityType }) => {
+  const [selectedType, setSelectedType] = useState(null); // null, 'singles', 'doubles'
+  const [selectedLocation, setSelectedLocation] = useState(null); // null, 'home', 'away'
   console.log('PlayerStats Component Rendered with entityId:', entityId);
   const { data: playerData, error: playerError } = usePlayerStats(
     entityType === 'player' ? entityId : null
@@ -33,7 +37,12 @@ const EntityStats = ({ entityId, entityType }) => {
   const StatBlock = ({ label, subLabel, value, icon }) => (
     <View className="relative flex-1 items-center justify-between px-5 py-3 pb-2">
       <View className="w-full flex-col items-start">
-        <Text className="font-saira-semibold text-xl text-text-1">{label}</Text>
+        <Text
+          numberOfLines={1}
+          adjustsFontSizeToFit
+          className="font-saira-semibold text-xl text-text-1">
+          {label}
+        </Text>
         <Text className="font-saira-medium text-lg text-text-2">{subLabel}</Text>
       </View>
 
@@ -78,7 +87,7 @@ const EntityStats = ({ entityId, entityType }) => {
         <View className="flex-row gap-3">
           <View style={{ borderRadius: 24 }} className="flex-1 border border-theme-gray-5 bg-bg-1">
             <StatBlock
-              label="Win Streak"
+              label="Frame Win Streak"
               subLabel="Current"
               icon={
                 <View className="items-center justify-center">
@@ -93,7 +102,7 @@ const EntityStats = ({ entityId, entityType }) => {
             />
           </View>
           <View style={{ borderRadius: 24 }} className="flex-1 border border-theme-gray-5 bg-bg-1">
-            <StatBlock label="Win Streak" subLabel="Career Best" value={bestStreak} />
+            <StatBlock label="Frame Win Streak" subLabel="Career Best" value={bestStreak} />
           </View>
         </View>
       </View>
@@ -102,6 +111,30 @@ const EntityStats = ({ entityId, entityType }) => {
 
   return (
     <View className="w-full gap-3 p-3 pb-24">
+      <View>
+        <ChipSelector
+          options={[
+            { label: 'All', value: null },
+            { label: 'Singles', value: 'singles' },
+            { label: 'Doubles', value: 'doubles' },
+          ]}
+          value={selectedType}
+          onChange={(newType) => {
+            setSelectedType(newType);
+          }}
+        />
+        <ChipSelector
+          options={[
+            { label: 'All', value: null },
+            { label: 'Home', value: 'home' },
+            { label: 'Away', value: 'away' },
+          ]}
+          value={selectedLocation}
+          onChange={(newLocation) => {
+            setSelectedLocation(newLocation);
+          }}
+        />
+      </View>
       <StatSection title="Frames" stats={data?.totalStats} type="frames" />
       <View className="gap-3">
         <View className="flex-row items-center gap-8 rounded-3xl border border-theme-gray-5 bg-bg-1 px-3 py-3">

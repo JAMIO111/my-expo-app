@@ -56,9 +56,7 @@ const PlayerProfileHeader = ({ playerProfile, currentTeam }) => {
         <View style={styles.infoCol}>
           {/* Player name */}
           <Text style={styles.nicknameText} numberOfLines={1}>
-            {playerProfile?.nickname?.toUpperCase() ||
-              playerProfile?.surname?.toUpperCase() ||
-              'No Nickname'}
+            {fullName || 'No Name'}
           </Text>
 
           {/* Team chip — mirrors division chip in TeamProfileHeader */}
@@ -85,8 +83,8 @@ const PlayerProfileHeader = ({ playerProfile, currentTeam }) => {
           {/* Member since row */}
           <View className="mt-1 flex-row items-center gap-2">
             <Image
-              source={require('@assets/Break-Room-Logo-1024-Background.png')}
-              style={{ width: 16, height: 16 }}
+              source={require('@assets/BR-Logo-1024-No-Background.png')}
+              style={{ width: 18, height: 18 }}
             />
             <Text className="font-saira text-text-on-brand" numberOfLines={1}>
               Since {sinceDate || 'Unknown'}
@@ -168,8 +166,8 @@ const styles = StyleSheet.create({
   },
 
   nicknameText: {
-    fontFamily: 'Saira-medium',
-    fontSize: 20,
+    fontFamily: 'tektur',
+    fontSize: 18,
     color: '#ffffff',
     letterSpacing: 1.2,
   },

@@ -8,6 +8,12 @@ import {
   Saira_600SemiBold,
   Saira_700Bold,
 } from '@expo-google-fonts/saira';
+import {
+  Tektur_400Regular,
+  Tektur_500Medium,
+  Tektur_600SemiBold,
+  Tektur_700Bold,
+} from '@expo-google-fonts/tektur';
 import { Michroma_400Regular } from '@expo-google-fonts/michroma';
 import Toast from 'react-native-toast-message';
 import toastConfig from '@lib/toastConfig';
@@ -29,6 +35,10 @@ export default function RootLayout() {
     Saira_600SemiBold,
     Saira_700Bold,
     Michroma_400Regular,
+    Tektur_400Regular,
+    Tektur_500Medium,
+    Tektur_600SemiBold,
+    Tektur_700Bold,
     DelaGothicOne: require('@assets/fonts/DelaGothicOne-Regular.ttf'),
   });
 

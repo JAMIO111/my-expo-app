@@ -46,8 +46,8 @@ export default function CustomHeader({
           numberOfLines={1}
           ellipsizeMode="tail"
           adjustsFontSizeToFit={true}
-          style={{ fontSize: 26 }}
-          className="font-saira text-white">
+          style={{ fontSize: 24 }}
+          className="font-michroma text-white">
           {title}
         </Text>
       </View>

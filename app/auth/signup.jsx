@@ -167,11 +167,11 @@ const SignUpPage = () => {
       <SafeViewWrapper topColor="bg-brand" useBottomInset={false}>
         <View className="flex-1">
           <View className="w-full justify-center bg-brand">
-            <View className="flex-row items-center justify-center gap-2">
+            <View className="flex-row items-center justify-center gap-4">
               <Text style={styles.title}>Break</Text>
               <Image
-                source={require('@assets/Break-Room-Logo-2-1024-Background.png')}
-                className="mt-2 h-14 w-14"
+                source={require('@assets/BR-Logo-1024-No-Background.png')}
+                className="mt-2 h-16 w-16"
                 resizeMode="contain"
               />
               <Text style={styles.title}>Room</Text>
@@ -286,7 +286,6 @@ const styles = StyleSheet.create({
     color: 'white',
     fontFamily: 'Michroma',
     fontSize: 32,
-    fontWeight: 'bold',
     textAlign: 'center',
     marginVertical: 20,
   },

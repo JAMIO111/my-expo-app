@@ -14,7 +14,13 @@ import { useGlobalRank } from '@hooks/useGlobalRank';
 import Heading from '@components/Heading';
 import useRecentBadges from '@hooks/useRecentBadges';
 import { badgeIcons } from '@lib/badgeIcons';
-import { LockKeyholeOpen, Trophy, Star, ChartNoAxesCombined } from 'lucide-react-native';
+import {
+  LockKeyholeOpen,
+  Trophy,
+  Star,
+  ChartNoAxesCombined,
+  ClipboardClock,
+} from 'lucide-react-native';
 import CTAButton from '@components/CTAButton';
 
 const ProfilePage = () => {
@@ -221,6 +227,16 @@ const ProfilePage = () => {
                 </View>
               </View>
             </Pressable>
+          </View>
+          <View
+            style={{ borderRadius: 28 }}
+            className="mx-4 mt-4 gap-2 border border-theme-gray-4 bg-bg-1 p-3">
+            <CTAButton
+              text="View Match History"
+              type="brand"
+              callbackFn={() => router.push('/profile/frames')}
+              lucideIcon={<ClipboardClock size={24} color="white" />}
+            />
           </View>
         </View>
       </ScrollView>

@@ -56,8 +56,8 @@ export default function TicketCard({
             </Text>
           </View>
           <Image
-            source={require('../assets/Break-Room-Logo-1024-Background-removebg.png')}
-            style={{ width: 40, height: 40, opacity: 0.6 }}
+            source={require('../assets/BR-Logo-1024-No-Background.png')}
+            style={{ width: 40, height: 40 }}
           />
         </View>
       </View>

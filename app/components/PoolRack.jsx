@@ -108,8 +108,8 @@ const PoolRack = () => {
           <Image
             source={
               colorScheme === 'dark'
-                ? require('@assets/Break-Room-Logo-2-1024-Background-Dark.png')
-                : require('@assets/Break-Room-Logo-2-1024-Background.png')
+                ? require('@assets/BR-Logo-1024-No-Background.png')
+                : require('@assets/BR-Logo-1024-No-Background.png')
             }
             style={[
               {
@@ -120,7 +120,7 @@ const PoolRack = () => {
             ]}
             resizeMode="cover"
           />
-          <View className="rounded-2xl border-2 border-brand-light bg-brand-dark px-6 pb-2 pt-6 shadow-xl shadow-brand-light">
+          <View className="my-8 rounded-2xl border-2 border-brand-light bg-brand-dark px-6 pb-2 pt-6 shadow-xl shadow-brand-light">
             <Text className="mb-2 font-michroma text-6xl text-white">Break</Text>
             <Text className="font-michroma text-6xl text-white">Room</Text>
           </View>

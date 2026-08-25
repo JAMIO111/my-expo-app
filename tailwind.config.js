@@ -77,6 +77,11 @@ module.exports = {
       fontFamily: {
         delagothic: ['Dela Gothic One', 'sans-serif'],
         michroma: ['Michroma', 'sans-serif'],
+        tektur: ['Tektur', 'Michroma', 'sans-serif'],
+        'tektur-regular': ['Tektur-Regular', 'sans-serif'],
+        'tektur-medium': ['Tektur-Medium', 'sans-serif'],
+        'tektur-semibold': ['Tektur-SemiBold', 'sans-serif'],
+        'tektur-bold': ['Tektur-Bold', 'sans-serif'],
         saira: ['Saira', 'sans-serif'],
         'saira-bold': ['Saira-Bold', 'sans-serif'],
         'saira-light': ['Saira-Light', 'sans-serif'],
