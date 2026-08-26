@@ -46,6 +46,7 @@ module.exports = {
         'theme-red': 'rgba(var(--color-red))',
         'theme-orange': 'rgba(var(--color-orange))',
         'theme-yellow': 'rgba(var(--color-yellow))',
+        'theme-gold': 'rgba(var(--color-gold))',
         'theme-green': 'rgba(var(--color-green))',
         'theme-mint': 'rgba(var(--color-mint))',
         'theme-teal': 'rgba(var(--color-teal))',

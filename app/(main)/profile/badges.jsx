@@ -8,9 +8,9 @@ import BadgeList from '@components/BadgeList';
 import { View, ScrollView } from 'react-native';
 
 const BadgesPage = () => {
-  const { player } = useUser();
-  const { badges } = usePlayerBadges(player?.id);
-  console.log('Player Badges:', badges);
+  const { player, currentRole } = useUser();
+  const { badges } = usePlayerBadges(player?.id, currentRole?.activeSeason?.id);
+  console.log('Player Badges:', badges, 'Player ID:', player?.id);
   return (
     <>
       <SafeViewWrapper topColor="bg-brand" useBottomInset={false}>

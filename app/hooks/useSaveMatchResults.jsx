@@ -7,7 +7,7 @@ export function useSaveMatchResults(fixtureId, existingResults) {
   const [saving, setSaving] = useState(false);
   const queryClient = useQueryClient();
 
-  const save = async (frames) => {
+  const save = async (frames, submit = false) => {
     setSaving(true);
 
     try {
@@ -45,10 +45,11 @@ export function useSaveMatchResults(fixtureId, existingResults) {
 
       console.log('Frames to save:', framesWithNumbers);
 
-      const { error } = await supabase.rpc('save_match_results', {
+      const { error } = await supabase.rpc('save_fixture_results', {
         _frames: framesWithNumbers,
         _deleted_ids: deletedIds,
         _fixture_id: fixtureId,
+        _submit: submit,
       });
 
       if (error) {
@@ -64,8 +65,8 @@ export function useSaveMatchResults(fixtureId, existingResults) {
 
         Toast.show({
           type: 'success',
-          text1: 'Results Saved',
-          text2: 'All frames have been successfully saved.',
+          text1: `Results ${submit ? 'Submitted' : 'Saved'}`,
+          text2: `All frames have been successfully ${submit ? 'submitted' : 'saved'}.`,
         });
 
         return true;

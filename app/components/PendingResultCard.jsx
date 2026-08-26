@@ -1,8 +1,9 @@
-import { StyleSheet, Text, View, Pressable, ActivityIndicatorBase } from 'react-native';
+import { StyleSheet, Text, View, Pressable } from 'react-native';
 import TeamLogo from './TeamLogo';
 import Avatar from './Avatar';
 import { useResultsByFixture } from '@hooks/useResultsByFixture';
 import { useRouter } from 'expo-router';
+import { Swords } from 'lucide-react-native';
 
 const PendingResultCard = ({ fixture }) => {
   const router = useRouter();
@@ -20,27 +21,34 @@ const PendingResultCard = ({ fixture }) => {
             ? router.push(`home/${fixture?.id}/submit-results`)
             : router.push(`home/${fixture?.id}/approve-results`)
       }>
-      <View className="relative items-center justify-between gap-5 border-b border-separator bg-bg-grouped-2 px-4 py-4 shadow-[0_2px_4px_rgba(0,0,0,0.1)]">
+      <View className="relative items-center justify-between gap-5 rounded-3xl border border-theme-gray-5 bg-bg-grouped-2 px-4 py-4">
         <View className="w-full flex-1 flex-row items-center justify-between">
           <View className="flex-col">
-            <Text className="font-saira-medium text-2xl text-text-1">
-              {fixture?.is_amended
-                ? 'Approve Amendment'
-                : fixture?.is_disputed
-                  ? 'Amend Result'
-                  : 'Pending Result'}
+            <Text className="font-saira-medium text-lg text-text-1">
+              {`${new Date(fixture.date_time).toLocaleDateString('en-GB', {
+                weekday: 'short',
+                day: 'numeric',
+                month: 'short',
+                year: '2-digit',
+              })} | ${new Date(fixture.date_time).toLocaleTimeString('en-GB', {
+                hour: '2-digit',
+                minute: '2-digit',
+              })}`}
             </Text>
-            <Text className="text-md font-saira text-text-2">
-              {fixture?.competition_instance?.name} Fixture
-            </Text>
+            <View className="flex-row items-center gap-2">
+              <Swords size={14} color="#000" />
+              <Text className="text-md font-saira text-text-1">
+                {fixture?.competition_instance?.name} Fixture
+              </Text>
+            </View>
           </View>
           <Text
-            className={`absolute right-0 top-0 w-fit rounded-xl border ${fixture?.is_amended ? 'border-theme-orange bg-theme-orange/20 text-theme-orange' : fixture?.is_disputed ? 'border-theme-red bg-theme-red/20 text-theme-red' : 'border-theme-yellow bg-theme-yellow/20 text-theme-yellow'} px-3 py-1 text-center font-saira-medium text-black`}>
+            className={`absolute right-0 top-0 w-fit rounded-xl border ${fixture?.is_amended ? 'border-theme-orange bg-theme-orange/20 text-theme-orange' : fixture?.is_disputed ? 'border-theme-red bg-theme-red/20 text-theme-red' : 'border-theme-purple bg-theme-purple/20 text-theme-purple'} px-3 py-1 text-center font-saira-medium text-black`}>
             {fixture?.is_amended
               ? 'Amended Result'
               : fixture?.is_disputed
                 ? 'Disputed Result'
-                : 'Pending Result'}
+                : 'Approve Result'}
           </Text>
         </View>
         <View className="flex-1 items-center justify-between gap-2">

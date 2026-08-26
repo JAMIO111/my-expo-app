@@ -267,7 +267,7 @@ const SubmitResultsScreen = () => {
       return;
     }
     setSubmitting(true);
-    const success = await save(frames);
+    const success = await save(frames, true);
     if (!success) {
       Toast.show({
         type: 'error',
@@ -276,17 +276,6 @@ const SubmitResultsScreen = () => {
       });
       setSubmitting(false);
       return;
-    }
-    const { error } = await supabase
-      .from('Fixtures')
-      .update({ is_complete: true })
-      .eq('id', fixtureId);
-    if (error) {
-      Toast.show({
-        type: 'error',
-        text1: 'Error',
-        text2: 'Could not submit results. Please try again.',
-      });
     } else {
       Toast.show({ type: 'success', text1: 'Success', text2: 'Results submitted successfully.' });
       router.back();

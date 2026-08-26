@@ -8,7 +8,7 @@ const PendingResultCard = ({ fixture }) => {
   const router = useRouter();
   return (
     <Pressable
-      className="rounded-xl border border-theme-gray-5 bg-bg-1"
+      className="rounded-3xl border border-theme-gray-5 bg-bg-1"
       onPress={() => router.push(`/home/${fixture.id}/submit-results`)}>
       <View className="relative items-center justify-between gap-5 p-3">
         <View className="w-full flex-1 flex-row items-center justify-between">
@@ -31,8 +31,8 @@ const PendingResultCard = ({ fixture }) => {
               </Text>
             </View>
           </View>
-          <Text className="absolute right-0 top-0 w-fit rounded-lg border border-theme-teal bg-theme-teal/20 px-2 py-0.5 text-center font-saira-medium text-sm text-theme-teal">
-            Awaiting Submission
+          <Text className="absolute right-0 top-0 w-fit rounded-xl border border-theme-teal bg-theme-teal/20 px-2 py-1 text-center font-saira-medium text-theme-teal">
+            Submit Results
           </Text>
         </View>
         <View className="flex-1 items-center justify-between gap-2">

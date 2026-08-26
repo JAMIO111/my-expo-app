@@ -15,6 +15,8 @@ const BadgeList = ({ badges }) => {
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedBadge, setSelectedBadge] = useState(null);
 
+  console.log('Badges:', badges);
+
   const handleBadgePress = (badge) => {
     setSelectedBadge(badge);
     setModalVisible(true);
@@ -34,11 +36,10 @@ const BadgeList = ({ badges }) => {
         ? Math.max(...badge.unlockedBadges.map((unlock) => unlock.tier))
         : null;
 
-    const unlockedEntry = badge?.meta_data?.find((entry) => entry.tier === unlockedTier);
+    const unlockedEntry = badge?.tiers?.find((tier) => tier.tier === unlockedTier);
 
     const iconKey = unlockedEntry?.icon;
 
-    // 2. Fallback to locked icon if nothing found
     const iconSource =
       iconKey && badgeIcons[iconKey] ? badgeIcons[iconKey] : require('@assets/LockedBadge.png');
 
@@ -87,10 +88,9 @@ const BadgeList = ({ badges }) => {
         showModal={modalVisible}
         setShowModal={setModalVisible}
         title={
-          `${selectedBadge?.meta_data?.[0]?.title
-            ?.split(' ')
-            ?.slice(0, -1) // remove last word
-            ?.map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+          `${selectedBadge?.key
+            ?.split('-')
+            ?.map((word) => word.charAt(0).toUpperCase() + word.slice(1))
             ?.join(' ')} Progress` || 'Badge Progress'
         }>
         <BadgeTierScrollView selectedBadge={selectedBadge} />

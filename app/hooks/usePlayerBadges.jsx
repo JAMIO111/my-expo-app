@@ -1,36 +1,29 @@
-import { useEffect, useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 
-const usePlayerBadges = (playerId) => {
-  const [badges, setBadges] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState(null);
-
-  useEffect(() => {
-    if (!playerId) return;
-
-    const fetchBadges = async () => {
-      setIsLoading(true);
-      setError(null);
-
+const usePlayerBadges = (playerId, currentSeasonId) => {
+  const {
+    data: badges,
+    isLoading,
+    error,
+  } = useQuery({
+    queryKey: ['PlayerBadges', playerId, currentSeasonId],
+    queryFn: async () => {
       const { data, error } = await supabase.rpc('get_player_badges', {
-        player_id: playerId,
+        p_player_id: playerId,
+        p_season_id: currentSeasonId,
       });
 
-      if (error) {
-        setError(error);
-        setBadges([]);
-      } else {
-        setBadges(data || []);
-      }
+      if (error) throw error;
 
-      setIsLoading(false);
-    };
+      return data || [];
+    },
+    enabled: !!playerId && !!currentSeasonId,
+    staleTime: 15 * 60 * 1000,
+    gcTime: 60 * 60 * 1000,
+  });
 
-    fetchBadges();
-  }, [playerId]);
-
-  return { badges, isLoading, error };
+  return { badges: badges || [], isLoading, error };
 };
 
 export default usePlayerBadges;

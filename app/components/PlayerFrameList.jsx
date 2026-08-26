@@ -29,9 +29,9 @@ const ACHIEVEMENT_CONFIG = {
   },
   'Break Dish': {
     icon: Zap,
-    color: '#d4922a', // gold, matches app accent
-    bgClass: 'bg-theme-gold/15',
-    textClass: 'text-theme-gold',
+    color: '#f97316', // orange
+    bgClass: 'bg-theme-orange/15',
+    textClass: 'text-theme-orange',
   },
   'Reverse Dish': {
     icon: Undo2,

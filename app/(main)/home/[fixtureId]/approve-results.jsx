@@ -62,22 +62,23 @@ const ApproveResults = () => {
   const handleApproveResults = async () => {
     setQueryLoading(true);
     try {
-      const { error } = await supabase
-        .from('Fixtures')
-        .update({ approved: true, approved_at: new Date().toISOString(), approved_by: player?.id })
-        .eq('id', fixtureId)
-        .select();
+      const { data, error } = await supabase.rpc('approve_fixture_results', {
+        p_fixture_id: fixtureId,
+        p_approved_by: player?.id,
+      });
 
       if (error) {
         throw error;
       }
+
+      if (!data?.success) {
+        throw new Error(data?.message || 'Approval failed');
+      }
+
       console.log('Results approved successfully'); // Show success toast or redirect
-      await queryClient.invalidateQueries([
-        'FixturesAwaitingResults',
-        type,
-        competitorId,
-        competitorType,
-      ]);
+      await queryClient.invalidateQueries({
+        queryKey: ['FixturesAwaitingResults'],
+      });
       Toast.show({
         type: 'success',
         text1: 'Results Approved',
