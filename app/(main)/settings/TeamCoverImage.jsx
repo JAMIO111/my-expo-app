@@ -1,4 +1,4 @@
-import { StyleSheet, View, useColorScheme, Alert } from 'react-native';
+import { StyleSheet, View, useColorScheme, Alert, Settings } from 'react-native';
 import { Stack } from 'expo-router';
 import CustomHeader from '@components/CustomHeader';
 import SafeViewWrapper from '@components/SafeViewWrapper';
@@ -10,6 +10,8 @@ import useCompressAndUploadImage from '@hooks/useCompressAndUploadImage';
 import { supabase } from '@/lib/supabase';
 import Toast from 'react-native-toast-message';
 import { useState, useRef } from 'react';
+import MenuContainer from '@components/MenuContainer';
+import SettingsItem from '@components/SettingsItem';
 
 const TeamCoverImage = () => {
   console.log(supabase, 'Supabase Client in TeamCoverImage');
@@ -88,13 +90,13 @@ const TeamCoverImage = () => {
         options={{
           header: () => (
             <SafeViewWrapper useBottomInset={false}>
-              <CustomHeader title="Crest Editor" />
+              <CustomHeader title="Team Cover Image" />
             </SafeViewWrapper>
           ),
         }}
       />
-      <View className="mt-16">
-        <View className="bg-brand-light p-2 py-4">
+      <View className="mt-16 gap-5 p-3">
+        <View className="rounded-3xl border border-theme-gray-3">
           <ImageUploader
             ref={imageUploaderRef}
             initialUri={imageUri || currentRole?.team?.cover_image_url}
@@ -104,21 +106,20 @@ const TeamCoverImage = () => {
             editable={true}
           />
         </View>
-        <View className="mt-5 w-full gap-5 p-4">
-          <CTAButton
-            type="yellow"
-            text="Change Cover Photo"
+        <MenuContainer>
+          <SettingsItem
+            icon="imagePlus"
+            title="Change Cover Image"
+            disabled={uploading}
             callbackFn={() => imageUploaderRef.current?.openPicker()}
-            disabled={uploading}
           />
-
-          <CTAButton
-            type="success"
-            text="Save Cover Photo"
+          <SettingsItem
+            icon="save"
+            title={uploading ? 'Saving...' : 'Save Cover Image'}
+            disabled={uploading}
             callbackFn={handleSaveProfile}
-            disabled={uploading}
           />
-        </View>
+        </MenuContainer>
       </View>
     </SafeViewWrapper>
   );

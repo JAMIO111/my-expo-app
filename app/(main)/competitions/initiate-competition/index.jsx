@@ -7,7 +7,6 @@ import SafeViewWrapper from '@components/SafeViewWrapper';
 import { useCompetitions } from '@hooks/useCompetitions';
 import { ScrollView } from 'react-native-gesture-handler';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
-import { LinearGradient } from 'expo-linear-gradient';
 import { formatAgeRestrictions } from '@components/CompetitionInstanceCard';
 import { useCompetitionInstances } from '@hooks/useCompetitionInstances';
 import Toast from 'react-native-toast-message';
@@ -20,8 +19,8 @@ const Chip = ({ icon, label, colors }) => (
       flexDirection: 'row',
       alignItems: 'center',
       gap: 5,
-      backgroundColor: colors?.background ?? 'rgba(255,255,255,0.06)',
-      borderColor: colors?.border ?? 'rgba(255,255,255,0.1)',
+      backgroundColor: colors?.background ?? 'rgba(0,0,0,0.05)',
+      borderColor: colors?.border ?? 'rgba(0,0,0,0.1)',
       borderWidth: 1,
       borderRadius: 8,
       paddingHorizontal: 10,
@@ -32,7 +31,7 @@ const Chip = ({ icon, label, colors }) => (
       style={{
         fontFamily: 'Saira_500Medium',
         fontSize: 12,
-        color: colors?.text ?? 'rgba(255,255,255,0.5)',
+        color: colors?.text ?? 'rgba(0,0,0,0.5)',
       }}>
       {label}
     </Text>
@@ -52,8 +51,16 @@ const CompetitionCard = ({ competition, numberOfInstances, onPress }) => {
   const hasInstances = numberOfInstances > 0;
   const accentColor = hasInstances ? '#4ade80' : '#f87171';
   const instanceColors = hasInstances
-    ? { background: '#00800033', text: '#4ade80', border: '#4ade8044' }
-    : { background: '#FF000022', text: '#f87171', border: '#f8717144' };
+    ? {
+        background: '#DCFCE7',
+        text: '#15803D',
+        border: '#86EFAC',
+      }
+    : {
+        background: '#FEE2E2',
+        text: '#B91C1C',
+        border: '#FCA5A5',
+      };
 
   const typeLabel =
     competition.competitor_type.charAt(0).toUpperCase() +
@@ -69,106 +76,104 @@ const CompetitionCard = ({ competition, numberOfInstances, onPress }) => {
         onPress={onPress}
         onPressIn={handlePressIn}
         onPressOut={handlePressOut}
-        style={{
-          borderRadius: 16,
-          overflow: 'hidden',
-          borderWidth: 1,
-          borderColor: 'rgba(255,255,255,0.07)',
-        }}>
+        className="overflow-hidden rounded-3xl border border-theme-gray-4 bg-bg-1 shadow-sm">
         {/* ── Accent bar ── */}
-        <View style={{ height: 8, backgroundColor: accentColor, width: '100%' }} />
+        <View style={{ height: 10, backgroundColor: accentColor, width: '100%' }} />
 
-        {/* ── Header ── */}
-        <LinearGradient
-          colors={['#1a2a1a', '#111a11']}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
-          style={{ paddingHorizontal: 16, paddingTop: 16, paddingBottom: 14 }}>
-          {/* Name row */}
-          <View
-            style={{
-              flexDirection: 'row',
-              alignItems: 'flex-start',
-              justifyContent: 'space-between',
-              gap: 10,
-              marginBottom: 10,
-            }}>
-            <View style={{ flex: 1 }}>
-              <Text
-                style={{
-                  fontFamily: 'Saira_700Bold',
-                  fontSize: 20,
-                  color: '#fff',
-                  marginBottom: 3,
-                }}
-                numberOfLines={2}>
-                {competition.name}
-              </Text>
-              <Text
-                style={{
-                  fontFamily: 'Saira_400Regular',
-                  fontSize: 13,
-                  color: 'rgba(255,255,255,0.4)',
-                  letterSpacing: 0.3,
-                }}>
-                {typeLabel}
-              </Text>
-            </View>
+        {/* Name row */}
+        <View
+          style={{
+            flexDirection: 'row',
+            alignItems: 'flex-start',
+            justifyContent: 'space-between',
+            gap: 10,
+            marginBottom: 10,
+            paddingHorizontal: 16,
+            paddingTop: 12,
+            paddingBottom: 14,
+          }}>
+          <View style={{ flex: 1 }}>
+            <Text
+              style={{
+                fontFamily: 'Saira_700Bold',
+                fontSize: 20,
+                color: '#000',
+                marginBottom: 3,
+              }}
+              numberOfLines={2}>
+              {competition.name}
+            </Text>
+            <Text
+              style={{
+                fontFamily: 'Saira_400Regular',
+                fontSize: 13,
+                color: 'rgba(0,0,0,0.4)',
+                letterSpacing: 0.3,
+              }}>
+              {typeLabel}
+            </Text>
+          </View>
 
-            {/* Instance count badge */}
+          {/* Instance count badge */}
+          <Chip
+            label={
+              hasInstances
+                ? `${numberOfInstances} Instance${numberOfInstances > 1 ? 's' : ''}`
+                : 'No Instances'
+            }
+            colors={instanceColors}
+          />
+        </View>
+
+        {/* Gender + age chips */}
+        <View
+          style={{
+            flexDirection: 'row',
+            gap: 8,
+            flexWrap: 'wrap',
+            paddingHorizontal: 16,
+            paddingBottom: 16,
+          }}>
+          {competition.gender !== 'female' && (
             <Chip
-              label={
-                hasInstances
-                  ? `${numberOfInstances} Instance${numberOfInstances > 1 ? 's' : ''}`
-                  : 'No Instances'
-              }
-              colors={instanceColors}
+              icon={<Ionicons name="male" size={13} color="#60a5fa" />}
+              label="Male"
+              colors={undefined}
             />
-          </View>
-
-          {/* Gender + age chips */}
-          <View style={{ flexDirection: 'row', gap: 8, flexWrap: 'wrap' }}>
-            {competition.gender !== 'female' && (
-              <Chip
-                icon={<Ionicons name="male" size={13} color="#60a5fa" />}
-                label="Male"
-                colors={undefined}
-              />
-            )}
-            {competition.gender !== 'male' && (
-              <Chip
-                icon={<Ionicons name="female" size={13} color="#f9a8d4" />}
-                label="Female"
-                colors={undefined}
-              />
-            )}
-            {(competition.min_age || competition.max_age) && (
-              <Chip
-                icon={
-                  <MaterialCommunityIcons
-                    name="cake-variant-outline"
-                    size={13}
-                    color="rgba(255,255,255,0.45)"
-                  />
-                }
-                label={formatAgeRestrictions(competition.min_age, competition.max_age)}
-                colors={undefined}
-              />
-            )}
-          </View>
-        </LinearGradient>
+          )}
+          {competition.gender !== 'male' && (
+            <Chip
+              icon={<Ionicons name="female" size={13} color="#f9a8d4" />}
+              label="Female"
+              colors={undefined}
+            />
+          )}
+          {(competition.min_age || competition.max_age) && (
+            <Chip
+              icon={
+                <MaterialCommunityIcons
+                  name="cake-variant-outline"
+                  size={13}
+                  color="rgba(0,0,0,0.45)"
+                />
+              }
+              label={formatAgeRestrictions(competition.min_age, competition.max_age)}
+              colors={undefined}
+            />
+          )}
+        </View>
 
         {/* ── Footer ── */}
-        <LinearGradient
-          colors={['#0f160f', '#0c130c']}
+        <View
           style={{
+            backgroundColor: 'rgba(0,0,0,0.1)',
             flexDirection: 'row',
             alignItems: 'center',
             justifyContent: 'flex-end',
             paddingHorizontal: 12,
-            paddingVertical: 10,
+            paddingVertical: 8,
             borderTopWidth: 1,
-            borderTopColor: 'rgba(255,255,255,0.05)',
+            borderTopColor: 'rgba(0,0,0,0.05)',
           }}>
           {!hasInstances && (
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
@@ -176,31 +181,27 @@ const CompetitionCard = ({ competition, numberOfInstances, onPress }) => {
                 style={{
                   fontFamily: 'Saira_400Regular',
                   fontSize: 12,
-                  color: 'rgba(255,255,255,0.35)',
+                  color: 'rgba(0,0,0,0.35)',
                 }}>
                 Tap to initiate
               </Text>
-              <Ionicons name="chevron-forward-outline" size={14} color="rgba(255,255,255,0.35)" />
+              <Ionicons name="chevron-forward-outline" size={14} color="rgba(0,0,0,0.35)" />
             </View>
           )}
           {hasInstances && (
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-              <Ionicons
-                name="information-circle-outline"
-                size={14}
-                color="rgba(255,255,255,0.35)"
-              />
+              <Ionicons name="information-circle-outline" size={14} color="rgba(0,0,0,0.35)" />
               <Text
                 style={{
                   fontFamily: 'Saira_400Regular',
                   fontSize: 12,
-                  color: 'rgba(255,255,255,0.35)',
+                  color: 'rgba(0,0,0,0.35)',
                 }}>
                 Already initiated
               </Text>
             </View>
           )}
-        </LinearGradient>
+        </View>
       </Pressable>
     </Animated.View>
   );
@@ -234,7 +235,7 @@ const index = () => {
       />
       <SafeViewWrapper useBottomInset={false} topColor="bg-brand">
         <View className="mt-16 flex-1 bg-bg-1">
-          <Text className="p-2 px-6 pt-3 font-saira-medium text-xl text-text-1">
+          <Text className="border-b border-theme-gray-5 p-2 px-4 pt-3 font-saira text-xl text-text-1">
             Select a competition from your blueprints that you'd like to initiate for the{' '}
             {currentRole?.activeSeason.name} season.
           </Text>
@@ -244,7 +245,7 @@ const index = () => {
               gap: 12,
               paddingTop: 10,
               paddingBottom: 60,
-              paddingHorizontal: 16,
+              paddingHorizontal: 10,
             }}
             className="flex-1 bg-bg-2">
             {competitions

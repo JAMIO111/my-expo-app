@@ -11,12 +11,53 @@ import SafeViewWrapper from '@components/SafeViewWrapper';
 import CustomHeader from '@components/CustomHeader';
 import TeamLogo from '@components/TeamLogo';
 import Ionicons from 'react-native-vector-icons/Ionicons';
+import { Menu } from 'lucide-react-native';
 
 const Team = () => {
   const colorScheme = useColorScheme();
   const [isLeavingTeam, setIsLeavingTeam] = useState(false);
   const { player, currentRole, isLoading } = useUser();
   const router = useRouter();
+
+  const handleLeaveTeam = async () => {
+    if (currentRole?.team?.captain === player.id) {
+      Toast.show({
+        type: 'error',
+        text1: 'Captain cannot leave team',
+        text2: 'Please assign a new captain before leaving the team.',
+        props: { colorScheme },
+      });
+      return;
+    }
+
+    try {
+      setIsLeavingTeam(true);
+      const { error } = await supabase
+        .from('TeamPlayers')
+        .update({ left_at: new Date().toISOString(), status: 'left' })
+        .eq('player_id', player.id)
+        .eq('team_id', currentRole?.team?.id);
+
+      Toast.show({
+        type: 'success',
+        text1: 'Left Team',
+        text2: 'You have successfully left your team.',
+        props: { colorScheme },
+      });
+      router.replace('/home');
+    } catch (error) {
+      console.error('Error leaving team:', error);
+      Toast.show({
+        type: 'error',
+        text1: 'Failed to leave team',
+        text2: error.message,
+        props: { colorScheme },
+      });
+    } finally {
+      setIsLeavingTeam(false);
+    }
+  };
+
   return (
     <SafeViewWrapper topColor="bg-brand" useBottomInset={false}>
       <Stack.Screen
@@ -35,21 +76,21 @@ const Team = () => {
         <View className="justify-between">
           {/* Top Content */}
           <View>
-            <View className="mb-8 mt-5 items-center">
+            <View className="mb-8 mt-5 flex-row items-center gap-8 rounded-3xl bg-bg-1 p-5">
               <TeamLogo
-                size={120}
+                size={80}
                 type={currentRole?.team?.crest?.type}
                 color1={currentRole?.team?.crest?.color1}
                 color2={currentRole?.team?.crest?.color2}
                 thickness={currentRole?.team?.crest?.thickness}
               />
-              <View className="items-center gap-2">
+              <View className="items-start justify-center gap-1">
                 <Text
                   style={{ lineHeight: 38 }}
-                  className="mt-6 text-center font-saira-semibold text-4xl text-text-1">
+                  className="text-center font-saira-medium text-3xl text-text-1">
                   {currentRole?.team?.name || 'No Team'}
                 </Text>
-                <Text className="rounded-lg border border-separator bg-bg-grouped-2 px-3 pb-1 pt-2 font-saira text-2xl text-text-2">
+                <Text className="rounded-lg font-saira-medium text-2xl text-text-2">
                   {currentRole?.team?.abbreviation || 'No Nickname'}
                 </Text>
               </View>
@@ -60,65 +101,29 @@ const Team = () => {
                 routerPath="settings/TeamDetails"
                 iconBGColor="gray"
                 title="Team Details"
-                icon="id-card-outline"
+                icon="idCard"
               />
               <SettingsItem
                 routerPath="settings/PlayerManagement"
                 iconBGColor="green"
                 title="Player Management"
-                icon="people-outline"
+                icon="userCog"
                 lastItem={true}
               />
             </MenuContainer>
           </View>
 
-          {/* Bottom CTA */}
-          <View className="">
-            <CTAButton
-              icon={<Ionicons name="exit-outline" size={26} color="white" />}
-              type="error"
-              text={isLeavingTeam ? 'Leaving Team...' : 'Leave Team'}
-              callbackFn={async () => {
-                if (currentRole?.team?.captain === player.id) {
-                  Toast.show({
-                    type: 'error',
-                    text1: 'Captain cannot leave team',
-                    text2: 'Please assign a new captain before leaving the team.',
-                    props: { colorScheme },
-                  });
-                  return;
-                }
-
-                try {
-                  setIsLeavingTeam(true);
-                  const { error } = await supabase
-                    .from('TeamPlayers')
-                    .update({ left_at: new Date().toISOString(), status: 'left' })
-                    .eq('player_id', player.id)
-                    .eq('team_id', currentRole?.team?.id);
-
-                  Toast.show({
-                    type: 'success',
-                    text1: 'Left Team',
-                    text2: 'You have successfully left your team.',
-                    props: { colorScheme },
-                  });
-                  router.replace('/home');
-                } catch (error) {
-                  console.error('Error leaving team:', error);
-                  Toast.show({
-                    type: 'error',
-                    text1: 'Failed to leave team',
-                    text2: error.message,
-                    props: { colorScheme },
-                  });
-                } finally {
-                  setIsLeavingTeam(false);
-                }
-              }}
+          <MenuContainer>
+            <SettingsItem
+              callbackFn={handleLeaveTeam}
+              iconColor="red"
+              titleColor="text-[#FF0000]"
+              title={isLeavingTeam ? 'Leaving Team...' : 'Leave Team'}
+              icon="logout"
+              lastItem={true}
               disabled={isLoading || isLeavingTeam}
             />
-          </View>
+          </MenuContainer>
         </View>
       </ScrollView>
     </SafeViewWrapper>

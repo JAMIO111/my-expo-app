@@ -1,4 +1,5 @@
 import { Pressable, Text, TextInput, View, useColorScheme } from 'react-native';
+import { iconMap } from './SettingsItem';
 import IonIcons from 'react-native-vector-icons/Ionicons';
 import { useRouter } from 'expo-router';
 import colors from '@lib/colors';
@@ -10,8 +11,7 @@ const EditableSettingsItem = ({
   value,
   onChangeText,
   placeholder = '',
-  iconBGColor = 'gray',
-  iconColor = '#fff',
+  iconColor = '#333',
   routerPath,
   lastItem = false,
   editable = true,
@@ -31,6 +31,8 @@ const EditableSettingsItem = ({
     if (routerPath) router.push(routerPath);
   };
 
+  const Icon = icon ? iconMap[icon] : null;
+
   return (
     <Pressable onPress={handlePress} disabled={!routerPath} className="w-full">
       {({ pressed }) => (
@@ -40,10 +42,8 @@ const EditableSettingsItem = ({
               pressed ? 'bg-theme-gray-5' : 'bg-bg-grouped-2'
             }`}>
             {icon && (
-              <View
-                className="h-9 w-9 items-center justify-center rounded-[10px]"
-                style={{ backgroundColor: iconBGColor }}>
-                <IonIcons name={icon} size={22} color={iconColor} />
+              <View className="h-9 w-9 items-center justify-center rounded-[10px]">
+                {Icon && <Icon size={24} color={iconColor} />}
               </View>
             )}
 

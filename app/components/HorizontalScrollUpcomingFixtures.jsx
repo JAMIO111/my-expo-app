@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { View, ScrollView, Dimensions, Text } from 'react-native';
 import UpcomingFixtureCard from './UpcomingFixtureCard';
 import { UpcomingFixtureSkeleton } from './Skeletons';
+import { CalendarClock } from 'lucide-react-native';
 
 const HorizontalScrollUpcomingFixtures = ({ fixtures, isLoading }) => {
   const screenWidth = Dimensions.get('window').width;
@@ -51,8 +52,9 @@ const HorizontalScrollUpcomingFixtures = ({ fixtures, isLoading }) => {
       className="w-full py-2">
       {isEmpty ? (
         <View
-          className="h-32 items-center justify-center rounded-2xl bg-bg-grouped-2"
+          className="h-32 items-center justify-center gap-4 rounded-2xl bg-bg-grouped-2 shadow-sm"
           style={{ width: cardWidth }}>
+          <CalendarClock size={36} color={'#999'} />
           <Text className="font-saira text-xl text-text-2">No Upcoming Fixtures</Text>
         </View>
       ) : (

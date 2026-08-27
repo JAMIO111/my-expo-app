@@ -20,7 +20,14 @@ import {
   formatAgeRestrictions,
 } from '@components/CompetitionInstanceCard';
 import Ionicons from '@expo/vector-icons/Ionicons';
-import { Crown, Ban, CircleStar, ShieldCheck } from 'lucide-react-native';
+import {
+  Crown,
+  Ban,
+  CircleStar,
+  ShieldCheck,
+  DoorClosedLocked,
+  ScrollText,
+} from 'lucide-react-native';
 import Toast from 'react-native-toast-message';
 import FloatingBottomSheet from '@components/FloatingBottomSheet';
 import BottomSheetWrapper from '@/components/BottomSheetWrapper';
@@ -577,7 +584,8 @@ const index = () => {
                 </View>
               </ExpandableView>
               {canJoin &&
-                checkEligibility(player, competitionInstance, currentRole) === 'Eligible' && (
+                checkEligibility(player, competitionInstance, currentRole).status ===
+                  'Eligible' && (
                   <View className="p-4 pt-0">
                     <CTAButton
                       callbackFn={() => {
@@ -612,6 +620,13 @@ const index = () => {
                   competitionInstance?.status === 'closed') && (
                   <View className="p-4 pt-0">
                     <CTAButton
+                      lucideIcon={
+                        competitionInstance?.status === 'upcoming' ? (
+                          <DoorClosedLocked size={24} color="white" />
+                        ) : competitionInstance?.status === 'closed' ? (
+                          <ScrollText size={24} color="white" />
+                        ) : null
+                      }
                       type={
                         competitionInstance?.status === 'upcoming'
                           ? 'error'

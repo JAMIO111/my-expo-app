@@ -79,7 +79,7 @@ const SelectStatMenu = ({
                   ))}
                   {/* BIG STAT VALUE */}
                   <Text style={{ lineHeight: 48 }} className="font-saira-bold text-4xl text-text-1">
-                    {stat.value}
+                    {stat.value || 0}
                     {stat.label.includes('%') ? '%' : ''}
                   </Text>
 

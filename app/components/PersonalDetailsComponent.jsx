@@ -7,7 +7,7 @@ import {
   useColorScheme,
   Alert,
 } from 'react-native';
-import { Stack, useNavigation } from 'expo-router';
+import { Stack } from 'expo-router';
 import { useEffect, useState, useRef } from 'react';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { Platform } from 'react-native';
@@ -15,13 +15,13 @@ import MenuContainer from '@components/MenuContainer';
 import { useUser } from '@contexts/UserProvider';
 import EditableSettingsItem from '@components/EditableSettingsItem';
 import { supabase } from '@/lib/supabase';
-import IonIcons from '@expo/vector-icons/Ionicons';
+import { VenusAndMars, CalendarDays } from 'lucide-react-native';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import colors from '@lib/colors'; // Adjust the import path as necessary
 import { useQueryClient } from '@tanstack/react-query';
 import SafeViewWrapper from '@components/SafeViewWrapper';
 import CustomHeader from '@components/CustomHeader'; // Adjust the import path as necessary
 import Toast from 'react-native-toast-message';
-import Ionicons from '@expo/vector-icons/Ionicons';
 import ImageUploader from '@components/ImageUploader';
 import useCompressAndUploadImage from '@hooks/useCompressAndUploadImage';
 
@@ -327,12 +327,14 @@ const PersonalDetailsComponent = () => {
             value={firstName}
             onChangeText={setFirstName}
             placeholder="Enter your first name"
+            icon="userPen"
           />
           <EditableSettingsItem
             title="Surname"
             value={surname}
             onChangeText={setSurname}
             placeholder="Enter your surname"
+            icon="userPen"
           />
           <EditableSettingsItem
             title="Nickname"
@@ -340,19 +342,21 @@ const PersonalDetailsComponent = () => {
             onChangeText={setNickname}
             placeholder="Enter your nickname"
             lastItem={true}
+            icon="rectangleEllipsis"
           />
         </MenuContainer>
 
         <View className="w-full rounded-3xl bg-bg-grouped-2">
           <Pressable
             onPress={() => setShowGenderPicker((prev) => !prev)}
-            className="flex-row items-center justify-between px-4 py-4">
-            <Text className="text-lg font-medium text-text-1">Gender</Text>
+            className="flex-row items-center justify-between px-5 py-4">
+            <VenusAndMars size={22} color={'#333'} />
+            <Text className="pl-6 text-lg font-medium text-text-1">Gender</Text>
             <View className="flex-1 flex-row items-center justify-end gap-3">
               <Text className="text-xl text-text-2">
                 {gender === 'male' ? 'Male' : gender === 'female' ? 'Female' : 'Not Specified'}
               </Text>
-              <IonIcons
+              <Ionicons
                 name={showGenderPicker ? 'chevron-down' : 'chevron-forward'}
                 size={18}
                 color={themeColors.icon}
@@ -406,11 +410,12 @@ const PersonalDetailsComponent = () => {
         <View className="w-full rounded-3xl bg-bg-grouped-2">
           <Pressable
             onPress={() => setShowDatePicker((prev) => !prev)}
-            className="flex-row items-center justify-between px-4 py-4">
-            <Text className="text-lg font-medium text-text-1">Date of Birth</Text>
+            className="flex-row items-center justify-between px-5 py-4">
+            <CalendarDays size={22} color={'#333'} />
+            <Text className="pl-6 text-lg font-medium text-text-1">Date of Birth</Text>
             <View className="flex-1 flex-row items-center justify-end gap-3">
               <Text className="text-xl text-text-2">{dob.toLocaleDateString('en-GB')}</Text>
-              <IonIcons
+              <Ionicons
                 name={showDatePicker ? 'chevron-down' : 'chevron-forward'}
                 size={18}
                 color={themeColors.icon}

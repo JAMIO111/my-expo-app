@@ -87,10 +87,11 @@ const TeamDetails = () => {
         contentContainerStyle={{ alignItems: 'center', justifyContent: 'center' }}
         className="mt-16 flex-1 bg-bg-grouped-1 p-5">
         <MenuContainer>
-          <SettingsItem routerPath="/settings/TeamCrest" title="Team Crest" />
+          <SettingsItem routerPath="/settings/TeamCrest" title="Team Crest" icon="hexagon" />
           <SettingsItem
             routerPath="/settings/TeamCoverImage"
             title="Team Cover Image"
+            icon="image"
             lastItem={true}
           />
         </MenuContainer>
@@ -99,22 +100,26 @@ const TeamDetails = () => {
             title="Team Name"
             value={teamName}
             onChangeText={setTeamName}
+            icon="userPen"
             placeholder="Enter your team name"
           />
           <EditableSettingsItem
             title="Display Name"
             value={teamDisplayName}
+            icon="userPen"
             onChangeText={setTeamDisplayName}
             placeholder="Enter your display name"
           />
           <SettingsItem
             routerPath="/settings/Abbreviation"
             title="Abbreviation"
+            icon="rectangleEllipsis"
             text={abbreviation}
           />
           <SettingsItem
             routerPath="/settings/ManageAddress"
             title="Address"
+            icon="mapPin"
             text={
               [address.line_1, address.line_2, address.city, address.county, address.postcode]
                 .filter(Boolean)

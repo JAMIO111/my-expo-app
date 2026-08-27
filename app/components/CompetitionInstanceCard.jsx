@@ -1,10 +1,11 @@
-import { View, Text, Pressable, Animated } from 'react-native';
+import { View, Text, Pressable, Animated, TouchableOpacity } from 'react-native';
 import { useRef } from 'react';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useUser } from '@contexts/UserProvider';
 import { useRouter } from 'expo-router';
+import Toast from 'react-native-toast-message';
 
 // ─── Helpers (unchanged) ──────────────────────────────────────────────────────
 
@@ -60,8 +61,15 @@ export function getStatusColors(status) {
   }
 }
 
+const getPlayerName = (player) => {
+  if (!player) return 'A player';
+  const fullName = [player.first_name, player.surname].filter(Boolean).join(' ');
+  return fullName || player.nickname || 'A player';
+};
+
 export function checkEligibility(player, instance, currentRole) {
-  if (!player || !instance || !currentRole) return 'Ineligible';
+  if (!player || !instance || !currentRole)
+    return { status: 'Ineligible', reasons: ['Missing required data'] };
 
   const activeParticipants =
     instance?.CompetitionParticipants?.filter(
@@ -76,13 +84,14 @@ export function checkEligibility(player, instance, currentRole) {
       ? activeParticipants?.find((p) => p.team_id === currentRole?.team?.id)
       : activeParticipants?.find((p) => p.player_id === player.id);
   if (participant) {
-    if (participant.status === 'requested') return 'Requested';
-    if (participant.status === 'active') return 'Entered';
+    if (participant.status === 'requested') return { status: 'Requested', reasons: [] };
+    if (participant.status === 'active') return { status: 'Entered', reasons: [] };
   }
 
   if (instance.entry_deadline) {
     const entryDeadline = new Date(instance.entry_deadline);
-    if (!isNaN(entryDeadline) && new Date() > entryDeadline) return 'Closed';
+    if (!isNaN(entryDeadline) && new Date() > entryDeadline)
+      return { status: 'Closed', reasons: ['The entry deadline for this competition has passed'] };
   }
 
   if (
@@ -90,45 +99,85 @@ export function checkEligibility(player, instance, currentRole) {
     instance.max_competitors !== undefined &&
     activeParticipants.length === instance.max_competitors
   ) {
-    return 'Full';
+    return {
+      status: 'Full',
+      reasons: ['This competition has reached its maximum number of competitors'],
+    };
   }
 
   if (instance.competition.competitor_type === 'team') {
     if (instance.competition.team_type === 'child') {
-      if (currentRole?.compTeams?.length === 0) return 'Ineligible';
+      if (currentRole?.compTeams?.length === 0)
+        return {
+          status: 'Ineligible',
+          reasons: ['You have no child teams available to enter this competition'],
+        };
+
+      const teamReasons = [];
 
       const teamIsEligible = currentRole?.compTeams?.some((team) => {
         // Get the active players for this comp team
         const players = team?.players?.filter((tp) => tp.status === 'active');
-        if (!players?.length) return false;
-        if (instance.max_team_size && players.length > instance.max_team_size) return false;
-        if (division && division !== currentRole?.division?.id) return false;
+        if (!players?.length) {
+          teamReasons.push(`${team?.name ?? 'A team'} has no active players`);
+          return false;
+        }
+        if (instance.max_team_size && players.length > instance.max_team_size) {
+          teamReasons.push(
+            `${team?.name ?? 'A team'} exceeds the maximum team size of ${instance.max_team_size}`
+          );
+          return false;
+        }
+        if (division && division !== currentRole?.division?.id) {
+          teamReasons.push('This competition is restricted to a different division');
+          return false;
+        }
 
-        return players.every((tp) => {
-          const p = tp.player;
-          if (!p?.dob) return false;
+        let teamPasses = true;
 
-          const birth = new Date(p.dob);
+        players.forEach((tp) => {
+          const name = getPlayerName(tp);
+
+          if (!tp?.dob) {
+            teamReasons.push(`${name} is missing a date of birth`);
+            teamPasses = false;
+            return;
+          }
+
+          const birth = new Date(tp.dob);
           const today = new Date();
           let age = today.getFullYear() - birth.getFullYear();
           const m = today.getMonth() - birth.getMonth();
           if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) age--;
 
-          if (instance.min_age != null && age < instance.min_age) return false;
-          if (instance.max_age != null && age > instance.max_age) return false;
+          if (instance.min_age != null && age < instance.min_age) {
+            teamReasons.push(
+              `${name} (age ${age}) does not meet the minimum age requirement of ${instance.min_age}`
+            );
+            teamPasses = false;
+          }
+          if (instance.max_age != null && age > instance.max_age) {
+            teamReasons.push(
+              `${name} (age ${age}) exceeds the maximum age requirement of ${instance.max_age}`
+            );
+            teamPasses = false;
+          }
           if (
             instance.gender &&
             instance.gender !== 'mixed' &&
-            p.gender &&
-            instance.gender !== p.gender
-          )
-            return false;
-
-          return true;
+            tp.gender &&
+            instance.gender !== tp.gender
+          ) {
+            teamReasons.push(`${name} does not meet the gender requirement for this competition`);
+            teamPasses = false;
+          }
         });
+
+        return teamPasses;
       });
 
-      return teamIsEligible ? 'Eligible' : 'Ineligible';
+      if (teamIsEligible) return { status: 'Eligible', reasons: [] };
+      return { status: 'Ineligible', reasons: [...new Set(teamReasons)] };
     } else if (instance.competition.team_type === 'parent') {
       const divisionValid = instance.division_id
         ? instance.division_id === currentRole?.division?.id
@@ -138,23 +187,45 @@ export function checkEligibility(player, instance, currentRole) {
 
       const teamIsEligible = divisionValid;
 
-      return teamIsEligible ? 'Eligible' : 'Ineligible';
+      if (teamIsEligible) return { status: 'Eligible', reasons: [] };
+      return {
+        status: 'Ineligible',
+        reasons: ['This competition is restricted to a different division'],
+      };
     }
   } else if (instance.competition.competitor_type === 'individual') {
-    if ((instance.min_age != null || instance.max_age != null) && !dob) return 'Ineligible';
+    const reasons = [];
+
+    if ((instance.min_age != null || instance.max_age != null) && !dob)
+      return {
+        status: 'Ineligible',
+        reasons: ['Your date of birth is required to determine age eligibility'],
+      };
+
     const birth = new Date(dob);
     const today = new Date();
     let age = today.getFullYear() - birth.getFullYear();
     const m = today.getMonth() - birth.getMonth();
     if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) age--;
-    if (instance.min_age != null && age < instance.min_age) return 'Ineligible';
-    if (instance.max_age != null && age > instance.max_age) return 'Ineligible';
+
+    if (instance.min_age != null && age < instance.min_age)
+      reasons.push(
+        `You (age ${age}) do not meet the minimum age requirement of ${instance.min_age}`
+      );
+    if (instance.max_age != null && age > instance.max_age)
+      reasons.push(`You (age ${age}) exceed the maximum age requirement of ${instance.max_age}`);
     if (instance.gender && instance.gender !== 'mixed' && gender && instance.gender !== gender)
-      return 'Ineligible';
-    if (division && currentRole?.division?.id !== division) return 'Ineligible';
-    return 'Eligible';
+      reasons.push('This competition is restricted to a different gender');
+    if (division && currentRole?.division?.id !== division)
+      reasons.push('This competition is restricted to a different division');
+
+    if (reasons.length > 0) return { status: 'Ineligible', reasons };
+    return { status: 'Eligible', reasons: [] };
   }
-  return 'Ineligible';
+  return {
+    status: 'Ineligible',
+    reasons: ['Unable to determine eligibility for this competition'],
+  };
 }
 
 export const formatCompetitionType = (value) => {
@@ -165,24 +236,36 @@ export const formatCompetitionType = (value) => {
     .join(' & ');
 };
 
+const showEligibilityReasons = (eligibilityReasons) => {
+  Toast.show({
+    type: 'info',
+    text1: 'Eligibility Reasons',
+    text2: eligibilityReasons.join('\n'),
+  });
+};
+
 // ─── Status badge ─────────────────────────────────────────────────────────────
 
-const StatusBadge = ({ label, colors, iconName }) => (
-  <View
-    style={{
-      backgroundColor: colors.background,
-      borderColor: colors.border,
-      borderWidth: 1,
-      flexDirection: 'row',
-      alignItems: 'center',
-      gap: 5,
-      borderRadius: 8,
-      paddingHorizontal: 10,
-      paddingVertical: 4,
-    }}>
-    {iconName && <Ionicons name={iconName} size={13} color={colors.text} />}
-    <Text style={{ fontFamily: 'Saira_500Medium', fontSize: 12, color: colors.text }}>{label}</Text>
-  </View>
+const StatusBadge = ({ label, colors, iconName, disabled, onPress }) => (
+  <TouchableOpacity disabled={disabled} onPress={onPress}>
+    <View
+      style={{
+        backgroundColor: colors.background,
+        borderColor: colors.border,
+        borderWidth: 1,
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 5,
+        borderRadius: 8,
+        paddingHorizontal: 10,
+        paddingVertical: 4,
+      }}>
+      {iconName && <Ionicons name={iconName} size={13} color={colors.text} />}
+      <Text style={{ fontFamily: 'Saira_500Medium', fontSize: 12, color: colors.text }}>
+        {label}
+      </Text>
+    </View>
+  </TouchableOpacity>
 );
 
 // ─── Footer stat pill ─────────────────────────────────────────────────────────
@@ -221,8 +304,13 @@ const CompetitionInstanceCard = ({ instance }) => {
     Animated.spring(scale, { toValue: 1, useNativeDriver: true, speed: 50 }).start();
 
   const statusColors = getStatusColors(instance.status);
-  const eligibility = checkEligibility(player, instance, currentRole);
+  const { status: eligibility, reasons: eligibilityReasons } = checkEligibility(
+    player,
+    instance,
+    currentRole
+  );
   const eligibilityColors = getStatusColors(eligibility);
+  console.log('Eligibility:', eligibility, eligibilityReasons);
 
   const showEligibility =
     (instance.status === 'upcoming' || eligibility === 'Entered') && currentRole?.type !== 'admin';
@@ -320,6 +408,12 @@ const CompetitionInstanceCard = ({ instance }) => {
                 label={eligibility}
                 colors={eligibilityColors}
                 iconName={eligibilityIcon}
+                disabled={eligibility !== 'Ineligible'}
+                onPress={() => {
+                  if (eligibilityReasons.length > 0 && eligibility === 'Ineligible') {
+                    showEligibilityReasons(eligibilityReasons);
+                  }
+                }}
               />
             )}
           </View>

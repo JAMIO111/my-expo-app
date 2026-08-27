@@ -4,7 +4,6 @@ import { useState, useCallback, useMemo } from 'react';
 import { useUser } from '@contexts/UserProvider';
 import LoadingScreen from '@components/LoadingScreen';
 import HorizontalScrollUpcomingFixtures from '@components/HorizontalScrollUpcomingFixtures';
-import CTAButton from '@components/CTAButton';
 import ResultsHomeCard from '@components/ResultsHomeCard';
 import LeagueHomeCard from '@components/LeagueHomeCard';
 import FixturesHomeCard from '@components/FixturesHomeCard';
@@ -22,14 +21,10 @@ import HomeScreenCardLarge from '@components/HomeScreenCardLarge';
 import TransferWindowCard from '@components/TransferWindowCard';
 import ToggleTransferWindowCard from '@components/ToggleTransferWindowCard';
 import { useQueryClient } from '@tanstack/react-query';
-import BottomSheetModal from '@components/BottomSheetModal';
 import { useRevenueCat } from '@contexts/RevenueCatProvider';
-import { useNotificationsPanel } from '@contexts/NotificationsPanelProvider';
-import TicketCard from '@components/TicketCard';
 import TicketCarousel from '@components/TicketCarousel';
 import Heading from '@components/Heading';
 import TicketTapeBanner from '@components/TicketTapeBanner';
-import PlayerStatSelector from '../../components/PlayerStatSelector';
 
 const Home = () => {
   const { isPro, isCore } = useRevenueCat();
