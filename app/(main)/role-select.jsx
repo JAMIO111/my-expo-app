@@ -28,7 +28,7 @@ const RoleSelect = () => {
         <Text style={{ lineHeight: 40 }} className="my-2 px-2 font-saira-bold text-4xl text-text-1">
           Select Your Role.
         </Text>
-        <Text className="mb-6 px-2 font-saira text-xl text-text-2">
+        <Text style={{ lineHeight: 20 }} className="mb-6 px-2 font-saira text-xl text-text-2">
           This will determine what features and content you have access to and what information is
           shown.
         </Text>
@@ -53,37 +53,37 @@ const RoleSelect = () => {
                     } else router.replace('/(main)/home/paywall');
                   }
                 }}>
-                <View className="mb-3 flex-row items-center justify-between gap-2 rounded-2xl bg-bg-2 px-4 py-3 shadow-sm">
+                <View className="mb-3 flex-row items-center justify-between gap-5 rounded-2xl border border-theme-gray-5 bg-bg-2 px-4 py-3">
+                  {role?.type === 'admin' ? (
+                    <IonIcon
+                      name={role?.type === 'admin' ? 'shield-half-sharp' : 'people'}
+                      size={40}
+                      color="teal"
+                    />
+                  ) : (
+                    <TeamLogo
+                      size={40}
+                      type={role?.team?.crest?.type}
+                      color1={role?.team?.crest?.color1}
+                      color2={role?.team?.crest?.color2}
+                      thickness={role?.team?.crest?.thickness}
+                    />
+                  )}
                   <View className="flex-1">
                     <Text
                       numberOfLines={1}
                       ellipsizeMode="tail"
-                      className="font-saira-semibold text-2xl text-text-1">
+                      className="font-tektur-semibold text-2xl text-text-1">
                       {role.team?.display_name || role.district?.name}
                     </Text>
                     <Text
                       numberOfLines={1}
                       ellipsizeMode="tail"
-                      className="font-saira-medium text-xl text-text-2">
+                      className="font-tektur text-xl text-text-2">
                       {role.type.charAt(0).toUpperCase() + role.type.slice(1)}
                     </Text>
                   </View>
                   <View className="flex-row items-center gap-2">
-                    {role?.type === 'admin' ? (
-                      <IonIcon
-                        name={role?.type === 'admin' ? 'shield-half-sharp' : 'people'}
-                        size={40}
-                        color="teal"
-                      />
-                    ) : (
-                      <TeamLogo
-                        size={40}
-                        type={role?.team?.crest?.type}
-                        color1={role?.team?.crest?.color1}
-                        color2={role?.team?.crest?.color2}
-                        thickness={role?.team?.crest?.thickness}
-                      />
-                    )}
                     <IonIcon name="chevron-forward-outline" size={24} color="gray" />
                   </View>
                 </View>

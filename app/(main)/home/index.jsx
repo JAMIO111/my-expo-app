@@ -286,7 +286,7 @@ const Home = () => {
               {currentRole?.team && (
                 <>
                   <View className="w-full items-center justify-between">
-                    <Text className="mb-2 w-full px-4 text-left font-saira-semibold text-xl text-text-1">
+                    <Text className="font-tektur-semibold mb-2 w-full px-4 text-left text-xl text-text-1">
                       {currentRole?.team?.display_name} Fixtures
                     </Text>
                     <HorizontalScrollUpcomingFixtures
@@ -346,34 +346,36 @@ const Home = () => {
               {(currentRole?.team?.captain === player?.id ||
                 currentRole?.team?.vice_captain === player?.id) && (
                 <View className="w-full gap-3 p-3">
-                  <Heading text="Pending Match Results" />
-                  {disputedFixtures &&
-                    disputedFixtures.length > 0 &&
-                    disputedFixtures.map((fixture) => (
-                      <PendingResultCard
-                        key={fixture.id}
-                        fixture={fixture}
-                        refetch={teamResultsPendingApprovalRefetch}
-                      />
-                    ))}
-                  {amendedFixtures &&
-                    amendedFixtures.length > 0 &&
-                    amendedFixtures.map((fixture) => (
-                      <PendingResultCard
-                        key={fixture.id}
-                        fixture={fixture}
-                        refetch={teamResultsPendingApprovalRefetch}
-                      />
-                    ))}
-                  {resultsPendingApproval &&
-                    resultsPendingApproval.length > 0 &&
-                    resultsPendingApproval.map((fixture) => (
-                      <PendingResultCard
-                        key={fixture.id}
-                        fixture={fixture}
-                        refetch={teamResultsPendingApprovalRefetch}
-                      />
-                    ))}
+                  {disputedFixtures && disputedFixtures.length > 0 && (
+                    <View className="w-full gap-3">
+                      <Heading text="Pending Match Results" />
+                      {disputedFixtures.map((fixture) => (
+                        <PendingResultCard
+                          key={fixture.id}
+                          fixture={fixture}
+                          refetch={teamResultsPendingApprovalRefetch}
+                        />
+                      ))}
+                      {amendedFixtures &&
+                        amendedFixtures.length > 0 &&
+                        amendedFixtures.map((fixture) => (
+                          <PendingResultCard
+                            key={fixture.id}
+                            fixture={fixture}
+                            refetch={teamResultsPendingApprovalRefetch}
+                          />
+                        ))}
+                      {resultsPendingApproval &&
+                        resultsPendingApproval.length > 0 &&
+                        resultsPendingApproval.map((fixture) => (
+                          <PendingResultCard
+                            key={fixture.id}
+                            fixture={fixture}
+                            refetch={teamResultsPendingApprovalRefetch}
+                          />
+                        ))}
+                    </View>
+                  )}
                   <View className="w-full gap-3">
                     {fixturesAwaitingResults &&
                       fixturesAwaitingResults.length > 0 &&

@@ -8,7 +8,6 @@ import MenuContainer from '@components/MenuContainer';
 import SafeViewWrapper from '@components/SafeViewWrapper';
 import CustomHeader from '@components/CustomHeader'; // Adjust the import path as necessary
 import { useUser } from '@contexts/UserProvider';
-import { Switch } from 'react-native-gesture-handler';
 import { supabase } from '@/lib/supabase';
 import Toast from 'react-native-toast-message';
 import { useAdminsByDistrict } from '@hooks/useAdminsByDistrict';
@@ -107,14 +106,14 @@ const LeagueConfig = () => {
           <EditableSettingsItem
             iconBGColor="gray"
             title="District Name"
-            icon="text-outline"
+            icon="folderPen"
             value={districtName}
             onChangeText={setDistrictName}
           />
           <EditableSettingsItem
             iconBGColor="gray"
             title="Join Code"
-            icon="key-outline"
+            icon="rectangleEllipsis"
             value={joinCode}
             onChangeText={handleEditCode}
           />
@@ -136,8 +135,7 @@ const LeagueConfig = () => {
 
               await refetch();
             }}
-            icon={currentRole?.district?.private ? 'eye-off-outline' : 'eye-outline'}
-            iconBGColor={currentRole?.district?.private ? 'gray' : 'blue'}
+            icon={currentRole?.district?.private ? 'eyeOff' : 'eye'}
             title={currentRole?.district?.private ? 'Private League' : 'Public League'}
           />
           <SwitchSettingsItem
@@ -158,12 +156,7 @@ const LeagueConfig = () => {
 
               await refetch();
             }}
-            icon={
-              currentRole?.district?.transfer_approval_required
-                ? 'hand-left-outline'
-                : 'thumbs-up-outline'
-            }
-            iconBGColor={currentRole?.district?.transfer_approval_required ? 'orange' : 'green'}
+            icon={currentRole?.district?.transfer_approval_required ? 'shieldCheck' : 'circleCheck'}
             title={
               currentRole?.district?.transfer_approval_required
                 ? 'Transfer Approval Required'
@@ -188,12 +181,7 @@ const LeagueConfig = () => {
 
               await refetch();
             }}
-            icon={
-              currentRole?.district?.transfer_window_open
-                ? 'swap-horizontal-outline'
-                : 'lock-closed-outline'
-            }
-            iconBGColor={currentRole?.district?.transfer_window_open ? 'green' : 'red'}
+            icon={currentRole?.district?.transfer_window_open ? 'doorOpen' : 'doorClosed'}
             title={
               currentRole?.district?.transfer_window_open
                 ? 'Transfer Window Open'
@@ -240,7 +228,7 @@ const LeagueConfig = () => {
             })}
           </MenuContainer>
         )}
-        <Text className="text-center text-sm text-text-2">
+        <Text className="font-tektur text-center text-sm text-text-2">
           A Proud Break Room League Since:{' '}
           {` ${new Date(currentRole?.district?.initiated_at).toLocaleDateString()}`}
         </Text>

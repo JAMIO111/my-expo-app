@@ -1,11 +1,16 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
 import { View, Text, ScrollView, Pressable, Animated, StyleSheet, Modal } from 'react-native';
 import { useRouter } from 'expo-router';
+import { supabase } from '@/lib/supabase';
 import Svg, { Path } from 'react-native-svg';
 import { useKnockoutBracket } from '@/hooks/useKnockoutBracket';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useUser } from '@contexts/UserProvider';
 import BottomSheetModal from './BottomSheetModal';
+import MenuContainer from './MenuContainer';
+import SettingsItem from './SettingsItem';
+import { useQueryClient } from '@tanstack/react-query';
+import SwitchSettingsItem from './SwitchSettingsItem';
 import { Trophy, Calendar, Repeat, Users, Layers, Swords, Crown } from 'lucide-react-native';
 
 // ─── Layout constants ─────────────────────────────────────
@@ -113,8 +118,8 @@ const MatchCard = ({
   const getParticipantName = (fixture, side) => {
     const id =
       side === 'home'
-        ? fixture.home_team || fixture.home_player
-        : fixture.away_team || fixture.away_player;
+        ? fixture?.home_team || fixture?.home_player
+        : fixture?.away_team || fixture?.away_player;
 
     if (!id) return null;
 
@@ -134,11 +139,11 @@ const MatchCard = ({
   const awayName = getParticipantName(fixture, 'away');
 
   const getExists = (side) => {
-    if (fixture.competitor_type === 'team') {
-      return side === 'home' ? fixture.home_team : fixture.away_team;
+    if (fixture?.competitor_type === 'team') {
+      return side === 'home' ? fixture?.home_team : fixture?.away_team;
     }
 
-    return side === 'home' ? fixture.home_player : fixture.away_player;
+    return side === 'home' ? fixture?.home_player : fixture?.away_player;
   };
 
   const homeExists = getExists('home');
@@ -150,16 +155,16 @@ const MatchCard = ({
 
   const isFrames = frames && frames.length > 0;
 
-  const isApproved = fixture.approved;
+  const isApproved = fixture?.approved;
 
-  const homeScore = frames.filter((f) => f.winner_side === 'home').length;
-  const awayScore = frames.filter((f) => f.winner_side === 'away').length;
+  const homeScore = frames?.filter((f) => f.winner_side === 'home').length ?? 0;
+  const awayScore = frames?.filter((f) => f.winner_side === 'away').length ?? 0;
 
   return (
     <Pressable
       className="shadow-sm"
       onPress={() => {
-        router.push(`/competitions/${competitionInstanceId}/${fixture.id}`);
+        router.push(`/competitions/${competitionInstanceId}/${fixture?.id}`);
       }}
       disabled={isPending || homeBye || awayBye}
       style={{ opacity: isPending ? 0.7 : 1 }}>
@@ -171,7 +176,7 @@ const MatchCard = ({
         ]}>
         <Slot
           name={homeName}
-          isWinner={fixture.winner_side === 'home' && isApproved}
+          isWinner={fixture?.winner_side === 'home' && isApproved}
           isBye={homeBye}
           isHome
           isFrames={isFrames}
@@ -179,7 +184,7 @@ const MatchCard = ({
         />
         <Slot
           name={awayName}
-          isWinner={fixture.winner_side === 'away' && isApproved}
+          isWinner={fixture?.winner_side === 'away' && isApproved}
           isBye={awayBye}
           isFrames={isFrames}
           score={awayScore}
@@ -193,8 +198,11 @@ const MatchCard = ({
 export default function KnockoutBracket({ competitionInstanceId }) {
   const [activeStage, setActiveStage] = useState(null);
   const [stageModalVisible, setStageModalVisible] = useState(false);
+  const [isUpdatingNeutralVenue, setIsUpdatingNeutralVenue] = useState(false);
   const { data, isLoading, error } = useKnockoutBracket(competitionInstanceId);
   const { currentRole } = useUser();
+
+  const queryClient = useQueryClient();
 
   console.log('KnockoutBracket - data:', data);
 
@@ -202,7 +210,7 @@ export default function KnockoutBracket({ competitionInstanceId }) {
   const allFixtures = data?.fixtures ?? [];
   const teams = data?.teams ?? {};
   const players = data?.players ?? {};
-  const frames = data?.frames ?? {};
+  const frames = data?.frames ?? [];
 
   // 3rd place playoff is a sibling bracket (stage_order === -1), not reachable
   // via parent_fixture_id recursion from the final — pull it out before
@@ -226,7 +234,7 @@ export default function KnockoutBracket({ competitionInstanceId }) {
     [allFixtures, thirdPlaceStage]
   );
 
-  const hasThirdPlace = Boolean(thirdPlaceStage && thirdPlaceFixture);
+  const hasThirdPlace = thirdPlaceStage;
 
   const rounds = useMemo(() => {
     if (!stages.length || !fixtures.length) return [];
@@ -346,10 +354,10 @@ export default function KnockoutBracket({ competitionInstanceId }) {
 
                   return (
                     <Path
-                      key={fixture.id}
+                      key={fixture?.id}
                       d={`M ${x1} ${y1} H ${midX} V ${y2} H ${x2}`}
-                      stroke={fixture.winner_side ? '#f59e0b' : '#000000'}
-                      strokeWidth={fixture.winner_side ? 1.5 : 0.5}
+                      stroke={fixture?.winner_side ? '#f59e0b' : '#000000'}
+                      strokeWidth={fixture?.winner_side ? 1.5 : 0.5}
                       fill="none"
                     />
                   );
@@ -361,7 +369,7 @@ export default function KnockoutBracket({ competitionInstanceId }) {
             {rounds.map((roundFixtures, ri) =>
               roundFixtures.map((fixture, mi) => (
                 <View
-                  key={fixture.id}
+                  key={fixture?.id}
                   style={{
                     position: 'absolute',
                     left: ri * ROUND_W,
@@ -369,7 +377,7 @@ export default function KnockoutBracket({ competitionInstanceId }) {
                   }}>
                   <MatchCard
                     fixture={fixture}
-                    frames={frames[fixture.id] ?? []}
+                    frames={frames[fixture?.id] ?? []}
                     teams={teams}
                     players={players}
                     isFinal={ri === nR - 1}
@@ -390,7 +398,7 @@ export default function KnockoutBracket({ competitionInstanceId }) {
                 }}>
                 <MatchCard
                   fixture={thirdPlaceFixture}
-                  frames={frames[thirdPlaceFixture.id] ?? []}
+                  frames={frames[thirdPlaceFixture?.id] ?? []}
                   teams={teams}
                   players={players}
                   isFinal={false}
@@ -488,6 +496,47 @@ export default function KnockoutBracket({ competitionInstanceId }) {
                 wide
               />
             )}
+
+            <MenuContainer title={`Configure ${activeStage?.name || 'Stage'}`}>
+              <SwitchSettingsItem
+                title="Neutral Venue"
+                icon="scale"
+                defaultValue={activeStage?.is_neutral_venue ?? false}
+                disabled={isUpdatingNeutralVenue}
+                setValue={async () => {
+                  const newValue = !activeStage?.is_neutral_venue;
+
+                  setIsUpdatingNeutralVenue(true);
+                  try {
+                    const { data, error } = await supabase
+                      .from('Stages')
+                      .update({ is_neutral_venue: newValue })
+                      .eq('id', activeStage?.id)
+                      .select();
+
+                    if (error) throw error;
+
+                    queryClient.setQueryData(
+                      ['knockout-bracket', competitionInstanceId],
+                      (oldData) => {
+                        if (!oldData) return oldData;
+
+                        return {
+                          ...oldData,
+                          stages: oldData.stages.map((s) =>
+                            s.id === activeStage?.id ? { ...s, is_neutral_venue: newValue } : s
+                          ),
+                        };
+                      }
+                    );
+                  } catch (error) {
+                    console.error('Failed to update neutral venue:', error);
+                  } finally {
+                    setIsUpdatingNeutralVenue(false);
+                  }
+                }}
+              />
+            </MenuContainer>
 
             {activeStage?.stage_type === 'knockout' && (
               <StatCard

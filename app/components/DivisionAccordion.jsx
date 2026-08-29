@@ -6,6 +6,7 @@ import { useRouter } from 'expo-router';
 import CTAButton from '@components/CTAButton';
 import { useTeamPlayers } from '@hooks/useTeamPlayers';
 import Avatar from '@components/Avatar';
+import { UserRoundCog } from 'lucide-react-native';
 
 if (Platform.OS === 'android') {
   UIManager.setLayoutAnimationEnabledExperimental?.(true);
@@ -21,116 +22,80 @@ const DivisionAccordion = ({ isExpanded, onPress, divisionName, teams = [] }) =>
   console.log('DivisionAccordion Props - divisionName:', divisionName, 'teams:', teams);
 
   return (
-    <View className="w-full rounded-2xl bg-bg-2 shadow-sm">
-      {/* Header */}
-      <Pressable
-        onPress={teamsExist ? onPress : null}
-        className="flex-row items-center justify-between p-4">
-        <View>
-          <Text className="font-saira-semibold text-xl text-text-1">{divisionName}</Text>
-
-          {!isExpanded && (
-            <View className="mt-1 flex-row items-center gap-2">
-              {isLoading && <ActivityIndicator size="small" color="gray" animating={isLoading} />}
-              <Text className="font-saira-medium text-text-2">
-                {isLoading
-                  ? 'Loading teams...'
-                  : `${teams.length} team${teams.length !== 1 ? 's' : ''}`}
-              </Text>
+    <View className="w-full gap-2 rounded-2xl">
+      {teams.map((team) => (
+        <Pressable
+          onPress={() => setExpandedTeam((prev) => (prev === team.id ? null : team.id))}
+          key={team.id}
+          className="gap-2 rounded-2xl bg-bg-2 px-3 py-3">
+          <View className="flex-row items-center">
+            <TeamLogo
+              size={30}
+              type={team.crest?.type}
+              color1={team.crest?.color1}
+              color2={team.crest?.color2}
+              thickness={team.crest?.thickness}
+            />
+            <View className="flex flex-1 flex-row items-center gap-4 pl-4">
+              <Text className="font-saira-medium text-lg text-text-2">{team.abbreviation}</Text>
+              <Text className="font-saira-medium text-lg text-text-1">{team.name}</Text>
+            </View>
+            <Ionicons
+              name="chevron-down"
+              size={22}
+              color="gray"
+              style={{
+                transform: [{ rotate: expandedTeam === team.id ? '180deg' : '270deg' }],
+              }}
+            />
+          </View>
+          {expandedTeam === team.id && (
+            <View className="gap-3">
+              <View className="mt-3 gap-2 rounded-xl bg-bg-1 p-3">
+                {isLoading ? (
+                  <Text className="font-tektur text-text-2">Loading players...</Text>
+                ) : !teamPlayers || teamPlayers?.length === 0 ? (
+                  <Text className="font-tektur text-text-2">No players assigned.</Text>
+                ) : (
+                  teamPlayers?.map((player) => (
+                    <View key={player.id} className="flex-row items-center gap-3">
+                      <Avatar player={player} size={32} borderRadius={8} />
+                      <Text key={player.id} className="font-tektur flex-1 text-lg text-text-1">
+                        {`${player.first_name} ${player.surname} ${player.nickname ? `(${player.nickname})` : ''}`}
+                      </Text>
+                      {team?.captain === player?.id && (
+                        <View className="h-8 w-14 justify-center rounded border bg-yellow-500 shadow-[0_2px_4px_rgba(0,0,0,0.2)]">
+                          <View className="w-full items-center justify-center bg-white px-1">
+                            <Text style={{ lineHeight: 16 }} className="font-tektur text-xs">
+                              Captain
+                            </Text>
+                          </View>
+                        </View>
+                      )}
+                      {team?.vice_captain === player?.id && (
+                        <View className="h-8 w-14 justify-center rounded border border-brand-light bg-brand-light shadow-[0_2px_4px_rgba(0,0,0,0.2)]">
+                          <View className="w-full items-center justify-center bg-white px-1">
+                            <Text style={{ lineHeight: 16 }} className="font-tektur text-xs">
+                              VC
+                            </Text>
+                          </View>
+                        </View>
+                      )}
+                    </View>
+                  ))
+                )}
+              </View>
+              <CTAButton
+                type="yellow"
+                text="Manage Team"
+                callbackFn={() => router.push(`/my-leagues/${team.id}/manage-team`)}
+                className="mt-3"
+                lucideIcon={<UserRoundCog size={20} color="black" />}
+              />
             </View>
           )}
-        </View>
-        {teamsExist && (
-          <Ionicons
-            name="chevron-down"
-            size={22}
-            color="gray"
-            style={{
-              transform: [{ rotate: isExpanded ? '180deg' : '0deg' }],
-            }}
-          />
-        )}
-      </Pressable>
-
-      {/* Expanded content */}
-      {isExpanded && (
-        <View className="gap-2 border-t border-theme-gray-5 p-4">
-          {teams.map((team) => (
-            <Pressable
-              onPress={() => setExpandedTeam((prev) => (prev === team.id ? null : team.id))}
-              key={team.id}
-              className="gap-2 rounded-3xl bg-bg-1 px-3 py-3 shadow-sm">
-              <View className="flex-row items-center">
-                <TeamLogo
-                  size={30}
-                  type={team.crest?.type}
-                  color1={team.crest?.color1}
-                  color2={team.crest?.color2}
-                  thickness={team.crest?.thickness}
-                />
-                <View className="flex flex-1 flex-row items-center gap-4 pl-4">
-                  <Text className="font-saira-medium text-lg text-text-2">{team.abbreviation}</Text>
-                  <Text className="font-saira-medium text-lg text-text-1">{team.name}</Text>
-                </View>
-                <Ionicons
-                  name="chevron-down"
-                  size={22}
-                  color="gray"
-                  style={{
-                    transform: [{ rotate: expandedTeam === team.id ? '180deg' : '270deg' }],
-                  }}
-                />
-              </View>
-              {expandedTeam === team.id && (
-                <View className="gap-3 shadow-sm">
-                  <View className="mt-3 gap-2 rounded-2xl bg-bg-2 p-3">
-                    {isLoading ? (
-                      <Text className="font-saira text-text-2">Loading players...</Text>
-                    ) : !teamPlayers || teamPlayers?.length === 0 ? (
-                      <Text className="font-saira text-text-2">No players assigned.</Text>
-                    ) : (
-                      teamPlayers?.map((player) => (
-                        <View key={player.id} className="flex-row items-center gap-3">
-                          <Avatar player={player} size={32} borderRadius={8} />
-                          <Text
-                            key={player.id}
-                            className="flex-1 font-saira-medium text-lg text-text-1">
-                            {`${player.first_name} ${player.surname} ${player.nickname ? `(${player.nickname})` : ''}`}
-                          </Text>
-                          {team?.captain === player?.id && (
-                            <View className="h-8 w-14 justify-center rounded border bg-yellow-500 shadow-[0_2px_4px_rgba(0,0,0,0.2)]">
-                              <View className="w-full items-center justify-center bg-white px-1">
-                                <Text style={{ lineHeight: 16 }} className="font-saira text-xs">
-                                  Captain
-                                </Text>
-                              </View>
-                            </View>
-                          )}
-                          {team?.vice_captain === player?.id && (
-                            <View className="h-8 w-14 justify-center rounded border bg-brand-light shadow-[0_2px_4px_rgba(0,0,0,0.2)]">
-                              <View className="w-full items-center justify-center bg-white px-1">
-                                <Text style={{ lineHeight: 16 }} className="font-saira text-xs">
-                                  VC
-                                </Text>
-                              </View>
-                            </View>
-                          )}
-                        </View>
-                      ))
-                    )}
-                  </View>
-                  <CTAButton
-                    type="yellow"
-                    text="Manage Team"
-                    callbackFn={() => router.push(`/my-leagues/${team.id}/manage-team`)}
-                    className="mt-3"
-                  />
-                </View>
-              )}
-            </Pressable>
-          ))}
-        </View>
-      )}
+        </Pressable>
+      ))}
     </View>
   );
 };

@@ -16,6 +16,7 @@ import {
   ExternalLink,
   FileText,
   Eye,
+  EyeOff,
   LogOut,
   MessageCircleQuestionMark,
   Trash,
@@ -34,6 +35,11 @@ import {
   MapPin,
   RectangleEllipsis,
   UserPen,
+  DoorOpen,
+  DoorClosed,
+  CircleCheck,
+  ShieldCheck,
+  FolderPen,
 } from 'lucide-react-native';
 
 export const iconMap = {
@@ -49,6 +55,7 @@ export const iconMap = {
   fileText: FileText,
   save: Save,
   eye: Eye,
+  eyeOff: EyeOff,
   logout: LogOut,
   messageCircleQuestionMark: MessageCircleQuestionMark,
   trash: Trash,
@@ -64,6 +71,11 @@ export const iconMap = {
   mapPin: MapPin,
   rectangleEllipsis: RectangleEllipsis,
   userPen: UserPen,
+  doorOpen: DoorOpen,
+  doorClosed: DoorClosed,
+  circleCheck: CircleCheck,
+  shieldCheck: ShieldCheck,
+  folderPen: FolderPen,
 };
 
 const SettingsItem = ({

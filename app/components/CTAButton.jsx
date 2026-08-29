@@ -14,7 +14,7 @@ const CTAButton = ({
   loadingText = 'Loading…',
   borderRadius = 16,
   textSize = 'text-xl',
-  fontWeight = 'font-saira-medium',
+  fontWeight = 'font-medium',
 }) => {
   const colorScheme = useColorScheme();
   const themeColors = colorScheme === 'dark' ? colors.dark : colors.light;
@@ -80,7 +80,7 @@ const CTAButton = ({
           ) : null}
           <Text
             style={{ color: buttonTheme.text }}
-            className={`py-1 text-center ${fontWeight} ${textSize}`}>
+            className={`font-tektur py-1 text-center ${fontWeight} ${textSize}`}>
             {loading ? loadingText : text}
           </Text>
         </View>

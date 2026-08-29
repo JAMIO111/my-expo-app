@@ -27,6 +27,13 @@ import {
   ShieldCheck,
   DoorClosedLocked,
   ScrollText,
+  Clock3,
+  Users,
+  CircleX,
+  UserRoundCheck,
+  UserRoundX,
+  LogOut,
+  DoorOpen,
 } from 'lucide-react-native';
 import Toast from 'react-native-toast-message';
 import FloatingBottomSheet from '@components/FloatingBottomSheet';
@@ -35,6 +42,8 @@ import { BottomSheetScrollView, BottomSheetView } from '@gorhom/bottom-sheet';
 import KnockoutBracket from '@components/KnockoutBracket';
 import ExpandableView from '@components/ExpandableView';
 import { useKnockoutBracket } from '@hooks/useKnockoutBracket';
+import PressableScale from '@components/PressableScale';
+import { CalendarClock } from 'lucide-react-native/icons';
 
 export function getStatusColors(status) {
   switch (status) {
@@ -47,6 +56,7 @@ export function getStatusColors(status) {
     case 'active':
       return { background: '#00800022', text: '#008000', border: '#00800066' }; // Green
     case 'champion':
+    case 'requested':
       return { background: '#FFA50022', text: '#ff9100', border: '#ff910066' }; // Orange
     case 'eliminated':
       return { background: '#FF000022', text: '#FF0000', border: '#FF000066' }; // Red
@@ -438,8 +448,6 @@ const index = () => {
 
       if (error) throw error;
 
-      await supabase.from('CompetitionInstances').update({ status: 'active' }).eq('id', instanceId);
-
       Toast.show({
         type: 'success',
         text1: 'Fixtures Generated',
@@ -520,9 +528,9 @@ const index = () => {
       ) : (
         <SafeViewWrapper useBottomInset={false} topColor="bg-brand">
           <ScrollView
-            contentContainerStyle={{ display: 'flex', flexGrow: 1, gap: 6 }}
-            className="mt-16 flex-1 bg-bg-2">
-            <View className="gap-2 bg-bg-1">
+            contentContainerStyle={{ display: 'flex', flexGrow: 1, gap: 12 }}
+            className="mt-16 flex-1 bg-bg-2 p-3">
+            <View className="gap-2">
               <ExpandableView
                 title="Competition Details"
                 show={showDetails}
@@ -618,13 +626,13 @@ const index = () => {
               {isAdmin &&
                 (competitionInstance?.status === 'upcoming' ||
                   competitionInstance?.status === 'closed') && (
-                  <View className="p-4 pt-0">
+                  <View className="py-2">
                     <CTAButton
                       lucideIcon={
                         competitionInstance?.status === 'upcoming' ? (
                           <DoorClosedLocked size={24} color="white" />
                         ) : competitionInstance?.status === 'closed' ? (
-                          <ScrollText size={24} color="white" />
+                          <ScrollText size={24} color="black" />
                         ) : null
                       }
                       type={
@@ -652,9 +660,24 @@ const index = () => {
                   </View>
                 )}
             </View>
-            <View className="gap-2 bg-bg-1">
-              <ExpandableView title="Fixtures" show={showFixtures} setShow={setShowFixtures}>
-                <View style={{ marginTop: 10, display: showFixtures ? 'flex' : 'none' }}>
+            <View className="gap-2">
+              <ExpandableView
+                title="Fixtures"
+                show={showFixtures}
+                setShow={setShowFixtures}
+                fixedClosed={
+                  competitionInstance?.status === 'upcoming' ||
+                  competitionInstance?.status === 'closed'
+                }
+                fixedClosedComponent={
+                  <View className="flex-row items-center gap-2 rounded-lg bg-bg-2 p-2 px-3">
+                    <CalendarClock size={20} color="#777" />
+                    <Text className="font-saira text-lg text-text-2">
+                      No Fixtures available yet.
+                    </Text>
+                  </View>
+                }>
+                <View style={{ display: showFixtures ? 'flex' : 'none' }}>
                   {competitionInstance?.status === 'active' ||
                   competitionInstance?.status === 'completed' ? (
                     (() => {
@@ -675,28 +698,37 @@ const index = () => {
                           );
                         default:
                           return (
-                            <Text className="pl-1 font-saira text-xl text-text-2">
+                            <Text className="pl-1 font-saira-medium text-xl text-text-2">
                               No Fixtures available yet.
                             </Text>
                           );
                       }
                     })()
                   ) : (
-                    <Text className="font-saira text-xl text-text-2">
+                    <Text className="pl-1 font-saira-medium text-xl text-text-2">
                       No Fixtures available yet.
                     </Text>
                   )}
                 </View>
               </ExpandableView>
             </View>
-            <View className="bg-bg-1">
+            <View>
               <ExpandableView
-                title="Competition Participants"
+                title="Participants"
                 show={showParticipants}
-                setShow={setShowParticipants}>
-                <View className="gap-1 pt-4">
+                setShow={setShowParticipants}
+                fixedClosed={visibleParticipants?.length === 0}
+                fixedClosedComponent={
+                  <View className="flex-row items-center gap-2 rounded-lg bg-bg-2 p-2 px-3">
+                    <Users size={20} color="#777" />
+                    <Text className="font-saira text-lg text-text-2">No Participants yet.</Text>
+                  </View>
+                }>
+                <View className="gap-1">
                   {visibleParticipants?.length === 0 ? (
-                    <Text className="px-1 font-saira text-xl text-text-2">No participants yet</Text>
+                    <Text className="px-1 font-saira-medium text-xl text-text-2">
+                      No participants yet
+                    </Text>
                   ) : (
                     visibleParticipants
                       ?.sort((a, b) => {
@@ -707,13 +739,30 @@ const index = () => {
 
                         const participant = entity.team || entity.player;
 
+                        console.log('Participant:', participant, 'Entity:', entity);
+
                         const participantName =
                           participant.display_name ||
                           `${participant.first_name} ${participant.surname}`;
 
                         const isMe = participant.id === player.id;
 
-                        const isMyTeam = isTeam && entity.team_id === currentRole?.team?.id;
+                        const isMyParentTeam = isTeam && entity.team_id === currentRole?.team?.id;
+
+                        const isMyChildTeam =
+                          isTeam &&
+                          currentRole?.compTeams?.some((team) => team.id === entity.team_id);
+
+                        console.log(
+                          'isMyParentTeam:',
+                          isMyParentTeam,
+                          'isMyChildTeam:',
+                          isMyChildTeam,
+                          'isMe:',
+                          isMe
+                        );
+
+                        const isMyTeam = isMyParentTeam || isMyChildTeam;
 
                         const statusColors = getStatusColors(entity.status);
                         return (
@@ -733,7 +782,7 @@ const index = () => {
                             )}
                             <Text
                               numberOfLines={1}
-                              ellipsizeMode="tail"
+                              ellipsizeMode="middle"
                               className="flex-1 px-1 font-saira-medium text-lg text-text-1">
                               {participantName}
                             </Text>
@@ -752,7 +801,10 @@ const index = () => {
                               )}
                               {entity.status === 'eliminated' && <Ban size={16} color="#FF0000" />}
                               {entity.status === 'active' && (
-                                <ShieldCheck size={16} color="#008000" />
+                                <ShieldCheck size={16} color={statusColors.text} />
+                              )}
+                              {entity.status === 'requested' && (
+                                <Clock3 size={16} color={statusColors.text} />
                               )}
                               <Text
                                 style={{
@@ -762,23 +814,11 @@ const index = () => {
                                 {formatStatus(entity.status)}
                               </Text>
                             </View>
-                            {entity.status === 'requested' && (
-                              <Text
-                                style={{
-                                  backgroundColor: '#FFA50033',
-                                  borderColor: '#FFA50066',
-                                  color: '#FFA500',
-                                  borderWidth: 1,
-                                  borderRadius: 10,
-                                }}
-                                className="px-2 py-1 font-saira">
-                                Requested
-                              </Text>
-                            )}
+
                             {competitionInstance?.status !== 'completed' &&
                               ((isMyTeam && currentRole.team?.captain === player.id) || isMe) &&
                               !isAdmin && (
-                                <Pressable
+                                <PressableScale
                                   onPress={() => {
                                     showSheet({
                                       title:
@@ -795,22 +835,18 @@ const index = () => {
                                       onConfirm: () => handleWithdraw(entity.status),
                                     });
                                   }}>
-                                  <Ionicons
-                                    name={
-                                      entity.status === 'requested'
-                                        ? 'close-outline'
-                                        : 'exit-outline'
-                                    }
-                                    size={26}
-                                    color="#FF0000"
-                                  />
-                                </Pressable>
+                                  {entity.status === 'requested' ? (
+                                    <CircleX size={26} color="#FF0000" />
+                                  ) : (
+                                    <LogOut size={26} color="#FF0000" />
+                                  )}
+                                </PressableScale>
                               )}
                             {isAdmin && (
                               <View className="flex-row items-center gap-3">
                                 {entity.status === 'requested' && (
                                   <>
-                                    <Pressable
+                                    <PressableScale
                                       onPress={() => {
                                         showSheet({
                                           title: 'Accept Request',
@@ -821,10 +857,10 @@ const index = () => {
                                             await handleParticipantAction(entity, 'accept'),
                                         });
                                       }}>
-                                      <Ionicons name="checkmark" size={28} color="#008000" />
-                                    </Pressable>
+                                      <UserRoundCheck size={24} color="#008000" />
+                                    </PressableScale>
 
-                                    <Pressable
+                                    <PressableScale
                                       onPress={() => {
                                         showSheet({
                                           title: 'Deny Request',
@@ -835,13 +871,13 @@ const index = () => {
                                             await handleParticipantAction(entity, 'deny'),
                                         });
                                       }}>
-                                      <Ionicons name="close" size={28} color="#FF0000" />
-                                    </Pressable>
+                                      <UserRoundX size={24} color="#FF0000" />
+                                    </PressableScale>
                                   </>
                                 )}
 
                                 {entity.status === 'active' && (
-                                  <Pressable
+                                  <PressableScale
                                     onPress={() => {
                                       showSheet({
                                         title: 'Remove Participant',
@@ -852,8 +888,8 @@ const index = () => {
                                           await handleParticipantAction(entity, 'remove'),
                                       });
                                     }}>
-                                    <Ionicons name="exit-outline" size={26} color="#FF0000" />
-                                  </Pressable>
+                                    <LogOut size={26} color="#FF0000" />
+                                  </PressableScale>
                                 )}
                               </View>
                             )}
@@ -864,8 +900,10 @@ const index = () => {
                 </View>
               </ExpandableView>
             </View>
-            <View style={{ minHeight: 360 }} className="bg-bg-1 p-4 pb-8">
-              <Text className="pb-4 font-saira-medium text-2xl text-text-1">
+            <View
+              style={{ minHeight: 360 }}
+              className="rounded-2xl border border-theme-gray-5 bg-bg-1 p-4 pb-8">
+              <Text className="font-tektur-semibold pb-4 text-2xl text-text-1">
                 Competition Awards
               </Text>
               <View className="flex-row items-stretch justify-around gap-5">
@@ -915,7 +953,7 @@ const index = () => {
                 </Pressable>
               </View>
             </View>
-            <View className="gap-3 bg-bg-1 p-4 pb-8">
+            <View className="mb-16 gap-3 rounded-2xl border border-theme-gray-5 bg-bg-1 p-4">
               <Text
                 numberOfLines={1}
                 adjustsFontSizeToFit

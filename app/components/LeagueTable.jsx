@@ -56,17 +56,17 @@ const LeagueTable = ({ context, season, division }) => {
           {standings?.division?.name} Standings
         </Text>
         <View className="flex-row items-center justify-around p-2">
-          <Text className="w-18 text-center font-saira font-bold text-text-2">Pos</Text>
-          <Text className="flex-1 pl-3 text-left font-saira font-bold text-text-2">Team</Text>
-          <Text className="w-8 text-center font-saira font-bold text-text-2">PL</Text>
-          <Text className="w-8 text-center font-saira font-bold text-text-2">W</Text>
+          <Text className="w-18 font-tektur text-center font-bold text-text-2">Pos</Text>
+          <Text className="font-tektur flex-1 pl-3 text-left font-bold text-text-2">Team</Text>
+          <Text className="font-tektur w-8 text-center font-bold text-text-2">PL</Text>
+          <Text className="font-tektur w-8 text-center font-bold text-text-2">W</Text>
           {standings?.division?.draws_allowed && (
-            <Text className="w-8 text-center font-saira font-bold text-text-2">D</Text>
+            <Text className="font-tektur w-8 text-center font-bold text-text-2">D</Text>
           )}
-          <Text className="w-8 text-center font-saira font-bold text-text-2">L</Text>
-          <Text className="w-9 text-center font-saira font-bold text-text-2">Pts</Text>
+          <Text className="font-tektur w-8 text-center font-bold text-text-2">L</Text>
+          <Text className="font-tektur w-9 text-center font-bold text-text-2">Pts</Text>
           {standings?.division?.special_match && (
-            <Text className="w-8 text-center font-saira font-bold text-text-2">CC</Text>
+            <Text className="font-tektur w-8 text-center font-bold text-text-2">CC</Text>
           )}
         </View>
         {standings.standings?.map((team, index) => (
@@ -97,21 +97,23 @@ const LeagueTable = ({ context, season, division }) => {
                 <Text
                   numberOfLines={1}
                   ellipsizeMode="middle"
-                  className="flex-1 text-left font-saira-medium text-lg text-text-1">
+                  className="font-tektur-medium flex-1 text-left text-lg text-text-1">
                   {team.display_name}
                 </Text>
               </Pressable>
-              <Text className="w-8 text-center font-saira text-lg text-text-1">{team.played}</Text>
-              <Text className="w-8 text-center font-saira text-lg text-text-1">{team.won}</Text>
+              <Text className="font-tektur w-8 text-center text-lg text-text-1">{team.played}</Text>
+              <Text className="font-tektur w-8 text-center text-lg text-text-1">{team.won}</Text>
               {standings?.division?.draws_allowed && (
-                <Text className="w-8 text-center font-saira text-lg text-text-1">{team.drawn}</Text>
+                <Text className="font-tektur w-8 text-center text-lg text-text-1">
+                  {team.drawn}
+                </Text>
               )}
-              <Text className="w-8 text-center font-saira text-lg text-text-1">{team.lost}</Text>
-              <Text className="w-9 text-center font-saira-semibold text-lg text-text-1">
+              <Text className="font-tektur w-8 text-center text-lg text-text-1">{team.lost}</Text>
+              <Text className="font-tektur-semibold w-9 text-center text-lg text-text-1">
                 {team.points}
               </Text>
               {standings?.division?.special_match && (
-                <Text className="w-8 text-center font-saira text-lg font-semibold text-theme-orange">
+                <Text className="font-tektur w-8 text-center text-lg font-semibold text-theme-orange">
                   {team.special_match ?? '-'}
                 </Text>
               )}

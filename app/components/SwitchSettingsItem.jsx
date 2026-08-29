@@ -1,39 +1,54 @@
 import { Pressable, Text, View } from 'react-native';
 import { useColorScheme } from 'react-native';
 import colors from '@lib/colors';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Switch } from 'react-native-gesture-handler';
-import Ionicons from '@expo/vector-icons/Ionicons';
+import { iconMap } from './SettingsItem';
 
 const SwitchSettingsItem = ({
   title,
   icon,
-  iconBGColor = 'gray',
-  iconColor = '#fff',
-  value,
+  iconBGColor = '#00000000',
+  iconColor = '#000',
   setValue,
   defaultValue,
-  lastItem = false,
+  disabled = false,
 }) => {
   const colorScheme = useColorScheme();
   const themeColors = colors[colorScheme];
   const [enabled, setEnabled] = useState(defaultValue);
   const [saving, setSaving] = useState(false);
 
+  // Keep in sync if the underlying value changes from outside this
+  // component (e.g. a cache patch after a successful write elsewhere).
+  useEffect(() => {
+    if (!saving) {
+      setEnabled(defaultValue);
+    }
+  }, [defaultValue]);
+
   const handlePress = () => {
+    if (saving || disabled) return;
     handleToggle(!enabled);
   };
 
   const handleToggle = async (newValue) => {
-    setEnabled(newValue);
     setSaving(true);
 
-    if (setValue) {
-      await setValue(newValue);
+    try {
+      if (setValue) {
+        await setValue(newValue);
+      }
+      setEnabled(newValue);
+    } catch (error) {
+      // Revert: the write failed, so don't show the toggle as changed.
+      setEnabled(enabled);
+    } finally {
+      setSaving(false);
     }
-
-    setSaving(false);
   };
+
+  const Icon = icon ? iconMap[icon] : null;
 
   return (
     <Pressable onPress={handlePress} className="w-full">
@@ -47,14 +62,14 @@ const SwitchSettingsItem = ({
               <View
                 className="h-9 w-9 items-center justify-center rounded-[10px]"
                 style={{ backgroundColor: iconBGColor }}>
-                <Ionicons name={icon} size={22} color={iconColor} />
+                {Icon && <Icon size={22} color={iconColor} />}
               </View>
             )}
             <Text className="flex-1 text-lg font-medium text-text-1">{title}</Text>
 
             <View className="justify-center">
               <Switch
-                disabled={saving}
+                disabled={saving || disabled}
                 value={enabled}
                 onValueChange={handleToggle}
                 thumbColor="white"
@@ -65,13 +80,6 @@ const SwitchSettingsItem = ({
               />
             </View>
           </View>
-
-          {!lastItem && (
-            <View
-              className="h-[0.5px] w-full bg-separator"
-              style={!pressed ? { marginLeft: 22 } : null} // ml-16 = 64px
-            />
-          )}
         </View>
       )}
     </Pressable>

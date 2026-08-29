@@ -8,6 +8,8 @@ const ExpandableView = ({
   show,
   setShow,
   fixedOpen = false,
+  fixedClosed = false,
+  fixedClosedComponent = null,
   notificationCount,
   children,
 }) => {
@@ -15,12 +17,12 @@ const ExpandableView = ({
 
   useEffect(() => {
     Animated.timing(rotateAnim, {
-      toValue: show ? 1 : 0,
+      toValue: show && !fixedClosed ? 1 : 0,
       duration: 250,
       easing: Easing.out(Easing.cubic),
       useNativeDriver: true,
     }).start();
-  }, [show]);
+  }, [show, fixedClosed]);
 
   const rotate = rotateAnim.interpolate({
     inputRange: [0, 1],
@@ -28,10 +30,10 @@ const ExpandableView = ({
   });
 
   return (
-    <View className="bg-bg-1 p-3">
+    <View className="rounded-2xl border border-theme-gray-5 bg-bg-1 p-3">
       <Pressable
-        className="flex-row items-center justify-between py-2 pr-6"
-        onPress={() => !fixedOpen && setShow(!show)}>
+        className="flex-row items-center justify-between p-1"
+        onPress={() => !fixedOpen && !fixedClosed && setShow(!show)}>
         <View className="flex-row items-center gap-3">
           <Heading text={title} />
           {notificationCount > 0 && (
@@ -42,14 +44,15 @@ const ExpandableView = ({
             </View>
           )}
         </View>
-        {!fixedOpen && (
-          <Animated.View style={{ transform: [{ rotate }] }}>
-            <Ionicons name="chevron-down" size={30} />
+        {!fixedOpen && !fixedClosed && (
+          <Animated.View style={{ transform: [{ rotate }], marginRight: 4 }}>
+            <Ionicons color="#666" name="chevron-down" size={30} />
           </Animated.View>
         )}
+        {fixedClosed && fixedClosedComponent}
       </Pressable>
 
-      {(show || fixedOpen) && <View className="pt-2">{children}</View>}
+      {(show || fixedOpen) && !fixedClosed && <View className="pt-5">{children}</View>}
     </View>
   );
 };

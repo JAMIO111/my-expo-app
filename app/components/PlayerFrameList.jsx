@@ -3,6 +3,8 @@ import { FlatList, View, Text } from 'react-native';
 import Avatar from './Avatar';
 import { useUser } from '@contexts/UserProvider';
 import { ArrowUpDown, Undo2, Zap } from 'lucide-react-native';
+import { Ionicons } from '@expo/vector-icons';
+import LoadingScreen from './LoadingScreen';
 
 const PlayerCard = ({ player, side }) => {
   return (
@@ -157,19 +159,23 @@ const FrameRow = ({ frame, playersById, player }) => {
   );
 };
 
+const EmptyFramesState = () => (
+  <View className="h-full items-center justify-center gap-3 px-6 py-16">
+    <Ionicons name="file-tray-outline" size={80} color="rgba(0,0,0,0.2)" />
+    <Text className="mt-3 font-saira-semibold text-2xl text-text-1">No Frames Played</Text>
+    <Text className="mt-1 px-8 text-center font-saira-medium text-lg text-text-3">
+      Once this player takes part in a fixture, their frame history will show up here.
+    </Text>
+  </View>
+);
+
 const PlayerFrameList = ({ playerId }) => {
   const { player } = useUser();
   const { frames, playersById, hasNextPage, isFetchingNextPage, fetchNextPage, isLoading } =
     usePlayerFrames(playerId);
 
-  console.log('PlayerFrameList Rendered with frames:', frames);
-
   if (isLoading) {
-    return (
-      <View>
-        <Text>Loading frames...</Text>
-      </View>
-    );
+    return <LoadingScreen />;
   }
 
   return (
@@ -181,6 +187,7 @@ const PlayerFrameList = ({ playerId }) => {
         renderItem={({ item }) => (
           <FrameRow frame={item} playersById={playersById} player={player} />
         )}
+        ListEmptyComponent={EmptyFramesState}
         onEndReached={() => {
           if (hasNextPage && !isFetchingNextPage) {
             fetchNextPage();

@@ -41,7 +41,7 @@ const TeamProfileHeader = ({ profile }) => {
         {/* ── Right: name, division, address ── */}
         <View style={styles.infoCol}>
           {/* Team name */}
-          <Text className="font-saira-semibold text-3xl text-text-on-brand" numberOfLines={2}>
+          <Text className="font-tektur-medium text-3xl text-text-on-brand" numberOfLines={2}>
             {profile?.name || 'No Name'}
           </Text>
 
@@ -138,7 +138,7 @@ const styles = StyleSheet.create({
   },
 
   abbrevText: {
-    fontFamily: 'Saira-SemiBold',
+    fontFamily: 'Tektur-semibold',
     fontSize: 16,
     color: '#ffffff',
     letterSpacing: 1.2,

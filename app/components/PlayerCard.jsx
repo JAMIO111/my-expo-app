@@ -82,12 +82,12 @@ const PlayerCard = ({ player, team, context }) => {
         <View className="w-full flex-row items-center justify-between gap-4 rounded-2xl border border-theme-gray-6 bg-bg-grouped-1 py-2 pl-2 pr-2">
           <Avatar player={player} size={64} borderRadius={9} />
           <View className="flex-1 justify-center">
-            <Text numberOfLines={1} className="font-saira-semibold text-2xl text-text-1">
+            <Text numberOfLines={1} className="font-saira-medium text-2xl text-text-1">
               {player?.first_name} {player?.surname}
             </Text>
             <View className="flex-row items-center">
               {player?.nickname && (
-                <Text numberOfLines={1} className="font-saira-medium text-xl text-text-2">
+                <Text numberOfLines={1} className="font-tektur-medium text-xl text-text-2">
                   {player?.nickname?.toUpperCase()}
                 </Text>
               )}
@@ -103,16 +103,16 @@ const PlayerCard = ({ player, team, context }) => {
           {isCaptain && (
             <View className="h-12 w-20 justify-center rounded border bg-yellow-500 shadow-[0_2px_4px_rgba(0,0,0,0.2)]">
               <View className="w-full items-center justify-center bg-white px-1">
-                <Text style={{ lineHeight: 20 }} className="font-saira">
+                <Text style={{ lineHeight: 20 }} className="font-tektur">
                   Captain
                 </Text>
               </View>
             </View>
           )}
           {isViceCaptain && (
-            <View className="h-12 w-20 justify-center rounded border bg-brand-light shadow-[0_2px_4px_rgba(0,0,0,0.2)]">
+            <View className="h-12 w-20 justify-center rounded border border-brand-light bg-brand-light shadow-[0_2px_4px_rgba(0,0,0,0.2)]">
               <View className="w-full items-center justify-center bg-white px-1">
-                <Text style={{ lineHeight: 20 }} className="font-saira">
+                <Text style={{ lineHeight: 20 }} className="font-tektur">
                   VC
                 </Text>
               </View>

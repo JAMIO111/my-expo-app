@@ -2,6 +2,7 @@ import { Pressable, StyleSheet, Text, View, Image } from 'react-native';
 import TeamLogo from '@components/TeamLogo';
 import { useRouter } from 'expo-router';
 import { LeaderboardSkeleton } from '@components/Skeletons';
+import { Ionicons } from '@expo/vector-icons';
 
 const LeaderboardCard = ({
   title,
@@ -29,12 +30,24 @@ const LeaderboardCard = ({
           item?.stats?.[statKey] ?? // nested inside `stats`
           0;
 
-  console.log('Leaderboard Data:', data);
-
   const sortedData = [...data].sort((a, b) => getValue(b) - getValue(a));
 
   if (loading) {
     return <LeaderboardSkeleton />;
+  }
+
+  if (sortedData.length === 0) {
+    return (
+      <View style={{ borderRadius: 24 }} className="bg-bg-2 p-2">
+        <View className="h-[300px] w-[300px] items-center justify-center rounded-3xl bg-bg-grouped-2 p-3 shadow-sm">
+          <Ionicons name="file-tray-outline" size={50} color="rgba(0,0,0,0.2)" />
+          <Text className="mt-3 font-saira-semibold text-2xl text-text-1">{title}</Text>
+          <Text className="mt-1 px-6 text-center font-saira-medium text-text-3">
+            No {type === 'team' ? 'team' : 'player'} stats to rank yet.
+          </Text>
+        </View>
+      </View>
+    );
   }
 
   return (

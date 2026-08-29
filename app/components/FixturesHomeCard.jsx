@@ -24,12 +24,12 @@ const FixturesHomeCard = ({ fixture, isLoading }) => {
       }}
       className="h-28 w-full rounded-2xl bg-bg-grouped-2 shadow-sm">
       <View className="mx-3 flex-row items-center justify-between border-b border-theme-gray-5 px-1 pb-1 pt-2">
-        <Text className="font-saira-medium text-2xl text-text-1">Fixtures</Text>
+        <Text className="font-tektur-medium text-2xl text-text-1">Fixtures</Text>
         <Ioconicons name="chevron-forward" size={20} color={themeColors?.icon} />
       </View>
       {!fixture ? (
         <View className="items-left flex-1 justify-center px-4">
-          <Text className="text-left font-saira text-xl text-text-2">
+          <Text className="font-tektur text-left text-xl text-text-2">
             No fixtures available yet.
           </Text>
         </View>
@@ -39,7 +39,7 @@ const FixturesHomeCard = ({ fixture, isLoading }) => {
             <View className="pb-1">
               <CalendarFold size={20} color="#666" />
             </View>
-            <Text className="ml-3 font-saira-medium text-lg text-text-2">
+            <Text className="font-tektur-medium ml-3 text-lg text-text-2">
               {new Date(fixture?.date_time).toLocaleString('en-GB', {
                 timeZone: 'Europe/London',
                 weekday: 'short',

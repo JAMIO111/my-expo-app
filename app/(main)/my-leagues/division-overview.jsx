@@ -40,6 +40,7 @@ const DivisionOverview = () => {
   const [competitionInstance, setCompetitionInstance] = useState(null);
   const [showDetails, setShowDetails] = useState(true);
   const [showActiveCompetition, setShowActiveCompetition] = useState(true);
+  const [showDivisionMembers, setShowDivisionMembers] = useState(true);
   const [modalType, setModalType] = useState(null);
   const [showModal, setShowModal] = useState(false);
 
@@ -94,65 +95,64 @@ const DivisionOverview = () => {
       />
       <SafeViewWrapper useBottomInset={false} bottomColor="bg-brand" topColor="bg-brand">
         <ScrollView
-          contentContainerStyle={{ gap: 5, marginVertical: 58, paddingBottom: 32 }}
-          className="flex-1 bg-bg-2">
-          <View className="bg-bg-1">
-            <ExpandableView title="Division Details" show={showDetails} setShow={setShowDetails}>
-              <View className="flex-row gap-5 pt-2">
-                <View className="flex-1 gap-3">
-                  <InfoCard
-                    title="Division Name"
-                    value={division.name}
-                    icon="shield"
-                    iconColor="blue"
-                    iconSize={16}
-                  />
-                  <InfoCard
-                    title="Division Tier"
-                    value={division.tier ? `Tier ${division.tier}` : 'N/A'}
-                    icon="medal-outline"
-                    iconColor="orange"
-                    iconSize={16}
-                  />
-                  <InfoCard
-                    title="Promotion Spots"
-                    value={division.promotion_spots || 'No promotions'}
-                    icon="caret-up-outline"
-                    iconColor="green"
-                  />
-                </View>
-                <View className="flex-1 gap-3 pr-2">
-                  <InfoCard
-                    title="Division Group"
-                    value={division.group_name || 'N/A'}
-                    icon="layers-outline"
-                    iconColor="purple"
-                    iconSize={16}
-                  />
-                  <InfoCard
-                    title="Competitor Type"
-                    value={
-                      division.competitor_type
-                        ? division.competitor_type.slice(0, 1).toUpperCase() +
-                          division.competitor_type.slice(1)
-                        : 'N/A'
-                    }
-                    icon={division.competitor_type === 'team' ? 'people' : 'person'}
-                    iconColor="teal"
-                    iconSize={16}
-                  />
-                  <InfoCard
-                    title="Relegation Spots"
-                    value={division.relegation_spots || 'No relegations'}
-                    icon="caret-down-outline"
-                    iconColor="red"
-                  />
-                </View>
+          contentContainerStyle={{ gap: 12, marginVertical: 58, paddingBottom: 32 }}
+          className="flex-1 bg-bg-2 p-3">
+          <ExpandableView title="Division Details" show={showDetails} setShow={setShowDetails}>
+            <View className="flex-row gap-5 pt-2">
+              <View className="flex-1 gap-3">
+                <InfoCard
+                  title="Division Name"
+                  value={division.name}
+                  icon="shield"
+                  iconColor="blue"
+                  iconSize={16}
+                />
+                <InfoCard
+                  title="Division Tier"
+                  value={division.tier ? `Tier ${division.tier}` : 'N/A'}
+                  icon="medal-outline"
+                  iconColor="orange"
+                  iconSize={16}
+                />
+                <InfoCard
+                  title="Promotion Spots"
+                  value={division.promotion_spots || 'No promotions'}
+                  icon="caret-up-outline"
+                  iconColor="green"
+                />
               </View>
-            </ExpandableView>
-          </View>
+              <View className="flex-1 gap-3 pr-2">
+                <InfoCard
+                  title="Division Group"
+                  value={division.group_name || 'N/A'}
+                  icon="layers-outline"
+                  iconColor="purple"
+                  iconSize={16}
+                />
+                <InfoCard
+                  title="Competitor Type"
+                  value={
+                    division.competitor_type
+                      ? division.competitor_type.slice(0, 1).toUpperCase() +
+                        division.competitor_type.slice(1)
+                      : 'N/A'
+                  }
+                  icon={division.competitor_type === 'team' ? 'people' : 'person'}
+                  iconColor="teal"
+                  iconSize={16}
+                />
+                <InfoCard
+                  title="Relegation Spots"
+                  value={division.relegation_spots || 'No relegations'}
+                  icon="caret-down-outline"
+                  iconColor="red"
+                />
+              </View>
+            </View>
+          </ExpandableView>
+
           <ExpandableView
-            title="Active Competition"
+            title="League Competition"
             show={showActiveCompetition}
             setShow={setShowActiveCompetition}
             fixedOpen={!currentSeasonComp && !isCompetitionsLoading}>
@@ -216,6 +216,7 @@ const DivisionOverview = () => {
                 />
               )}
           </ExpandableView>
+
           {currentSeasonComp?.fixtures_generated && (
             <View className="gap-3 bg-bg-1 p-3 py-6">
               <View className="">
@@ -231,9 +232,10 @@ const DivisionOverview = () => {
               />
             </View>
           )}
-          <View className="gap-3 bg-bg-1 p-3 py-6">
-            <Heading text="Division Members" />
-
+          <ExpandableView
+            title="Members"
+            show={showDivisionMembers}
+            setShow={setShowDivisionMembers}>
             <DivisionAccordion
               isExpanded={expandedAccordion === 'division'}
               onPress={() =>
@@ -242,7 +244,7 @@ const DivisionOverview = () => {
               divisionName={division.name}
               teams={teams || []}
             />
-          </View>
+          </ExpandableView>
         </ScrollView>
       </SafeViewWrapper>
       <BottomSheetModal

@@ -42,7 +42,7 @@ const LeagueHomeCard = ({ standings }) => {
       }}
       className={`h-28 w-full rounded-2xl bg-bg-grouped-2 shadow-sm`}>
       <View className="mx-3 flex-row items-center justify-between border-b border-theme-gray-5 px-1 pb-1 pt-2">
-        <Text className="font-saira-medium text-2xl text-text-1">
+        <Text className="font-tektur-medium text-2xl text-text-1">
           League Table{' '}
           {currentRole?.type === 'admin' &&
             standings?.standings?.length > 0 &&
@@ -52,14 +52,14 @@ const LeagueHomeCard = ({ standings }) => {
       </View>
       {standings === undefined || standings?.standings.length === 0 ? (
         <View className="items-left flex-1 justify-center px-4">
-          <Text className="text-left font-saira text-xl text-text-2">
+          <Text className="font-tektur text-left text-xl text-text-2">
             No standings available yet.
           </Text>
         </View>
       ) : (
         <View className="flex-1 flex-row items-center justify-between px-4 py-3">
           <View className="flex-1 flex-row items-center justify-start gap-3">
-            <Text className="font-saira text-2xl font-semibold text-text-1">
+            <Text className="font-tektur text-2xl font-medium text-text-1">
               {displayTeam?.position}.
             </Text>
             <TeamLogo
@@ -69,11 +69,11 @@ const LeagueHomeCard = ({ standings }) => {
               color2={displayTeam?.crest?.color2}
               thickness={displayTeam?.crest?.thickness}
             />
-            <Text className="font-saira-medium text-xl text-text-2">
+            <Text className="font-tektur-medium text-xl text-text-2">
               {displayTeam?.display_name}
             </Text>
           </View>
-          <Text className="font-saira text-2xl font-semibold text-text-1">{`${displayTeam?.points} Pts`}</Text>
+          <Text className="font-tektur text-2xl font-semibold text-text-1">{`${displayTeam?.points} Pts`}</Text>
         </View>
       )}
     </Pressable>

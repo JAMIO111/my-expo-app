@@ -82,9 +82,7 @@ const index = () => {
             <>
               {activeCompetitions?.length > 0 && (
                 <View>
-                  <Text className="mb-2 px-1 font-saira-medium text-2xl text-text-1">
-                    Active Competitions
-                  </Text>
+                  <Heading text="Active Competitions" className="pb-2" />
                   <View className="gap-4">
                     {activeCompetitions.map((instance) => (
                       <CompetitionInstanceCard key={instance.id} instance={instance} />
@@ -94,9 +92,7 @@ const index = () => {
               )}
               {upcomingCompetitions?.length > 0 && (
                 <View>
-                  <Text className="mb-2 px-1 font-saira-medium text-2xl text-text-1">
-                    Upcoming Competitions
-                  </Text>
+                  <Heading text="Upcoming Competitions" className="pb-2" />
                   <View className="gap-4">
                     {upcomingCompetitions?.map((instance) => (
                       <CompetitionInstanceCard key={instance.id} instance={instance} />
@@ -106,9 +102,7 @@ const index = () => {
               )}
               {completedCompetitions?.length > 0 && (
                 <View>
-                  <Text className="mb-2 px-1 font-saira-medium text-2xl text-text-1">
-                    Completed Competitions
-                  </Text>
+                  <Heading text="Completed Competitions" className="pb-2" />
                   <View className="gap-4">
                     {completedCompetitions?.map((instance) => (
                       <CompetitionInstanceCard key={instance.id} instance={instance} />

@@ -25,13 +25,13 @@ const ResultsHomeCard = ({ result }) => {
       style={{ minHeight: 100 }} // prevents vertical collapse
     >
       <View className="mx-3 flex-row items-center justify-between border-b border-theme-gray-5 px-1 pb-1 pt-2">
-        <Text className="font-saira-medium text-2xl text-text-1">Results</Text>
+        <Text className="font-tektur-medium text-2xl text-text-1">Results</Text>
         <Ionicons name="chevron-forward" size={20} color={themeColors?.icon} />
       </View>
 
       {!result ? (
         <View className="px-4 py-4">
-          <Text className="text-left font-saira text-xl text-text-2">
+          <Text className="font-tektur text-left text-xl text-text-2">
             No results available yet.
           </Text>
         </View>

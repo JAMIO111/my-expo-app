@@ -144,7 +144,7 @@ const FixturePage = ({ fixtureDetails, isLoading, context }) => {
                       <Text
                         numberOfLines={1}
                         style={{ color: homeTextColor }}
-                        className={`mt-1 flex-1 py-1 pl-2 pr-4 text-center font-saira-medium text-2xl`}>
+                        className={`font-tektur-semibold flex-1 py-1 pl-2 pr-4 text-center text-3xl`}>
                         {competitorType === 'team'
                           ? fixtureDetails?.homeCompetitor?.abbreviation
                           : `${fixtureDetails?.homeCompetitor?.nickname?.toUpperCase() || fixtureDetails?.homeCompetitor?.surname?.toUpperCase()}`}
@@ -159,7 +159,7 @@ const FixturePage = ({ fixtureDetails, isLoading, context }) => {
                       <Text
                         numberOfLines={1}
                         style={{ color: competitorType === 'team' ? awayTextColor : '#fff' }}
-                        className={`mt-1 flex-1 py-1 pl-2 pr-4 text-center font-saira-medium text-2xl`}>
+                        className={`font-tektur-semibold flex-1 py-1 pl-2 pr-4 text-center text-3xl`}>
                         {competitorType === 'team'
                           ? fixtureDetails?.awayCompetitor?.abbreviation
                           : `${fixtureDetails?.awayCompetitor?.nickname?.toUpperCase() || fixtureDetails?.awayCompetitor?.surname?.toUpperCase()}`}
@@ -209,14 +209,14 @@ const FixturePage = ({ fixtureDetails, isLoading, context }) => {
                     <Text
                       adjustsFontSizeToFit
                       numberOfLines={1}
-                      className="flex-1 text-right font-saira-medium text-lg text-text-1">
+                      className="font-tektur-medium flex-1 text-right text-lg text-text-1">
                       {fixtureDetails?.homeCompetitor?.display_name}
                     </Text>
-                    <Text className="w-6 text-text-2"> vs </Text>
+                    <Text className="font-tektur w-6 text-text-2"> vs </Text>
                     <Text
                       adjustsFontSizeToFit
                       numberOfLines={1}
-                      className="flex-1 text-left font-saira-medium text-lg
+                      className="font-tektur-medium flex-1 text-left text-lg
                        text-text-1">
                       {fixtureDetails?.awayCompetitor?.display_name}
                     </Text>
