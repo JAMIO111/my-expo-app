@@ -66,9 +66,7 @@ const CrestEditor = ({ crest, handleSave, buttonText = 'Save Changes' }) => {
         type={type}
         size={150}
       />
-      <View
-        style={{ borderRadius: 16 }}
-        className="w-full overflow-hidden border border-theme-gray-5 bg-bg-1">
+      <View style={{ borderRadius: 16 }} className="w-full overflow-hidden bg-bg-1">
         <Pressable
           onPress={() => {
             setActiveMenu('Crest Type');
@@ -84,7 +82,7 @@ const CrestEditor = ({ crest, handleSave, buttonText = 'Save Changes' }) => {
             </View>
           )}
         </Pressable>
-        <View className="ml-6 border-b border-theme-gray-4" />
+        <View className="ml-6 border-b border-theme-gray-5" />
         <Pressable
           onPress={() => {
             setActiveMenu('Primary Color');

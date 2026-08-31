@@ -8,7 +8,6 @@ import { iconMap } from './SettingsItem';
 const SwitchSettingsItem = ({
   title,
   icon,
-  iconBGColor = '#00000000',
   iconColor = '#000',
   setValue,
   defaultValue,
@@ -58,15 +57,8 @@ const SwitchSettingsItem = ({
             className={`flex-row items-center gap-5 px-4 py-3 ${
               pressed ? 'bg-theme-gray-5' : 'bg-bg-grouped-2'
             }`}>
-            {icon && (
-              <View
-                className="h-9 w-9 items-center justify-center rounded-[10px]"
-                style={{ backgroundColor: iconBGColor }}>
-                {Icon && <Icon size={22} color={iconColor} />}
-              </View>
-            )}
+            {icon && Icon && <Icon size={24} color={iconColor} />}
             <Text className="flex-1 text-lg font-medium text-text-1">{title}</Text>
-
             <View className="justify-center">
               <Switch
                 disabled={saving || disabled}

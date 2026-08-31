@@ -13,7 +13,7 @@ import Toast from 'react-native-toast-message';
 import { useAdminsByDistrict } from '@hooks/useAdminsByDistrict';
 
 const LeagueConfig = () => {
-  const { currentRole, refetch } = useUser();
+  const { currentRole, player, refetch } = useUser();
   const [districtName, setDistrictName] = useState(currentRole?.district?.name || '');
   const [joinCode, setJoinCode] = useState(currentRole?.district?.code || '');
 
@@ -189,11 +189,14 @@ const LeagueConfig = () => {
             }
             lastItem={true}
           />
+          <SettingsItem title="Manage Venues" routerPath="/settings/Addresses" icon="mapPinHouse" />
         </MenuContainer>
         {adminsLoading || !admins ? null : (
           <MenuContainer title="League Admins">
             {admins?.map((admin, index) => {
               let color;
+
+              console.log('Admin', admin);
 
               switch (index % 4) {
                 case 0:
@@ -218,17 +221,21 @@ const LeagueConfig = () => {
               return (
                 <SettingsItem
                   key={admin.id}
-                  routerPath="/settings/PersonalDetails"
+                  routerPath={
+                    admin.Players.id === player.id
+                      ? '/settings/PersonalDetails'
+                      : '/settings/ManageAdmin'
+                  }
                   iconBGColor={color}
                   title={`${admin.Players.first_name} ${admin.Players.surname}`}
-                  icon="person"
+                  player={admin.Players}
                   lastItem
                 />
               );
             })}
           </MenuContainer>
         )}
-        <Text className="font-tektur text-center text-sm text-text-2">
+        <Text className="text-center font-tektur text-sm text-text-2">
           A Proud Break Room League Since:{' '}
           {` ${new Date(currentRole?.district?.initiated_at).toLocaleDateString()}`}
         </Text>

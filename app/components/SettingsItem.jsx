@@ -4,6 +4,7 @@ import { useRouter } from 'expo-router';
 import { useColorScheme } from 'react-native';
 import colors from '@lib/colors';
 import Avatar from './Avatar';
+import TeamLogo from './TeamLogo';
 import {
   User,
   Users,
@@ -40,6 +41,13 @@ import {
   CircleCheck,
   ShieldCheck,
   FolderPen,
+  MapPinHouse,
+  HousePlus,
+  Unlink,
+  UserRoundPlus,
+  AlarmClockCheck,
+  ClipboardClock,
+  MessagesSquare,
 } from 'lucide-react-native';
 
 export const iconMap = {
@@ -76,6 +84,13 @@ export const iconMap = {
   circleCheck: CircleCheck,
   shieldCheck: ShieldCheck,
   folderPen: FolderPen,
+  mapPinHouse: MapPinHouse,
+  housePlus: HousePlus,
+  unlink: Unlink,
+  userRoundPlus: UserRoundPlus,
+  alarmClockCheck: AlarmClockCheck,
+  clipboardClock: ClipboardClock,
+  messagesSquare: MessagesSquare,
 };
 
 const SettingsItem = ({
@@ -85,10 +100,12 @@ const SettingsItem = ({
   text,
   textColor,
   routerPath,
+  routerParams,
   iconColor = '#333',
   disabled = false,
   callbackFn,
   player,
+  team,
   link,
 }) => {
   const colorScheme = useColorScheme();
@@ -105,7 +122,7 @@ const SettingsItem = ({
       hasNavigated.current = false;
     }, 750); // Reset navigation state after 750ms
     if (routerPath) {
-      router.push(routerPath);
+      router.push({ pathname: routerPath, params: routerParams });
     } else if (link) {
       Linking.openURL(link);
     }
@@ -126,7 +143,9 @@ const SettingsItem = ({
             {Icon ? (
               <Icon size={24} color={iconColor} strokeWidth={2} />
             ) : player ? (
-              <Avatar size={40} player={player} />
+              <Avatar size={32} player={player} />
+            ) : team ? (
+              <TeamLogo size={26} {...team.crest} />
             ) : null}
 
             <Text

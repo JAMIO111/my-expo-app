@@ -3,7 +3,6 @@ import { Stack } from 'expo-router';
 import CustomHeader from '@components/CustomHeader';
 import SafeViewWrapper from '@components/SafeViewWrapper';
 import ImageUploader from '@components/ImageUploader';
-import CTAButton from '@components/CTAButton';
 import { useUser } from '@contexts/UserProvider';
 import { useRouter } from 'expo-router';
 import useCompressAndUploadImage from '@hooks/useCompressAndUploadImage';
@@ -96,7 +95,7 @@ const TeamCoverImage = () => {
         }}
       />
       <View className="mt-16 gap-5 p-3">
-        <View className="rounded-3xl border border-theme-gray-3">
+        <View style={{ borderRadius: 26 }} className="border border-theme-gray-3">
           <ImageUploader
             ref={imageUploaderRef}
             initialUri={imageUri || currentRole?.team?.cover_image_url}

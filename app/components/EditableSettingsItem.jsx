@@ -41,11 +41,7 @@ const EditableSettingsItem = ({
             className={`flex-row items-center gap-3 px-4 py-3 ${
               pressed ? 'bg-theme-gray-5' : 'bg-bg-grouped-2'
             }`}>
-            {icon && (
-              <View className="h-9 w-9 items-center justify-center rounded-[10px]">
-                {Icon && <Icon size={24} color={iconColor} />}
-              </View>
-            )}
+            {icon && Icon && <Icon size={24} color={iconColor} />}
 
             <Text
               numberOfLines={1}

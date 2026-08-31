@@ -15,7 +15,6 @@ const TeamDetails = () => {
   const [teamName, setTeamName] = useState(currentRole?.team?.name || '');
   const [teamDisplayName, setTeamDisplayName] = useState(currentRole?.team?.display_name || '');
   const [abbreviation, setAbbreviation] = useState(currentRole?.team?.abbreviation || '');
-  const [address, setAddress] = useState(currentRole?.team?.address || '');
   const [isSaving, setIsSaving] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
 
@@ -118,10 +117,15 @@ const TeamDetails = () => {
           />
           <SettingsItem
             routerPath="/settings/ManageAddress"
+            routerParams={{
+              mode: currentRole?.team?.address ? 'edit' : 'add',
+              role: 'player',
+              addressId: currentRole?.team?.address?.id,
+            }}
             title="Address"
             icon="mapPin"
             text={
-              [address.line_1, address.line_2, address.city, address.county, address.postcode]
+              [currentRole?.team?.address?.name, currentRole?.team?.address?.postcode]
                 .filter(Boolean)
                 .join(', ') || 'No Address'
             }

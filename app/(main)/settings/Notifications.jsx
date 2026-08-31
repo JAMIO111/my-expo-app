@@ -28,32 +28,28 @@ const Notifications = () => {
           <View>
             <MenuContainer>
               <SwitchSettingsItem
-                iconBGColor="red"
                 title="Match Reminders"
                 defaultValue={true}
                 setValue={() => {}}
-                icon="alarm-outline"
+                icon="alarmClockCheck"
               />
               <SwitchSettingsItem
-                iconBGColor="red"
                 title="Results"
                 defaultValue={true}
                 setValue={() => {}}
-                icon="clipboard-outline"
+                icon="clipboardClock"
               />
               <SwitchSettingsItem
-                iconBGColor="red"
                 title="Join Requests"
                 defaultValue={true}
                 setValue={() => {}}
-                icon="person-add-outline"
+                icon="userRoundPlus"
               />
               <SwitchSettingsItem
-                iconBGColor="red"
                 title="News and Updates"
                 defaultValue={true}
                 setValue={() => {}}
-                icon="chatbubbles-outline"
+                icon="messagesSquare"
                 lastItem={true}
               />
             </MenuContainer>
