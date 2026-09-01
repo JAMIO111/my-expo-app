@@ -275,7 +275,10 @@ const TeamProfile = ({ context, profile, isLoading }) => {
               error={playersError}
             />
           </View>
-          <TeamJoinRequests teamId={profile?.id} />
+          <View className="p-3">
+            <TeamJoinRequests teamId={profile?.id} />
+          </View>
+
           <View className="flex gap-5 bg-bg-grouped-2 px-4 pb-8 pt-6">
             <Text className="pt-2 text-center font-saira text-xs text-text-2">{`Team ID: ${profile.id}`}</Text>
           </View>

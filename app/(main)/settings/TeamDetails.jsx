@@ -116,7 +116,11 @@ const TeamDetails = () => {
             text={abbreviation}
           />
           <SettingsItem
-            routerPath="/settings/ManageAddress"
+            routerPath={
+              currentRole?.team?.address
+                ? '/settings/ManageAddress'
+                : '/settings/ExistingOrNewAddress'
+            }
             routerParams={{
               mode: currentRole?.team?.address ? 'edit' : 'add',
               role: 'player',

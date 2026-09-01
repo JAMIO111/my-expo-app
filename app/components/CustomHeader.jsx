@@ -41,7 +41,7 @@ export default function CustomHeader({
       </View>
 
       {/* Title container: flex-1 to take remaining space and centered */}
-      <View className="flex-1 items-center">
+      <View className="flex-1 items-center px-4 pb-2">
         <Text
           numberOfLines={1}
           ellipsizeMode="tail"

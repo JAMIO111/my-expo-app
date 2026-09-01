@@ -3,14 +3,13 @@ import { ScrollView, View, Text, useColorScheme } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useState, useEffect } from 'react';
 import { useUser } from '@contexts/UserProvider';
-import { getAgeInYearsAndDays, isBirthdayToday } from '@lib/helperFunctions';
+import { getAgeInYearsAndDays } from '@lib/helperFunctions';
 import CTAButton from '@components/CTAButton';
 import Heading from '@components/Heading';
 import { supabase } from '@/lib/supabase';
 import Toast from 'react-native-toast-message';
 import LoadingScreen from '@components/LoadingScreen';
 import StatCard from '@components/StatCard';
-import CachedImage from '@components/CachedImage';
 import { usePlayerStats } from '@hooks/usePlayerStats';
 import TrophyCabinet from './TrophyCabinet';
 import { usePlayerAwards } from '@hooks/usePlayerAwards';
@@ -21,6 +20,7 @@ import BottomSheetModal from '@components/BottomSheetModal';
 import SelectStatMenu from './SelectStatMenu';
 import PlayerProfileHeader from './PlayerProfileHeader';
 import FloatingBottomSheet from './FloatingBottomSheet';
+import { UserMinus, Star, UserStar } from 'lucide-react-native';
 
 const PlayerProfile = ({ context, isLoading, playerProfile, error }) => {
   const router = useRouter();
@@ -421,7 +421,7 @@ const PlayerProfile = ({ context, isLoading, playerProfile, error }) => {
                     )
                   }
                   text="Make Team Captain"
-                  icon={<Ionicons name="shield-checkmark-outline" size={20} color="black" />}
+                  icon={<Star size={20} color="black" />}
                 />
               </>
             )}
@@ -443,7 +443,7 @@ const PlayerProfile = ({ context, isLoading, playerProfile, error }) => {
                       )
                     }
                     text="Make Vice Captain"
-                    icon={<Ionicons name="shield-checkmark-outline" size={20} color="white" />}
+                    icon={<UserStar size={20} color="white" />}
                   />
                 </>
               )}
@@ -451,7 +451,7 @@ const PlayerProfile = ({ context, isLoading, playerProfile, error }) => {
               <>
                 <CTAButton
                   type="error"
-                  icon={<Ionicons name="person-remove-outline" size={20} color="white" />}
+                  lucideIcon={<UserMinus size={20} color="white" />}
                   callbackFn={
                     (iAmCaptain || iAmViceCaptain) && isMe
                       ? () => {

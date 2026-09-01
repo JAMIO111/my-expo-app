@@ -43,7 +43,7 @@ export function usePlayerInvitesAndRequests({ teamId, playerId }) {
           )
         `
         )
-        .in('status', ['invited', 'requested', 'pending_both', 'pending_captain', 'pending_admin']); // simpler than .or
+        .in('status', ['invited', 'requested', 'pending_both', 'pending_captain', 'pending_admin']);
 
       if (teamId) query = query.eq('team_id', teamId);
       if (playerId) query = query.eq('player_id', playerId);
@@ -51,12 +51,13 @@ export function usePlayerInvitesAndRequests({ teamId, playerId }) {
       const { data, error } = await query;
       if (error) throw error;
 
-      // Flatten nested fields for easier consumption
+      // Flatten player fields onto the top level, same shape as useTeamPlayers
       return data.map(({ players, requested_by_player, team, ...teamPlayer }) => ({
         ...teamPlayer,
-        player: players,
+        ...players,
         requested_by_player,
         team,
+        team_player_id: teamPlayer.id, // Keep the original TeamPlayers id for reference
       }));
     },
     enabled: !!teamId || !!playerId,

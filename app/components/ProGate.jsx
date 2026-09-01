@@ -1,17 +1,17 @@
 import React, { useEffect, useRef } from 'react';
-import { View, Text, Pressable, StyleSheet, Animated } from 'react-native';
+import { View, Text, StyleSheet, Animated } from 'react-native';
 import { BlurView } from 'expo-blur';
 import { useRouter } from 'expo-router';
 import CTAButton from '@components/CTAButton';
 import { useRevenueCat } from '@contexts/RevenueCatProvider';
 import Ionicons from '@expo/vector-icons/Ionicons';
+import { Gem } from 'lucide-react-native';
 
 const ProGate = ({
   children,
   pro = false,
   core = true,
   title = 'Exclusive Feature',
-  description = 'Upgrade now to unlock this feature',
   showCTA = true,
   intensity = 20,
   tint = 'light',
@@ -45,19 +45,22 @@ const ProGate = ({
     card: {
       width: '100%',
       backgroundColor: 'rgba(0,0,0,0.55)',
-      borderRadius: 26,
+      borderRadius: 22,
       padding: 20,
-      gap: 16,
+      gap: 24,
     },
     title: {
       color: '#fff',
       fontSize: 20,
-      fontWeight: '600',
+      fontWeight: '500',
+      fontFamily: 'tektur',
       textAlign: 'center',
     },
     description: {
-      color: '#ccc',
+      color: '#ddd',
       fontSize: 16,
+      fontFamily: 'tektur',
+      fontWeight: '400',
       textAlign: 'left',
     },
   });
@@ -110,11 +113,15 @@ const ProGate = ({
                   <Text style={styles.title}>{title}</Text>
                 </View>
 
-                <Text style={styles.description}>{description}</Text>
+                <Text
+                  style={
+                    styles.description
+                  }>{`Upgrade to the ${isCore ? 'Pro' : 'Core'} plan now to unlock this feature.`}</Text>
 
                 <CTAButton
                   type="yellow"
                   text="Upgrade Now"
+                  lucideIcon={<Gem size={20} color="black" />}
                   callbackFn={() => router.push(paywallRoute)}
                 />
               </View>

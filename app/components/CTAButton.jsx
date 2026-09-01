@@ -76,11 +76,11 @@ const CTAButton = ({
           ) : icon ? (
             icon
           ) : lucideIcon ? (
-            <View className="pb-1">{lucideIcon}</View>
+            <View>{lucideIcon}</View>
           ) : null}
           <Text
             style={{ color: buttonTheme.text }}
-            className={`font-tektur py-1 text-center ${fontWeight} ${textSize}`}>
+            className={`py-1 text-center font-tektur ${fontWeight} ${textSize}`}>
             {loading ? loadingText : text}
           </Text>
         </View>

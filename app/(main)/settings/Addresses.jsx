@@ -35,7 +35,7 @@ const Addresses = () => {
               <SettingsItem
                 title="Add New Venue"
                 routerPath="/settings/ManageAddress"
-                routerParams={{ mode: 'add', role: 'admin' }}
+                routerParams={{ mode: 'add', role: currentRole?.type }}
                 icon="housePlus"
               />
             </MenuContainer>
@@ -53,7 +53,7 @@ const Addresses = () => {
                       .filter(Boolean)
                       .join(', ')}
                     routerPath="/settings/ManageAddress"
-                    routerParams={{ mode: 'edit', role: 'admin', addressId: address.id }}
+                    routerParams={{ mode: 'edit', role: currentRole?.type, addressId: address.id }}
                   />
                 ))
               )}

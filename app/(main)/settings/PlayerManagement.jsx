@@ -10,16 +10,29 @@ import { usePlayerInvitesAndRequests } from '@hooks/usePlayerInvitesAndRequests'
 
 const PlayerManagement = () => {
   const colorScheme = useColorScheme();
-  const { player, currentRole, isLoading } = useUser();
+  const { player, currentRole } = useUser();
   const router = useRouter();
   const { data: currentPlayers, isLoading: isLoadingPlayers } = useTeamPlayers(
     currentRole?.team?.id
   );
   const { data: PendingPlayers } = usePlayerInvitesAndRequests({ teamId: currentRole?.team?.id });
   console.log('Pending Players:', PendingPlayers);
+  console.log('Current Players:', currentPlayers);
 
-  const invitedPlayers = PendingPlayers?.filter((player) => player.status === 'invited');
-  const requestedPlayers = PendingPlayers?.filter((player) => player.status === 'requested');
+  const invitedPlayers = PendingPlayers?.filter(
+    (player) =>
+      player.status === 'invited' ||
+      player.status === 'pending_both' ||
+      player.status === 'pending_player' ||
+      player.status === 'pending_admin'
+  );
+  const requestedPlayers = PendingPlayers?.filter(
+    (player) =>
+      player.status === 'requested' ||
+      player.status === 'pending_both' ||
+      player.status === 'pending_captain' ||
+      player.status === 'pending_admin'
+  );
   console.log('Invited Players:', invitedPlayers);
   console.log('Requested Players:', requestedPlayers);
 
@@ -41,61 +54,51 @@ const PlayerManagement = () => {
         <View className="flex-1 justify-between">
           {/* Top Content */}
           <View>
-            <Text className="pb-1 pl-2 font-saira-medium text-2xl text-text-1">
-              Current Players
-            </Text>
-            <MenuContainer>
+            <MenuContainer title="Current Players">
               {currentPlayers?.map((player, index) => (
                 <SettingsItem
                   key={player.id}
                   player={player}
-                  routerPath={`/settings/${player.id}?status=${player.status}`}
+                  routerPath="/settings/PlayerActions"
+                  routerParams={{ playerId: player.id }}
                   iconBGColor="gray"
                   title={`${player.first_name} ${player.surname}`}
                   lastItem={currentPlayers.length - 1 === index}
                 />
               ))}
             </MenuContainer>
-            {invitedPlayers?.length > 0 && (
-              <>
-                <Text className="pb-1 pl-2 font-saira-medium text-2xl text-text-1">
-                  Invited Players
-                </Text>
-                <MenuContainer>
-                  {invitedPlayers?.map((player, index) => {
-                    console.log('Invited Player:', player);
-                    return (
-                      <SettingsItem
-                        key={player.id}
-                        player={player.player}
-                        routerPath={`/settings/${player.player.id}?status=${player.status}`}
-                        iconBGColor="gray"
-                        title={`${player.player.first_name} ${player.player.surname}`}
-                        lastItem={invitedPlayers.length - 1 === index}
-                      />
-                    );
-                  })}
-                </MenuContainer>
-              </>
-            )}
             {requestedPlayers?.length > 0 && (
-              <>
-                <Text className="pb-1 pl-2 font-saira-medium text-2xl text-text-1">
-                  Join Requests
-                </Text>
-                <MenuContainer>
-                  {requestedPlayers?.map((player, index) => (
+              <MenuContainer title="Join Requests">
+                {requestedPlayers?.map((player, index) => (
+                  <SettingsItem
+                    key={player.id}
+                    player={player}
+                    routerPath="/settings/PlayerActions"
+                    routerParams={{ playerId: player.id }}
+                    iconBGColor="gray"
+                    title={`${player.first_name} ${player.surname}`}
+                    lastItem={requestedPlayers?.length - 1 === index}
+                  />
+                ))}
+              </MenuContainer>
+            )}
+            {invitedPlayers?.length > 0 && (
+              <MenuContainer title="Invited Players">
+                {invitedPlayers?.map((player, index) => {
+                  console.log('Invited Player:', player);
+                  return (
                     <SettingsItem
                       key={player.id}
-                      player={player.player}
-                      routerPath={`/settings/${player.player.id}?status=${player.status}`}
+                      player={player}
+                      routerPath="/settings/PlayerActions"
+                      routerParams={{ playerId: player.id }}
                       iconBGColor="gray"
-                      title={`${player.player.first_name} ${player.player.surname}`}
-                      lastItem={requestedPlayers?.length - 1 === index}
+                      title={`${player.first_name} ${player.surname}`}
+                      lastItem={invitedPlayers.length - 1 === index}
                     />
-                  ))}
-                </MenuContainer>
-              </>
+                  );
+                })}
+              </MenuContainer>
             )}
           </View>
         </View>

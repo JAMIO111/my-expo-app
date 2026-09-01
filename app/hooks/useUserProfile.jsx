@@ -13,11 +13,7 @@ export function useUserProfile(userId) {
           `
           *,
           TeamPlayers!TeamPlayers_player_id_fkey (
-            role,
-            status,
-            joined_at,
-            left_at,
-            team_id,
+            *,
             Teams (
               name,
               display_name,
@@ -43,6 +39,7 @@ export function useUserProfile(userId) {
           const team = entry?.Teams;
 
           return {
+            team_player_id: entry?.id ?? null,
             team_id: entry?.team_id ?? null,
             team_name: team?.name ?? null,
             crest: team?.crest ?? null,
@@ -54,6 +51,14 @@ export function useUserProfile(userId) {
             status: entry?.status ?? null,
             joined_at: entry?.joined_at ?? null,
             left_at: entry?.left_at ?? null,
+            requested_by: entry?.requested_by ?? null,
+            requested_at: entry?.requested_at ?? null,
+            accepted_by_captain: entry?.accepted_by_captain ?? null,
+            accepted_by_admin: entry?.accepted_by_admin ?? null,
+            accepted_at_captain: entry?.accepted_at_captain ?? null,
+            accepted_at_admin: entry?.accepted_at_admin ?? null,
+            invited_by: entry?.invited_by ?? null,
+            invited_at: entry?.invited_at ?? null,
           };
         }) ?? [];
 

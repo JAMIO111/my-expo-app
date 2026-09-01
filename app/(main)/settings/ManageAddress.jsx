@@ -25,7 +25,12 @@ const ManageAddress = () => {
     isLoading: addressLoading,
     error: addressError,
   } = useAddressDetails(addressId);
+  const [modeState, setModeState] = useState(mode); // 'add' or 'edit'
+  const [roleState, setRoleState] = useState(role); // 'admin' or 'player'
   const [isSaving, setIsSaving] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [isLinking, setIsLinking] = useState(false);
+  const [isUnlinking, setIsUnlinking] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
 
   const [address, setAddress] = useState({
@@ -79,7 +84,6 @@ const ManageAddress = () => {
     if (!address?.line_1?.trim()) {
       errors.line_1 = 'Address line 1 is required';
     }
-
     if (!address?.city?.trim()) {
       errors.city = 'Town/city is required';
     }
@@ -104,7 +108,7 @@ const ManageAddress = () => {
     }
     try {
       const { data, error } = await supabase.rpc('upsert_address', {
-        p_address_id: mode === 'add' ? null : addressId,
+        p_address_id: modeState === 'add' ? null : addressId,
         p_name: address?.name,
         p_line_1: address?.line_1,
         p_line_2: address?.line_2,
@@ -113,15 +117,16 @@ const ManageAddress = () => {
         p_postcode: formatPostcode(address?.postcode),
         p_tables: address?.tables ? Number(address.tables) : null,
         p_neutral: address?.neutral,
-        p_team_id: mode === 'add' && role === 'player' ? currentRole?.team?.id : null,
+        p_team_id: modeState === 'add' && roleState === 'player' ? currentRole?.team?.id : null,
         p_district_id: currentRole?.district?.id,
       });
       if (error) throw error;
       if (!data?.success) throw new Error(data?.message ?? 'Failed to save address');
 
       Toast.show({ type: 'success', text1: 'Venue updated successfully' });
-      role === 'player' && (await refetch()); // Refresh user data if player
-      role === 'admin' && queryClient.invalidateQueries(['Addresses', currentRole?.district?.id]);
+      roleState === 'player' && (await refetch()); // Refresh user data if player
+      roleState === 'admin' &&
+        queryClient.invalidateQueries(['Addresses', currentRole?.district?.id]);
       queryClient.invalidateQueries(['AddressDetails', addressId]);
       router.back();
     } catch (error) {
@@ -134,25 +139,49 @@ const ManageAddress = () => {
 
   const handleDelete = async () => {
     if (!addressId) return;
-    setIsSaving(true);
+    setIsDeleting(true);
     try {
       const { data, error } = await supabase.from('Addresses').delete().eq('id', addressId);
       if (error) throw error;
-      role === 'player' && (await refetch()); // Refresh user data if player
-      role === 'admin' && queryClient.invalidateQueries(['Addresses', currentRole?.district?.id]);
+      roleState === 'player' && (await refetch()); // Refresh user data if player
+      roleState === 'admin' &&
+        queryClient.invalidateQueries(['Addresses', currentRole?.district?.id]);
       router.back();
       Toast.show({ type: 'success', text1: 'Venue deleted successfully' });
     } catch (error) {
       console.error('Error deleting venue:', error);
       Toast.show({ type: 'error', text1: 'Failed to delete venue', text2: error.message });
     } finally {
-      setIsSaving(false);
+      setIsDeleting(false);
+    }
+  };
+
+  const handleLink = async () => {
+    if (!addressId || !currentRole?.team?.id) return;
+    setIsLinking(true);
+    try {
+      const { data, error } = await supabase
+        .from('Teams')
+        .update({ address: addressId })
+        .eq('id', currentRole?.team?.id);
+      if (error) throw error;
+      await refetch();
+      await queryClient.invalidateQueries(['AddressDetails', addressId]);
+
+      Toast.show({ type: 'success', text1: 'Venue linked successfully' });
+    } catch (error) {
+      console.error('Error linking venue:', error);
+      Toast.show({ type: 'error', text1: 'Failed to link venue', text2: error.message });
+    } finally {
+      setModeState('edit'); // Switch to edit mode after linking
+      await new Promise((r) => setTimeout(r, 1000)); // temporary
+      setIsLinking(false);
     }
   };
 
   const handleUnlink = async () => {
     if (!addressId) return;
-    setIsSaving(true);
+    setIsUnlinking(true);
     try {
       const { data, error } = await supabase
         .from('Teams')
@@ -160,14 +189,15 @@ const ManageAddress = () => {
         .eq('id', currentRole?.team?.id);
       if (error) throw error;
       await refetch();
-      queryClient.invalidateQueries(['AddressDetails', addressId]);
-      router.back();
+      await queryClient.invalidateQueries(['AddressDetails', addressId]);
+
       Toast.show({ type: 'success', text1: 'Venue unlinked successfully' });
     } catch (error) {
       console.error('Error unlinking venue:', error);
       Toast.show({ type: 'error', text1: 'Failed to unlink venue', text2: error.message });
     } finally {
-      setIsSaving(false);
+      await new Promise((r) => setTimeout(r, 1000)); // temporary
+      setIsUnlinking(false);
     }
   };
 
@@ -185,6 +215,13 @@ const ManageAddress = () => {
     setHasChanges(changed);
   }, [address, addressData]);
 
+  const isMyVenue = address?.teams?.some((team) => team.id === currentRole?.team?.id);
+
+  const isEditable =
+    roleState === 'admin' || modeState === 'add' || (roleState === 'player' && isMyVenue);
+
+  console.log('RoleState:', roleState, 'ModeState:', modeState);
+
   return (
     <SafeViewWrapper topColor="bg-brand" useBottomInset={false}>
       <Stack.Screen
@@ -194,7 +231,7 @@ const ManageAddress = () => {
               <CustomHeader
                 onRightPress={hasChanges ? handleSave : undefined}
                 rightIcon="checkmark-outline"
-                title={mode === 'add' ? 'Create Venue' : 'Manage Venue'}
+                title={modeState === 'add' ? 'Create Venue' : 'Manage Venue'}
               />
             </SafeViewWrapper>
           ),
@@ -211,42 +248,59 @@ const ManageAddress = () => {
           </View>
         ) : (
           <>
+            {!isMyVenue && modeState === 'edit' && (
+              <MenuContainer>
+                <SettingsItem
+                  title={isLinking ? 'Linking...' : 'Link Venue to Team'}
+                  iconColor="#0000FF"
+                  titleColor="text-[#0000FF]"
+                  icon="link"
+                  callbackFn={roleState === 'admin' ? undefined : handleLink}
+                />
+              </MenuContainer>
+            )}
             <MenuContainer title="Address Details">
               <EditableSettingsItem
                 title="Venue Name"
                 value={address?.name}
                 onChangeText={(text) => setAddress({ ...address, name: text })}
                 placeholder="Enter venue name"
+                editable={isEditable}
               />
               <EditableSettingsItem
                 title="Line 1"
                 value={address?.line_1}
                 onChangeText={(text) => setAddress({ ...address, line_1: text })}
                 placeholder="Enter address line 1"
+                editable={isEditable}
               />
               <EditableSettingsItem
                 title="Line 2"
                 value={address?.line_2}
                 onChangeText={(text) => setAddress({ ...address, line_2: text })}
                 placeholder="Enter address line 2"
+                editable={isEditable}
               />
               <EditableSettingsItem
                 title="Town"
                 value={address?.city}
                 onChangeText={(text) => setAddress({ ...address, city: text })}
                 placeholder="Enter town/city"
+                editable={isEditable}
               />
               <EditableSettingsItem
                 title="County"
                 value={address?.county}
                 onChangeText={(text) => setAddress({ ...address, county: text })}
                 placeholder="Enter county"
+                editable={isEditable}
               />
               <EditableSettingsItem
                 title="Postcode"
                 value={address?.postcode}
                 onChangeText={(text) => setAddress({ ...address, postcode: text })}
                 placeholder="Enter postcode"
+                editable={isEditable}
                 lastItem={true}
               />
             </MenuContainer>
@@ -256,14 +310,17 @@ const ManageAddress = () => {
                 value={String(address?.tables ?? '')}
                 onChangeText={(text) => setAddress({ ...address, tables: text })}
                 placeholder="Enter No. of pool tables"
+                editable={isEditable}
               />
               <SwitchSettingsItem
                 title="Neutral Venue"
                 defaultValue={address?.neutral}
                 setValue={(newValue) => setAddress({ ...address, neutral: newValue })}
+                disabled={!isEditable}
               />
             </MenuContainer>
-            {mode !== 'add' && (
+
+            {modeState !== 'add' && address?.teams?.length > 0 && (
               <MenuContainer title="Associated Teams">
                 {address?.teams?.map((team) => (
                   <SettingsItem
@@ -282,20 +339,20 @@ const ManageAddress = () => {
                 ))}
               </MenuContainer>
             )}
-            {mode !== 'add' && (
+            {modeState !== 'add' && (
               <MenuContainer>
-                {role === 'admin' && (
+                {roleState === 'admin' && (
                   <SettingsItem
-                    title="Delete Venue"
+                    title={isDeleting ? 'Deleting...' : 'Delete Venue'}
                     icon="trash"
                     iconColor="#FF0000"
                     titleColor="text-[#FF0000]"
                     callbackFn={handleDelete}
                   />
                 )}
-                {role === 'player' && (
+                {roleState === 'player' && isMyVenue && (
                   <SettingsItem
-                    title="Unlink Address"
+                    title={isUnlinking ? 'Unlinking...' : 'Unlink Address'}
                     icon="unlink"
                     iconColor="#FF0000"
                     titleColor="text-[#FF0000]"

@@ -44,10 +44,16 @@ import {
   MapPinHouse,
   HousePlus,
   Unlink,
+  Link,
   UserRoundPlus,
   AlarmClockCheck,
   ClipboardClock,
   MessagesSquare,
+  UserMinus,
+  UserStar,
+  Star,
+  UserX,
+  UserCheck,
 } from 'lucide-react-native';
 
 export const iconMap = {
@@ -87,10 +93,16 @@ export const iconMap = {
   mapPinHouse: MapPinHouse,
   housePlus: HousePlus,
   unlink: Unlink,
+  link: Link,
   userRoundPlus: UserRoundPlus,
   alarmClockCheck: AlarmClockCheck,
   clipboardClock: ClipboardClock,
   messagesSquare: MessagesSquare,
+  userMinus: UserMinus,
+  userStar: UserStar,
+  star: Star,
+  userX: UserX,
+  userCheck: UserCheck,
 };
 
 const SettingsItem = ({
@@ -161,7 +173,7 @@ const SettingsItem = ({
                 numberOfLines={1}
                 ellipsizeMode="tail"
                 adjustsFontSizeToFit={true}
-                className={`text ml-2 flex-1 text-right text-lg ${textColor ? textColor : 'text-text-2'}`}>
+                className={`text mx-2 flex-1 text-right text-lg ${textColor ? textColor : 'text-text-2'}`}>
                 {text}
               </Text>
             )}
