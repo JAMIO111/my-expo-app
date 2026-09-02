@@ -1,15 +1,25 @@
 import React, { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react';
 import { Animated, Dimensions, FlatList, Pressable, SafeAreaView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Ionicons } from '@expo/vector-icons';
+import {
+  Mail,
+  UserPlus,
+  UserMinus,
+  Trophy,
+  Info,
+  Award,
+  XCircle,
+  CheckCircle,
+} from 'lucide-react-native';
 import { useNotifications } from '@hooks/useNotifications';
 import { useUser } from '@contexts/UserProvider';
 import SafeViewWrapper from '@components/SafeViewWrapper';
 import { supabase } from '@lib/supabase';
 import { useRouter } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
-const PANEL_WIDTH = SCREEN_WIDTH * 0.88;
+const PANEL_WIDTH = SCREEN_WIDTH;
 
 // ─── Context ──────────────────────────────────────────────────────────────────
 
@@ -18,12 +28,14 @@ const NotificationsPanelContext = createContext(null);
 // ─── Icon map ─────────────────────────────────────────────────────────────────
 
 const TYPE_CONFIG = {
-  team_invite: { icon: 'mail', color: '#0c7f23' },
-  player_joined: { icon: 'person-add', color: '#0c7f23' },
-  player_left: { icon: 'person-remove', color: '#f52c2c' },
-  result: { icon: 'trophy', color: '#FCD34D' },
-  system: { icon: 'information-circle', color: '#93C5FD' },
-  award: { icon: 'ribbon', color: '#F9A8D4' },
+  team_invite: { icon: Mail, color: '#0c7f23' },
+  player_joined: { icon: UserPlus, color: '#0c7f23' },
+  player_left: { icon: UserMinus, color: '#f52c2c' },
+  result: { icon: Trophy, color: '#FCD34D' },
+  system: { icon: Info, color: '#93C5FD' },
+  award: { icon: Award, color: '#F9A8D4' },
+  join_request_denied: { icon: XCircle, color: '#f52c2c' },
+  join_request_accepted: { icon: CheckCircle, color: '#0c7f23' },
 };
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -40,23 +52,25 @@ function timeAgo(timestamp) {
 
 function NotificationRow({ item, onPress }) {
   const cfg = TYPE_CONFIG[item.type] ?? TYPE_CONFIG.system;
+  const Icon = cfg.icon;
 
   return (
     <Pressable
       onPress={() => onPress(item)}
       style={({ pressed }) => ({ opacity: pressed ? 0.7 : 1 })}
-      className="mx-3 flex-row items-start rounded-xl bg-bg-2 px-4 py-3">
+      className="mx-3 flex-row items-center rounded-2xl bg-bg-1 px-4 py-3 shadow-sm">
       {/* Unread dot + icon */}
       <View className="mr-3 mt-1 items-center justify-center">
         {!item.read && <View className="absolute -left-1 -top-1 h-2 w-2 rounded-full bg-red-500" />}
         <View
-          className="h-10 w-10 items-center justify-center rounded-xl"
+          className="h-10 w-10 items-center justify-center"
           style={{
             backgroundColor: cfg.color + '22',
             borderColor: cfg.color + '88',
             borderWidth: 1,
+            borderRadius: 10,
           }}>
-          <Ionicons name={cfg.icon} size={18} color={cfg.color} />
+          <Icon size={18} color={cfg.color} />
         </View>
       </View>
 
@@ -65,25 +79,25 @@ function NotificationRow({ item, onPress }) {
         <View className="mb-0.5 flex-row items-center justify-between">
           <Text
             className="mr-2 flex-1 text-sm font-semibold text-text-1"
-            style={{ fontFamily: 'Saira_600SemiBold' }}
+            style={{ fontFamily: 'Tektur_600SemiBold' }}
             numberOfLines={1}>
             {item.title}
           </Text>
-          <Text className="text-xs text-text-2" style={{ fontFamily: 'Saira_400Regular' }}>
+          <Text className="text-xs text-text-2" style={{ fontFamily: 'Tektur_400Regular' }}>
             {timeAgo(item.created_at)}
           </Text>
         </View>
 
         <Text
           className="text-sm leading-5 text-text-2"
-          style={{ fontFamily: 'Saira_400Regular' }}
+          style={{ fontFamily: 'Tektur_400Regular' }}
           numberOfLines={2}>
           {item.message}
         </Text>
 
         {item.meta?.competitionName && (
           <View className="bg-brand/20 mt-1.5 self-start rounded-full px-2 py-0.5">
-            <Text className="text-xs text-brand" style={{ fontFamily: 'Saira_500Medium' }}>
+            <Text className="text-xs text-brand" style={{ fontFamily: 'Tektur_500Medium' }}>
               {item.meta.competitionName}
             </Text>
           </View>
@@ -98,10 +112,10 @@ function NotificationRow({ item, onPress }) {
 function EmptyNotifications() {
   return (
     <View className="flex-1 items-center justify-center pb-20">
-      <View className="mb-4 h-16 w-16 items-center justify-center rounded-full bg-white/5">
+      <View className="mb-4 h-16 w-16 items-center justify-center rounded-full bg-text-1">
         <Ionicons name="notifications-off-outline" size={28} color="rgba(255,255,255,0.25)" />
       </View>
-      <Text className="text-base text-white/30" style={{ fontFamily: 'Saira_500Medium' }}>
+      <Text className="text-base text-text-2" style={{ fontFamily: 'Tektur_500Medium' }}>
         No notifications yet
       </Text>
     </View>
@@ -112,10 +126,10 @@ function EmptyNotifications() {
 
 function SectionHeader({ label }) {
   return (
-    <View className="px-4 pb-1 pt-4">
+    <View className="px-4 pt-4">
       <Text
-        className="text-xs uppercase tracking-widest text-white/30"
-        style={{ fontFamily: 'Saira_600SemiBold' }}>
+        className="text-sm uppercase tracking-widest text-text-2"
+        style={{ fontFamily: 'Tektur_600SemiBold' }}>
         {label}
       </Text>
     </View>
@@ -219,7 +233,7 @@ function NotificationsPanelInner({ notifications = [], onNotificationPress, onMa
           transform: [{ translateX }],
         }}>
         <View
-          className="flex-1 bg-brand-dark"
+          className="flex-1 bg-bg-2"
           style={{ borderLeftWidth: 1, borderLeftColor: 'rgba(255,255,255,0.07)' }}>
           <SafeAreaView style={{ flex: 1, paddingTop: insets.top > 0 ? 0 : 12 }}>
             {/* Header */}
@@ -227,7 +241,7 @@ function NotificationsPanelInner({ notifications = [], onNotificationPress, onMa
               className="flex-row items-center justify-between px-6 pb-3 pt-4"
               style={{ borderBottomWidth: 1, borderBottomColor: 'rgba(255,255,255,0.06)' }}>
               <View className="flex-row items-center gap-2">
-                <Text className="text-xl text-white" style={{ fontFamily: 'Saira_700Bold' }}>
+                <Text className="pt-2 text-2xl text-text-1" style={{ fontFamily: 'Saira_700Bold' }}>
                   Notifications
                 </Text>
                 {unreadCount > 0 && (

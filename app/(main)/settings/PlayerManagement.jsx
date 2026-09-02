@@ -21,17 +21,11 @@ const PlayerManagement = () => {
 
   const invitedPlayers = PendingPlayers?.filter(
     (player) =>
-      player.status === 'invited' ||
-      player.status === 'pending_both' ||
-      player.status === 'pending_player' ||
-      player.status === 'pending_admin'
+      player.status !== 'active' && player.status !== 'left' && player?.invited_by !== null
   );
   const requestedPlayers = PendingPlayers?.filter(
     (player) =>
-      player.status === 'requested' ||
-      player.status === 'pending_both' ||
-      player.status === 'pending_captain' ||
-      player.status === 'pending_admin'
+      player.status !== 'active' && player.status !== 'left' && player?.requested_by !== null
   );
   console.log('Invited Players:', invitedPlayers);
   console.log('Requested Players:', requestedPlayers);

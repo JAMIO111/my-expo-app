@@ -4,14 +4,11 @@ import { useRouter, Stack } from 'expo-router';
 import SettingsItem from '@components/SettingsItem';
 import MenuContainer from '@components/MenuContainer';
 import { useUser } from '@contexts/UserProvider';
-import CTAButton from '@components/CTAButton';
 import { supabase } from '@/lib/supabase';
 import Toast from 'react-native-toast-message';
 import SafeViewWrapper from '@components/SafeViewWrapper';
 import CustomHeader from '@components/CustomHeader';
 import TeamLogo from '@components/TeamLogo';
-import Ionicons from 'react-native-vector-icons/Ionicons';
-import { Menu } from 'lucide-react-native';
 
 const Team = () => {
   const colorScheme = useColorScheme();
@@ -84,13 +81,14 @@ const Team = () => {
                 color2={currentRole?.team?.crest?.color2}
                 thickness={currentRole?.team?.crest?.thickness}
               />
-              <View className="items-start justify-center gap-1">
+              <View className="flex-1 items-start justify-center gap-1">
                 <Text
                   style={{ lineHeight: 38 }}
-                  className="text-center font-saira-medium text-3xl text-text-1">
+                  className="w-full flex-shrink text-left font-saira-medium text-3xl text-text-1">
                   {currentRole?.team?.name || 'No Team'}
                 </Text>
-                <Text className="rounded-lg font-saira-medium text-2xl text-text-2">
+
+                <Text className="text-left font-saira-medium text-2xl text-text-2">
                   {currentRole?.team?.abbreviation || 'No Nickname'}
                 </Text>
               </View>

@@ -54,6 +54,10 @@ import {
   Star,
   UserX,
   UserCheck,
+  VenusAndMars,
+  Calendar,
+  Handshake,
+  MailQuestionMark,
 } from 'lucide-react-native';
 
 export const iconMap = {
@@ -103,6 +107,10 @@ export const iconMap = {
   star: Star,
   userX: UserX,
   userCheck: UserCheck,
+  venusAndMars: VenusAndMars,
+  calendar: Calendar,
+  handshake: Handshake,
+  mailQuestionMark: MailQuestionMark,
 };
 
 const SettingsItem = ({
