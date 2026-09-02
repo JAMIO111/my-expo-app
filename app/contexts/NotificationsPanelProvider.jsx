@@ -10,6 +10,7 @@ import {
   Award,
   XCircle,
   CheckCircle,
+  PanelRightClose,
 } from 'lucide-react-native';
 import { useNotifications } from '@hooks/useNotifications';
 import { useUser } from '@contexts/UserProvider';
@@ -203,6 +204,7 @@ function NotificationsPanelInner({ notifications = [], onNotificationPress, onMa
       {/* FIX 3: pointerEvents='none' when closed so the invisible backdrop
           never intercepts touches after the panel has animated away. */}
       <Animated.View
+        collapsable={false}
         pointerEvents={isOpen ? 'auto' : 'none'}
         style={[
           {
@@ -220,6 +222,7 @@ function NotificationsPanelInner({ notifications = [], onNotificationPress, onMa
 
       {/* Panel */}
       <Animated.View
+        pointerEvents={isOpen ? 'auto' : 'none'}
         style={{
           position: 'absolute',
           top: 0,
@@ -270,8 +273,8 @@ function NotificationsPanelInner({ notifications = [], onNotificationPress, onMa
                 <Pressable
                   onPress={close}
                   style={({ pressed }) => ({ opacity: pressed ? 0.6 : 1 })}
-                  className="h-8 w-8 items-center justify-center rounded-full bg-brand">
-                  <Ionicons name="close" size={18} color="rgba(255,255,255,0.8)" />
+                  className="items-center justify-center rounded-full">
+                  <PanelRightClose size={30} color="#666" />
                 </Pressable>
               </View>
             </View>

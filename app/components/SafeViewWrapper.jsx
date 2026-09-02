@@ -8,11 +8,13 @@ const SafeViewWrapper = ({
   contentClassName = '',
   useTopInset = true,
   useBottomInset = true,
+  pointerEvents = 'box-none', // default: never itself a touch target, only its children are
 }) => {
   const insets = useSafeAreaInsets();
 
   return (
     <View
+      pointerEvents={pointerEvents}
       style={{
         position: 'absolute',
         top: 0,
