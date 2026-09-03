@@ -1,4 +1,4 @@
-import { StyleSheet, ScrollView, View, Text, Alert, Settings } from 'react-native';
+import { StyleSheet, ScrollView, View, Text, Alert } from 'react-native';
 import { Stack, useLocalSearchParams } from 'expo-router';
 import SafeViewWrapper from '@components/SafeViewWrapper';
 import CustomHeader from '@components/CustomHeader';
@@ -48,11 +48,18 @@ const PlayerId = () => {
     currentRole?.role === 'captain' &&
     !isMe;
 
+  const showRevokeInviteButton =
+    (status === 'pending_both' || status === 'pending_player' || status === 'pending_admin') &&
+    relevantTeam?.invited_by &&
+    currentRole?.role === 'captain' &&
+    !isMe;
+
   const showActionsSection =
     showPromoteToCaptainButton ||
     showPromoteToViceCaptainButton ||
     showRemoveFromTeamButton ||
-    showhandleJoinRequestButton;
+    showhandleJoinRequestButton ||
+    showRevokeInviteButton;
 
   console.log('Player Profile:', playerProfile);
 
@@ -223,21 +230,21 @@ const PlayerId = () => {
     }
   };
 
-  const handleDenyJoinRequest = async () => {
+  const handleDeclineJoinRequest = async () => {
     const confirm = await new Promise((resolve) => {
       Alert.alert(
-        'Deny Join Request?',
-        `Are you sure you want to deny ${playerProfile?.first_name} ${playerProfile?.surname}'s request to join the team?`,
+        'Decline Join Request?',
+        `Are you sure you want to decline ${playerProfile?.first_name} ${playerProfile?.surname}'s request to join the team?`,
         [
           { text: 'Cancel', onPress: () => resolve(false), style: 'cancel' },
-          { text: 'Yes, Deny', onPress: () => resolve(true), style: 'destructive' },
+          { text: 'Yes, Decline', onPress: () => resolve(true), style: 'destructive' },
         ],
         { cancelable: false }
       );
     });
     if (!confirm) return;
     try {
-      await supabase.rpc('deny_player_join_team_request', {
+      await supabase.rpc('decline_player_join_team_request', {
         p_team_player_id: relevantTeam?.team_player_id,
       });
       await queryClient.invalidateQueries(['PlayerProfile', playerId]);
@@ -249,16 +256,56 @@ const PlayerId = () => {
       await refetch();
       Toast.show({
         type: 'success',
-        text1: 'Join request denied successfully.',
-        text2: `${playerProfile?.first_name} ${playerProfile?.surname}'s request to join the team has been denied.`,
+        text1: 'Join request declined successfully.',
+        text2: `${playerProfile?.first_name} ${playerProfile?.surname}'s request to join the team has been declined.`,
       });
       router.back();
     } catch (error) {
       console.error(error);
       Toast.show({
         type: 'error',
-        text1: 'Failed to deny join request',
-        text2: error.message || 'An error occurred while denying the player join request.',
+        text1: 'Failed to decline join request',
+        text2: error.message || 'An error occurred while declining the player join request.',
+      });
+    }
+  };
+
+  const handleRevokeInvite = async () => {
+    const confirm = await new Promise((resolve) => {
+      Alert.alert(
+        'Revoke Invite?',
+        `Are you sure you want to revoke the invite sent to ${playerProfile?.first_name} ${playerProfile?.surname}?`,
+        [
+          { text: 'Cancel', onPress: () => resolve(false), style: 'cancel' },
+          { text: 'Yes, Revoke', onPress: () => resolve(true), style: 'destructive' },
+        ],
+        { cancelable: false }
+      );
+    });
+    if (!confirm) return;
+    try {
+      await supabase.rpc('revoke_player_join_team_invite', {
+        p_team_player_id: relevantTeam?.team_player_id,
+      });
+      await queryClient.invalidateQueries(['PlayerProfile', playerId]);
+      await queryClient.invalidateQueries(['TeamPlayers', currentRole?.team?.id]);
+      await queryClient.invalidateQueries([
+        'PlayerInvitesAndRequests',
+        { teamId: currentRole?.team?.id, playerId },
+      ]);
+      await refetch();
+      Toast.show({
+        type: 'success',
+        text1: 'Invite revoked successfully.',
+        text2: `The invite sent to ${playerProfile?.first_name} ${playerProfile?.surname} has been revoked.`,
+      });
+      router.back();
+    } catch (error) {
+      console.error(error);
+      Toast.show({
+        type: 'error',
+        text1: 'Failed to revoke invite',
+        text2: error.message || 'An error occurred while revoking the player invite.',
       });
     }
   };
@@ -320,9 +367,15 @@ const PlayerId = () => {
                       day: '2-digit',
                     })}`;
                   case 'pending_both':
-                    return 'Pending Captain & Admin';
+                    return relevantTeam?.requested_by
+                      ? 'Pending Admin & Captain'
+                      : relevantTeam?.invited_by
+                        ? 'Pending Admin & Player'
+                        : 'Pending Both';
                   case 'pending_captain':
                     return 'Pending Captain';
+                  case 'pending_player':
+                    return 'Pending Player';
                   case 'pending_admin':
                     return 'Pending Admin';
                   default:
@@ -439,11 +492,20 @@ const PlayerId = () => {
               )}
               {showhandleJoinRequestButton && (
                 <SettingsItem
-                  title="Deny Join Request"
+                  title="Decline Join Request"
                   icon="userX"
                   titleColor="text-[#FF0000]"
                   iconColor="#FF0000"
-                  callbackFn={handleDenyJoinRequest}
+                  callbackFn={handleDeclineJoinRequest}
+                />
+              )}
+              {showRevokeInviteButton && (
+                <SettingsItem
+                  title="Revoke Invite"
+                  icon="mailX"
+                  titleColor="text-[#FF0000]"
+                  iconColor="#FF0000"
+                  callbackFn={handleRevokeInvite}
                 />
               )}
             </MenuContainer>

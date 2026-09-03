@@ -1,13 +1,7 @@
 import React, { useCallback, useMemo, useRef, useState } from 'react';
-import {
-  View,
-  Text,
-  NativeSyntheticEvent,
-  NativeScrollEvent,
-  useWindowDimensions,
-} from 'react-native';
+import { View, Text, useWindowDimensions } from 'react-native';
 import Animated, { useAnimatedScrollHandler, useSharedValue } from 'react-native-reanimated';
-import TicketCard, { TicketCardProps } from './TicketCard';
+import TicketCard from './TicketCard';
 
 const MemoTicketCard = React.memo(TicketCard);
 
@@ -54,7 +48,7 @@ export default function TicketCarousel({
           width: cardWidth,
           marginRight: index === tickets.length - 1 ? 0 : cardGap,
         }}>
-        <MemoTicketCard {...item} width={cardWidth} />
+        <MemoTicketCard item={item} width={cardWidth} />
       </View>
     ),
     [cardWidth, cardGap, tickets.length]

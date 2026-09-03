@@ -35,15 +35,28 @@ export function usePlayerInvitesAndRequests({ teamId, playerId }) {
             first_name,
             surname
           ),
+          invited_by:invited_by (
+            id,
+            first_name,
+            surname
+          ),
           team:team_id (
             id,
             display_name,
             crest,
-            abbreviation
+            abbreviation,
+            parent_team_id
           )
         `
         )
-        .in('status', ['invited', 'requested', 'pending_both', 'pending_captain', 'pending_admin']);
+        .in('status', [
+          'invited',
+          'requested',
+          'pending_both',
+          'pending_captain',
+          'pending_admin',
+          'pending_player',
+        ]);
 
       if (teamId) query = query.eq('team_id', teamId);
       if (playerId) query = query.eq('player_id', playerId);
@@ -52,10 +65,11 @@ export function usePlayerInvitesAndRequests({ teamId, playerId }) {
       if (error) throw error;
 
       // Flatten player fields onto the top level, same shape as useTeamPlayers
-      return data.map(({ players, requested_by_player, team, ...teamPlayer }) => ({
+      return data.map(({ players, requested_by_player, invited_by, team, ...teamPlayer }) => ({
         ...teamPlayer,
         ...players,
         requested_by_player,
+        invited_by,
         team,
         team_player_id: teamPlayer.id, // Keep the original TeamPlayers id for reference
       }));

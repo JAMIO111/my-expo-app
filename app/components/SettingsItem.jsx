@@ -58,6 +58,7 @@ import {
   Calendar,
   Handshake,
   MailQuestionMark,
+  MailX,
 } from 'lucide-react-native';
 
 export const iconMap = {
@@ -111,6 +112,7 @@ export const iconMap = {
   calendar: Calendar,
   handshake: Handshake,
   mailQuestionMark: MailQuestionMark,
+  mailX: MailX,
 };
 
 const SettingsItem = ({

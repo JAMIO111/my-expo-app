@@ -82,7 +82,7 @@ const PlayerCard = ({ player, team, context }) => {
         <View className="w-full flex-row items-center justify-between gap-4 rounded-2xl border border-theme-gray-6 bg-bg-grouped-1 py-2 pl-2 pr-2">
           <Avatar player={player} size={64} borderRadius={9} />
           <View className="flex-1 justify-center">
-            <Text numberOfLines={1} className="font-saira-medium text-2xl text-text-1">
+            <Text numberOfLines={1} className="font-tektur-medium text-2xl text-text-1">
               {player?.first_name} {player?.surname}
             </Text>
             <View className="flex-row items-center">

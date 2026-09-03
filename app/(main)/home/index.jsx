@@ -1,5 +1,13 @@
 import { router, Stack } from 'expo-router';
-import { StyleSheet, Text, View, ScrollView, Platform, RefreshControl } from 'react-native';
+import {
+  StyleSheet,
+  Text,
+  View,
+  ScrollView,
+  Platform,
+  RefreshControl,
+  Pressable,
+} from 'react-native';
 import { useState, useCallback, useMemo } from 'react';
 import { useUser } from '@contexts/UserProvider';
 import LoadingScreen from '@components/LoadingScreen';
@@ -25,10 +33,12 @@ import { useRevenueCat } from '@contexts/RevenueCatProvider';
 import TicketCarousel from '@components/TicketCarousel';
 import Heading from '@components/Heading';
 import TicketTapeBanner from '@components/TicketTapeBanner';
+import { usePlayerInvitesAndRequests } from '@hooks/usePlayerInvitesAndRequests';
 
 const Home = () => {
   const { isPro, isCore } = useRevenueCat();
   const [windowLoading, setWindowLoading] = useState(false);
+  const [showInvites, setShowInvites] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const {
     user,
@@ -74,6 +84,25 @@ const Home = () => {
   } = useUpcomingFixtures(currentRole?.team?.id, 'team', currentRole?.activeSeason?.id);
 
   const {
+    data: playerInvites,
+    isLoading: isPlayerInvitesLoading,
+    refetch: playerInvitesRefetch,
+  } = usePlayerInvitesAndRequests({
+    playerId: player?.id,
+  });
+
+  console.log('Player Invites:', playerInvites);
+
+  const InviteCardData = useMemo(() => {
+    if (!playerInvites) return [];
+    return playerInvites.map((invite) => ({
+      ...invite,
+      type: invite?.requested_by ? 'request' : invite?.invited_by ? 'invite' : null,
+      context: 'team',
+    }));
+  }, [playerInvites]);
+
+  const {
     data: teamResultsPendingApproval,
     isLoading: isTeamResultsPendingApprovalLoading,
     refetch: teamResultsPendingApprovalRefetch,
@@ -81,7 +110,7 @@ const Home = () => {
     competitorId: currentRole?.team?.id,
     competitorType: 'team',
     type: 'pendingApproval',
-    enabled: !!currentRole?.team?.id,
+    enabled: !!currentRole?.team?.id && currentRole?.role !== 'player',
   });
 
   const {
@@ -111,7 +140,7 @@ const Home = () => {
     competitorId: currentRole?.team?.id,
     competitorType: 'team',
     type: 'disputed',
-    enabled: !!currentRole?.team?.id,
+    enabled: !!currentRole?.team?.id && currentRole?.role !== 'player',
   });
 
   const {
@@ -141,7 +170,7 @@ const Home = () => {
     competitorId: currentRole?.team?.id,
     competitorType: 'team',
     type: 'amended',
-    enabled: !!currentRole?.team?.id,
+    enabled: !!currentRole?.team?.id && currentRole?.role !== 'player',
   });
 
   const {
@@ -173,7 +202,7 @@ const Home = () => {
     competitorId: currentRole?.team?.id,
     competitorType: 'team',
     type: 'awaitingResults',
-    enabled: !!currentRole?.team?.id,
+    enabled: !!currentRole?.team?.id && currentRole?.role !== 'player',
   });
 
   const {
@@ -282,11 +311,27 @@ const Home = () => {
             justifyContent: 'center',
           }}>
           <View className="">
+            {playerInvites?.length > 0 && (
+              <View className="w-full gap-3 pb-8">
+                <View className="w-full flex-row items-center justify-between p-3 pr-6">
+                  <Heading
+                    text="Invites & Requests"
+                    notificationCount={playerInvites?.length ?? 0}
+                  />
+                  <Pressable className="px-4 py-2" onPress={() => setShowInvites((prev) => !prev)}>
+                    <Text className="font-tektur-medium text-lg text-theme-blue">
+                      {showInvites ? 'Hide' : 'Show'}
+                    </Text>
+                  </Pressable>
+                </View>
+                {showInvites && <TicketCarousel tickets={InviteCardData} />}
+              </View>
+            )}
             <View className="w-full items-center justify-center gap-4 p-0 pb-5">
               {currentRole?.team && (
                 <>
                   <View className="w-full items-center justify-between">
-                    <Text className="font-tektur-semibold mb-2 w-full px-4 text-left text-xl text-text-1">
+                    <Text className="mb-2 w-full px-4 text-left font-tektur-semibold text-xl text-text-1">
                       {currentRole?.team?.display_name} Fixtures
                     </Text>
                     <HorizontalScrollUpcomingFixtures
@@ -317,32 +362,6 @@ const Home = () => {
               />
             </View>
             <View className="w-full bg-bg-2 pb-8">
-              <View className="w-full gap-3 pb-8">
-                <View className="w-full p-3">
-                  <Heading text="Invites & Requests" />
-                </View>
-
-                <TicketCarousel
-                  tickets={[
-                    {
-                      title: 'You have been invited to join Shankhouse B Team on tomorrow wow!',
-                      accentColor: '#C96F3C',
-                    },
-                    {
-                      title: 'You have been invited to join Doubles League!',
-                      accentColor: '#C9A6D8',
-                    },
-                    {
-                      title: 'Break Room\nSeason Pass',
-                      accentColor: '#869577',
-                    },
-                    {
-                      title: 'You have been invited to join Shankhouse B Team!',
-                      accentColor: '#CFD5ED',
-                    },
-                  ]}
-                />
-              </View>
               {(currentRole?.team?.captain === player?.id ||
                 currentRole?.team?.vice_captain === player?.id) && (
                 <View className="w-full gap-3 p-3">
