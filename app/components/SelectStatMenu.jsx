@@ -74,17 +74,19 @@ const SelectStatMenu = ({
                     <View
                       key={slotIdx}
                       className="absolute right-2 top-2 h-8 w-8 items-center justify-center rounded-full bg-brand">
-                      <Text className="font-saira-bold text-sm text-white">{slotIdx + 1}</Text>
+                      <Text className="font-tektur-semibold text-sm text-white">{slotIdx + 1}</Text>
                     </View>
                   ))}
                   {/* BIG STAT VALUE */}
-                  <Text style={{ lineHeight: 48 }} className="font-saira-bold text-4xl text-text-1">
+                  <Text
+                    style={{ lineHeight: 48 }}
+                    className="font-tektur-semibold text-5xl text-text-1">
                     {stat.value || 0}
                     {stat.label.includes('%') ? '%' : ''}
                   </Text>
 
                   {/* LABEL UNDERNEATH */}
-                  <Text className="mt-1 text-center font-saira-medium text-lg text-text-2">
+                  <Text className="mt-1 text-center font-tektur-semibold text-lg text-text-2">
                     {stat.label}
                   </Text>
                 </View>

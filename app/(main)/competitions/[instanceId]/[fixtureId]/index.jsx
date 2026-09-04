@@ -6,6 +6,7 @@ import FixturePage from '@components/FixturePage';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useFixtureDetails } from '@hooks/useFixtureDetails';
 import { useUser } from '@contexts/UserProvider';
+import { ClipboardCheck } from 'lucide-react-native';
 
 const index = () => {
   const router = useRouter();
@@ -57,7 +58,7 @@ const index = () => {
                     ? () => router.push(`competitions/${instanceId}/${fixtureId}/submit-results`)
                     : null
                 }
-                rightIcon="clipboard-outline"
+                rightIcon={ClipboardCheck}
               />
             </SafeViewWrapper>
           ),

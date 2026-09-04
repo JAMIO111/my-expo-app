@@ -6,7 +6,7 @@ import FixturePage from '@components/FixturePage';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useFixtureDetails } from '@hooks/useFixtureDetails';
 import { useUser } from '@contexts/UserProvider';
-
+import { ClipboardCheck } from 'lucide-react-native';
 const index = () => {
   const router = useRouter();
   const { currentRole, player, loading } = useUser();
@@ -58,7 +58,7 @@ const index = () => {
                 onRightPress={
                   canSubmit ? () => router.push(`home/${fixtureId}/submit-results`) : null
                 }
-                rightIcon="clipboard-outline"
+                rightIcon={ClipboardCheck}
               />
             </SafeViewWrapper>
           ),

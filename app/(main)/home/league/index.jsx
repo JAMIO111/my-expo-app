@@ -3,6 +3,7 @@ import { Stack } from 'expo-router';
 import LeagueTableWrapper from '@components/LeagueTableWrapper';
 import SafeViewWrapper from '@components/SafeViewWrapper';
 import CustomHeader from '@components/CustomHeader';
+import { ClipboardCheck } from 'lucide-react-native';
 
 const index = () => {
   return (
@@ -11,7 +12,7 @@ const index = () => {
         options={{
           header: () => (
             <SafeViewWrapper useBottomInset={false}>
-              <CustomHeader title="League Tables" rightIcon="clipboard-outline" />
+              <CustomHeader title="League Tables" rightIcon={ClipboardCheck} />
             </SafeViewWrapper>
           ),
         }}

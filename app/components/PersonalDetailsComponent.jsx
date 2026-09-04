@@ -15,7 +15,7 @@ import MenuContainer from '@components/MenuContainer';
 import { useUser } from '@contexts/UserProvider';
 import EditableSettingsItem from '@components/EditableSettingsItem';
 import { supabase } from '@/lib/supabase';
-import { VenusAndMars, CalendarDays } from 'lucide-react-native';
+import { VenusAndMars, CalendarDays, CircleCheckBig } from 'lucide-react-native';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import colors from '@lib/colors'; // Adjust the import path as necessary
 import { useQueryClient } from '@tanstack/react-query';
@@ -281,7 +281,7 @@ const PersonalDetailsComponent = () => {
             <SafeViewWrapper useBottomInset={false}>
               <CustomHeader
                 onRightPress={hasChanges ? handleSave : undefined}
-                rightIcon="checkmark-outline"
+                rightIcon={CircleCheckBig}
                 title="Edit Profile"
               />
             </SafeViewWrapper>

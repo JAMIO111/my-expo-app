@@ -39,8 +39,8 @@ const ExpandableView = ({
           {notificationCount > 0 && (
             <View
               style={{ height: 22, width: 22 }}
-              className="items-center justify-center rounded-full border border-theme-red bg-theme-red shadow-sm">
-              <Text style={{ fontSize: 12 }} className="font-saira-medium text-white">
+              className="items-center justify-center rounded-full bg-theme-red/75 shadow-sm">
+              <Text style={{ fontSize: 12 }} className="font-tektur-medium text-white">
                 {notificationCount}
               </Text>
             </View>

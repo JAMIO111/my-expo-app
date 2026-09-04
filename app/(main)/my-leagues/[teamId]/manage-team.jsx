@@ -12,6 +12,7 @@ import TeamLogo from '@components/TeamLogo';
 import { useUser } from '@contexts/UserProvider';
 import { useTeamPlayerActions } from '@hooks/useTeamPlayerActions';
 import FloatingBottomSheet from '@components/FloatingBottomSheet';
+import { CircleCheckBig, PencilRuler } from 'lucide-react-native';
 
 const ManageTeam = () => {
   const { currentRole } = useUser();
@@ -96,10 +97,9 @@ const ManageTeam = () => {
               header: () => (
                 <SafeViewWrapper useBottomInset={false}>
                   <CustomHeader
-                    rightIcon={editMode ? 'checkmark-outline' : 'pencil-outline'}
+                    rightIcon={editMode ? CircleCheckBig : PencilRuler}
                     onRightPress={() => setEditMode(!editMode)}
                     showBack={true}
-                    iconSize={editMode ? 28 : 22}
                     title={teamProfile ? teamProfile.name : 'Team Name'}
                   />
                 </SafeViewWrapper>

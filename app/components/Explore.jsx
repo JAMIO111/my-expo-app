@@ -1,5 +1,5 @@
-import { View, ScrollView, RefreshControl, Text, Pressable, Animated } from 'react-native';
-import { useState, useCallback, useRef } from 'react';
+import { View, ScrollView, Text, Pressable } from 'react-native';
+import { useState } from 'react';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useQueryClient } from '@tanstack/react-query';
@@ -17,6 +17,7 @@ import { useTeamPlayerActions } from '@hooks/useTeamPlayerActions';
 import Toast from 'react-native-toast-message';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { ClipboardCheck } from 'lucide-react-native';
 
 // ─── Empty state ──────────────────────────────────────────────────────────────
 
@@ -383,7 +384,7 @@ const ExploreComponent = () => {
           options={{
             header: () => (
               <SafeViewWrapper useTopInset={true} useBottomInset={false}>
-                <CustomHeader title="Transfer Hub" showBack={true} rightIcon="clipboard-outline" />
+                <CustomHeader title="Transfer Hub" showBack={true} rightIcon={ClipboardCheck} />
                 {activeTab === 'explore' && (
                   <AnimatedSearchBar
                     searchActive={searchActive}

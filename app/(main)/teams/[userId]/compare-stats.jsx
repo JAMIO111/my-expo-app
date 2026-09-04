@@ -1,5 +1,6 @@
 import { Stack } from 'expo-router';
 import { View } from 'react-native';
+import { ChartColumn } from 'lucide-react-native';
 import SafeViewWrapper from '@components/SafeViewWrapper';
 import CustomHeader from '@components/CustomHeader';
 import CompareEntityStats from '@components/CompareEntityStats';
@@ -15,7 +16,7 @@ const CompareStats = () => {
               useBottomInset={false}
               bottomColor="bg-brand"
               topColor="bg-brand">
-              <CustomHeader title="Compare Stats" rightIcon="bar-chart-2" />
+              <CustomHeader title="Compare Stats" rightIcon={ChartColumn} />
             </SafeViewWrapper>
           ),
           headerShown: true,

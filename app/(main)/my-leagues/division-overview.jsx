@@ -17,6 +17,7 @@ import GenerateFixturesForm from '@components/GenerateFixturesForm';
 import { useDivisions } from '@hooks/useDivisions';
 import { useCompetitions } from '@hooks/useCompetitions';
 import Ionicons from '@expo/vector-icons/Ionicons';
+import { Wrench } from 'lucide-react-native';
 
 const DivisionOverview = () => {
   const { currentRole } = useUser();
@@ -85,7 +86,7 @@ const DivisionOverview = () => {
                   setModalType('edit-division');
                   setShowModal(true);
                 }}
-                rightIcon="build"
+                rightIcon={Wrench}
                 showBack={true}
                 title={division.name || 'My Division'}
               />

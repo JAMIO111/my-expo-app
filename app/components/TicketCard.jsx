@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { View, Text, Pressable, Image, Alert } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
 import Svg, { Line } from 'react-native-svg';
 import { useFonts } from 'expo-font';
 import { shiftLightness } from '@lib/helperFunctions';
@@ -9,14 +8,15 @@ import { useQueryClient } from '@tanstack/react-query';
 import Toast from 'react-native-toast-message';
 import { useRouter } from 'expo-router';
 import { useUser } from '@contexts/UserProvider';
-
-const NOTCH_DEFAULT = 22;
+import { Ticket, X, Check, Scissors } from 'lucide-react-native';
 
 export default function TicketCard({ item, style }) {
   const router = useRouter();
   const queryClient = useQueryClient();
   const [handling, setHandling] = useState(false);
   const { currentRole, refetch, player } = useUser();
+
+  const NOTCH_DEFAULT = 22;
 
   const [fontsLoaded] = useFonts({
     Barcode128: require('../assets/fonts/LibreBarcode128-Regular.ttf'),
@@ -39,7 +39,7 @@ export default function TicketCard({ item, style }) {
     if (!confirm) return;
     try {
       await supabase.rpc('accept_player_join_team_invite', {
-        p_team_player_id: item?.id,
+        p_team_player_id: item?.player_team_id,
       });
       await queryClient.invalidateQueries(['PlayerProfile', player?.id]);
       await queryClient.invalidateQueries(['TeamPlayers', currentRole?.team?.id]);
@@ -79,10 +79,9 @@ export default function TicketCard({ item, style }) {
     if (!confirm) return;
     try {
       await supabase.rpc('decline_player_join_team_invite', {
-        p_team_player_id: item?.id,
+        p_team_player_id: item?.player_team_id,
       });
       await queryClient.invalidateQueries(['PlayerProfile', player?.id]);
-      await queryClient.invalidateQueries(['TeamPlayers', currentRole?.team?.id]);
       await queryClient.invalidateQueries([
         'PlayerInvitesAndRequests',
         { teamId: currentRole?.team?.id, playerId: player?.id },
@@ -118,12 +117,16 @@ export default function TicketCard({ item, style }) {
     });
     if (!confirm) return;
     try {
-      await supabase.rpc('revoke_player_join_team_request', {
-        p_team_id: item?.team?.id,
-        p_player_id: player?.id,
+      const { data, error } = await supabase.rpc('revoke_player_join_team_request', {
+        p_team_player_id: item?.team_player_id,
       });
-      await queryClient.invalidateQueries(['PlayerProfile', player?.id]);
-      await queryClient.invalidateQueries(['TeamPlayers', currentRole?.team?.id]);
+      if (error) throw error;
+      if (data?.success === false) {
+        const rpcError = new Error(data.message || 'Failed to revoke your request.');
+        rpcError.title = data.title;
+        rpcError.code = data.code;
+        throw rpcError;
+      }
       await queryClient.invalidateQueries([
         'PlayerInvitesAndRequests',
         { teamId: currentRole?.team?.id, playerId: player?.id },
@@ -134,12 +137,11 @@ export default function TicketCard({ item, style }) {
         text1: 'Request revoked successfully.',
         text2: `Your request to join ${item?.team?.display_name} has been revoked.`,
       });
-      router.back();
     } catch (error) {
       console.error(error);
       Toast.show({
         type: 'error',
-        text1: 'Failed to revoke request',
+        text1: error.title || 'Failed to revoke request',
         text2: error.message || 'An error occurred while revoking your request.',
       });
     }
@@ -164,7 +166,7 @@ export default function TicketCard({ item, style }) {
   switch (`${item?.context}-${item?.type}`) {
     case 'team-invite':
       barcodeValue = item?.team_player_id;
-      accentColor = '#C96F3F';
+      accentColor = '#A95032';
       eyebrow = 'Team Invitation';
       eyebrowSub = `From ${item?.invited_by?.first_name} ${item?.invited_by?.surname}`;
       title = `You have been invited to join ${item?.team?.display_name}`;
@@ -177,7 +179,7 @@ export default function TicketCard({ item, style }) {
       break;
     case 'team-request':
       barcodeValue = item?.team_player_id;
-      accentColor = '#b078f5';
+      accentColor = '#435A72';
       eyebrow = 'Team Join Request';
       eyebrowSub = `By ${item?.requested_by_player?.first_name} ${item?.requested_by_player?.surname}`;
       title = `You made a request to join ${item?.team?.display_name}`;
@@ -228,6 +230,17 @@ export default function TicketCard({ item, style }) {
         </Text>
       </View>
 
+      <Scissors
+        size={24}
+        color={'#FFFFFFBB'}
+        style={{
+          transform: [{ rotate: '180deg' }],
+          position: 'absolute',
+          bottom: 193,
+          right: 20,
+        }}
+      />
+
       {/* ---- Perforation with tear notches ---- */}
       <View style={{ height: notchSize }} className="justify-center">
         <View
@@ -276,8 +289,13 @@ export default function TicketCard({ item, style }) {
           {!handling && (
             <Pressable
               className="mt-4 flex-row items-center justify-center gap-3 rounded-xl border border-white/50 bg-bg-1/10 px-4 py-3 pr-8"
-              onPress={() => setHandling(true)}>
-              <Ionicons name="ticket-outline" size={20} color={fg} />
+              onPress={() => {
+                setHandling(true);
+                setTimeout(() => {
+                  setHandling(false);
+                }, 4000);
+              }}>
+              <Ticket size={20} color={fg} style={{ transform: [{ rotate: '-45deg' }] }} />
               <Text className="text-center font-saira-semibold text-[14px]" style={{ color: fg }}>
                 {buttonLabel}
               </Text>
@@ -292,7 +310,7 @@ export default function TicketCard({ item, style }) {
                     setHandling(false);
                     handleLeftButtonPress();
                   }}>
-                  <Ionicons name="close-outline" size={20} color={'red'} />
+                  <X size={22} color={'white'} />
                   <Text
                     className="text-center font-tektur-medium text-[14px]"
                     style={{ color: fg }}>
@@ -307,7 +325,7 @@ export default function TicketCard({ item, style }) {
                     setHandling(false);
                     handleRightButtonPress();
                   }}>
-                  <Ionicons name="checkmark-outline" size={20} color={'green'} />
+                  <Check size={22} color={'white'} />
                   <Text
                     className="text-center font-tektur-medium text-[14px]"
                     style={{ color: fg }}>
@@ -333,7 +351,6 @@ export default function TicketCard({ item, style }) {
             ))}
           </View>
         )}
-
         <Barcode value={barcodeValue} color={fg} height={30} />
         <Text
           className="mt-2 font-saira text-[12px] tracking-wide"
@@ -349,10 +366,59 @@ export default function TicketCard({ item, style }) {
 /* Barcode                                                             */
 /* ------------------------------------------------------------------ */
 
-function Barcode({ value, color = '#111', height = 28 }) {
+export function Barcode({
+  value,
+  color = '#111',
+  height = 28,
+  vertical = false,
+  length = 160,
+  thickness = 32,
+}) {
+  if (vertical) {
+    return (
+      <View
+        className="items-center justify-center overflow-hidden"
+        style={{
+          width: thickness,
+          height: length,
+        }}>
+        <View
+          style={{
+            width: length,
+            height: thickness,
+            alignItems: 'center',
+            justifyContent: 'center',
+            transform: [{ rotate: '90deg' }],
+          }}>
+          <Text
+            numberOfLines={1}
+            style={{
+              fontFamily: 'Barcode128',
+              fontSize: thickness,
+              color,
+              includeFontPadding: false,
+              width: length,
+              textAlign: 'center',
+            }}>
+            {value}
+          </Text>
+        </View>
+      </View>
+    );
+  }
+
   return (
-    <View className="flex-row items-center justify-center" style={{ height }}>
-      <Text style={{ fontFamily: 'Barcode128', fontSize: 80, color }}>{value}</Text>
+    <View className="items-center justify-center overflow-hidden" style={{ height }}>
+      <Text
+        numberOfLines={1}
+        style={{
+          fontFamily: 'Barcode128',
+          fontSize: 80,
+          color,
+          includeFontPadding: false,
+        }}>
+        {value}
+      </Text>
     </View>
   );
 }
@@ -361,7 +427,7 @@ function Barcode({ value, color = '#111', height = 28 }) {
 /* Color helpers                                                       */
 /* ------------------------------------------------------------------ */
 
-function hexWithAlpha(hex, alpha) {
+export function hexWithAlpha(hex, alpha) {
   const clean = hex?.replace('#', '');
   const bigint = parseInt(
     clean?.length === 3

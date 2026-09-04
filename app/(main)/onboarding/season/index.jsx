@@ -7,16 +7,15 @@ import { Stack } from 'expo-router';
 import CustomHeader from '@components/CustomHeader';
 import { useUser } from '@contexts/UserProvider';
 import LeagueTable from '@components/LeagueTable';
-import UpcomingFixtureCard from '@components/UpcomingFixtureCard';
 import { useUpcomingFixtures } from '@hooks/useUpcomingFixtures';
 import DropdownFilterButton from '@components/DropdownFilterButton';
 import BottomSheetWrapper from '@components/BottomSheetWrapper';
 import { BottomSheetFooter, BottomSheetScrollView, BottomSheetView } from '@gorhom/bottom-sheet';
 import colors from '@lib/colors';
 import Ionicons from '@expo/vector-icons/Ionicons';
+import { ClipboardCheck } from 'lucide-react-native';
 import CTAButton from '@components/CTAButton';
 import HorizontalScrollUpcomingFixtures from '@components/HorizontalScrollUpcomingFixtures';
-import { UpcomingFixtureSkeleton } from '@components/Skeletons';
 
 const Season = () => {
   const { user, player, currentRole, setCurrentRole, roles } = useUser();
@@ -52,11 +51,7 @@ const Season = () => {
           options={{
             header: () => (
               <SafeViewWrapper useTopInset={false} useBottomInset={false}>
-                <CustomHeader
-                  title="Season Overview"
-                  showBack={false}
-                  rightIcon="clipboard-outline"
-                />
+                <CustomHeader title="Season Overview" showBack={false} rightIcon={ClipboardCheck} />
               </SafeViewWrapper>
             ),
           }}

@@ -7,9 +7,9 @@ export default function CustomHeader({
   title,
   showBack = true,
   onRightPress,
-  rightIcon = 'ellipsis-vertical',
+  rightIcon: RightIcon,
   backgroundColor = 'bg-brand',
-  iconSize = 22,
+  iconSize = 28,
 }) {
   const router = useRouter();
   const segments = useSegments();
@@ -56,13 +56,11 @@ export default function CustomHeader({
       <View style={{ width: sideWidth, alignItems: 'flex-end' }}>
         {onRightPress ? (
           <TouchableOpacity
-            className="h-12 w-12 items-center justify-center rounded-full bg-white"
+            className="h-12 w-12 items-center justify-center"
             onPress={() => {
               onRightPress();
             }}>
-            <View className="flex items-center justify-center rounded-full bg-white">
-              <Ionicons name={rightIcon} size={iconSize} color="black" />
-            </View>
+            {RightIcon && <RightIcon size={iconSize} color="white" />}
           </TouchableOpacity>
         ) : (
           // Invisible placeholder keeps space when no button

@@ -1,6 +1,7 @@
 import { ScrollView, View, Text } from 'react-native';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
+import { CircleCheckBig } from 'lucide-react-native';
 import useAddressDetails from '@/hooks/useAddressDetails';
 import MenuContainer from '@components/MenuContainer';
 import { useUser } from '@contexts/UserProvider';
@@ -230,7 +231,7 @@ const ManageAddress = () => {
             <SafeViewWrapper useBottomInset={false}>
               <CustomHeader
                 onRightPress={hasChanges ? handleSave : undefined}
-                rightIcon="checkmark-outline"
+                rightIcon={CircleCheckBig}
                 title={modeState === 'add' ? 'Create Venue' : 'Manage Venue'}
               />
             </SafeViewWrapper>

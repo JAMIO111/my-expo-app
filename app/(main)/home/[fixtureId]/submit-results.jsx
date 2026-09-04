@@ -36,6 +36,7 @@ import {
   Plus,
   Flag,
   Send,
+  ClipboardCheck,
 } from 'lucide-react-native';
 import PlayerStatSelector from '@components/PlayerStatSelector';
 
@@ -1038,7 +1039,7 @@ const SubmitResultsScreen = () => {
             <SafeViewWrapper useBottomInset={false}>
               <CustomHeader
                 title={fixtureDetails?.is_disputed ? 'Amend Result' : 'Submit Results'}
-                rightIcon="clipboard-outline"
+                rightIcon={ClipboardCheck}
               />
             </SafeViewWrapper>
           ),

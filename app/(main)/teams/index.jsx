@@ -6,6 +6,7 @@ import NavBar from '@components/NavBar2';
 import SafeViewWrapper from '@components/SafeViewWrapper';
 import TeamProfile from '@components/TeamProfile';
 import { useTeamProfile } from '@hooks/useTeamProfile';
+import { Cog } from 'lucide-react-native';
 
 const index = () => {
   const router = useRouter();
@@ -21,7 +22,7 @@ const index = () => {
           header: () => (
             <SafeViewWrapper useBottomInset={false}>
               <CustomHeader
-                rightIcon="settings-outline"
+                rightIcon={Cog}
                 onRightPress={() => router.push(`/settings`)}
                 showBack={false}
                 title={currentRole?.team?.display_name || 'Team'}

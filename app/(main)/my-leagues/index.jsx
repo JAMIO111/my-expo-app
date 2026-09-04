@@ -1,4 +1,5 @@
 import { StyleSheet, View } from 'react-native';
+import { Cog } from 'lucide-react-native';
 import { Stack, useRouter } from 'expo-router';
 import { supabase } from '@lib/supabase';
 import { useUser } from '@contexts/UserProvider';
@@ -8,16 +9,14 @@ import SafeViewWrapper from '@components/SafeViewWrapper';
 import { useTeamProfile } from '@hooks/useTeamProfile';
 import DivisionsList from '@components/DivisionsList';
 import { ScrollView } from 'react-native-gesture-handler';
-import SeasonControlCard from '@components/SeasonControlCard';
 import Toast from 'react-native-toast-message';
 import TeamJoinRequests from '@components/TeamJoinRequests';
-import { usePlayerRankings } from '@hooks/usePlayerRankings';
+import SeasonTicket from '@components/SeasonTicket';
 
 const index = () => {
   const router = useRouter();
   const { loading, currentRole } = useUser();
   const { data: teamProfile, isLoading } = useTeamProfile(currentRole?.team?.id);
-  const { data: playerRankings, isLoading: isRankingsLoading } = usePlayerRankings();
 
   console.log('Debug Team Profile:', teamProfile);
   console.log('Current Role in My Leagues:', currentRole);
@@ -69,7 +68,7 @@ const index = () => {
           header: () => (
             <SafeViewWrapper useBottomInset={false}>
               <CustomHeader
-                rightIcon="settings-outline"
+                rightIcon={Cog}
                 onRightPress={() => {
                   router.push(`/settings`);
                 }}
@@ -84,16 +83,17 @@ const index = () => {
         <ScrollView
           contentContainerStyle={{ display: 'flex', flexGrow: 1, gap: 5 }}
           className="mt-16 flex-1">
-          <DivisionsList districtId={currentRole?.district.id} />
-          <TeamJoinRequests districtId={currentRole?.district.id} />
           <View className="bg-bg-1 p-4">
-            <SeasonControlCard
-              activeSeason={currentRole?.activeSeason}
+            <SeasonTicket
+              season={currentRole?.activeSeason}
+              district={currentRole?.district}
               onStart={handleStartSeason}
               onEnd={handleEndSeason}
-              loading={isLoading || loading}
             />
           </View>
+          <DivisionsList districtId={currentRole?.district.id} />
+          <TeamJoinRequests districtId={currentRole?.district.id} />
+          <View className="bg-bg-1 p-4"></View>
         </ScrollView>
         <NavBar />
       </SafeViewWrapper>

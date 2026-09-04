@@ -1,5 +1,6 @@
 import { StyleSheet, View } from 'react-native';
 import { Stack, useRouter } from 'expo-router';
+import { Cog } from 'lucide-react-native';
 import CustomHeader from '@components/CustomHeader';
 import { useLocalSearchParams } from 'expo-router';
 import NavBar from '@components/NavBar2';
@@ -21,7 +22,7 @@ const TeamProfilePage = () => {
           header: () => (
             <SafeViewWrapper useBottomInset={false}>
               <CustomHeader
-                rightIcon="settings-outline"
+                rightIcon={Cog}
                 onRightPress={() => router.push(`/settings`)}
                 showBack={false}
                 title={teamProfile?.display_name || 'Team'}

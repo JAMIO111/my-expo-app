@@ -10,6 +10,7 @@ import {
 } from 'react-native';
 import CTAButton from './CTAButton';
 import Ionicons from 'react-native-vector-icons/Ionicons';
+import { X } from 'lucide-react-native';
 
 const ConfirmModal = ({
   visible,
@@ -83,12 +84,12 @@ const ConfirmModal = ({
           }}>
           <View
             style={{ borderRadius: 40 }}
-            className="w-[95%] border border-theme-gray-4 bg-bg-grouped-2/90 p-8 shadow-md backdrop-blur-lg">
+            className="w-[95%] bg-bg-grouped-2/90 p-8 shadow-md backdrop-blur-lg">
             <View className="mb-4 w-full flex-row items-start justify-between">
-              <Text className="flex-1 font-saira-semibold text-3xl text-text-1">{title}</Text>
-              <Ionicons name="close" size={26} color="gray" onPress={onCancel} />
+              <Text className="flex-1 font-tektur-semibold text-3xl text-text-1">{title}</Text>
+              <X size={26} color="#555" onPress={onCancel} />
             </View>
-            <Text className="mb-8 font-saira text-xl text-text-2">{message}</Text>
+            <Text className="mb-8 font-tektur text-xl text-text-2">{message}</Text>
 
             <View className="mb-4 w-full">
               <CTAButton text={topButtonText} type={topButtonType} callbackFn={topButtonFn} />

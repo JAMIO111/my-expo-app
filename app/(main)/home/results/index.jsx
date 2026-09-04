@@ -3,6 +3,7 @@ import CustomHeader from '@components/CustomHeader';
 import SafeViewWrapper from '@components/SafeViewWrapper';
 import { Stack } from 'expo-router';
 import { View } from 'react-native';
+import { ClipboardCheck } from 'lucide-react-native';
 
 const Results = () => {
   return (
@@ -11,7 +12,7 @@ const Results = () => {
         options={{
           header: () => (
             <SafeViewWrapper useBottomInset={false}>
-              <CustomHeader title="Results" rightIcon="clipboard-outline" />
+              <CustomHeader title="Results" rightIcon={ClipboardCheck} />
             </SafeViewWrapper>
           ),
         }}

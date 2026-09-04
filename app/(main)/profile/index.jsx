@@ -6,6 +6,7 @@ import NavBar from '@components/NavBar2';
 import CustomHeader from '@components/CustomHeader';
 import { useRouter } from 'expo-router';
 import Ionicons from '@expo/vector-icons/Ionicons';
+import { Cog } from 'lucide-react-native';
 import { useUser } from '@contexts/UserProvider';
 import { getAgeInYearsAndDays } from '@lib/helperFunctions';
 import { calculateLevel } from '@lib/helperFunctions';
@@ -50,7 +51,7 @@ const ProfilePage = () => {
                       <CustomHeader
                         title="My Profile"
                         showBack={false}
-                        rightIcon="settings-outline"
+                        rightIcon={Cog}
                         onRightPress={() => router.push('/settings')}
                       />
                     </SafeViewWrapper>
@@ -171,7 +172,7 @@ const ProfilePage = () => {
                   return (
                     <Pressable
                       onPress={() => router.push('/profile/badges')}
-                      className="flex-1 items-center rounded-2xl border border-theme-gray-4 bg-bg-2"
+                      className="flex-1 items-center rounded-2xl border border-theme-gray-5 bg-bg-2 shadow-sm"
                       key={badge.id}>
                       <Image
                         source={iconSource}
@@ -184,9 +185,9 @@ const ProfilePage = () => {
                           borderBottomRightRadius: 14,
                         }}
                         className="mt-2 flex-row items-center gap-2 border-t border-theme-gray-4 bg-bg-1 p-2 py-1">
-                        <LockKeyholeOpen size={16} color="#666" />
+                        <LockKeyholeOpen size={16} color="#444" />
                         <Text
-                          className="text-center font-saira-semibold text-text-2"
+                          className="text-center font-tektur-semibold text-text-2"
                           numberOfLines={2}
                           ellipsizeMode="tail">
                           {new Date(badge?.unlocked_at).toLocaleDateString()}

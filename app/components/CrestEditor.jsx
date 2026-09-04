@@ -6,6 +6,7 @@ import ColorPickerGrid from '@components/ColorPickerGrid';
 import BottomSheetModal from '@components/BottomSheetModal';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import colors from '@lib/colors';
+import { Palette, Shapes, SlidersVertical } from 'lucide-react-native';
 
 const THICKNESSES = [
   {
@@ -66,7 +67,7 @@ const CrestEditor = ({ crest, handleSave, buttonText = 'Save Changes' }) => {
         type={type}
         size={150}
       />
-      <View style={{ borderRadius: 16 }} className="w-full overflow-hidden bg-bg-1">
+      <View style={{ borderRadius: 20 }} className="w-full overflow-hidden bg-bg-1">
         <Pressable
           onPress={() => {
             setActiveMenu('Crest Type');
@@ -74,25 +75,28 @@ const CrestEditor = ({ crest, handleSave, buttonText = 'Save Changes' }) => {
           className="flex-row items-center justify-between">
           {({ pressed }) => (
             <View
-              className={`flex-1 flex-row items-center justify-between px-6 py-4 ${pressed ? 'bg-theme-gray-5' : 'bg-bg-grouped-2'}`}>
-              <Text className="font-saira-medium text-xl text-text-1">Type</Text>
+              className={`flex-1 flex-row items-center justify-between gap-4 px-6 py-4 ${pressed ? 'bg-theme-gray-5' : 'bg-bg-grouped-2'}`}>
+              <Shapes size={24} color={'#000'} />
+              <Text className="flex-1 font-saira-medium text-xl text-text-1">Type</Text>
               <Text className="font-saira-medium text-xl text-text-2">
                 {TYPES.find((item) => item === type) || 'Horizontal Stripe'}
               </Text>
             </View>
           )}
         </Pressable>
-        <View className="ml-6 border-b border-theme-gray-5" />
         <Pressable
           onPress={() => {
             setActiveMenu('Primary Color');
           }}>
           {({ pressed }) => (
             <View
-              className={`flex-row items-center justify-between px-6 py-2 ${
+              className={`flex-row items-center justify-between gap-4 px-6 py-2 ${
                 pressed ? 'bg-theme-gray-5' : 'bg-bg-grouped-2'
               }`}>
-              <Text className="font-saira-medium text-xl text-text-1">Primary Team Color</Text>
+              <Palette size={24} color={'#000'} />
+              <Text className="flex-1 font-saira-medium text-xl text-text-1">
+                Primary Team Color
+              </Text>
               <View
                 className="h-12 w-12 rounded-full border border-theme-gray-5"
                 style={{
@@ -102,17 +106,19 @@ const CrestEditor = ({ crest, handleSave, buttonText = 'Save Changes' }) => {
             </View>
           )}
         </Pressable>
-        <View className="ml-6 border-b border-theme-gray-4" />
         <Pressable
           onPress={() => {
             setActiveMenu('Secondary Color');
           }}>
           {({ pressed }) => (
             <View
-              className={`flex-row items-center justify-between px-6 py-2 ${
+              className={`flex-row items-center justify-between gap-4 px-6 py-2 ${
                 pressed ? 'bg-theme-gray-5' : 'bg-bg-grouped-2'
               }`}>
-              <Text className="font-saira-medium text-xl text-text-1">Secondary Team Color</Text>
+              <Palette size={24} color={'#000'} />
+              <Text className="flex-1 font-saira-medium text-xl text-text-1">
+                Secondary Team Color
+              </Text>
               <View
                 className="h-12 w-12 rounded-full border border-theme-gray-5"
                 style={{ backgroundColor: secondaryColor || '#FFFFFF' }}
@@ -122,17 +128,17 @@ const CrestEditor = ({ crest, handleSave, buttonText = 'Save Changes' }) => {
         </Pressable>
         {type !== 'Solids' && type !== 'Quartered' && (
           <>
-            <View className="ml-6 border-b border-theme-gray-4" />
             <Pressable
               onPress={() => {
                 setActiveMenu('Style Weight');
               }}>
               {({ pressed }) => (
                 <View
-                  className={`flex-row items-center justify-between px-6 py-4 ${
+                  className={`flex-row items-center justify-between gap-4 px-6 py-4 ${
                     pressed ? 'bg-theme-gray-5' : 'bg-bg-grouped-2'
                   }`}>
-                  <Text className="font-saira-medium text-xl text-text-1">Thickness</Text>
+                  <SlidersVertical size={24} color={'#000'} />
+                  <Text className="flex-1 font-saira-medium text-xl text-text-1">Thickness</Text>
                   <Text className="font-saira-medium text-xl text-text-2">
                     {THICKNESSES.find((item) => item.value === thickness)?.label}
                   </Text>

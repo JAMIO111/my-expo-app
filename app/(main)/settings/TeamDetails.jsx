@@ -1,6 +1,7 @@
-import { Text, View, ScrollView, Pressable, ActivityIndicator, useColorScheme } from 'react-native';
-import { Stack, useNavigation } from 'expo-router';
+import { ScrollView } from 'react-native';
 import { useEffect, useState } from 'react';
+import { Stack } from 'expo-router';
+import { CircleCheckBig } from 'lucide-react-native';
 import MenuContainer from '@components/MenuContainer';
 import { useUser } from '@contexts/UserProvider';
 import SettingsItem from '@components/SettingsItem';
@@ -74,7 +75,7 @@ const TeamDetails = () => {
             <SafeViewWrapper useBottomInset={false}>
               <CustomHeader
                 onRightPress={hasChanges ? handleSave : undefined}
-                rightIcon="checkmark-outline"
+                rightIcon={CircleCheckBig}
                 title="Team Details"
               />
             </SafeViewWrapper>

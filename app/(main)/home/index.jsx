@@ -34,6 +34,7 @@ import TicketCarousel from '@components/TicketCarousel';
 import Heading from '@components/Heading';
 import TicketTapeBanner from '@components/TicketTapeBanner';
 import { usePlayerInvitesAndRequests } from '@hooks/usePlayerInvitesAndRequests';
+import Toast from 'react-native-toast-message';
 
 const Home = () => {
   const { isPro, isCore } = useRevenueCat();
@@ -418,6 +419,8 @@ const Home = () => {
                 ) : currentRole?.type === 'admin' ? (
                   <ToggleTransferWindowCard
                     loading={fetching}
+                    district={currentRole.district}
+                    lastToggledAt={currentRole.district?.transfer_window_last_updated}
                     isOpen={currentRole.district?.transfer_window_open}
                     onToggle={async () => {
                       setWindowLoading(true);
@@ -426,17 +429,24 @@ const Home = () => {
                           .from('Districts')
                           .update({
                             transfer_window_open: !currentRole.district?.transfer_window_open,
+                            transfer_window_last_updated: new Date().toISOString(),
                           })
                           .eq('id', currentRole.district.id);
                         // Invalidate related queries to ensure UI updates with latest data
                         queryClient.invalidateQueries(['authUserProfile']);
+                        Toast.show({
+                          type: 'success',
+                          text1: 'Transfer window updated successfully',
+                        });
                         if (error) {
-                          console.error('Error updating transfer window:', error);
-                        } else {
-                          console.log('Transfer window updated successfully:', data);
+                          throw error;
                         }
                       } catch (err) {
-                        console.error('Unexpected error updating transfer window:', err);
+                        Toast.show({
+                          type: 'error',
+                          text1: 'Error updating transfer window',
+                          text2: err.message,
+                        });
                       } finally {
                         setWindowLoading(false);
                       }

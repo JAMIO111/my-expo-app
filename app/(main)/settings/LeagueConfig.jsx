@@ -1,6 +1,7 @@
 import { StyleSheet, ScrollView, Text } from 'react-native';
 import { Stack } from 'expo-router';
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
+import { CircleCheckBig } from 'lucide-react-native';
 import SettingsItem from '@components/SettingsItem';
 import EditableSettingsItem from '@components/EditableSettingsItem';
 import SwitchSettingsItem from '@components/SwitchSettingsItem';
@@ -92,7 +93,7 @@ const LeagueConfig = () => {
               <CustomHeader
                 title="League Configuration"
                 onRightPress={hasChanges ? handleSave : undefined}
-                rightIcon="checkmark-outline"
+                rightIcon={CircleCheckBig}
               />
             </SafeViewWrapper>
           ),

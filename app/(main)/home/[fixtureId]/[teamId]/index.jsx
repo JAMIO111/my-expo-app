@@ -1,4 +1,5 @@
 import { View } from 'react-native';
+import { ClipboardCheck } from 'lucide-react-native';
 import TeamProfile from '@components/TeamProfile';
 import SafeViewWrapper from '@components/SafeViewWrapper';
 import CustomHeader from '@components/CustomHeader';
@@ -15,7 +16,7 @@ const index = () => {
         options={{
           header: () => (
             <SafeViewWrapper useBottomInset={false}>
-              <CustomHeader title={profile?.display_name} rightIcon="clipboard-outline" />
+              <CustomHeader title={profile?.display_name} rightIcon={ClipboardCheck} />
             </SafeViewWrapper>
           ),
         }}

@@ -1,5 +1,6 @@
 import { StyleSheet, Text, View } from 'react-native';
 import { Stack } from 'expo-router';
+import { ClipboardCheck } from 'lucide-react-native';
 import SafeViewWrapper from '@components/SafeViewWrapper';
 import CustomHeader from '@components/CustomHeader';
 import BasicPaywall from '@components/BasicPaywall';
@@ -11,11 +12,7 @@ const index = () => {
         options={{
           header: () => (
             <SafeViewWrapper useBottomInset={false}>
-              <CustomHeader
-                backgroundColor="bg-brand-dark"
-                title=""
-                rightIcon="clipboard-outline"
-              />
+              <CustomHeader backgroundColor="bg-brand-dark" title="" rightIcon={ClipboardCheck} />
             </SafeViewWrapper>
           ),
         }}

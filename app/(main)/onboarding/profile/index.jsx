@@ -1,6 +1,7 @@
 import { Text, View, ScrollView } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { Stack } from 'expo-router';
+import { Cog } from 'lucide-react-native';
 import SafeViewWrapper from '@components/SafeViewWrapper';
 import NavBar from '@components/NavBar2';
 import { useRouter } from 'expo-router';
@@ -34,7 +35,7 @@ const ProfilePage = () => {
               <CustomHeader
                 title="My Profile"
                 showBack={false}
-                rightIcon="settings-outline"
+                rightIcon={Cog}
                 onRightPress={() => router.push('/(main)/settings')}
               />
             </SafeViewWrapper>
