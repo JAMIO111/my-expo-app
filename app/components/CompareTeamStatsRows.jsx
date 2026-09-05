@@ -443,7 +443,7 @@ const CompareTeamStatsRows = ({ team1Stats, team2Stats, context }) => {
 
   return (
     <View className="gap-2">
-      <Heading text="Frames Stats" className="mt-4 text-text-on-brand" />
+      <Heading text="Frames Stats" className="mt-4" textColor="text-text-on-brand" />
       <View className="rounded-3xl bg-bg-grouped-2 py-3">
         {/* Stat rows */}
         {framesRows.map((stat, index) => (
@@ -461,7 +461,7 @@ const CompareTeamStatsRows = ({ team1Stats, team2Stats, context }) => {
         ))}
       </View>
 
-      <Heading text="Match Stats" className="mt-4 text-text-on-brand" />
+      <Heading text="Match Stats" className="mt-4" textColor="text-text-on-brand" />
       <View className="rounded-3xl bg-bg-grouped-2 py-3">
         {/* Stat rows */}
         {matchRows.map((stat, index) => (
@@ -479,7 +479,7 @@ const CompareTeamStatsRows = ({ team1Stats, team2Stats, context }) => {
         ))}
       </View>
 
-      <Heading text="Frame Format Stats" className="mt-4 text-text-on-brand" />
+      <Heading text="Frame Format Stats" className="mt-4" textColor="text-text-on-brand" />
       <View className="rounded-3xl bg-bg-grouped-2 py-3">
         {/* Stat rows */}
         {FrameFormatRows.map((stat, index) => (
@@ -497,7 +497,7 @@ const CompareTeamStatsRows = ({ team1Stats, team2Stats, context }) => {
         ))}
       </View>
 
-      <Heading text="Skill Stats" className="mt-4 text-text-on-brand" />
+      <Heading text="Skill Stats" className="mt-4" textColor="text-text-on-brand" />
       <View className="rounded-3xl bg-bg-grouped-2 py-3">
         {skillRows.map((skill, index) => (
           <StatCardCompare
@@ -515,7 +515,7 @@ const CompareTeamStatsRows = ({ team1Stats, team2Stats, context }) => {
 
       {context === 'all' && (
         <>
-          <Heading text="Streak Stats" className="mt-4 text-text-on-brand" />
+          <Heading text="Streak Stats" className="mt-4" textColor="text-text-on-brand" />
           <View className="rounded-3xl bg-bg-grouped-2 py-3">
             {streakRows.map((streak, index) => (
               <StatCardCompare

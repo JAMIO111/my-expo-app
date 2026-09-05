@@ -11,6 +11,7 @@ import CompetitionInstanceCard from '@components/CompetitionInstanceCard';
 import { Ionicons } from '@expo/vector-icons';
 import { CalendarClock } from 'lucide-react-native';
 import Heading from '@components/Heading';
+import EmptyStateCard from '@components/EmptyStateCard';
 
 const index = () => {
   const router = useRouter();
@@ -82,16 +83,11 @@ const index = () => {
           ) : (
             <>
               {competitionsInstances?.length === 0 && (
-                <View className="items-center justify-center rounded-2xl bg-bg-2 p-10 shadow-sm">
-                  <CalendarClock size={48} color="#777" />
-                  <Text className="pt-4 font-tektur-medium text-xl text-text-1">
-                    No competitions found
-                  </Text>
-                  <Text className="mt-2 font-tektur text-sm text-text-2">
-                    There are currently no competitions available for your league. Please wait for
-                    the league administrator to create and initiate competitions.
-                  </Text>
-                </View>
+                <EmptyStateCard
+                  title="Oops, no competitions found."
+                  message="There are currently no competitions available for your league. Please wait for the league administrator to create and initiate competitions."
+                  icon={CalendarClock}
+                />
               )}
 
               {activeCompetitions?.length > 0 && (

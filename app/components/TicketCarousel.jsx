@@ -88,7 +88,7 @@ export default function TicketCarousel({
                   style={{
                     width: i === activeIndex ? 22 : 8,
                     height: 8,
-                    backgroundColor: i === activeIndex ? '#D4AF37' : '#D4AF3766',
+                    backgroundColor: i === activeIndex ? '#0b3910' : '#0b391066',
                   }}
                 />
               ))}
@@ -96,7 +96,7 @@ export default function TicketCarousel({
           )}
 
           {showLabel && (
-            <Text className="font-saira-medium text-sm tracking-wide text-text-2">
+            <Text className="font-tektur-medium text-sm tracking-wide text-text-2">
               {activeIndex + 1} of {tickets.length}
             </Text>
           )}

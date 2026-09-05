@@ -1,12 +1,13 @@
 import { Pressable, StyleSheet, Text, View, Image, Alert, ActivityIndicator } from 'react-native';
 import { useRef, useMemo } from 'react';
 import { useDivisions } from '@hooks/useDivisions';
-import { Ionicons } from '@expo/vector-icons';
 import { useUser } from '@contexts/UserProvider';
 import { useRouter } from 'expo-router';
 import { romanNumerals } from '../lib/badgeIcons';
 import Heading from './Heading';
 import CTAButton from './CTAButton';
+import EmptyStateCard from './EmptyStateCard';
+import { ChevronRight } from 'lucide-react-native';
 
 const DivisionsList = ({ districtId }) => {
   const hasNavigated = useRef(false);
@@ -65,13 +66,12 @@ const DivisionsList = ({ districtId }) => {
         </View>
       )}
 
-      {!isLoading && groupedDivisions.length === 0 && (
-        <>
-          <View className="w-full flex-row items-center justify-center gap-1 rounded-2xl bg-bg-2 shadow-sm">
-            <Text className="p-8 text-center font-saira text-xl text-text-2">
-              No divisions found.
-            </Text>
-          </View>
+      {!isLoading && groupedDivisions.length !== 0 && (
+        <View className="w-full gap-5">
+          <EmptyStateCard
+            title="Oops, No Divisions Found"
+            message="There are currently no divisions for this district. Get started by creating your first division below."
+          />
           <CTAButton
             type="yellow"
             text="Create Divisions"
@@ -82,7 +82,7 @@ const DivisionsList = ({ districtId }) => {
               );
             }}
           />
-        </>
+        </View>
       )}
 
       {groupedDivisions.length > 0 &&
@@ -90,8 +90,8 @@ const DivisionsList = ({ districtId }) => {
           <View key={group.groupId} className="w-full gap-3">
             {/* 🧠 Group Header */}
             <View className="mt-2 flex-row items-center px-2">
-              <Text className="font-saira-medium text-lg text-text-1">{`${group.groupName} - `}</Text>
-              <Text className="font-saira-regular text-lg text-text-2">{group.competitorType}</Text>
+              <Text className="font-tektur-medium text-lg text-text-1">{`${group.groupName} - `}</Text>
+              <Text className="font-tektur text-lg text-text-2">{group.competitorType}</Text>
             </View>
 
             {/* 📦 Divisions */}
@@ -113,38 +113,50 @@ const DivisionsList = ({ districtId }) => {
                     },
                   });
                 }}
-                className="shadow-sm">
-                {/* Tier accent strip */}
-                <View className="w-full flex-row items-center justify-between overflow-hidden rounded-2xl bg-bg-2">
-                  <View className="h-full w-1.5 bg-brand" />
+                style={({ pressed }) => ({ opacity: pressed ? 0.8 : 1 })}>
+                <View className="relative overflow-hidden rounded-3xl bg-bg-2 px-5 py-5">
+                  {/* Oversized tier numeral watermark */}
+                  {romanNumerals[division.tier] && (
+                    <Image
+                      source={romanNumerals[division.tier]}
+                      style={{
+                        position: 'absolute',
+                        right: -12,
+                        bottom: -14,
+                        width: 92,
+                        height: 112,
+                        opacity: 0.1,
+                      }}
+                      resizeMode="contain"
+                    />
+                  )}
 
-                  <View className="flex-1 flex-row items-center justify-between p-4">
-                    <View className="flex-row items-center gap-4">
-                      {romanNumerals[division.tier] && (
-                        <View className="h-14 w-14 items-center justify-center rounded-xl bg-bg-grouped-2">
-                          <Image
-                            source={romanNumerals[division.tier]}
-                            style={{ width: 32, height: 40 }}
-                            resizeMode="contain"
-                          />
-                        </View>
-                      )}
+                  <View className="flex-row items-center justify-between">
+                    <View className="flex-1 pr-4">
+                      <Text
+                        className="font-tektur-semibold text-[11px] tracking-[2px]"
+                        style={{ color: '#d4922a' }}>
+                        DIVISION
+                      </Text>
 
-                      <View>
-                        <Text className="font-saira-semibold text-xl text-text-1">
-                          {division.name}
-                        </Text>
-                        {division.teamCount != null && (
-                          <Text className="font-saira text-sm text-text-2">
+                      <Text
+                        className="mt-1 font-tektur-semibold text-2xl text-text-1"
+                        numberOfLines={1}
+                        ellipsizeMode="tail">
+                        {division.name}
+                      </Text>
+
+                      {division.teamCount != null && (
+                        <View className="mt-2 flex-row items-center gap-1.5">
+                          <Users size={13} color="rgba(255,255,255,0.4)" />
+                          <Text className="font-tektur text-sm text-text-2">
                             {division.teamCount} {division.teamCount === 1 ? 'team' : 'teams'}
                           </Text>
-                        )}
-                      </View>
+                        </View>
+                      )}
                     </View>
 
-                    <View className="h-9 w-9 items-center justify-center rounded-full bg-bg-grouped-2">
-                      <Ionicons name="chevron-forward-outline" size={18} color="#d4922a" />
-                    </View>
+                    <ChevronRight size={20} color="#000" strokeWidth={2.5} />
                   </View>
                 </View>
               </Pressable>

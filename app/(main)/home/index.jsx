@@ -85,23 +85,14 @@ const Home = () => {
   } = useUpcomingFixtures(currentRole?.team?.id, 'team', currentRole?.activeSeason?.id);
 
   const {
-    data: playerInvites,
-    isLoading: isPlayerInvitesLoading,
-    refetch: playerInvitesRefetch,
+    data: playerInvitesAndRequests,
+    isLoading: isPlayerInvitesAndRequestsLoading,
+    refetch: playerInvitesAndRequestsRefetch,
   } = usePlayerInvitesAndRequests({
     playerId: player?.id,
   });
 
-  console.log('Player Invites:', playerInvites);
-
-  const InviteCardData = useMemo(() => {
-    if (!playerInvites) return [];
-    return playerInvites.map((invite) => ({
-      ...invite,
-      type: invite?.requested_by ? 'request' : invite?.invited_by ? 'invite' : null,
-      context: 'team',
-    }));
-  }, [playerInvites]);
+  console.log('Player Invites and Requests:', playerInvitesAndRequests);
 
   const {
     data: teamResultsPendingApproval,
@@ -312,12 +303,12 @@ const Home = () => {
             justifyContent: 'center',
           }}>
           <View className="">
-            {playerInvites?.length > 0 && (
+            {playerInvitesAndRequests?.length > 0 && (
               <View className="w-full gap-3 pb-8">
                 <View className="w-full flex-row items-center justify-between p-3 pr-6">
                   <Heading
                     text="Invites & Requests"
-                    notificationCount={playerInvites?.length ?? 0}
+                    notificationCount={playerInvitesAndRequests?.length ?? 0}
                   />
                   <Pressable className="px-4 py-2" onPress={() => setShowInvites((prev) => !prev)}>
                     <Text className="font-tektur-medium text-lg text-theme-blue">
@@ -325,7 +316,7 @@ const Home = () => {
                     </Text>
                   </Pressable>
                 </View>
-                {showInvites && <TicketCarousel tickets={InviteCardData} />}
+                {showInvites && <TicketCarousel tickets={playerInvitesAndRequests} />}
               </View>
             )}
             <View className="w-full items-center justify-center gap-4 p-0 pb-5">
@@ -353,14 +344,6 @@ const Home = () => {
                 />
                 <LeagueHomeCard standings={standings} isLoading={isStandingsLoading} />
               </View>
-              <TicketTapeBanner
-                items={[
-                  { id: 1, text: 'Division 2 fixtures released', icon: 'calendar-outline' },
-                  { id: 2, text: 'New season starts 1st Sept', icon: 'trophy-outline' },
-                  { id: 3, text: 'Jake Smith reached rank #4', icon: 'trending-up-outline' },
-                ]}
-                speed={40}
-              />
             </View>
             <View className="w-full bg-bg-2 pb-8">
               {(currentRole?.team?.captain === player?.id ||
@@ -484,6 +467,14 @@ const Home = () => {
                   }}
                 />
               </View>
+              <TicketTapeBanner
+                items={[
+                  { id: 1, text: 'Division 2 fixtures released', icon: 'calendar-outline' },
+                  { id: 2, text: 'New season starts 1st Sept', icon: 'trophy-outline' },
+                  { id: 3, text: 'Jake Smith reached rank #4', icon: 'trending-up-outline' },
+                ]}
+                speed={40}
+              />
             </View>
           </View>
         </ScrollView>

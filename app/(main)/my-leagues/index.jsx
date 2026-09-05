@@ -15,7 +15,7 @@ import SeasonTicket from '@components/SeasonTicket';
 
 const index = () => {
   const router = useRouter();
-  const { loading, currentRole } = useUser();
+  const { currentRole } = useUser();
   const { data: teamProfile, isLoading } = useTeamProfile(currentRole?.team?.id);
 
   console.log('Debug Team Profile:', teamProfile);

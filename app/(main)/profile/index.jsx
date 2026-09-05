@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { Text, View, ScrollView, Image, Pressable } from 'react-native';
 import { Stack } from 'expo-router';
 import SafeViewWrapper from '@components/SafeViewWrapper';
@@ -21,12 +20,14 @@ import {
   Star,
   ChartNoAxesCombined,
   ClipboardClock,
+  Award,
 } from 'lucide-react-native';
 import CTAButton from '@components/CTAButton';
+import PlayerProfileHeader from '@components/PlayerProfileHeader';
 
 const ProfilePage = () => {
   const router = useRouter();
-  const { user, player, currentRole } = useUser();
+  const { player, currentRole } = useUser();
   const { data: globalRank, isLoading: isGlobalRankLoading } = useGlobalRank(player?.id);
   const { data: recentBadges, isLoading: isRecentBadgesLoading } = useRecentBadges(player?.id);
 
@@ -63,46 +64,11 @@ const ProfilePage = () => {
         }}
       />
 
-      <ScrollView className="mt-16 flex-1 bg-bg-grouped-1">
-        <View className="flex-1 bg-bg-grouped-1 pb-8 pt-3">
-          <Pressable className="px-5" onPress={() => router.push('/profile/leaderboard')}>
+      <ScrollView className="mt-16 flex-1 bg-brand">
+        <View className="flex-1 bg-bg-grouped-1 pb-8">
+          <PlayerProfileHeader playerProfile={player} currentTeam={currentRole?.team} />
+          <Pressable className="mt-8 px-5" onPress={() => router.push('/profile/leaderboard')}>
             <View style={{ borderRadius: 20 }} className="mb-6 bg-brand-dark p-2 shadow-sm">
-              <View className="mb-2 flex-row items-center justify-between rounded-2xl bg-bg-1 p-2">
-                <View className="items-center p-1 ">
-                  {player?.avatar_url ? (
-                    <CachedImage
-                      avatarUrl={player?.avatar_url}
-                      userId={player?.id}
-                      width={70}
-                      height={70}
-                      borderRadius={12}
-                    />
-                  ) : (
-                    <View
-                      style={{ width: 70, height: 70 }}
-                      className="items-center justify-center rounded-xl border border-brand-light bg-brand-light">
-                      <Text
-                        style={{ lineHeight: 70 }}
-                        className="font-saira-medium text-6xl text-white">
-                        {getInitials(player?.first_name, player?.surname)}
-                      </Text>
-                    </View>
-                  )}
-                </View>
-                <View className="flex-1 items-start justify-center gap-1 pl-5">
-                  <Text
-                    style={{ lineHeight: 34 }}
-                    className="text-left font-saira-semibold text-3xl text-text-1">
-                    {player?.first_name} {player?.surname}
-                  </Text>
-                  <Text className="text-left font-saira text-xl text-text-2">
-                    {getAgeInYearsAndDays(player?.dob).years} |{' '}
-                    {currentRole?.type === 'admin'
-                      ? `${currentRole?.district?.name} Admin` || 'Admin'
-                      : currentRole?.team?.display_name || 'No Team'}
-                  </Text>
-                </View>
-              </View>
               <View
                 style={{ borderRadius: 18 }}
                 className="flex-row items-center justify-around gap-2 bg-brand p-2 pt-3 shadow">
@@ -209,21 +175,14 @@ const ProfilePage = () => {
                 </Text>
               </View>
             )}
-            <Pressable onPress={() => router.push('/profile/badges')} className="">
-              <View style={{ borderRadius: 20 }} className="mx-3 bg-brand-dark p-1 shadow-sm">
-                <View
-                  style={{ borderRadius: 18 }}
-                  className="flex-row items-center justify-around gap-2 bg-brand p-3 shadow">
-                  <View className="flex-1 flex-row items-center gap-5">
-                    <Ionicons name="ribbon-outline" size={32} color="white" />
-                    <Text className="flex-1 text-left font-saira text-2xl text-text-on-brand">
-                      See all Badges
-                    </Text>
-                    <Ionicons name="chevron-forward-outline" size={24} color="white" />
-                  </View>
-                </View>
-              </View>
-            </Pressable>
+            <View className="px-3">
+              <CTAButton
+                text="See all Badges"
+                type="brand"
+                callbackFn={() => router.push('/profile/badges')}
+                lucideIcon={<Award size={24} color="white" />}
+              />
+            </View>
           </View>
           <View
             style={{ borderRadius: 28 }}

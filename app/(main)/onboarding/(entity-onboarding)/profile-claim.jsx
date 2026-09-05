@@ -73,7 +73,7 @@ const ProfileClaim = () => {
     try {
       setIsRPCLoading(true);
 
-      const { error } = await supabase.rpc('request_join_team', {
+      const { error } = await supabase.rpc('request_join_team_onboarding', {
         p_team_id: teamProfile.id,
         p_player_id: player.id,
         p_captain_approval: captainApproval,

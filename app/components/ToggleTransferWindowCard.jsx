@@ -144,7 +144,7 @@ export default function AdminTransferToggle({
 
           <View style={{ width: 1, position: 'relative', marginVertical: 14 }}>
             <View
-              className="absolute z-10 bg-bg-1"
+              className="absolute z-10 bg-bg-2"
               style={{
                 width: notchSize,
                 height: notchSize,
@@ -154,7 +154,7 @@ export default function AdminTransferToggle({
               }}
             />
             <View
-              className="absolute z-10 bg-bg-1"
+              className="absolute z-10 bg-bg-2"
               style={{
                 width: notchSize,
                 height: notchSize,

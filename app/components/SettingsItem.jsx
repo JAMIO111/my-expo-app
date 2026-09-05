@@ -59,6 +59,10 @@ import {
   Handshake,
   MailQuestionMark,
   MailX,
+  Settings2,
+  Search,
+  Binoculars,
+  CalendarCheck2,
 } from 'lucide-react-native';
 
 export const iconMap = {
@@ -113,6 +117,10 @@ export const iconMap = {
   handshake: Handshake,
   mailQuestionMark: MailQuestionMark,
   mailX: MailX,
+  settings2: Settings2,
+  search: Search,
+  binoculars: Binoculars,
+  calendarCheck2: CalendarCheck2,
 };
 
 const SettingsItem = ({

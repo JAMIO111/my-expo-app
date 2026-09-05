@@ -52,7 +52,7 @@ const SearchResultsOverlay = ({ searchActive, searchQuery, sendJoinRequest }) =>
       topButtonType: 'success',
       bottomButtonType: 'default',
       topButtonFn: () => {
-        sendJoinRequest.mutate(team.id);
+        sendJoinRequest(team);
         setModalVisible(false);
       },
       bottomButtonFn: () => setModalVisible(false),

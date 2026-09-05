@@ -70,6 +70,8 @@ export function usePlayerInvitesAndRequests({ teamId, playerId }) {
         ...players,
         requested_by_player,
         invited_by,
+        context: 'team',
+        type: invited_by ? 'invite' : 'request',
         team,
         team_player_id: teamPlayer.id, // Keep the original TeamPlayers id for reference
       }));

@@ -8,12 +8,13 @@ import { useQueryClient } from '@tanstack/react-query';
 import Toast from 'react-native-toast-message';
 import { useRouter } from 'expo-router';
 import { useUser } from '@contexts/UserProvider';
-import { Ticket, X, Check, Scissors } from 'lucide-react-native';
+import { Ticket, X, Check, Scissors, Clock } from 'lucide-react-native';
 
 export default function TicketCard({ item, style }) {
   const router = useRouter();
   const queryClient = useQueryClient();
   const [handling, setHandling] = useState(false);
+  const [loading, setLoading] = useState(false);
   const { currentRole, refetch, player } = useUser();
 
   const NOTCH_DEFAULT = 22;
@@ -25,6 +26,7 @@ export default function TicketCard({ item, style }) {
   if (!fontsLoaded) return null;
 
   const handleAcceptTeamInvite = async () => {
+    setLoading(true);
     const confirm = await new Promise((resolve) => {
       Alert.alert(
         'Accept Invite?',
@@ -38,9 +40,16 @@ export default function TicketCard({ item, style }) {
     });
     if (!confirm) return;
     try {
-      await supabase.rpc('accept_player_join_team_invite', {
-        p_team_player_id: item?.player_team_id,
+      const { data, error } = await supabase.rpc('accept_player_join_team_invite', {
+        p_team_player_id: item?.team_player_id,
       });
+      if (error) throw error;
+      if (data?.success === false) {
+        const rpcError = new Error(data.message || 'Failed to revoke your request.');
+        rpcError.title = data.title;
+        rpcError.code = data.code;
+        throw rpcError;
+      }
       await queryClient.invalidateQueries(['PlayerProfile', player?.id]);
       await queryClient.invalidateQueries(['TeamPlayers', currentRole?.team?.id]);
       await queryClient.invalidateQueries([
@@ -53,14 +62,14 @@ export default function TicketCard({ item, style }) {
         text1: 'Join request accepted successfully.',
         text2: `${item?.first_name} ${item?.surname} has been added to the team.`,
       });
-      router.back();
     } catch (error) {
-      console.error(error);
       Toast.show({
         type: 'error',
         text1: 'Failed to accept invite',
         text2: error.message || 'An error occurred while accepting the player invite.',
       });
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -78,9 +87,16 @@ export default function TicketCard({ item, style }) {
     });
     if (!confirm) return;
     try {
-      await supabase.rpc('decline_player_join_team_invite', {
-        p_team_player_id: item?.player_team_id,
+      const { data, error } = await supabase.rpc('decline_player_join_team_invite', {
+        p_team_player_id: item?.team_player_id,
       });
+      if (error) throw error;
+      if (data?.success === false) {
+        const rpcError = new Error(data.message || 'Failed to decline the invite.');
+        rpcError.title = data.title;
+        rpcError.code = data.code;
+        throw rpcError;
+      }
       await queryClient.invalidateQueries(['PlayerProfile', player?.id]);
       await queryClient.invalidateQueries([
         'PlayerInvitesAndRequests',
@@ -92,7 +108,6 @@ export default function TicketCard({ item, style }) {
         text1: 'Invite declined successfully.',
         text2: `${playerProfile?.first_name} ${playerProfile?.surname} has been removed from the team.`,
       });
-      router.back();
     } catch (error) {
       console.error(error);
       Toast.show({
@@ -147,11 +162,14 @@ export default function TicketCard({ item, style }) {
     }
   };
 
+  const status = item?.status;
+
   let barcodeValue = 'aoslijrgopwijgpw';
   let footerLabel = 'Ticket ID: ' + item?.id;
   let eyebrow = '';
   let eyebrowSub = '';
   let title = item?.title || 'Ticket Title';
+  let subtitle = '';
   let textColor = '#F7F5F0';
   let accentColor = '#fff';
   let leftButtonLabel = '';
@@ -162,6 +180,7 @@ export default function TicketCard({ item, style }) {
   const requirements = item?.requirements || [];
   let handleRightButtonPress = null;
   let handleLeftButtonPress = null;
+  let buttonDisabled = false;
 
   switch (`${item?.context}-${item?.type}`) {
     case 'team-invite':
@@ -170,9 +189,11 @@ export default function TicketCard({ item, style }) {
       eyebrow = 'Team Invitation';
       eyebrowSub = `From ${item?.invited_by?.first_name} ${item?.invited_by?.surname}`;
       title = `You have been invited to join ${item?.team?.display_name}`;
+      subtitle = `Pending approval from ${status === 'pending_player' ? 'you' : status === 'pending_admin' ? 'the league admin' : status === 'pending_both' ? 'yourself and the league admin' : 'someone'}.  `;
       leftButtonLabel = 'Decline Invite';
       rightButtonLabel = 'Accept Invite';
-      buttonLabel = 'Handle Invite';
+      buttonLabel = status === 'pending_admin' ? 'Awaiting Admin' : 'Handle Invite';
+      buttonDisabled = status !== 'pending_player' && status !== 'pending_both';
       handleLeftButtonPress = handleDeclineTeamInvite;
       handleRightButtonPress = handleAcceptTeamInvite;
       footerLabel = 'Invite issued on ' + new Date(item?.invited_at).toLocaleDateString();
@@ -183,6 +204,7 @@ export default function TicketCard({ item, style }) {
       eyebrow = 'Team Join Request';
       eyebrowSub = `By ${item?.requested_by_player?.first_name} ${item?.requested_by_player?.surname}`;
       title = `You made a request to join ${item?.team?.display_name}`;
+      subtitle = `Pending approval from ${status === 'pending_captain' ? 'the team captain' : status === 'pending_admin' ? 'the league admin' : status === 'pending_both' ? 'the team captain and league admin' : 'someone'}.  `;
       buttonLabel = 'Handle Request';
       leftButtonLabel = 'Revoke Request';
       rightButtonLabel = null;
@@ -224,10 +246,15 @@ export default function TicketCard({ item, style }) {
         </View>
       </View>
 
-      <View className="flex-1 px-4 py-4">
-        <Text className="flex-1 font-michroma" style={{ color: fg, fontSize: 26, lineHeight: 40 }}>
+      <View className="flex-1 justify-start px-4 py-4 pb-6">
+        <Text className="flex-1 font-michroma" style={{ color: fg, fontSize: 22, lineHeight: 26 }}>
           {title}
         </Text>
+        {subtitle ? (
+          <Text className="mt-2 font-tektur text-xl" style={{ color: hexWithAlpha(fg, 0.75) }}>
+            {subtitle}
+          </Text>
+        ) : null}
       </View>
 
       <Scissors
@@ -281,21 +308,27 @@ export default function TicketCard({ item, style }) {
       </View>
 
       {/* ---- Bottom section ---- */}
-      <View className="px-[18px] pb-[18px] pt-[18px]">
+      <View className="h-52 px-[18px] pb-[18px] pt-[14px]">
         <Text className="font-saira text-[12px]" style={{ color: hexWithAlpha(fg, 0.75) }}>
-          {stubLabel}
+          {buttonDisabled ? '' : loading ? 'Loading...' : stubLabel}
         </Text>
+
         <View className="pb-6">
           {!handling && (
             <Pressable
-              className="mt-4 flex-row items-center justify-center gap-3 rounded-xl border border-white/50 bg-bg-1/10 px-4 py-3 pr-8"
+              disabled={buttonDisabled}
+              className={`mt-4 flex-row items-center justify-center gap-3 ${buttonDisabled ? 'opacity-50' : ''} rounded-xl border border-white/50 bg-bg-1/10 px-4 py-3 pr-8`}
               onPress={() => {
                 setHandling(true);
                 setTimeout(() => {
                   setHandling(false);
                 }, 4000);
               }}>
-              <Ticket size={20} color={fg} style={{ transform: [{ rotate: '-45deg' }] }} />
+              {buttonDisabled ? (
+                <Clock size={20} color={fg} />
+              ) : (
+                <Ticket size={20} color={fg} style={{ transform: [{ rotate: '-45deg' }] }} />
+              )}
               <Text className="text-center font-saira-semibold text-[14px]" style={{ color: fg }}>
                 {buttonLabel}
               </Text>

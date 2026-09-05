@@ -6,7 +6,7 @@ import { useUser } from '@/contexts/UserProvider';
 
 export default function AppRealtimeProvider({ children }) {
   const queryClient = useQueryClient();
-  const { currentRole, player } = useUser();
+  const { currentRole, player, refetch } = useUser();
   const appState = useRef(AppState.currentState);
   const channelsRef = useRef([]); // ✅ Persist across async boundaries
 
@@ -45,6 +45,11 @@ export default function AppRealtimeProvider({ children }) {
           (payload) => {
             const playerId = payload.new?.player_id ?? payload.old?.player_id;
             const teamId = payload.new?.team_id ?? payload.old?.team_id;
+
+            if (playerId === player.id) {
+              queryClient.invalidateQueries(['PlayerInvitesAndRequests', { playerId: player?.id }]);
+              refetch(); // Refresh user data if the current player is affected
+            }
 
             const isRequestChange =
               ['pending_both', 'pending_captain', 'pending_admin'].includes(payload.new?.status) ||

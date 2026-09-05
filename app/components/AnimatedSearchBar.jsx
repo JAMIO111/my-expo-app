@@ -62,7 +62,9 @@ const AnimatedSearchBar = memo(
     };
 
     return (
-      <View className={`h-16 w-full flex-row items-center ${backColor} px-3`}>
+      <View
+        style={{ height: 68 }}
+        className={`w-full flex-row items-center pb-1 ${backColor} px-3`}>
         <View className={`flex-1 flex-row items-center rounded-xl ${searchBarColor} px-3`}>
           <Ionicons name="search" size={20} color="#ccc" />
           <TextInput

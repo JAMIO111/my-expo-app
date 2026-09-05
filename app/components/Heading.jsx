@@ -1,9 +1,9 @@
 import { Text } from 'react-native';
 import { View } from 'react-native';
-const Heading = ({ text, className, notificationCount = 0 }) => {
+const Heading = ({ text, className, notificationCount = 0, textColor = 'text-text-1' }) => {
   return (
     <View className={`mb-1 flex-row items-center gap-3 ${className}`}>
-      <Text className="pl-1 text-left font-tektur-semibold text-2xl text-text-1">{text}</Text>
+      <Text className={`pl-1 text-left font-tektur-semibold text-2xl ${textColor}`}>{text}</Text>
       {notificationCount > 0 && (
         <View
           style={{ height: 22, width: 22 }}

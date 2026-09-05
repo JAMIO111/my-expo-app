@@ -142,35 +142,27 @@ const index = () => {
           </View>
         </Pressable>
         <MenuContainer title="Your Account">
+          <SettingsItem routerPath="/settings/PersonalDetails" title="Edit Profile" icon="user" />
           <SettingsItem
-            routerPath="/settings/PersonalDetails"
-            iconBGColor="green"
-            title="Edit Profile"
-            icon="user"
+            routerPath="/settings/PlayerPreferences"
+            title="Player Preferences"
+            icon="settings2"
           />
           {currentRole?.type === 'player' && currentRole?.role === 'captain' && (
             <SettingsItem
               routerPath="/settings/TeamManagement"
-              iconBGColor="green"
               title="Team Management"
               icon="users"
             />
           )}
           <SettingsItem
             routerPath="/settings/SignInAndSecurity"
-            iconBGColor="green"
             title="Sign-in & Security"
             icon="keyRound"
           />
-          <SettingsItem
-            routerPath="/settings/Notifications"
-            iconBGColor="red"
-            title="Notifications"
-            icon="bell"
-          />
+          <SettingsItem routerPath="/settings/Notifications" title="Notifications" icon="bell" />
           <SettingsItem
             routerPath="/settings/Subscriptions"
-            iconBGColor="green"
             title="Subscriptions & Billing"
             icon="wallet"
           />
@@ -193,19 +185,16 @@ const index = () => {
         <MenuContainer title="Legal (Boring) Stuff">
           <SettingsItem
             link="https://www.break-room.uk/privacy"
-            iconBGColor="grey"
             title="Privacy Policy"
             icon="eye"
           />
           <SettingsItem
             link="https://www.break-room.uk/terms"
-            iconBGColor="grey"
             title="Terms of Service"
             icon="fileText"
           />
           <SettingsItem
             link="https://www.break-room.uk/delete-account"
-            iconBGColor="grey"
             title="How to Delete Account"
             icon="trash"
           />

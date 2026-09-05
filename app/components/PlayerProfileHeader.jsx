@@ -16,10 +16,6 @@ const PlayerProfileHeader = ({ playerProfile, currentTeam }) => {
   const fullName =
     [playerProfile?.first_name, playerProfile?.surname].filter(Boolean).join(' ') || 'No Name';
 
-  const initials = [playerProfile?.first_name?.charAt(0), playerProfile?.surname?.charAt(0)]
-    .filter(Boolean)
-    .join('');
-
   const sinceDate = playerProfile?.created_at
     ? new Date(playerProfile.created_at).toLocaleDateString('en-GB', {
         year: 'numeric',
@@ -60,20 +56,20 @@ const PlayerProfileHeader = ({ playerProfile, currentTeam }) => {
           </Text>
 
           {/* Team chip — mirrors division chip in TeamProfileHeader */}
-          {currentTeam?.team_name && (
+          {currentTeam && (
             <View className="flex-row items-center gap-2">
-              <TeamLogo {...currentTeam.crest} size={16} />
-              <View className="flex-row items-center gap-2 rounded-lg bg-brand-light px-3 py-1">
+              <TeamLogo {...currentTeam.crest} size={18} />
+              <View className="flex-row items-center gap-2 rounded-lg bg-brand-light px-2 py-0.5">
                 <View style={styles.teamDot} />
                 <Text style={styles.teamText} numberOfLines={1}>
-                  {currentTeam.team_name}
+                  {currentTeam?.team_name || currentTeam?.display_name || 'No Team'}
                 </Text>
               </View>
             </View>
           )}
 
           {/* DOB & age row — mirrors address row in TeamProfileHeader */}
-          <View className="mt-2 flex-row items-center gap-2">
+          <View className="mt-2 flex-row items-center gap-3">
             <Ionicons name="calendar-outline" size={15} color="#ffffff" />
             <Text className="font-saira text-text-on-brand" numberOfLines={1}>
               {dob ? `${dob} · ${ageLabel}` : 'No DOB'}
@@ -81,7 +77,7 @@ const PlayerProfileHeader = ({ playerProfile, currentTeam }) => {
           </View>
 
           {/* Member since row */}
-          <View className="mt-1 flex-row items-center gap-2">
+          <View className="mt-1 flex-row items-center gap-3">
             <Image
               source={require('@assets/BR-Logo-1024-No-Background.png')}
               style={{ width: 18, height: 18 }}
@@ -170,6 +166,7 @@ const styles = StyleSheet.create({
     fontSize: 18,
     color: '#ffffff',
     letterSpacing: 1.2,
+    paddingBottom: 3,
   },
 
   // ── Info ──
