@@ -15,7 +15,15 @@ import { usePlayerInvitesAndRequests } from '@hooks/usePlayerInvitesAndRequests'
 import { useTeamPlayerActions } from '@hooks/useTeamPlayerActions';
 import Toast from 'react-native-toast-message';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { ClipboardCheck, Mail, Users, MegaphoneOff, Megaphone, Search } from 'lucide-react-native';
+import {
+  ClipboardCheck,
+  Mail,
+  Users,
+  MegaphoneOff,
+  Megaphone,
+  Search,
+  Send,
+} from 'lucide-react-native';
 import EmptyStateCard from '@components/EmptyStateCard';
 import Heading from './Heading';
 import { useTeamsRecruiting } from '@hooks/useTeamsRecruiting';
@@ -40,8 +48,9 @@ function RecruitingTeamCard({ team, sendJoinRequest }) {
       <Pressable
         onPress={() => sendJoinRequest(team)}
         style={({ pressed }) => ({ opacity: pressed ? 0.7 : 1 })}
-        className="rounded-xl bg-brand px-3 py-3">
-        <Text className="font-tektur-medium text-sm text-white">Request to join</Text>
+        className="flex-row items-center rounded-xl bg-brand p-3">
+        <Send color="white" size={20} />
+        <Text className="font-tektur-medium text-sm text-white"></Text>
       </Pressable>
     </View>
   );

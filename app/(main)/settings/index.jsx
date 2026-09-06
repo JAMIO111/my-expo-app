@@ -18,6 +18,7 @@ import colors from '@lib/colors';
 import TeamLogo from '@components/TeamLogo';
 import { ShieldCheck } from 'lucide-react-native';
 import CTAButton from '@components/CTAButton';
+import { clearPushTokenOnLogout } from '@/lib/pushNotifications';
 
 const index = () => {
   const bottomSheetRef = useRef(null);
@@ -70,6 +71,9 @@ const index = () => {
 
       if (!isAnonymous) {
         await Purchases.logOut();
+      }
+      if (player?.id) {
+        await clearPushTokenOnLogout(player.id);
       }
       await supabase.auth.signOut();
       Alert.alert('Signed out', 'You have been signed out successfully.');

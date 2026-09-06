@@ -25,7 +25,7 @@ const colors = {
 
     brand: {
       primary: 'hsl(126 80% 18%)',
-      secondary: 'hwb(131 0% 60%)',
+      secondary: 'hsl(126 80% 10%)',
       transparent: 'rgba(22, 101, 52, 0.15)', // from #166534
       text: '#ffffff',
     },
@@ -61,7 +61,7 @@ const colors = {
     },
     yellow: {
       primary: '#E0AC00',
-      secondary: '#CDAA00',
+      secondary: '#d99a09',
       transparent: 'rgba(224, 172, 0, 0.15)', // from #E0AC00
       text: '#000000',
     },

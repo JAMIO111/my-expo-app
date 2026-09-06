@@ -18,7 +18,8 @@ export function useTeamPlayers(teamId) {
             surname,
             nickname,
             avatar_url,
-            xp
+            xp,
+            is_available
           )
         `
         )

@@ -1,20 +1,5 @@
-import React from 'react';
-import { View, Text, Pressable, ScrollView } from 'react-native';
+import { View, Text, Pressable } from 'react-native';
 
-/**
- * ChipSelector
- * Generic horizontal chip/filter selector, styled to match Break Room's
- * design system (Saira font, dark green brand, gold accent).
- *
- * Supports single-select or multi-select.
- *
- * Props:
- * - options: Array<{ label: string, value: string | number, icon?: ReactNode }>
- * - value: selected value (single) or array of values (multi)
- * - onChange: (value) => void — receives new selection (string/number, or array in multi mode)
- * - multi: boolean — allow multiple selections (default false)
- * - contentContainerClassName: optional extra classes for the scroll content wrapper
- */
 export default function ChipSelector({
   options = [],
   value,
@@ -46,6 +31,7 @@ export default function ChipSelector({
           <Pressable
             key={String(option.value)}
             onPress={() => handlePress(option.value)}
+            style={{ flexGrow: 1, flexBasis: 'auto', flexShrink: 0 }}
             className={`flex-row items-center justify-center rounded-full border px-4 py-1.5 ${
               selected ? 'border-brand bg-brand' : 'border-theme-gray-4 bg-bg-1'
             }`}>
@@ -66,35 +52,3 @@ export default function ChipSelector({
     </View>
   );
 }
-
-/**
- * Example usage — single select:
- *
- * const [status, setStatus] = useState("all");
- *
- * <ChipSelector
- *   options={[
- *     { value: "all", label: "All" },
- *     { value: "upcoming", label: "Upcoming" },
- *     { value: "live", label: "Live" },
- *     { value: "completed", label: "Completed" },
- *   ]}
- *   value={status}
- *   onChange={setStatus}
- * />
- *
- * Example usage — multi select with icons:
- *
- * const [days, setDays] = useState(["mon", "wed"]);
- *
- * <ChipSelector
- *   multi
- *   options={[
- *     { value: "mon", label: "Mon" },
- *     { value: "tue", label: "Tue" },
- *     { value: "wed", label: "Wed" },
- *   ]}
- *   value={days}
- *   onChange={setDays}
- * />
- */

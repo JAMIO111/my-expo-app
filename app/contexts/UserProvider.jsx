@@ -4,6 +4,7 @@ import * as WebBrowser from 'expo-web-browser';
 import * as Linking from 'expo-linking';
 import { useAuthUserProfile } from '@hooks/useAuthUserProfile2';
 import Purchases from 'react-native-purchases'; // ✅ added
+import { syncPushToken } from '@/lib/pushNotifications';
 
 WebBrowser.maybeCompleteAuthSession();
 
@@ -100,6 +101,11 @@ export const UserProvider = ({ children }) => {
 
     return () => listener.subscription.unsubscribe();
   }, []);
+
+  useEffect(() => {
+    if (!data?.playerProfile) return;
+    syncPushToken(data?.playerProfile?.id);
+  }, [data?.playerProfile?.id]);
 
   // 1️⃣ Auto-select if only one role on first load
   useEffect(() => {

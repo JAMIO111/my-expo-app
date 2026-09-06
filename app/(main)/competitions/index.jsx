@@ -9,7 +9,7 @@ import { ScrollView } from 'react-native-gesture-handler';
 import { useCompetitionInstances } from '@hooks/useCompetitionInstances';
 import CompetitionInstanceCard from '@components/CompetitionInstanceCard';
 import { Ionicons } from '@expo/vector-icons';
-import { CalendarClock } from 'lucide-react-native';
+import { CalendarClock, Users, ChevronRight } from 'lucide-react-native';
 import Heading from '@components/Heading';
 import EmptyStateCard from '@components/EmptyStateCard';
 
@@ -59,19 +59,19 @@ const index = () => {
                 }, 500);
                 router.push('/competitions/team-management');
               }}>
-              <View className="flex-1 flex-row gap-8 rounded-2xl bg-brand-dark p-4 shadow-sm">
+              <View className="flex-1 flex-row gap-8 rounded-3xl bg-brand-dark p-4 shadow-sm">
                 <View className="flex-1">
-                  <Text className="font-saira-medium text-xl text-text-on-brand">
+                  <Text className="font-tektur-medium text-xl text-text-on-brand">
                     Competition Team Management
                   </Text>
-                  <Text className="mt-2 font-saira text-sm text-text-on-brand-2">
-                    Manage your existing teams and form new competition teams by inviting players to
-                    join your doubles or trebles lineup.
+                  <Text className="mt-2 font-tektur text-sm text-text-on-brand-2">
+                    Create unique teams to compete in competitions such as doubles, trebles and
+                    other tournaments.
                   </Text>
                 </View>
-                <Ionicons name="people" size={40} color="#FFFFFF66" />
-                <View className="absolute bottom-6 right-4">
-                  <Ionicons name="chevron-forward" size={26} color="#FFFFFFBB" />
+                <Users size={26} color="#FFFFFFBB" />
+                <View className="absolute bottom-4 right-4">
+                  <ChevronRight size={26} color="#FFFFFFBB" />
                 </View>
               </View>
             </Pressable>

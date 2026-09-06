@@ -1,15 +1,16 @@
-import { StyleSheet, Text, View, ScrollView, useColorScheme } from 'react-native';
-import { useState } from 'react';
-import { useRouter, Stack } from 'expo-router';
+import { StyleSheet, Text, View, ScrollView } from 'react-native';
+import { Stack } from 'expo-router';
 import MenuContainer from '@components/MenuContainer';
 import { useUser } from '@contexts/UserProvider';
 import { supabase } from '@/lib/supabase';
 import SafeViewWrapper from '@components/SafeViewWrapper';
 import CustomHeader from '@components/CustomHeader';
 import SwitchSettingsItem from '@components/SwitchSettingsItem';
+import { useQueryClient } from '@tanstack/react-query';
 
 const PlayerPreferences = () => {
-  const { player, refetch } = useUser();
+  const { player, currentRole, refetch } = useUser();
+  const queryClient = useQueryClient();
 
   const handleToggle = async (field) => {
     const newValue = !player[field];
@@ -50,20 +51,23 @@ const PlayerPreferences = () => {
               <SwitchSettingsItem
                 icon="calendarCheck2"
                 defaultValue={player?.is_available}
-                setValue={async () => handleToggle('is_available')}
+                setValue={async () => {
+                  await handleToggle('is_available');
+                  queryClient.invalidateQueries(['TeamPlayers', currentRole?.team_id]);
+                }}
                 title="Matchday Availability"
               />
               <SwitchSettingsItem
                 icon="binoculars"
                 defaultValue={player?.is_searching}
                 title="Searching for Team"
-                setValue={async () => handleToggle('is_searching')}
+                setValue={async () => await handleToggle('is_searching')}
               />
               <SwitchSettingsItem
                 icon="search"
                 title="Visible in searches"
                 defaultValue={!player?.is_private}
-                setValue={async () => handleToggle('is_private')}
+                setValue={async () => await handleToggle('is_private')}
               />
             </MenuContainer>
           </View>

@@ -68,9 +68,9 @@ const ProfilePage = () => {
         <View className="flex-1 bg-bg-grouped-1 pb-8">
           <PlayerProfileHeader playerProfile={player} currentTeam={currentRole?.team} />
           <Pressable className="mt-8 px-5" onPress={() => router.push('/profile/leaderboard')}>
-            <View style={{ borderRadius: 20 }} className="mb-6 bg-brand-dark p-2 shadow-sm">
+            <View style={{ borderRadius: 22 }} className="mb-6 bg-brand-dark p-1 shadow-sm">
               <View
-                style={{ borderRadius: 18 }}
+                style={{ borderRadius: 19 }}
                 className="flex-row items-center justify-around gap-2 bg-brand p-2 pt-3 shadow">
                 <View className="flex-1 items-center">
                   <Star size={24} color="white" />

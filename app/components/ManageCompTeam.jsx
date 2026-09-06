@@ -1,18 +1,6 @@
-import {
-  View,
-  ScrollView,
-  Text,
-  Pressable,
-  Modal,
-  FlatList,
-  TouchableOpacity,
-  TextInput,
-  Animated,
-  Keyboard,
-  Alert,
-} from 'react-native';
+import { View, ScrollView, Text, Pressable, TouchableOpacity, Animated, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
-import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
+import { useState, useRef, useEffect, useMemo } from 'react';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { LinearGradient } from 'expo-linear-gradient';
 import CustomTextInput from '@components/CustomTextInput';
@@ -24,9 +12,7 @@ import CTAButton from '@components/CTAButton';
 import { useCreateChildTeam } from '@hooks/useCreateChildTeam';
 import { useUpdateChildTeam } from '@hooks/useUpdateChildTeam';
 import { useLeaveChildTeam } from '@hooks/useLeaveChildTeam';
-
-const SHEET_HEIGHT = 520;
-const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
+import { CircleCheckBig, LogOut, Star, Wand } from 'lucide-react-native';
 
 // ─── Selected player card ─────────────────────────────────────────────────────
 
@@ -34,7 +20,9 @@ function PlayerCard({ player, onRemove, canEdit, isCaptain, isCreate, onToggleCa
   const scale = useRef(new Animated.Value(0.85)).current;
   const opacity = useRef(new Animated.Value(0)).current;
 
-  const isMe = useUser()?.player?.id === player.id;
+  const { player: me } = useUser();
+
+  const isMe = me?.id === player.id;
 
   console.log('Rendering PlayerCard for', player.first_name);
   console.log('status:', player.status);
@@ -70,16 +58,16 @@ function PlayerCard({ player, onRemove, canEdit, isCaptain, isCreate, onToggleCa
           <Avatar player={player} size={40} />
 
           {/* Name + captain tag */}
-          <View style={{ flex: 1 }}>
+          <View style={{ flex: 1, gap: 2 }}>
             <Text
-              style={{ fontFamily: 'Saira_600SemiBold', fontSize: 15, color: '#fff' }}
+              style={{ fontFamily: 'Tektur_600SemiBold', fontSize: 15, color: '#fff' }}
               numberOfLines={1}>
               {player.label}
             </Text>
             {player.subLabel && (
               <Text
                 style={{
-                  fontFamily: 'Saira_400Regular',
+                  fontFamily: 'Tektur_400Regular',
                   fontSize: 12,
                   color: 'rgba(255,255,255,0.4)',
                 }}>
@@ -105,15 +93,11 @@ function PlayerCard({ player, onRemove, canEdit, isCaptain, isCreate, onToggleCa
                 borderWidth: 1,
                 borderColor: isCaptain ? 'rgba(253,204,77,0.3)' : 'rgba(255,255,255,0.08)',
               }}>
-              <Ionicons
-                name="star"
-                size={12}
-                color={isCaptain ? '#FDCC4D' : 'rgba(255,255,255,0.25)'}
-              />
+              <Star size={12} color={isCaptain ? '#FDCC4D' : 'rgba(255,255,255,0.25)'} />
               <Text
                 style={{
-                  fontFamily: 'Saira_500Medium',
-                  fontSize: 11,
+                  fontFamily: 'Tektur_500Medium',
+                  fontSize: 12,
                   color: isCaptain ? '#FDCC4D' : 'rgba(255,255,255,0.3)',
                 }}>
                 {isCaptain ? 'Captain' : 'Set captain'}
@@ -130,7 +114,7 @@ function PlayerCard({ player, onRemove, canEdit, isCaptain, isCreate, onToggleCa
               }}>
               <Text
                 style={{
-                  fontFamily: 'Saira_600SemiBold',
+                  fontFamily: 'Tektur_600SemiBold',
                   fontSize: 9,
                   color: 'rgba(255, 0, 122, 1)',
                   letterSpacing: 0.8,
@@ -141,7 +125,7 @@ function PlayerCard({ player, onRemove, canEdit, isCaptain, isCreate, onToggleCa
             </View>
           )}
           {/* Remove */}
-          {(canEdit || isCreate) && (
+          {(canEdit || isCreate) && !isMe && (
             <TouchableOpacity
               onPress={onRemove}
               hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
@@ -521,7 +505,7 @@ const ManageCompTeam = ({ type, team, closeModal }) => {
               }}>
               <Text
                 style={{
-                  fontFamily: 'Saira_600SemiBold',
+                  fontFamily: 'Tektur_600SemiBold',
                   fontSize: 16,
                   color: 'rgba(0,0,0,1)',
                   textTransform: 'uppercase',
@@ -532,7 +516,7 @@ const ManageCompTeam = ({ type, team, closeModal }) => {
               {!captainId && (
                 <Text
                   style={{
-                    fontFamily: 'Saira_400Regular',
+                    fontFamily: 'Tektur_400Regular',
                     fontSize: 12,
                     color: 'rgba(253,150,85,0.8)',
                   }}>
@@ -575,11 +559,11 @@ const ManageCompTeam = ({ type, team, closeModal }) => {
               loading={isPendingCreate || isPendingUpdate}
               loadingText={type === 'create' ? 'Creating...' : 'Saving...'}
               icon={
-                <Ionicons
-                  name={type === 'create' ? 'color-wand' : 'checkmark-outline'}
-                  size={24}
-                  color="#000"
-                />
+                type === 'create' ? (
+                  <Wand size={24} color="#000" />
+                ) : (
+                  <CircleCheckBig size={24} color="#000" />
+                )
               }
               type="yellow"
             />
@@ -591,7 +575,7 @@ const ManageCompTeam = ({ type, team, closeModal }) => {
               loading={isLeaving}
               loadingText="Leaving..."
               type="tertiary"
-              icon={<Ionicons name="exit-outline" size={24} color="#FFF" />}
+              icon={<LogOut size={24} color="#FFF" />}
             />
           )}
         </View>

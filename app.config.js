@@ -24,12 +24,20 @@ export default ({ config }) => {
       'expo-font',
       'expo-web-browser',
       'expo-apple-authentication',
+      'expo-secure-store',
       [
         'expo-build-properties',
         {
           ios: {
             useFrameworks: 'static',
           },
+        },
+      ],
+      [
+        'expo-notifications',
+        {
+          icon: './assets/BR-Logo-1024-Background.png',
+          color: '#d4922a',
         },
       ],
       [
@@ -64,7 +72,8 @@ export default ({ config }) => {
       supportsTablet: true,
       infoPlist: {
         ITSAppUsesNonExemptEncryption: false,
-        NSPhotoLibraryUsageDescription: 'This app needs access to your photo library.',
+        NSPhotoLibraryUsageDescription: 'Breakroom requires access to your photo library.',
+        UIBackgroundModes: ['remote-notification'],
       },
     },
     android: {

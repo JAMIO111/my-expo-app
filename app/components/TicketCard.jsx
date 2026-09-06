@@ -9,6 +9,7 @@ import Toast from 'react-native-toast-message';
 import { useRouter } from 'expo-router';
 import { useUser } from '@contexts/UserProvider';
 import { Ticket, X, Check, Scissors, Clock } from 'lucide-react-native';
+import TeamCrest from '../(main)/settings/TeamCrest';
 
 export default function TicketCard({ item, style }) {
   const router = useRouter();
@@ -187,7 +188,7 @@ export default function TicketCard({ item, style }) {
       barcodeValue = item?.team_player_id;
       accentColor = '#A95032';
       eyebrow = 'Team Invitation';
-      eyebrowSub = `From ${item?.invited_by?.first_name} ${item?.invited_by?.surname}`;
+      eyebrowSub = `Received from ${item?.invited_by?.first_name} ${item?.invited_by?.surname}`;
       title = `You have been invited to join ${item?.team?.display_name}`;
       subtitle = `Pending approval from ${status === 'pending_player' ? 'you' : status === 'pending_admin' ? 'the league admin' : status === 'pending_both' ? 'yourself and the league admin' : 'someone'}.  `;
       leftButtonLabel = 'Decline Invite';
@@ -202,7 +203,7 @@ export default function TicketCard({ item, style }) {
       barcodeValue = item?.team_player_id;
       accentColor = '#435A72';
       eyebrow = 'Team Join Request';
-      eyebrowSub = `By ${item?.requested_by_player?.first_name} ${item?.requested_by_player?.surname}`;
+      eyebrowSub = `Sent by ${item?.requested_by_player?.first_name} ${item?.requested_by_player?.surname}`;
       title = `You made a request to join ${item?.team?.display_name}`;
       subtitle = `Pending approval from ${status === 'pending_captain' ? 'the team captain' : status === 'pending_admin' ? 'the league admin' : status === 'pending_both' ? 'the team captain and league admin' : 'someone'}.  `;
       buttonLabel = 'Handle Request';
@@ -239,6 +240,7 @@ export default function TicketCard({ item, style }) {
               {eyebrowSub}
             </Text>
           </View>
+
           <Image
             source={require('../assets/BR-Logo-1024-No-Background.png')}
             style={{ width: 40, height: 40 }}

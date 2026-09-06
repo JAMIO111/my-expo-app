@@ -80,7 +80,14 @@ const PlayerCard = ({ player, team, context }) => {
         onPress={handlePress}
         className="w-full">
         <View className="w-full flex-row items-center justify-between gap-4 rounded-2xl border border-theme-gray-6 bg-bg-grouped-1 py-2 pl-2 pr-2">
-          <Avatar player={player} size={64} borderRadius={9} />
+          <View className="relative">
+            <View className="absolute -left-1 -top-1 z-10 rounded-full bg-bg-2 p-[2px]">
+              <View
+                className={`h-3 w-3 items-center justify-center rounded-full ${player?.is_available ? 'bg-theme-green' : 'bg-theme-red'}`}
+              />
+            </View>
+            <Avatar player={player} size={64} borderRadius={9} />
+          </View>
           <View className="flex-1 justify-center">
             <Text numberOfLines={1} className="font-tektur-medium text-2xl text-text-1">
               {player?.first_name} {player?.surname}

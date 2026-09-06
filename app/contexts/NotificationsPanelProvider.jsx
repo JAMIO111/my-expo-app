@@ -18,6 +18,7 @@ import SafeViewWrapper from '@components/SafeViewWrapper';
 import { supabase } from '@lib/supabase';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import * as Notifications from 'expo-notifications';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const PANEL_WIDTH = SCREEN_WIDTH;
@@ -324,6 +325,39 @@ export function NotificationsPanelProvider({ children }) {
   const unreadCount = notifications.filter((n) => !n.read).length;
 
   console.log('NotificationsPanelProvider notifications:', rawNotifications);
+
+  useEffect(() => {
+    const responseListener = Notifications.addNotificationResponseReceivedListener((response) => {
+      const data = response.notification.request.content.data;
+      if (data?.link) {
+        close(); // dismiss the panel if it happened to be open
+        const segments = data.link.split('/').filter(Boolean);
+        const paths = segments.map((_, i) => '/' + segments.slice(0, i + 1).join('/'));
+        for (const path of paths) {
+          router.push(path);
+        }
+      }
+    });
+
+    return () => {
+      Notifications.removeNotificationSubscription(responseListener);
+    };
+  }, [router, close]);
+
+  useEffect(() => {
+    Notifications.getLastNotificationResponse().then((response) => {
+      if (!response) return; // app wasn't opened via a notification tap
+
+      const data = response.notification.request.content.data;
+      if (data?.link) {
+        const segments = data.link.split('/').filter(Boolean);
+        const paths = segments.map((_, i) => '/' + segments.slice(0, i + 1).join('/'));
+        for (const path of paths) {
+          router.push(path);
+        }
+      }
+    });
+  }, []);
 
   useEffect(() => {
     if (!rawNotifications) return;
