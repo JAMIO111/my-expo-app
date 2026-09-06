@@ -340,23 +340,23 @@ export function NotificationsPanelProvider({ children }) {
     });
 
     return () => {
-      Notifications.removeNotificationSubscription(responseListener);
+      responseListener.remove();
     };
   }, [router, close]);
 
   useEffect(() => {
-    Notifications.getLastNotificationResponse().then((response) => {
-      if (!response) return; // app wasn't opened via a notification tap
+    const response = Notifications.getLastNotificationResponse();
 
-      const data = response.notification.request.content.data;
-      if (data?.link) {
-        const segments = data.link.split('/').filter(Boolean);
-        const paths = segments.map((_, i) => '/' + segments.slice(0, i + 1).join('/'));
-        for (const path of paths) {
-          router.push(path);
-        }
+    if (!response) return; // app wasn't opened via a notification tap
+
+    const data = response.notification.request.content.data;
+    if (data?.link) {
+      const segments = data.link.split('/').filter(Boolean);
+      const paths = segments.map((_, i) => '/' + segments.slice(0, i + 1).join('/'));
+      for (const path of paths) {
+        router.push(path);
       }
-    });
+    }
   }, []);
 
   useEffect(() => {
