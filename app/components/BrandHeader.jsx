@@ -31,16 +31,16 @@ const BrandHeader = ({
       </Text>
       {showNotification && (
         <Pressable hitSlop={10} className="relative w-12 items-start justify-center" onPress={open}>
-          {unreadCount > 0 ? (
-            <BellDot size={24} color="white" strokeWidth={2} />
-          ) : (
-            <Bell size={24} color="white" strokeWidth={2} />
-          )}
+          <Bell size={28} color="white" strokeWidth={2} />
+
           {unreadCount > 0 && (
             <View
-              style={{ top: 1.0, left: 14, width: 8, height: 8 }}
-              className="absolute rounded-full bg-red-500"
-            />
+              style={{ top: -6, left: 13, width: 21, height: 21, borderWidth: 1.5 }}
+              className="absolute items-center justify-center rounded-full border border-brand bg-red-500">
+              <Text className="text-center font-tektur-medium text-xs text-white">
+                {unreadCount}
+              </Text>
+            </View>
           )}
         </Pressable>
       )}

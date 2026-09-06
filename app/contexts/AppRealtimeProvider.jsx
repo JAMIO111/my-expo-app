@@ -8,7 +8,7 @@ export default function AppRealtimeProvider({ children }) {
   const queryClient = useQueryClient();
   const { currentRole, player, refetch } = useUser();
   const appState = useRef(AppState.currentState);
-  const channelsRef = useRef([]); // ✅ Persist across async boundaries
+  const channelsRef = useRef([]);
 
   useEffect(() => {
     if (!currentRole || !player?.id) return;
@@ -28,14 +28,13 @@ export default function AppRealtimeProvider({ children }) {
     };
 
     const setupRealtime = async () => {
-      // ✅ Always tear down before setting up
       await teardown();
 
       if (!mounted) return;
 
       console.log('🔌 Setting up realtime channels...');
 
-      const suffix = `${player.id}_${Date.now()}`; // ✅ Unique names avoid stale channel collisions
+      const suffix = `${player.id}_${Date.now()}`;
 
       const teamPlayersChannel = supabase
         .channel(`team_players_${suffix}`)
@@ -48,7 +47,7 @@ export default function AppRealtimeProvider({ children }) {
 
             if (playerId === player.id) {
               queryClient.invalidateQueries(['PlayerInvitesAndRequests', { playerId: player?.id }]);
-              refetch(); // Refresh user data if the current player is affected
+              refetch();
             }
 
             const isRequestChange =
@@ -94,7 +93,6 @@ export default function AppRealtimeProvider({ children }) {
               ].filter(Boolean)
             );
 
-            // ── Synchronous invalidations first — don't block these ──
             playerIds.forEach((id) =>
               queryClient.invalidateQueries({ queryKey: ['PlayerStats', id] })
             );
@@ -103,7 +101,6 @@ export default function AppRealtimeProvider({ children }) {
               queryClient.invalidateQueries({ queryKey: ['fixture-details', fixtureId] });
             }
 
-            // ── Async lookup for knockout bracket ──
             if (fixtureId) {
               try {
                 const fixture = await queryClient.ensureQueryData({
@@ -194,6 +191,29 @@ export default function AppRealtimeProvider({ children }) {
         return;
       }
       channelsRef.current.push(fixturesChannel);
+
+      // 🆕 Notifications channel — scoped server-side to this player only
+      const notificationsChannel = supabase
+        .channel(`notifications_${suffix}`)
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'Notifications',
+            filter: `player_id=eq.${player.id}`,
+          },
+          (payload) => {
+            queryClient.invalidateQueries({ queryKey: ['Notifications', player.id] });
+          }
+        )
+        .subscribe((status) => console.log('✅ Notifications:', status));
+
+      if (!mounted) {
+        supabase.removeChannel(notificationsChannel);
+        return;
+      }
+      channelsRef.current.push(notificationsChannel);
     };
 
     setupRealtime();

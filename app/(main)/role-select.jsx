@@ -25,10 +25,12 @@ const RoleSelect = () => {
     <SafeViewWrapper topColor="bg-brand" useBottomInset={false}>
       <BrandHeader />
       <View className="flex-1 items-stretch justify-start border-t-2 border-brand-dark bg-bg-1 p-5">
-        <Text style={{ lineHeight: 40 }} className="my-2 px-2 font-saira-bold text-4xl text-text-1">
+        <Text
+          style={{ lineHeight: 40 }}
+          className="my-2 px-2 font-tektur-bold text-4xl text-text-1">
           Select Your Role.
         </Text>
-        <Text style={{ lineHeight: 20 }} className="mb-6 px-2 font-saira text-xl text-text-2">
+        <Text style={{ lineHeight: 20 }} className="mb-6 px-2 font-tektur text-xl text-text-2">
           This will determine what features and content you have access to and what information is
           shown.
         </Text>
@@ -91,7 +93,7 @@ const RoleSelect = () => {
             ))
           )}
         </ScrollView>
-        <Text className="mb-10 px-2 text-center font-saira text-lg text-text-2">
+        <Text className="mb-10 px-2 text-center font-tektur text-lg text-text-2">
           You can easily switch views later by changing your role in the settings.
         </Text>
       </View>

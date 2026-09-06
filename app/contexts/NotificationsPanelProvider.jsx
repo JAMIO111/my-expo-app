@@ -1,23 +1,35 @@
-import React, { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react';
-import { Animated, Dimensions, FlatList, Pressable, SafeAreaView, Text, View } from 'react-native';
+import { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react';
+import {
+  Animated,
+  AppState,
+  Dimensions,
+  FlatList,
+  Pressable,
+  SafeAreaView,
+  Text,
+  View,
+} from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
   Mail,
+  MailX,
+  MailCheck,
   UserPlus,
   UserMinus,
   Trophy,
   Info,
   Award,
-  XCircle,
-  CheckCircle,
   PanelRightClose,
+  BellOff,
+  ClipboardClock,
+  AlarmClockCheck,
+  UserStar,
 } from 'lucide-react-native';
 import { useNotifications } from '@hooks/useNotifications';
 import { useUser } from '@contexts/UserProvider';
 import SafeViewWrapper from '@components/SafeViewWrapper';
 import { supabase } from '@lib/supabase';
 import { useRouter } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
 import * as Notifications from 'expo-notifications';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
@@ -30,14 +42,19 @@ const NotificationsPanelContext = createContext(null);
 // ─── Icon map ─────────────────────────────────────────────────────────────────
 
 const TYPE_CONFIG = {
-  team_invite: { icon: Mail, color: '#0c7f23' },
+  team_invite: { icon: Mail, color: '#000ac4' },
   player_joined: { icon: UserPlus, color: '#0c7f23' },
   player_left: { icon: UserMinus, color: '#f52c2c' },
   result: { icon: Trophy, color: '#FCD34D' },
-  system: { icon: Info, color: '#93C5FD' },
+  system: { icon: Info, color: '#000ac4' },
   award: { icon: Award, color: '#F9A8D4' },
-  join_request_denied: { icon: XCircle, color: '#f52c2c' },
-  join_request_accepted: { icon: CheckCircle, color: '#0c7f23' },
+  request_rejected: { icon: MailX, color: '#f52c2c' },
+  request_accepted: { icon: MailCheck, color: '#0c7f23' },
+  match_reminder: { icon: AlarmClockCheck, color: '#e8850c' },
+  result_submission_pending: { icon: ClipboardClock, color: '#e8850c' },
+  result_approval_pending: { icon: ClipboardClock, color: '#e8850c' },
+  result_amendment_pending: { icon: ClipboardClock, color: '#e8850c' },
+  role_change: { icon: UserStar, color: '#000ac4' },
 };
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -60,19 +77,23 @@ function NotificationRow({ item, onPress }) {
     <Pressable
       onPress={() => onPress(item)}
       style={({ pressed }) => ({ opacity: pressed ? 0.7 : 1 })}
-      className="mx-3 flex-row items-center rounded-2xl bg-bg-1 px-4 py-3 shadow-sm">
+      className={`mx-3 flex-row items-start justify-center rounded-2xl ${item?.read ? 'bg-bg-1' : 'bg-bg-1'} px-4 py-3`}>
       {/* Unread dot + icon */}
       <View className="mr-3 mt-1 items-center justify-center">
-        {!item.read && <View className="absolute -left-1 -top-1 h-2 w-2 rounded-full bg-red-500" />}
+        {!item.read && (
+          <View className="absolute -left-2 -top-2 z-10 rounded-full bg-bg-1 p-1">
+            <View className="h-3 w-3 rounded-full bg-red-500" />
+          </View>
+        )}
         <View
           className="h-10 w-10 items-center justify-center"
           style={{
-            backgroundColor: cfg.color + '22',
+            backgroundColor: cfg.color + '11',
             borderColor: cfg.color + '88',
             borderWidth: 1,
-            borderRadius: 10,
+            borderRadius: 8,
           }}>
-          <Icon size={18} color={cfg.color} />
+          <Icon size={22} color={cfg.color} />
         </View>
       </View>
 
@@ -90,10 +111,7 @@ function NotificationRow({ item, onPress }) {
           </Text>
         </View>
 
-        <Text
-          className="text-sm leading-5 text-text-2"
-          style={{ fontFamily: 'Tektur_400Regular' }}
-          numberOfLines={2}>
+        <Text className="text-sm leading-5 text-text-2" style={{ fontFamily: 'Tektur_400Regular' }}>
           {item.message}
         </Text>
 
@@ -115,7 +133,7 @@ function EmptyNotifications() {
   return (
     <View className="flex-1 items-center justify-center pb-20">
       <View className="mb-4 h-16 w-16 items-center justify-center rounded-full bg-text-1">
-        <Ionicons name="notifications-off-outline" size={28} color="rgba(255,255,255,0.25)" />
+        <BellOff size={28} color="rgba(255,255,255,0.25)" />
       </View>
       <Text className="text-base text-text-2" style={{ fontFamily: 'Tektur_500Medium' }}>
         No notifications yet
@@ -245,28 +263,26 @@ function NotificationsPanelInner({ notifications = [], onNotificationPress, onMa
               className="flex-row items-center justify-between px-6 pb-3 pt-4"
               style={{ borderBottomWidth: 1, borderBottomColor: 'rgba(255,255,255,0.06)' }}>
               <View className="flex-row items-center gap-2">
-                <Text className="pt-2 text-2xl text-text-1" style={{ fontFamily: 'Saira_700Bold' }}>
+                <Text className="text-2xl text-text-1" style={{ fontFamily: 'Tektur_700Bold' }}>
                   Notifications
                 </Text>
                 {unreadCount > 0 && (
-                  <View className="h-6 w-6 items-center justify-center rounded-full bg-brand p-1">
+                  <View className="h-6 w-6 items-center justify-center rounded-full bg-theme-red/80 shadow-sm">
                     <Text
-                      className="text-xs text-white"
-                      style={{ fontFamily: 'Saira_600SemiBold', marginTop: 1 }}>
+                      className="text-sm text-white"
+                      style={{ fontFamily: 'Tektur_600SemiBold' }}>
                       {unreadCount}
                     </Text>
                   </View>
                 )}
               </View>
 
-              <View className="flex-row items-center gap-3">
+              <View className="flex-row items-center gap-5">
                 {unreadCount > 0 && (
                   <Pressable
                     onPress={onMarkAllRead}
                     style={({ pressed }) => ({ opacity: pressed ? 0.6 : 1 })}>
-                    <Text
-                      className=" text-sm text-text-on-brand-2"
-                      style={{ fontFamily: 'Saira_500Medium' }}>
+                    <Text className="text-text-2" style={{ fontFamily: 'Tektur_500Medium' }}>
                       Mark all read
                     </Text>
                   </Pressable>
@@ -325,6 +341,23 @@ export function NotificationsPanelProvider({ children }) {
   const unreadCount = notifications.filter((n) => !n.read).length;
 
   console.log('NotificationsPanelProvider notifications:', rawNotifications);
+
+  // 🆕 keep the app icon badge in sync with in-app unread count
+  useEffect(() => {
+    Notifications.setBadgeCountAsync(unreadCount);
+  }, [unreadCount]);
+
+  // 🆕 re-sync the badge whenever the app is foregrounded, in case a push
+  // arrived (with its own badge count) while the app wasn't running
+  useEffect(() => {
+    const subscription = AppState.addEventListener('change', (nextState) => {
+      if (nextState === 'active') {
+        Notifications.setBadgeCountAsync(unreadCount);
+      }
+    });
+
+    return () => subscription.remove();
+  }, [unreadCount]);
 
   useEffect(() => {
     const responseListener = Notifications.addNotificationResponseReceivedListener((response) => {
