@@ -24,6 +24,7 @@ import {
   ClipboardClock,
   AlarmClockCheck,
   UserStar,
+  MailMinus,
 } from 'lucide-react-native';
 import { useNotifications } from '@hooks/useNotifications';
 import { useUser } from '@contexts/UserProvider';
@@ -43,8 +44,9 @@ const NotificationsPanelContext = createContext(null);
 
 const TYPE_CONFIG = {
   team_invite: { icon: Mail, color: '#000ac4' },
+  invite_revoked: { icon: MailMinus, color: '#f52c2c' },
   player_joined: { icon: UserPlus, color: '#0c7f23' },
-  player_left: { icon: UserMinus, color: '#f52c2c' },
+  player_left_team: { icon: UserMinus, color: '#f52c2c' },
   result: { icon: Trophy, color: '#FCD34D' },
   system: { icon: Info, color: '#000ac4' },
   award: { icon: Award, color: '#F9A8D4' },
@@ -69,19 +71,18 @@ function timeAgo(timestamp) {
 
 // ─── Notification Row ─────────────────────────────────────────────────────────
 
-function NotificationRow({ item, onPress }) {
+function NotificationRow({ item, onPress, onMarkAsRead, onMarkAsUnread }) {
   const cfg = TYPE_CONFIG[item.type] ?? TYPE_CONFIG.system;
   const Icon = cfg.icon;
 
   return (
     <Pressable
-      onPress={() => onPress(item)}
       style={({ pressed }) => ({ opacity: pressed ? 0.7 : 1 })}
-      className={`mx-3 flex-row items-start justify-center rounded-2xl ${item?.read ? 'bg-bg-1' : 'bg-bg-1'} px-4 py-3`}>
+      className={`mx-3 flex-row items-start justify-center rounded-2xl ${item?.read ? 'bg-bg-1' : 'border border-theme-blue/50  bg-theme-blue/5'} px-4 py-3`}>
       {/* Unread dot + icon */}
       <View className="mr-3 mt-1 items-center justify-center">
         {!item.read && (
-          <View className="absolute -left-2 -top-2 z-10 rounded-full bg-bg-1 p-1">
+          <View className="absolute -left-6 -top-6 z-10 rounded-full bg-bg-2 p-1">
             <View className="h-3 w-3 rounded-full bg-red-500" />
           </View>
         )}
@@ -106,7 +107,9 @@ function NotificationRow({ item, onPress }) {
             numberOfLines={1}>
             {item.title}
           </Text>
-          <Text className="text-xs text-text-2" style={{ fontFamily: 'Tektur_400Regular' }}>
+          <Text
+            className={`text-xs ${item?.read ? 'text-text-2' : 'text-theme-blue'}`}
+            style={{ fontFamily: 'Tektur_400Regular' }}>
             {timeAgo(item.created_at)}
           </Text>
         </View>
@@ -114,6 +117,29 @@ function NotificationRow({ item, onPress }) {
         <Text className="text-sm leading-5 text-text-2" style={{ fontFamily: 'Tektur_400Regular' }}>
           {item.message}
         </Text>
+
+        <View className="flex-row justify-start gap-3 pt-2">
+          <Pressable
+            onPress={() => (item?.read ? onMarkAsUnread(item) : onMarkAsRead(item))}
+            className="mt-2 w-32 rounded-lg bg-theme-blue/10 px-2 py-2">
+            <Text
+              className="text-center text-sm text-theme-blue"
+              style={{ fontFamily: 'Tektur_500Medium' }}>
+              {item?.read ? 'Mark as unread' : 'Mark as read'}
+            </Text>
+          </Pressable>
+          {item?.data && (
+            <Pressable
+              onPress={() => onPress(item)}
+              className="mt-2 w-32 rounded-lg bg-theme-blue/10 px-2 py-2">
+              <Text
+                className="text-center text-sm text-theme-blue"
+                style={{ fontFamily: 'Tektur_500Medium' }}>
+                {item?.data?.button_text || 'View Details'}
+              </Text>
+            </Pressable>
+          )}
+        </View>
 
         {item.meta?.competitionName && (
           <View className="bg-brand/20 mt-1.5 self-start rounded-full px-2 py-0.5">
@@ -158,7 +184,13 @@ function SectionHeader({ label }) {
 
 // ─── Main Panel ───────────────────────────────────────────────────────────────
 
-function NotificationsPanelInner({ notifications = [], onNotificationPress, onMarkAllRead }) {
+function NotificationsPanelInner({
+  notifications = [],
+  onNotificationPress,
+  onMarkAllRead,
+  onMarkAsRead,
+  onMarkAsUnread,
+}) {
   const insets = useSafeAreaInsets();
   const { isOpen, close } = useContext(NotificationsPanelContext);
 
@@ -215,7 +247,14 @@ function NotificationsPanelInner({ notifications = [], onNotificationPress, onMa
 
   const renderItem = ({ item }) => {
     if (item.type === 'header') return <SectionHeader label={item.label} />;
-    return <NotificationRow item={item} onPress={onNotificationPress} />;
+    return (
+      <NotificationRow
+        item={item}
+        onPress={onNotificationPress}
+        onMarkAsRead={onMarkAsRead}
+        onMarkAsUnread={onMarkAsUnread}
+      />
+    );
   };
 
   return (
@@ -310,7 +349,7 @@ function NotificationsPanelInner({ notifications = [], onNotificationPress, onMa
                 ItemSeparatorComponent={() => (
                   <View
                     className="mx-4"
-                    style={{ height: 1, backgroundColor: 'rgba(255,255,255,0.04)' }}
+                    style={{ height: 3, backgroundColor: 'rgba(255,255,255,0.04)' }}
                   />
                 )}
               />
@@ -402,22 +441,6 @@ export function NotificationsPanelProvider({ children }) {
 
   const onNotificationPress = useCallback(
     async (notification) => {
-      // optimistic UI update
-      setNotifications((prev) =>
-        prev.map((n) => (n.id === notification.id ? { ...n, read: true } : n))
-      );
-
-      const { error } = await supabase
-        .from('Notifications')
-        .update({ read: true, read_at: new Date().toISOString() })
-        .eq('id', notification.id);
-
-      if (error) {
-        // rollback if it fails
-        setNotifications((prev) =>
-          prev.map((n) => (n.id === notification.id ? { ...n, read: false } : n))
-        );
-      }
       if (notification.data?.link) {
         close();
         const segments = notification.data.link.split('/').filter(Boolean);
@@ -429,6 +452,40 @@ export function NotificationsPanelProvider({ children }) {
     },
     [router, close]
   );
+
+  const onMarkAsUnread = useCallback(async (notification) => {
+    // optimistic UI update
+    setNotifications((prev) =>
+      prev.map((n) => (n.id === notification.id ? { ...n, read: false } : n))
+    );
+    const { error } = await supabase
+      .from('Notifications')
+      .update({ read: false, read_at: null })
+      .eq('id', notification.id);
+    if (error) {
+      // rollback if it fails
+      setNotifications((prev) =>
+        prev.map((n) => (n.id === notification.id ? { ...n, read: true } : n))
+      );
+    }
+  }, []);
+
+  const onMarkAsRead = useCallback(async (notification) => {
+    // optimistic UI update
+    setNotifications((prev) =>
+      prev.map((n) => (n.id === notification.id ? { ...n, read: true } : n))
+    );
+    const { error } = await supabase
+      .from('Notifications')
+      .update({ read: true, read_at: new Date().toISOString() })
+      .eq('id', notification.id);
+    if (error) {
+      // rollback if it fails
+      setNotifications((prev) =>
+        prev.map((n) => (n.id === notification.id ? { ...n, read: false } : n))
+      );
+    }
+  }, []);
 
   const onMarkAllRead = useCallback(async () => {
     setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
@@ -447,6 +504,8 @@ export function NotificationsPanelProvider({ children }) {
           notifications={notifications}
           onNotificationPress={onNotificationPress}
           onMarkAllRead={onMarkAllRead}
+          onMarkAsRead={onMarkAsRead}
+          onMarkAsUnread={onMarkAsUnread}
         />
       </View>
     </NotificationsPanelContext.Provider>

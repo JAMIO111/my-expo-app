@@ -49,6 +49,53 @@ const index = () => {
         <ScrollView
           contentContainerStyle={{ display: 'flex', flexGrow: 1, gap: 30, paddingVertical: 20 }}
           className="mt-16 flex-1 bg-bg-1 px-4">
+          {currentRole?.type === 'admin' && (
+            <View className="gap-2">
+              <Heading text="Competition Admin Tools" className="text-text-1" />
+              <View className="gap-4">
+                <Pressable
+                  onPress={() => {
+                    if (hasNavigated.current) return;
+                    hasNavigated.current = true;
+                    setTimeout(() => {
+                      hasNavigated.current = false;
+                    }, 500); // Reset navigation state after 500ms
+                    router.push('/competitions/create-blueprint');
+                  }}
+                  className="flex-1 flex-row gap-8 rounded-2xl bg-bg-2 p-4 shadow-sm">
+                  <View className="flex-1">
+                    <Text className="font-saira-medium text-xl text-text-1">Create Blueprint</Text>
+                    <Text className="text-md mt-2 font-saira text-text-2">
+                      Create a new competition template by defining the structure and rules.
+                    </Text>
+                  </View>
+                  <Ionicons name="construct" size={40} color="#0084ff" />
+                </Pressable>
+                {currentRole?.activeSeason && (
+                  <Pressable
+                    onPress={() => {
+                      if (hasNavigated.current) return;
+                      hasNavigated.current = true;
+                      setTimeout(() => {
+                        hasNavigated.current = false;
+                      }, 500); // Reset navigation state after 500ms
+                      router.push('/competitions/initiate-competition');
+                    }}
+                    className="flex-1 flex-row gap-8 rounded-2xl bg-bg-2 p-4 shadow-sm">
+                    <View className="flex-1">
+                      <Text className="font-saira-medium text-xl text-text-1">
+                        Initiate Competition
+                      </Text>
+                      <Text className="text-md mt-2 font-saira text-text-2">
+                        Initiate a new instance of a competition from an existing template.
+                      </Text>
+                    </View>
+                    <Ionicons name="play-circle" size={40} color="#209e00" />
+                  </Pressable>
+                )}
+              </View>
+            </View>
+          )}
           {currentRole?.type !== 'admin' && (
             <Pressable
               onPress={() => {
@@ -121,53 +168,6 @@ const index = () => {
                 </View>
               )}
             </>
-          )}
-          {currentRole?.type === 'admin' && (
-            <View className="gap-2">
-              <Heading text="Competition Admin Tools" className="text-text-1" />
-              <View className="gap-4">
-                <Pressable
-                  onPress={() => {
-                    if (hasNavigated.current) return;
-                    hasNavigated.current = true;
-                    setTimeout(() => {
-                      hasNavigated.current = false;
-                    }, 500); // Reset navigation state after 500ms
-                    router.push('/competitions/create-blueprint');
-                  }}
-                  className="flex-1 flex-row gap-8 rounded-2xl bg-bg-2 p-4 shadow-sm">
-                  <View className="flex-1">
-                    <Text className="font-saira-medium text-xl text-text-1">Create Blueprint</Text>
-                    <Text className="text-md mt-2 font-saira text-text-2">
-                      Create a new competition template by defining the structure and rules.
-                    </Text>
-                  </View>
-                  <Ionicons name="construct" size={40} color="#0084ff" />
-                </Pressable>
-                {currentRole?.activeSeason && (
-                  <Pressable
-                    onPress={() => {
-                      if (hasNavigated.current) return;
-                      hasNavigated.current = true;
-                      setTimeout(() => {
-                        hasNavigated.current = false;
-                      }, 500); // Reset navigation state after 500ms
-                      router.push('/competitions/initiate-competition');
-                    }}
-                    className="flex-1 flex-row gap-8 rounded-2xl bg-bg-2 p-4 shadow-sm">
-                    <View className="flex-1">
-                      <Text className="font-saira-medium text-xl text-text-1">
-                        Initiate Competition
-                      </Text>
-                      <Text className="text-md mt-2 font-saira text-text-2">
-                        Initiate a new instance of a competition from an existing template.
-                      </Text>
-                    </View>
-                    <Ionicons name="play-circle" size={40} color="#209e00" />
-                  </Pressable>
-                )}
-              </View>
-            </View>
           )}
         </ScrollView>
         <NavBar />

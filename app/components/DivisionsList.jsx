@@ -66,7 +66,7 @@ const DivisionsList = ({ districtId }) => {
         </View>
       )}
 
-      {!isLoading && groupedDivisions.length !== 0 && (
+      {!isLoading && groupedDivisions.length === 0 && (
         <View className="w-full gap-5">
           <EmptyStateCard
             title="Oops, No Divisions Found"

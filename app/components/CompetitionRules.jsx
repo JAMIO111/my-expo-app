@@ -49,6 +49,14 @@ const CompetitionRules = ({ context }) => {
       });
       return;
     }
+    if (currentRole?.activeSeason?.status === 'complete') {
+      Toast.show({
+        type: 'info',
+        text1: 'Season Ended',
+        text2: 'The season has ended. Please start a new season to initiate competitions.',
+      });
+      return;
+    }
     if (loading) return;
     setLoading(true);
     try {

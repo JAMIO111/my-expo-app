@@ -5,7 +5,7 @@ export function useCompetitions({ districtId, divisionId, competitionType } = {}
   return useQuery({
     queryKey: ['Competitions', { districtId, divisionId, competitionType }],
     queryFn: async () => {
-      let query = supabase.from('Competitions').select('*');
+      let query = supabase.from('Competitions').select('*, division:Divisions(*)');
 
       if (districtId) {
         query = query.eq('district_id', districtId);

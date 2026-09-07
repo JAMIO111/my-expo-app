@@ -15,15 +15,38 @@ import SeasonTicket from '@components/SeasonTicket';
 
 const index = () => {
   const router = useRouter();
-  const { currentRole } = useUser();
+  const { currentRole, refetch } = useUser();
   const { data: teamProfile, isLoading } = useTeamProfile(currentRole?.team?.id);
 
   console.log('Debug Team Profile:', teamProfile);
   console.log('Current Role in My Leagues:', currentRole);
 
-  const handleStartSeason = () => {
-    // Logic to start a new season
-    console.log('Starting a new season...');
+  const handleStartSeason = async () => {
+    try {
+      const { data, error } = await supabase.rpc('start_new_season', {
+        p_district_id: currentRole?.district?.id,
+        p_name: '2029/30',
+      });
+      if (error) throw error;
+      if (data.success === false) {
+        const rpcError = new Error(data.message || 'Failed to remove player from the team.');
+        rpcError.title = data.title;
+        rpcError.code = data.code;
+        throw rpcError;
+      }
+      refetch();
+      Toast.show({
+        type: 'success',
+        text1: 'Season Started',
+        text2: 'A new season has been created.',
+      });
+    } catch (error) {
+      Toast.show({
+        type: 'error',
+        text1: error.title || 'Error Starting Season',
+        text2: error.message || 'An unexpected error occurred.',
+      });
+    }
   };
 
   const handleEndSeason = async (seasonId) => {
@@ -102,5 +125,3 @@ const index = () => {
 };
 
 export default index;
-
-const styles = StyleSheet.create({});
