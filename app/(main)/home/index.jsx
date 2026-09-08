@@ -35,6 +35,7 @@ import Heading from '@components/Heading';
 import TicketTapeBanner from '@components/TicketTapeBanner';
 import { usePlayerInvitesAndRequests } from '@hooks/usePlayerInvitesAndRequests';
 import Toast from 'react-native-toast-message';
+import AdBanner from '../../components/AdBanner';
 
 const Home = () => {
   const { isPro, isCore } = useRevenueCat();
@@ -392,6 +393,7 @@ const Home = () => {
                   </View>
                 </View>
               )}
+              <AdBanner />
               <View className="w-full gap-5 px-3 pt-5">
                 {currentRole?.type === 'player' && currentRole.district?.transfer_window_open ? (
                   <TransferWindowCard

@@ -3,10 +3,9 @@ import { useRouter, Stack, useLocalSearchParams } from 'expo-router';
 import { useRef, useEffect, useState } from 'react';
 import PlayersList from '@components/PlayersList';
 import Heading from '@components/Heading';
-import TeamLogo from '@components/TeamLogo';
 import CTAButton from '@components/CTAButton';
 import StatCard from '@components/StatCard';
-import CachedImage from '@components/CachedImage';
+import ExpoCachedImage from '@components/ExpoCachedImage';
 import { Dimensions } from 'react-native';
 import TrophyCabinet from '@components/TrophyCabinet';
 import Ionicons from 'react-native-vector-icons/Ionicons';
@@ -21,6 +20,7 @@ import TeamJoinRequests from './TeamJoinRequests';
 import BottomSheetModal from './BottomSheetModal';
 import SelectStatMenu from './SelectStatMenu';
 import TeamProfileHeader from '@components/TeamProfileHeader';
+import AdBanner from '@/components/AdBanner';
 
 const TeamProfile = ({ context, profile, isLoading }) => {
   const { currentRole, player } = useUser();
@@ -150,9 +150,8 @@ const TeamProfile = ({ context, profile, isLoading }) => {
               borderTopWidth: 1,
               borderBottomWidth: 1,
             }}>
-            <CachedImage
-              avatarUrl={profile.cover_image_url}
-              userId={profile?.id}
+            <ExpoCachedImage
+              uri={profile.cover_image_url}
               width={Dimensions.get('window').width}
               height={(Dimensions.get('window').width * 9) / 16}
               borderRadius={0}
@@ -233,6 +232,7 @@ const TeamProfile = ({ context, profile, isLoading }) => {
               />
             </View>
           </View>
+          <AdBanner />
           <View className={`gap-4 bg-bg-grouped-2 px-4 ${viewMatches ? 'pb-6' : 'pb-4'} pt-4`}>
             <Pressable
               className="flex-row items-center justify-between pr-6"
@@ -259,7 +259,7 @@ const TeamProfile = ({ context, profile, isLoading }) => {
               }
             />
           </View>
-
+          <AdBanner />
           <View className="bg-bg-grouped-2 px-4 pb-8 pt-6">
             <View className="flex flex-row items-center justify-between pb-3 pr-2">
               <Heading text="Team Roster" />

@@ -19,7 +19,6 @@ import {
   formatCompetitionType,
   formatAgeRestrictions,
 } from '@components/CompetitionInstanceCard';
-import Ionicons from '@expo/vector-icons/Ionicons';
 import {
   Crown,
   Ban,
@@ -34,6 +33,17 @@ import {
   UserRoundX,
   LogOut,
   CalendarClock,
+  Plus,
+  Ghost,
+  VenusAndMars,
+  LogIn,
+  X,
+  Cake,
+  Shield,
+  User,
+  Table,
+  Mars,
+  Venus,
 } from 'lucide-react-native';
 import Toast from 'react-native-toast-message';
 import FloatingBottomSheet from '@components/FloatingBottomSheet';
@@ -44,6 +54,7 @@ import ExpandableView from '@components/ExpandableView';
 import { useKnockoutBracket } from '@hooks/useKnockoutBracket';
 import PressableScale from '@components/PressableScale';
 import SponsorshipCard from '@components/SponsorshipCard';
+import { initConnection } from 'react-native-iap';
 
 export function getStatusColors(status) {
   switch (status) {
@@ -512,6 +523,42 @@ const index = () => {
     }
   };
 
+  const competitionDetailsConfig = [
+    {
+      title: 'Competition Format',
+      value: formatCompetitionType(competitionInstance?.competition?.competition_type),
+      icon: Table,
+    },
+    {
+      title: 'Competitor Type',
+      value: formatCompetitionType(competitionInstance?.competition?.competitor_type),
+      icon: competitionInstance?.competition?.competitor_type === 'team' ? Users : User,
+    },
+    {
+      title: 'Division Requirement',
+      value: formatCompetitionType(competitionInstance?.division?.name || 'None'),
+      icon: Shield,
+    },
+    {
+      title: 'Gender',
+      value:
+        competitionInstance?.gender.slice(0, 1).toUpperCase() +
+        competitionInstance?.gender.slice(1),
+      icon:
+        competitionInstance?.gender === 'male'
+          ? Mars
+          : competitionInstance?.gender === 'female'
+            ? Venus
+            : VenusAndMars,
+    },
+    {
+      title: 'Age Restrictions',
+      value:
+        formatAgeRestrictions(competitionInstance?.min_age, competitionInstance?.max_age) || 'None',
+      icon: Cake,
+    },
+  ];
+
   return (
     <>
       <Stack.Screen
@@ -531,73 +578,24 @@ const index = () => {
             contentContainerStyle={{ display: 'flex', flexGrow: 1, gap: 12 }}
             className="mt-16 flex-1 bg-bg-2 p-3">
             <View className="gap-2">
-              <SponsorshipCard
-                sponsor={{
-                  name: 'Dryden Services',
-                  logo: require('@/assets/dryden-services-logo.png'),
-                  website: 'https://drydenservices.co.uk/',
-                  tagline: 'No job too big or too small',
-                  tier: 'Title Sponsor',
-                }}
-              />
+              {competitionInstance?.CompetitionInstanceSponsors?.[0]?.is_paid && (
+                <SponsorshipCard
+                  sponsor={competitionInstance?.CompetitionInstanceSponsors?.[0]?.sponsor}
+                  tagline={`Proud sponsor of the ${competitionInstance?.name} competition`}
+                />
+              )}
               <ExpandableView
                 title="Competition Details"
                 show={showDetails}
                 setShow={setShowDetails}>
-                <View className="flex-row pt-2">
-                  <View className="flex-1 gap-3">
-                    <View>
-                      <Text className="px-1 font-saira text-lg text-text-2">
-                        Competition Format
-                      </Text>
-                      <Text className="px-1 font-saira text-xl text-text-1">
-                        {formatCompetitionType(competitionInstance?.competition?.competition_type)}
-                      </Text>
+                <View className="flex-col gap-2 p-2 pt-0">
+                  {competitionDetailsConfig.map(({ title, value, icon: Icon }) => (
+                    <View key={title} className="flex-row gap-2 pt-2">
+                      {Icon && <Icon className="mr-2" size={20} color={'#666'} />}
+                      <Text className="flex-1 px-1 font-saira text-lg text-text-2">{title}</Text>
+                      <Text className="px-1 font-saira text-xl text-text-1">{value}</Text>
                     </View>
-                    <View>
-                      <Text className="px-1 font-saira text-lg text-text-2">Gender</Text>
-                      <View className="flex-row items-center gap-1">
-                        <Text className="px-1 font-saira text-xl text-text-1">
-                          {competitionInstance?.gender.slice(0, 1).toUpperCase() +
-                            competitionInstance?.gender.slice(1)}
-                        </Text>
-                        {competitionInstance?.gender === 'male' && (
-                          <Ionicons name="male" size={20} color="#0085E5" />
-                        )}
-                        {competitionInstance?.gender === 'female' && (
-                          <Ionicons name="female" size={20} color="#FF69B4" />
-                        )}
-                      </View>
-                    </View>
-                    <View>
-                      <Text className="px-1 font-saira text-lg text-text-2">
-                        Division Requirement
-                      </Text>
-                      <Text className="px-1 font-saira text-xl text-text-1">
-                        {formatCompetitionType(competitionInstance?.division?.name || 'None')}
-                      </Text>
-                    </View>
-                  </View>
-                  <View className="flex-1 gap-3">
-                    <View>
-                      <Text className="px-1 font-saira text-lg text-text-2">Competitor Type</Text>
-                      <Text className="px-1 font-saira text-xl text-text-1">
-                        {competitionInstance?.competition?.competitor_type
-                          .slice(0, 1)
-                          .toUpperCase() +
-                          competitionInstance?.competition?.competitor_type.slice(1)}
-                      </Text>
-                    </View>
-                    <View>
-                      <Text className="px-1 font-saira text-lg text-text-2">Age Restriction</Text>
-                      <Text className="px-1 font-saira text-xl text-text-1">
-                        {formatAgeRestrictions(
-                          competitionInstance?.min_age,
-                          competitionInstance?.max_age
-                        ) || 'None'}
-                      </Text>
-                    </View>
-                  </View>
+                  ))}
                 </View>
               </ExpandableView>
               {canJoin &&
@@ -626,9 +624,7 @@ const index = () => {
                             : 'Join Competition'
                       }
                       type="yellow"
-                      icon={
-                        <Ionicons name="log-in-outline" className="mb-1" size={26} color="black" />
-                      }
+                      icon={<LogIn className="mb-1" size={26} color="black" />}
                     />
                   </View>
                 )}
@@ -748,19 +744,24 @@ const index = () => {
 
                         const participant = entity.team || entity.player;
 
-                        console.log('Participant:', participant, 'Entity:', entity);
+                        if (!participant) {
+                          console.warn('Participant has no team or player:', entity);
+                          return null;
+                        }
 
                         const participantName =
                           participant.display_name ||
-                          `${participant.first_name} ${participant.surname}`;
+                          `${participant.first_name ?? ''} ${participant.surname ?? ''}`.trim();
 
-                        const isMe = participant.id === player.id;
+                        console.log('Participant:', participant, 'Entity:', entity);
 
-                        const isMyParentTeam = isTeam && entity.team_id === currentRole?.team?.id;
+                        const isMe = participant?.id === player?.id;
+
+                        const isMyParentTeam = isTeam && entity?.team_id === currentRole?.team?.id;
 
                         const isMyChildTeam =
                           isTeam &&
-                          currentRole?.compTeams?.some((team) => team.id === entity.team_id);
+                          currentRole?.compTeams?.some((team) => team.id === entity?.team_id);
 
                         console.log(
                           'isMyParentTeam:',
@@ -776,14 +777,14 @@ const index = () => {
                         const statusColors = getStatusColors(entity.status);
                         return (
                           <View
-                            key={participant.id}
+                            key={participant?.id}
                             className={`flex-row items-center gap-3 px-1 py-2 pb-3 ${!lastItem ? 'border-b border-theme-gray-5' : ''}`}>
-                            {entity.team ? (
+                            {entity.team && participant?.crest ? (
                               <TeamLogo
-                                type={participant.crest.type}
-                                color1={participant.crest.color1}
-                                color2={participant.crest.color2}
-                                thickness={participant.crest.thickness}
+                                type={participant?.crest?.type}
+                                color1={participant?.crest?.color1}
+                                color2={participant?.crest?.color2}
+                                thickness={participant?.crest?.thickness}
                                 size={28}
                               />
                             ) : (
@@ -911,7 +912,7 @@ const index = () => {
             </View>
             <View
               style={{ minHeight: 360 }}
-              className="rounded-2xl border border-theme-gray-5 bg-bg-1 p-4 pb-8">
+              className="rounded-3xl border border-theme-gray-5 bg-bg-1 p-4 pb-8">
               <Text className="pb-4 font-tektur-semibold text-2xl text-text-1">
                 Competition Awards
               </Text>
@@ -922,11 +923,8 @@ const index = () => {
                   <View className="flex-1 flex-col items-center justify-end">
                     {competitionInstance?.winner_reward === null ? (
                       <View className="h-30 w-30 mb-4 flex-1 items-center justify-center rounded-2xl">
-                        <Ionicons
-                          name={isAdmin ? 'add' : 'sad-outline'}
-                          size={120}
-                          color={isAdmin ? '#000000' : '#FF000088'}
-                        />
+                        {isAdmin && <Plus size={120} color="#000000" />}
+                        {!isAdmin && <Ghost size={120} color="#999" strokeWidth={1.5} />}
                       </View>
                     ) : (
                       <Image source={winnerTrophy?.icon} className="h-30 w-30 mb-4" />
@@ -943,11 +941,11 @@ const index = () => {
                   <View className="flex-1 flex-col items-center justify-end">
                     {competitionInstance?.runner_up_reward === null ? (
                       <View className="mb-4 flex-1 items-center justify-center rounded-2xl">
-                        <Ionicons
-                          name={isAdmin ? 'add' : 'sad-outline'}
-                          size={120}
-                          color={isAdmin ? '#000000' : '#FF000088'}
-                        />
+                        {isAdmin ? (
+                          <Plus size={120} color="#000000" />
+                        ) : (
+                          <Ghost size={120} color="#999" strokeWidth={1.5} />
+                        )}
                       </View>
                     ) : (
                       <Image source={runnerUpTrophy?.icon} className="h-30 w-30 mb-4" />
@@ -962,7 +960,7 @@ const index = () => {
                 </Pressable>
               </View>
             </View>
-            <View className="mb-16 gap-3 rounded-2xl border border-theme-gray-5 bg-bg-1 p-4">
+            <View className="mb-16 gap-3 rounded-3xl border border-theme-gray-5 bg-bg-1 p-4">
               <Text
                 numberOfLines={1}
                 adjustsFontSizeToFit
@@ -1022,7 +1020,7 @@ const index = () => {
             Choose {selectedRewardType === 'winner' ? "Winner's" : "Runner-up's"} award
           </Text>
           <Pressable className="p-2" onPress={closeSheet}>
-            <Ionicons name="close" size={24} color={themeColors.primaryText} />
+            <X size={24} color={themeColors.primaryText} />
           </Pressable>
         </BottomSheetView>
 
@@ -1091,7 +1089,7 @@ const index = () => {
               marginBottom: 20,
               alignItems: 'center',
             }}>
-            <Ionicons name="ban-outline" size={60} color="red" />
+            <Ban size={60} color="red" />
             <Text
               style={{
                 textAlign: 'center',

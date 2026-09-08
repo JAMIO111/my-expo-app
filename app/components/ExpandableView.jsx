@@ -30,7 +30,7 @@ const ExpandableView = ({
   });
 
   return (
-    <View className="rounded-2xl border border-theme-gray-5 bg-bg-1 p-3">
+    <View className="rounded-3xl border border-theme-gray-5 bg-bg-1 p-3">
       <Pressable
         className="flex-row items-center justify-between p-1"
         onPress={() => !fixedOpen && !fixedClosed && setShow(!show)}>

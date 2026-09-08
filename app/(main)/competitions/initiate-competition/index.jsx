@@ -1,4 +1,4 @@
-import { View, Text, Pressable, Animated } from 'react-native';
+import { View, Text } from 'react-native';
 import { useRef } from 'react';
 import { Stack, useRouter } from 'expo-router';
 import { useUser } from '@contexts/UserProvider';
@@ -6,8 +6,6 @@ import CustomHeader from '@components/CustomHeader';
 import SafeViewWrapper from '@components/SafeViewWrapper';
 import { useCompetitions } from '@hooks/useCompetitions';
 import { ScrollView } from 'react-native-gesture-handler';
-import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
-import { formatAgeRestrictions } from '@components/CompetitionInstanceCard';
 import { useCompetitionInstances } from '@hooks/useCompetitionInstances';
 import Toast from 'react-native-toast-message';
 import CompetitionBlueprint from '@components/CompetitionBlueprint';

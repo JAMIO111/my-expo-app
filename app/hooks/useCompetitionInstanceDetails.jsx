@@ -4,15 +4,45 @@ import { supabase } from '@/lib/supabase';
 export function useCompetitionInstanceDetails(instanceId) {
   return useQuery({
     queryKey: ['CompetitionInstanceDetails', instanceId],
+
     queryFn: async () => {
       const { data, error } = await supabase
         .from('CompetitionInstances')
         .select(
           `
           *,
-          CompetitionParticipants(*, player:Players(id, first_name, surname, avatar_url), team:Teams(id, display_name, crest, parent_team_id)),
-          competition:Competitions(competitor_type, competition_type, district_id),
-          division:Divisions(name)
+          CompetitionParticipants(
+            *,
+            player:Players(
+              id,
+              first_name,
+              surname,
+              avatar_url
+            ),
+            team:Teams(
+              id,
+              display_name,
+              crest,
+              parent_team_id
+            )
+          ),
+          competition:Competitions(
+            competitor_type,
+            competition_type,
+            district_id
+          ),
+          division:Divisions(
+            name
+          ),
+          CompetitionInstanceSponsors(
+            *,
+            sponsor:Sponsors(
+              id,
+              name,
+              logo_url,
+              website_url
+            )
+          )
         `
         )
         .eq('id', instanceId)
@@ -60,9 +90,10 @@ export function useCompetitionInstanceDetails(instanceId) {
 
       return data;
     },
-    staleTime: 5 * 60 * 1000, // 5 minutes
-    gcTime: 60 * 60 * 1000, // 1 hour
-    enabled: !!instanceId, // Only run if instanceId is provided
+
+    staleTime: 5 * 60 * 1000,
+    gcTime: 60 * 60 * 1000,
+    enabled: !!instanceId,
   });
 }
 

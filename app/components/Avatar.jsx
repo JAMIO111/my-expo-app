@@ -1,5 +1,5 @@
 import { Text, View } from 'react-native';
-import CachedImage from '@components/CachedImage';
+import ExpoCachedImage from '@components/ExpoCachedImage';
 
 const Avatar = ({ player, size = 64, borderRadius = 5, backgroundColor = 'bg-brand-light' }) => {
   const getInitials = () => {
@@ -10,13 +10,14 @@ const Avatar = ({ player, size = 64, borderRadius = 5, backgroundColor = 'bg-bra
 
   if (player?.avatar_url) {
     return (
-      <CachedImage
-        avatarUrl={player.avatar_url}
-        userId={player.id}
-        width={size}
-        height={size}
-        borderRadius={borderRadius}
-      />
+      <>
+        <ExpoCachedImage
+          uri={player.avatar_url}
+          width={size}
+          height={size}
+          borderRadius={borderRadius}
+        />
+      </>
     );
   }
 

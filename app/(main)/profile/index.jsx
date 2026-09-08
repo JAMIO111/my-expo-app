@@ -7,9 +7,7 @@ import { useRouter } from 'expo-router';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { Cog } from 'lucide-react-native';
 import { useUser } from '@contexts/UserProvider';
-import { getAgeInYearsAndDays } from '@lib/helperFunctions';
 import { calculateLevel } from '@lib/helperFunctions';
-import CachedImage from '@components/CachedImage';
 import { useGlobalRank } from '@hooks/useGlobalRank';
 import Heading from '@components/Heading';
 import useRecentBadges from '@hooks/useRecentBadges';
@@ -24,6 +22,7 @@ import {
 } from 'lucide-react-native';
 import CTAButton from '@components/CTAButton';
 import PlayerProfileHeader from '@components/PlayerProfileHeader';
+import AdBanner from '@components/AdBanner';
 
 const ProfilePage = () => {
   const router = useRouter();
@@ -96,7 +95,7 @@ const ProfilePage = () => {
               </View>
             </View>
           </Pressable>
-          <View className="mb-8 mt-2 flex-row items-center justify-between gap-5 px-5">
+          <View className="mb-4 mt-2 flex-row items-center justify-between gap-5 px-5">
             <View className="flex-1">
               <CTAButton
                 type="brand"
@@ -114,7 +113,8 @@ const ProfilePage = () => {
               />
             </View>
           </View>
-          <Heading text="Recently Earned Badges" className="mx-4 mb-2" />
+          <AdBanner />
+          <Heading text="Recently Earned Badges" className="mx-4 mb-2 mt-4" />
           <View
             style={{ borderRadius: 28 }}
             className="mx-4 gap-2 border border-theme-gray-4 bg-bg-1 py-3">

@@ -9,6 +9,8 @@ import { useTeamLeaderboard } from '@hooks/useTeamLeaderboard';
 import { useUser } from '@contexts/UserProvider';
 import BrandHeader from '@components/BrandHeader';
 import ProGate from '@components/ProGate';
+import AdBanner from '@components/AdBanner';
+import Heading from '../../components/Heading';
 
 const Index = () => {
   const { currentRole } = useUser();
@@ -39,9 +41,11 @@ const Index = () => {
 
       <View className="flex-1">
         <ScrollView className="mt-16 flex-1 bg-brand py-5">
-          <Text className="px-2 pl-4 font-saira-medium text-2xl text-white">
-            All-time Player Stats
-          </Text>
+          <Heading
+            text="All-time Player Stats"
+            textColor="text-text-on-brand"
+            className="mx-4 mb-2 mt-4"
+          />
 
           <ScrollView
             horizontal
@@ -104,9 +108,12 @@ const Index = () => {
               />
             </ProGate>
           </ScrollView>
-          <Text className="px-2 pl-4 font-saira-medium text-2xl text-white">
-            All-time Team Stats
-          </Text>
+          <AdBanner />
+          <Heading
+            text="All-time Team Stats"
+            textColor="text-text-on-brand"
+            className="mx-4 mb-2 mt-4"
+          />
           <ScrollView
             horizontal
             showsHorizontalScrollIndicator={false}

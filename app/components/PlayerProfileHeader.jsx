@@ -1,10 +1,7 @@
 import { View, Text, StyleSheet, Image } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import Ionicons from 'react-native-vector-icons/Ionicons';
-import CachedImage from './CachedImage';
 import { getAgeInYearsAndDays, isBirthdayToday } from '@lib/helperFunctions';
-import { useUser } from '@contexts/UserProvider';
-import Heading from './Heading';
 import Avatar from './Avatar';
 import TeamLogo from './TeamLogo';
 

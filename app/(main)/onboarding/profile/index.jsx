@@ -7,11 +7,11 @@ import NavBar from '@components/NavBar2';
 import { useRouter } from 'expo-router';
 import { useUser } from '@contexts/UserProvider';
 import { getAgeInYearsAndDays } from '@lib/helperFunctions';
-import CachedImage from '@components/CachedImage';
+import ExpoCachedImage from '@components/ExpoCachedImage';
 import Heading from '@components/Heading';
 import { isBirthdayToday } from '@lib/helperFunctions';
 import CustomHeader from '@components/CustomHeader';
-import CTAButton from '../../../components/CTAButton';
+import CTAButton from '@components/CTAButton';
 
 const ProfilePage = () => {
   const router = useRouter();
@@ -47,9 +47,8 @@ const ProfilePage = () => {
           <View className="mb-2 items-center p-2 ">
             {player?.avatar_url ? (
               <View className="overflow-hidden rounded-3xl bg-text-2 p-1">
-                <CachedImage
-                  avatarUrl={player?.avatar_url}
-                  userId={player?.id}
+                <ExpoCachedImage
+                  uri={player?.avatar_url}
                   width={150}
                   height={150}
                   borderRadius={16}
