@@ -33,7 +33,7 @@ import {
   UserRoundCheck,
   UserRoundX,
   LogOut,
-  DoorOpen,
+  CalendarClock,
 } from 'lucide-react-native';
 import Toast from 'react-native-toast-message';
 import FloatingBottomSheet from '@components/FloatingBottomSheet';
@@ -43,7 +43,7 @@ import KnockoutBracket from '@components/KnockoutBracket';
 import ExpandableView from '@components/ExpandableView';
 import { useKnockoutBracket } from '@hooks/useKnockoutBracket';
 import PressableScale from '@components/PressableScale';
-import { CalendarClock } from 'lucide-react-native/icons';
+import SponsorshipCard from '@components/SponsorshipCard';
 
 export function getStatusColors(status) {
   switch (status) {
@@ -531,6 +531,15 @@ const index = () => {
             contentContainerStyle={{ display: 'flex', flexGrow: 1, gap: 12 }}
             className="mt-16 flex-1 bg-bg-2 p-3">
             <View className="gap-2">
+              <SponsorshipCard
+                sponsor={{
+                  name: 'Dryden Services',
+                  logo: require('@/assets/dryden-services-logo.png'),
+                  website: 'https://drydenservices.co.uk/',
+                  tagline: 'No job too big or too small',
+                  tier: 'Title Sponsor',
+                }}
+              />
               <ExpandableView
                 title="Competition Details"
                 show={showDetails}
@@ -903,7 +912,7 @@ const index = () => {
             <View
               style={{ minHeight: 360 }}
               className="rounded-2xl border border-theme-gray-5 bg-bg-1 p-4 pb-8">
-              <Text className="font-tektur-semibold pb-4 text-2xl text-text-1">
+              <Text className="pb-4 font-tektur-semibold text-2xl text-text-1">
                 Competition Awards
               </Text>
               <View className="flex-row items-stretch justify-around gap-5">
