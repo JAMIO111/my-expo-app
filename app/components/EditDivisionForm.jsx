@@ -24,7 +24,6 @@ import { useUser } from '@contexts/UserProvider';
 import CustomDropdown from './CustomDropdown';
 import ExpandableView from './ExpandableView';
 import TeamLogo from './TeamLogo';
-import Avatar from './Avatar';
 
 const EditDivisionForm = ({ competition, division, participants, closeModal, context }) => {
   const bottomSheetRef = useRef();

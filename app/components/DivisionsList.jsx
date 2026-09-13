@@ -114,7 +114,7 @@ const DivisionsList = ({ districtId }) => {
                   });
                 }}
                 style={({ pressed }) => ({ opacity: pressed ? 0.8 : 1 })}>
-                <View className="relative overflow-hidden rounded-3xl bg-bg-2 px-5 py-5">
+                <View className="relative overflow-hidden rounded-3xl border border-theme-gray-5 bg-bg-2 px-5 py-5">
                   {/* Oversized tier numeral watermark */}
                   {romanNumerals[division.tier] && (
                     <Image

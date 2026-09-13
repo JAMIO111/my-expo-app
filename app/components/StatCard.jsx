@@ -75,7 +75,7 @@ const StatCard = ({
   if (disabled || !onPress) return Content;
 
   return (
-    <Pressable className="flex-1" onPress={onPress}>
+    <Pressable className="h-32 flex-1" onPress={onPress}>
       {Content}
     </Pressable>
   );

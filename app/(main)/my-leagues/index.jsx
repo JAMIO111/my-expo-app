@@ -1,4 +1,4 @@
-import { StyleSheet, View } from 'react-native';
+import { View } from 'react-native';
 import { Cog } from 'lucide-react-native';
 import { Stack, useRouter } from 'expo-router';
 import { supabase } from '@lib/supabase';
@@ -12,6 +12,7 @@ import { ScrollView } from 'react-native-gesture-handler';
 import Toast from 'react-native-toast-message';
 import TeamJoinRequests from '@components/TeamJoinRequests';
 import SeasonTicket from '@components/SeasonTicket';
+import Heading from '@components/Heading';
 
 const index = () => {
   const router = useRouter();
@@ -104,9 +105,10 @@ const index = () => {
       />
       <SafeViewWrapper bottomColor="bg-brand" topColor="bg-brand">
         <ScrollView
-          contentContainerStyle={{ display: 'flex', flexGrow: 1, gap: 5 }}
+          contentContainerStyle={{ display: 'flex', flexGrow: 1, gap: 6 }}
           className="mt-16 flex-1">
-          <View className="bg-bg-1 p-4">
+          <View className="gap-2 bg-bg-1 p-4">
+            <Heading text="Current Season" />
             <SeasonTicket
               season={currentRole?.activeSeason}
               district={currentRole?.district}

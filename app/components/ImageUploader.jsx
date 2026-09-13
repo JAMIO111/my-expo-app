@@ -91,6 +91,7 @@ const ImageUploader = forwardRef(
 
     useImperativeHandle(ref, () => ({
       openPicker: pickImage,
+      reset: (uri) => setImageUri(uri),
     }));
 
     const imageWidth = isSquare ? size : '100%';
@@ -141,7 +142,7 @@ const ImageUploader = forwardRef(
                 width: imageWidth,
                 height: imageHeight || size,
                 borderRadius,
-                backgroundColor: '#f0f0f0',
+                backgroundColor: '#fff',
                 alignItems: 'center',
                 justifyContent: 'center',
               }}>

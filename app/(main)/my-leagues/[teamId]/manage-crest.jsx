@@ -1,20 +1,21 @@
-import { StyleSheet, View, useColorScheme } from 'react-native';
-import CrestEditor from '@components/CrestEditor';
-import CustomHeader from '@components/CustomHeader';
-import SafeViewWrapper from '@components/SafeViewWrapper';
-import { Stack, useRouter } from 'expo-router';
-import { useUser } from '@contexts/UserProvider';
-import { useQueryClient } from '@tanstack/react-query';
-import { supabase } from '@/lib/supabase';
-import Toast from 'react-native-toast-message';
+import { StyleSheet, View } from 'react-native';
+import { supabase } from '@lib/supabase';
 import { useState } from 'react';
+import { Stack, useRouter } from 'expo-router';
+import CustomHeader from '@components/CustomHeader';
+import { useLocalSearchParams } from 'expo-router';
+import SafeViewWrapper from '@components/SafeViewWrapper';
+import { useTeamProfile } from '@hooks/useTeamProfile';
+import CrestEditor from '@components/CrestEditor';
+import Toast from 'react-native-toast-message';
+import { useQueryClient } from '@tanstack/react-query';
 
-const TeamCrest = () => {
-  const { currentRole, refetch } = useUser();
-  const colorScheme = useColorScheme();
-  const [isSaving, setIsSaving] = useState(false);
-  const router = useRouter();
+const ManageCrestPage = () => {
   const queryClient = useQueryClient();
+  const router = useRouter();
+  const [isSaving, setIsSaving] = useState(false);
+  const { teamId } = useLocalSearchParams();
+  const { data: teamProfile, isLoading } = useTeamProfile(teamId);
 
   const handleSave = async ({ type, color1, color2, thickness }) => {
     setIsSaving(true);
@@ -30,28 +31,21 @@ const TeamCrest = () => {
             thickness,
           },
         })
-        .eq('id', currentRole?.team?.id);
+        .eq('id', teamId);
+      await queryClient.invalidateQueries(['teamProfile', teamId]);
 
-      await refetch();
-      await queryClient.invalidateQueries(['TeamProfile', currentRole?.team?.id]);
       router.back();
 
       Toast.show({
         type: 'success',
         text1: 'Crest Updated',
-        text2: 'Your team crest has been successfully updated.',
-        props: {
-          colorScheme: colorScheme,
-        },
+        text2: `${teamProfile?.name}'s crest has been successfully updated.`,
       });
     } catch (error) {
       Toast.show({
         type: 'error',
         text1: 'Update Failed',
         text2: `Failed to update crest: ${error.message}`,
-        props: {
-          colorScheme: colorScheme,
-        },
       });
     } finally {
       setIsSaving(false);
@@ -70,12 +64,12 @@ const TeamCrest = () => {
         }}
       />
       <View className="mt-16 flex-1 bg-bg-grouped-1">
-        <CrestEditor crest={currentRole?.team?.crest} handleSave={handleSave} isSaving={isSaving} />
+        <CrestEditor crest={teamProfile?.crest} handleSave={handleSave} isSaving={isSaving} />
       </View>
     </SafeViewWrapper>
   );
 };
 
-export default TeamCrest;
+export default ManageCrestPage;
 
 const styles = StyleSheet.create({});

@@ -1,40 +1,49 @@
+import { View, ScrollView, Pressable, Text } from 'react-native';
 import { useState, useEffect } from 'react';
-import { View, Text, ScrollView, TextInput } from 'react-native';
-import { Stack, usePathname } from 'expo-router';
+import { Stack } from 'expo-router';
 import SafeViewWrapper from '@components/SafeViewWrapper';
 import { StatusBar } from 'expo-status-bar';
 import CustomHeader from '@components/CustomHeader';
 import { useRouter, useLocalSearchParams } from 'expo-router';
-import CTAButton from '@components/CTAButton';
 import { useTeamProfile } from '@hooks/useTeamProfile';
-import ImageUploader from '@components/ImageUploader';
-import TeamLogo from '@components/TeamLogo';
 import { useUser } from '@contexts/UserProvider';
-import { useTeamPlayerActions } from '@hooks/useTeamPlayerActions';
 import FloatingBottomSheet from '@components/FloatingBottomSheet';
-import { CircleCheckBig, PencilRuler } from 'lucide-react-native';
+import { Circle, CircleCheck, CircleCheckBig, Loader } from 'lucide-react-native';
+import MenuContainer from '@components/MenuContainer';
+import EditableSettingsItem from '@components/EditableSettingsItem';
+import SettingsItem from '@components/SettingsItem';
+import Toast from 'react-native-toast-message';
+import { useQueryClient } from '@tanstack/react-query';
+import { supabase } from '@/lib/supabase';
+import BottomSheetModal from '@components/BottomSheetModal';
+import { useDivisions } from '@hooks/useDivisions';
+import CTAButton from '@components/CTAButton';
 
 const ManageTeam = () => {
-  const { currentRole } = useUser();
-  const [shouldGoBack, setShouldGoBack] = useState(false);
-  const { removeFromDivision } = useTeamPlayerActions(teamId, {
-    removeFromDivision: {
-      onSuccess: () => {
-        setShouldGoBack(true);
-      },
-    },
-  });
-  const pathname = usePathname();
-  console.log('Current Pathname:', pathname);
   const router = useRouter();
   const { teamId } = useLocalSearchParams();
-  const [editMode, setEditMode] = useState(false);
+  const { currentRole } = useUser();
+  const [shouldGoBack, setShouldGoBack] = useState(false);
+  const [showModal, setShowModal] = useState(false);
+  const { data: teamProfile, isLoading, error } = useTeamProfile(teamId);
+  const [saving, setSaving] = useState(false);
+  const queryClient = useQueryClient();
   const [modalVisible, setModalVisible] = useState(false);
   const [confirmConfig, setConfirmConfig] = useState(null);
+  const [teamName, setTeamName] = useState(teamProfile?.name);
+  const [teamAbbreviation, setTeamAbbreviation] = useState(teamProfile?.abbreviation);
+  const [teamDisplayName, setTeamDisplayName] = useState(teamProfile?.display_name);
+  const [teamJoinCode, setTeamJoinCode] = useState(teamProfile?.code);
+  const [tempDivision, setTempDivision] = useState(null);
+  const { data: divisions } = useDivisions(currentRole?.district?.id);
 
-  const { data: teamProfile, isLoading, error } = useTeamProfile(teamId);
+  const transferableDivisions = divisions?.filter(
+    (d) => d.id !== teamProfile?.division?.id && d.group_id === teamProfile?.division?.group_id
+  );
+
   console.log('teamId from params:', teamId);
   console.log('Team Profile in Manage Team:', teamProfile);
+  console.log('Divisions in Manage Team:', divisions);
 
   useEffect(() => {
     if (shouldGoBack) {
@@ -43,6 +52,18 @@ const ManageTeam = () => {
       }, 100);
     }
   }, [shouldGoBack]);
+
+  useEffect(() => {
+    if (!teamProfile) return;
+    setTeamName(teamProfile.name);
+    setTeamAbbreviation(teamProfile.abbreviation);
+    setTeamDisplayName(teamProfile.display_name);
+    setTeamJoinCode(teamProfile.code);
+  }, [teamProfile]);
+
+  useEffect(() => {
+    setTempDivision(null);
+  }, [showModal]);
 
   const openConfirm = ({
     title,
@@ -69,12 +90,12 @@ const ManageTeam = () => {
 
   const handleRemoveTeam = () => {
     openConfirm({
-      title: 'Remove team from division?',
-      message: `Are you sure you want to remove ${teamProfile?.name} from ${teamProfile?.division.name}? ${currentRole?.activeSeason ? `As the ${currentRole?.activeSeason?.name} season is still ongoing, this will also result in all remaining fixtures being changed to a bye.` : ''}`,
-      topButtonText: 'Remove Team',
-      bottomButtonText: 'Cancel',
-      topButtonType: 'error',
-      bottomButtonType: 'default',
+      title: 'Remove from Competitions too?',
+      message: `You are about to remove ${teamProfile?.name}'s membership from ${teamProfile?.division.name}? Would you also like to remove them from any active competitions?`,
+      topButtonText: 'Remove from division only',
+      bottomButtonText: 'Remove from all comps',
+      topButtonType: 'default',
+      bottomButtonType: 'error',
       topButtonFn: () => {
         removeFromDivision.mutate({
           teamId: teamProfile.id,
@@ -87,6 +108,107 @@ const ManageTeam = () => {
     });
   };
 
+  const hasChanges =
+    teamName !== teamProfile?.name ||
+    teamAbbreviation !== teamProfile?.abbreviation ||
+    teamDisplayName !== teamProfile?.display_name ||
+    teamJoinCode !== teamProfile?.code;
+
+  const handleChangeCode = (newCode) => {
+    if (!/^\d*$/.test(newCode)) {
+      Toast.show({
+        type: 'info',
+        text1: 'Join code must only contain numbers',
+      });
+      return;
+    }
+
+    if (newCode?.length > 6) {
+      Toast.show({
+        type: 'info',
+        text1: 'Join code must be 6 characters or less',
+      });
+      return;
+    }
+
+    setTeamJoinCode(newCode);
+  };
+
+  const handleChangeAbbreviation = (newAbbreviation) => {
+    if (!/^[A-Za-z]*$/.test(newAbbreviation)) {
+      return;
+    }
+
+    if (newAbbreviation?.length > 3) {
+      Toast.show({
+        type: 'info',
+        text1: 'Abbreviation must be 3 characters long',
+      });
+      return;
+    }
+
+    setTeamAbbreviation(newAbbreviation?.toUpperCase());
+  };
+
+  const saveChanges = async () => {
+    if (teamAbbreviation.length !== 3) {
+      Toast.show({
+        type: 'info',
+        text1: 'Abbreviation must be 3 characters long',
+      });
+      return;
+    }
+    if (!teamJoinCode?.length || teamJoinCode?.length !== 6) {
+      Toast.show({
+        type: 'info',
+        text1: 'Join code must be 6 characters long',
+      });
+      return;
+    }
+    if (hasChanges) {
+      try {
+        setSaving(true);
+        const { data, error } = await supabase.rpc('admin_update_team_details', {
+          p_team_id: teamProfile.id,
+          p_name: teamName,
+          p_display_name: teamDisplayName,
+          p_code: teamJoinCode,
+          p_abbreviation: teamAbbreviation,
+        });
+
+        // Transport/RPC-level failure (network, permissions, RPC not found, etc.)
+        if (error) {
+          throw error;
+        }
+
+        // Business-logic failure returned by the function itself
+        if (!data?.success) {
+          Toast.show({
+            type: 'error',
+            text1: data?.message || 'Failed to save changes',
+          });
+          return;
+        }
+
+        await queryClient.invalidateQueries(['TeamProfile', teamProfile.id]);
+        // Success
+        Toast.show({
+          type: 'success',
+          text1: data.message || 'Team details updated',
+        });
+      } catch (err) {
+        // Unexpected error: network drop, JSON parse issue, etc.
+        console.error('saveChanges unexpected error:', err);
+        Toast.show({
+          type: 'error',
+          text1: 'Something went wrong. Please try again.',
+        });
+      } finally {
+        setSaving(false);
+      }
+    }
+  };
+
   return (
     <>
       <SafeViewWrapper topColor="bg-brand" useBottomInset={false} bottomColor="bg-brand">
@@ -97,8 +219,8 @@ const ManageTeam = () => {
               header: () => (
                 <SafeViewWrapper useBottomInset={false}>
                   <CustomHeader
-                    rightIcon={editMode ? CircleCheckBig : PencilRuler}
-                    onRightPress={() => setEditMode(!editMode)}
+                    rightIcon={saving ? Loader : hasChanges ? CircleCheckBig : null}
+                    onRightPress={saving ? null : saveChanges}
                     showBack={true}
                     title={teamProfile ? teamProfile.name : 'Team Name'}
                   />
@@ -106,89 +228,96 @@ const ManageTeam = () => {
               ),
             }}
           />
-          <ScrollView className="mt-16 flex-1 bg-brand p-4">
-            <ImageUploader
-              aspectRatio={[16, 9]}
-              initialUri={teamProfile ? teamProfile?.cover_image_url : null}
-            />
-            <View className="mt-4 flex-row gap-5 rounded-3xl bg-bg-1 p-6">
-              <TeamLogo
-                size={100}
-                type={teamProfile?.crest.type}
-                color1={teamProfile?.crest.color1}
-                color2={teamProfile?.crest.color2}
-                thickness={teamProfile?.crest.thickness}
+          <ScrollView className="mt-16 flex-1 p-4">
+            <MenuContainer
+              title="Team Details"
+              footer="As league admin you may edit any of the team details above by tapping on the respective fields. Save changes after by tapping the tick in the top right.">
+              <EditableSettingsItem
+                title="Team Name"
+                value={teamName}
+                icon="userPen"
+                onChangeText={setTeamName}
+                editable={!saving}
               />
-              <View className="flex-1 items-center justify-center rounded-2xl bg-bg-2 p-3">
-                {!editMode ? (
-                  <Text style={{ fontSize: 44 }} className="font-saira-semibold text-text-2">
-                    {teamProfile?.abbreviation}
-                  </Text>
-                ) : (
-                  <TextInput
-                    editable={editMode}
-                    keyboardType="default"
-                    placeholder="Enter abbreviation"
-                    placeholderTextColor="#9CA3AF"
-                    value={teamProfile?.abbreviation}
-                    maxLength={3}
-                    returnKeyType="done"
-                    autoCapitalize="characters"
-                    style={{ fontSize: 44 }}
-                    className="font-saira-semibold text-text-2"
-                  />
-                )}
-              </View>
-            </View>
-            <View className="mt-4 gap-2 rounded-3xl bg-bg-1 p-4">
-              <View className="flex-row items-center justify-between">
-                <Text className="font-saira-medium text-xl text-text-2">Team Name</Text>
-                <Text className="font-saira-semibold text-xl text-text-1">{teamProfile?.name}</Text>
-              </View>
-              <View className="flex-row items-center justify-between">
-                <Text className="font-saira-medium text-xl text-text-2">Display Name</Text>
-                <Text className="font-saira-semibold text-xl text-text-1">
-                  {teamProfile?.display_name}
-                </Text>
-              </View>
-              <View className="flex-row items-center justify-between">
-                <Text className="font-saira-medium text-xl text-text-2">Established</Text>
-                <Text className="font-saira-semibold text-xl text-text-1">
-                  {teamProfile?.created_at
+              <EditableSettingsItem
+                title="Display Name"
+                icon="userPen"
+                value={teamDisplayName}
+                onChangeText={setTeamDisplayName}
+                editable={!saving}
+              />
+              <EditableSettingsItem
+                title="Abbreviation"
+                icon="rectangleEllipsis"
+                value={teamAbbreviation}
+                onChangeText={handleChangeAbbreviation}
+                editable={!saving}
+                autoCapitalize="characters"
+              />
+              <EditableSettingsItem
+                title="Join Code"
+                icon="keySquare"
+                value={teamJoinCode}
+                onChangeText={handleChangeCode}
+                keyboardType="numeric"
+                editable={!saving}
+              />
+            </MenuContainer>
+
+            <MenuContainer title="Team Image">
+              <SettingsItem
+                routerPath={`/my-leagues/${teamProfile?.id}/manage-crest`}
+                title="Team Crest"
+                icon="hexagon"
+              />
+              <SettingsItem
+                routerPath={`/my-leagues/${teamProfile?.id}/manage-cover-image`}
+                title="Team Cover Image"
+                icon="image"
+              />
+            </MenuContainer>
+
+            <MenuContainer title="Team Actions">
+              <SettingsItem
+                title="Transfer Division"
+                icon="arrowLeftRight"
+                callbackFn={() => setShowModal(true)}
+              />
+              <SettingsItem
+                title="Remove Team from Division"
+                icon="logout"
+                iconColor="#ff0000"
+                titleColor="text-[#ff0000]"
+                callbackFn={() => handleRemoveTeam(currentRole?.activeSeason?.id)}
+              />
+            </MenuContainer>
+            <MenuContainer title="More Details">
+              <SettingsItem icon="bookKey" title="Team ID" text={teamProfile?.id} />
+              <SettingsItem
+                title="Established"
+                icon="calendar"
+                text={
+                  teamProfile?.created_at
                     ? new Date(teamProfile?.created_at).toLocaleDateString('en-GB', {
                         year: 'numeric',
                         month: 'short',
                         day: 'numeric',
                       })
-                    : 'N/A'}
-                </Text>
-              </View>
-              <View className="flex-row items-center justify-between">
-                <Text className="font-saira-medium text-xl text-text-2">Join Code</Text>
-                <Text className="font-saira-semibold text-xl text-text-1">{teamProfile?.code}</Text>
-              </View>
-            </View>
-
-            <View className="mt-4 gap-4 rounded-3xl">
-              <CTAButton
-                type="yellow"
-                text="Manage Roster"
-                callbackFn={() => router.push(`/team/${teamId}`)}
+                    : 'N/A'
+                }
               />
-              <CTAButton
-                type="yellow"
-                text="Transfer Division"
-                callbackFn={() => router.push(`/team/${teamId}`)}
+              <SettingsItem title="Division" icon="shield" text={teamProfile?.division?.name} />
+              <SettingsItem
+                title="Visibility"
+                icon="eye"
+                text={teamProfile?.private ? 'Private' : 'Public'}
               />
-              <CTAButton
-                type="error"
-                text="Remove from Division"
-                callbackFn={() => handleRemoveTeam(currentRole?.activeSeason?.id)}
+              <SettingsItem
+                title="Recruitment Status"
+                icon="binoculars"
+                text={teamProfile?.is_recruiting ? 'Recruiting' : 'Closed'}
               />
-            </View>
-            <Text className="text-md my-6 text-center font-saira text-text-on-brand">
-              {`ID: ${teamProfile?.id}`}
-            </Text>
+            </MenuContainer>
           </ScrollView>
         </View>
       </SafeViewWrapper>
@@ -204,6 +333,39 @@ const ManageTeam = () => {
         bottomButtonFn={confirmConfig?.bottomButtonFn}
         onCancel={() => setModalVisible(false)}
       />
+      <BottomSheetModal showModal={showModal} setShowModal={setShowModal} title="Transfer Division">
+        <View className="flex-1 p-4 pb-16">
+          <View className="flex-1">
+            {transferableDivisions?.map((division) => (
+              <Pressable
+                className="mb-3 flex-row items-center justify-between rounded-3xl bg-bg-2 p-4"
+                key={division?.id}
+                onPress={() => setTempDivision(division)}>
+                <View>
+                  <Text
+                    className={`font-tektur-medium text-2xl ${
+                      tempDivision?.id === division?.id ? 'text-text-1' : 'text-text-2'
+                    }`}>
+                    {division.name}
+                  </Text>
+                  <Text className="font-tektur text-xl text-text-2">Tier {division?.tier}</Text>
+                </View>
+                {tempDivision?.id === division?.id ? (
+                  <CircleCheck size={40} strokeWidth={1.5} />
+                ) : (
+                  <Circle size={40} strokeWidth={1.5} />
+                )}
+              </Pressable>
+            ))}
+          </View>
+          <CTAButton
+            text="Transfer"
+            type="yellow"
+            disabled={!tempDivision}
+            onPress={() => handleTransferDivision(tempDivision?.id)}
+          />
+        </View>
+      </BottomSheetModal>
     </>
   );
 };

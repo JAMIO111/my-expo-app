@@ -14,6 +14,7 @@ export function useTeamProfile(teamId) {
           division:Divisions(
             id,
             name,
+            group_id,
             admin_approval_required,
             district:Districts(id, name)
           )

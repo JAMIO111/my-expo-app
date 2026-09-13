@@ -1,8 +1,6 @@
 import { StyleSheet, Text, View, Alert, ScrollView } from 'react-native';
-import { useRouter, useLocalSearchParams } from 'expo-router';
-import { Stack } from 'expo-router';
+import { useRouter, useLocalSearchParams, Stack } from 'expo-router';
 import StepPillGroup from '@components/StepPillGroup';
-import SafeViewWrapper from '@components/SafeViewWrapper';
 import CrestEditor from '@components/CrestEditor';
 
 const TeamCrest = () => {
@@ -24,29 +22,33 @@ const TeamCrest = () => {
   };
 
   const handleContinue = (crestData) => {
-    const duplicate = teams.some((team) => isSameCrest(team.crest, crestData));
+    try {
+      const duplicate = teams.some((team) => isSameCrest(team.crest, crestData));
 
-    if (duplicate) {
-      Alert.alert(
-        'Crest already in use',
-        'Another team in this league already uses this crest. Pick different colours or a different style.'
-      );
-      return;
+      if (duplicate) {
+        Alert.alert(
+          'Crest already in use',
+          'Another team in this league already uses this crest. Pick different colours or a different style.'
+        );
+        return;
+      }
+
+      const updatedTeamDetails = {
+        ...teamDetails,
+        crest: crestData,
+      };
+
+      router.push({
+        pathname: '/(main)/onboarding/(entity-onboarding)/team-address',
+        params: {
+          league: JSON.stringify(league),
+          teamDetails: JSON.stringify(updatedTeamDetails),
+          teams: JSON.stringify(teams),
+        },
+      });
+    } catch (error) {
+      Alert.alert('Error', `An error occurred: ${error.message}`);
     }
-
-    const updatedTeamDetails = {
-      ...teamDetails,
-      crest: crestData,
-    };
-
-    router.push({
-      pathname: '/(main)/onboarding/(entity-onboarding)/team-address',
-      params: {
-        league: JSON.stringify(league),
-        teamDetails: JSON.stringify(updatedTeamDetails),
-        teams: JSON.stringify(teams),
-      },
-    });
   };
 
   return (
@@ -70,6 +72,7 @@ const TeamCrest = () => {
                 crest={teamDetails.crest || {}}
                 buttonText="Save & Continue"
                 handleSave={handleContinue}
+                isSaving={false}
               />
             </View>
           </View>

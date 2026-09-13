@@ -5,7 +5,7 @@ import { useUser } from '@contexts/UserProvider';
 import CustomHeader from '@components/CustomHeader';
 import SafeViewWrapper from '@components/SafeViewWrapper';
 import { ScrollView } from 'react-native-gesture-handler';
-import DivisionAccordion from '@components/DivisionAccordion';
+import MembersAccordion from '@components/MembersAccordion';
 import { useTeamsByDivision } from '@hooks/useTeamsByDivision';
 import FixturesAccordion from '@components/FixturesAccordion';
 import Heading from '@components/Heading';
@@ -16,8 +16,16 @@ import EditDivisionForm from '@components/EditDivisionForm';
 import GenerateFixturesForm from '@components/GenerateFixturesForm';
 import { useDivisions } from '@hooks/useDivisions';
 import { useCompetitions } from '@hooks/useCompetitions';
-import Ionicons from '@expo/vector-icons/Ionicons';
-import { Wrench } from 'lucide-react-native';
+import {
+  Shield,
+  Medal,
+  Layers,
+  Users,
+  User,
+  ChevronUp,
+  ChevronDown,
+  Wrench,
+} from 'lucide-react-native';
 
 const DivisionOverview = () => {
   const { currentRole } = useUser();
@@ -38,7 +46,6 @@ const DivisionOverview = () => {
   });
   console.log('Competitions in Division Overview:', LeagueCompetition);
   const [expandedAccordion, setExpandedAccordion] = useState(null);
-  const [competitionInstance, setCompetitionInstance] = useState(null);
   const [showDetails, setShowDetails] = useState(true);
   const [showActiveCompetition, setShowActiveCompetition] = useState(true);
   const [showDivisionMembers, setShowDivisionMembers] = useState(true);
@@ -53,27 +60,44 @@ const DivisionOverview = () => {
       comp.season_id === currentRole.activeSeason.id
   );
 
-  console.log('Current Season Competition:', currentSeasonComp);
+  const divisionDetailsConfig = [
+    {
+      title: 'Division Name',
+      value: division?.name || 'N/A',
+      icon: Shield,
+    },
+    {
+      title: 'Division Tier',
+      value: division?.tier ? `Tier ${division.tier}` : 'N/A',
+      icon: Medal,
+    },
+    {
+      title: 'Division Group',
+      value: division?.group_name || 'N/A',
+      icon: Layers,
+    },
+    {
+      title: 'Competitor Type',
+      value: division?.competitor_type
+        ? division.competitor_type.slice(0, 1).toUpperCase() + division.competitor_type.slice(1)
+        : 'N/A',
+      icon: division?.competitor_type === 'team' ? Users : User,
+    },
+    {
+      title: 'Promotion Spots',
+      value: division?.promotion_spots || 'No promotions',
+      icon: ChevronUp,
+    },
+    {
+      title: 'Relegation Spots',
+      value: division?.relegation_spots || 'No relegations',
+      icon: ChevronDown,
+    },
+  ];
 
+  console.log('Current Season Competition:', currentSeasonComp);
   console.log('Competitions Loading:', isCompetitionsLoading, 'Error:', isCompetitionsError);
   console.log('Active Season:', currentRole?.activeSeason);
-
-  const InfoCard = ({ title, value, icon, iconColor, iconSize }) => (
-    <View>
-      <Text className="px-1 font-saira text-lg text-text-2">{title}</Text>
-      <View className="flex-row items-center">
-        {icon && (
-          <Ionicons name={icon} size={iconSize || 20} color={iconColor || 'red'} className="mr-1" />
-        )}
-        <Text
-          adjustsFontSizeToFit
-          numberOfLines={1}
-          className="px-1 font-saira-medium text-xl text-text-1">
-          {value || 'N/A'}
-        </Text>
-      </View>
-    </View>
-  );
 
   return (
     <>
@@ -99,56 +123,14 @@ const DivisionOverview = () => {
           contentContainerStyle={{ gap: 12, marginVertical: 58, paddingBottom: 32 }}
           className="flex-1 bg-bg-2 p-3">
           <ExpandableView title="Division Details" show={showDetails} setShow={setShowDetails}>
-            <View className="flex-row gap-5 pt-2">
-              <View className="flex-1 gap-3">
-                <InfoCard
-                  title="Division Name"
-                  value={division.name}
-                  icon="shield"
-                  iconColor="blue"
-                  iconSize={16}
-                />
-                <InfoCard
-                  title="Division Tier"
-                  value={division.tier ? `Tier ${division.tier}` : 'N/A'}
-                  icon="medal-outline"
-                  iconColor="orange"
-                  iconSize={16}
-                />
-                <InfoCard
-                  title="Promotion Spots"
-                  value={division.promotion_spots || 'No promotions'}
-                  icon="caret-up-outline"
-                  iconColor="green"
-                />
-              </View>
-              <View className="flex-1 gap-3 pr-2">
-                <InfoCard
-                  title="Division Group"
-                  value={division.group_name || 'N/A'}
-                  icon="layers-outline"
-                  iconColor="purple"
-                  iconSize={16}
-                />
-                <InfoCard
-                  title="Competitor Type"
-                  value={
-                    division.competitor_type
-                      ? division.competitor_type.slice(0, 1).toUpperCase() +
-                        division.competitor_type.slice(1)
-                      : 'N/A'
-                  }
-                  icon={division.competitor_type === 'team' ? 'people' : 'person'}
-                  iconColor="teal"
-                  iconSize={16}
-                />
-                <InfoCard
-                  title="Relegation Spots"
-                  value={division.relegation_spots || 'No relegations'}
-                  icon="caret-down-outline"
-                  iconColor="red"
-                />
-              </View>
+            <View className="flex-col gap-2 p-2 pt-0">
+              {divisionDetailsConfig.map(({ title, value, icon: Icon }) => (
+                <View key={title} className="flex-row gap-2 pt-2">
+                  {Icon && <Icon className="mr-2" size={20} color={'#666'} />}
+                  <Text className="flex-1 px-1 font-saira text-lg text-text-2">{title}</Text>
+                  <Text className="px-1 font-saira text-xl text-text-1">{value}</Text>
+                </View>
+              ))}
             </View>
           </ExpandableView>
 
@@ -159,13 +141,13 @@ const DivisionOverview = () => {
             fixedOpen={!currentSeasonComp && !isCompetitionsLoading}>
             {isCompetitionsLoading || !currentRole ? (
               <View className="mb-4 rounded-2xl bg-bg-2 px-4 py-1 shadow-sm">
-                <Text className="px-1 py-3 text-center font-saira text-lg text-text-2">
+                <Text className="px-1 py-3 text-center font-tektur text-lg text-text-2">
                   Loading current season competition...
                 </Text>
               </View>
             ) : !currentRole?.activeSeason && !isCompetitionsLoading ? (
               <View className="mb-4 rounded-2xl bg-bg-2 px-4 py-1 shadow-sm">
-                <Text className="px-1 py-3 text-center font-saira text-lg text-text-2">
+                <Text className="px-1 py-3 text-center font-tektur text-lg text-text-2">
                   There is no active season. Please come back once the new season has been
                   initiated.
                 </Text>
@@ -180,7 +162,7 @@ const DivisionOverview = () => {
                     setModalType('initiate-competition');
                   }}
                 />
-                <Text className="mt-4 px-2 font-saira text-sm text-text-2">
+                <Text className="mt-4 px-2 font-tektur text-sm text-text-2">
                   You haven't initiated a competition for the {currentRole?.activeSeason?.name}{' '}
                   season yet. Please initiate a competition to add teams and create fixtures.
                 </Text>
@@ -237,7 +219,7 @@ const DivisionOverview = () => {
             title="Members"
             show={showDivisionMembers}
             setShow={setShowDivisionMembers}>
-            <DivisionAccordion
+            <MembersAccordion
               isExpanded={expandedAccordion === 'division'}
               onPress={() =>
                 setExpandedAccordion(expandedAccordion === 'division' ? null : 'division')

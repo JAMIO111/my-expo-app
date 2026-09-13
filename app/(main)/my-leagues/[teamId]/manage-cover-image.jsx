@@ -1,34 +1,33 @@
-import { StyleSheet, View, Alert } from 'react-native';
-import { Stack, useRouter } from 'expo-router';
+import { View, Alert } from 'react-native';
+import { supabase } from '@lib/supabase';
+import { useState, useRef, useEffect } from 'react';
+import { Stack, useRouter, useLocalSearchParams } from 'expo-router';
 import CustomHeader from '@components/CustomHeader';
 import SafeViewWrapper from '@components/SafeViewWrapper';
+import { useTeamProfile } from '@hooks/useTeamProfile';
 import ImageUploader from '@components/ImageUploader';
-import { useUser } from '@contexts/UserProvider';
-import { useQueryClient } from '@tanstack/react-query';
-import useCompressAndUploadImage from '@hooks/useCompressAndUploadImage';
-import { supabase } from '@/lib/supabase';
-import Toast from 'react-native-toast-message';
-import { useState, useRef, useEffect } from 'react';
 import MenuContainer from '@components/MenuContainer';
 import SettingsItem from '@components/SettingsItem';
+import Toast from 'react-native-toast-message';
+import { useQueryClient } from '@tanstack/react-query';
+import useCompressAndUploadImage from '@hooks/useCompressAndUploadImage';
 
-const TeamCoverImage = () => {
-  const router = useRouter();
+const ManageCoverImagePage = () => {
   const queryClient = useQueryClient();
-  const { currentRole, refetch } = useUser();
+  const router = useRouter();
   const [isSaving, setIsSaving] = useState(false);
+  const { teamId } = useLocalSearchParams();
+  const { data: teamProfile, isLoading } = useTeamProfile(teamId);
 
   // The saved cover, as a stable baseline — never recomputed from local edits.
-  const [originalCoverUrl, setOriginalCoverUrl] = useState(
-    currentRole?.team?.cover_image_url || null
-  );
+  const [originalCoverUrl, setOriginalCoverUrl] = useState(teamProfile?.cover_image_url || null);
   useEffect(() => {
-    if (currentRole?.team?.cover_image_url !== undefined) {
-      setOriginalCoverUrl(currentRole.team.cover_image_url);
+    if (teamProfile?.cover_image_url !== undefined) {
+      setOriginalCoverUrl(teamProfile.cover_image_url);
     }
-  }, [currentRole?.team?.cover_image_url]);
+  }, [teamProfile?.cover_image_url]);
 
-  const [imageUri, setImageUri] = useState(currentRole?.team?.cover_image_url || null);
+  const [imageUri, setImageUri] = useState(teamProfile?.cover_image_url || null);
   const [imageRemoved, setImageRemoved] = useState(false);
   const imageUploaderRef = useRef(null);
 
@@ -73,7 +72,7 @@ const TeamCoverImage = () => {
       return;
     }
 
-    const folderPath = `${currentRole?.team?.id}/`;
+    const folderPath = `${teamId}/`;
     let newImagePath = null;
 
     try {
@@ -81,35 +80,25 @@ const TeamCoverImage = () => {
       let coverImageUrl = null;
 
       if (hasNewImage) {
-        // Upload the NEW image first — nothing is deleted yet, so if this
-        // fails, the team's existing cover image is untouched.
         coverImageUrl = await uploadToSupabase(imageUri, folderPath, 'team-cover-images');
 
-        // Derive the relative storage path from the public URL, since
-        // list()/remove() work in relative paths, not public URLs.
         const marker = '/team-cover-images/';
         const markerIndex = coverImageUrl.indexOf(marker);
         newImagePath = markerIndex !== -1 ? coverImageUrl.slice(markerIndex + marker.length) : null;
       }
-      // else: coverImageUrl stays null — explicit removal
 
       const { error: updateError } = await supabase
         .from('Teams')
         .update({ cover_image_url: coverImageUrl })
-        .eq('id', currentRole?.team?.id);
+        .eq('id', teamId);
 
       if (updateError) {
-        // DB update failed after a successful upload — remove the orphaned
-        // new file so storage doesn't accumulate unreferenced images.
         if (newImagePath) {
           await supabase.storage.from('team-cover-images').remove([newImagePath]);
         }
-        Alert.alert('Update Failed', updateError.message);
-        return;
+        throw new Error(updateError.message);
       }
 
-      // Clean up the folder — covers both "replaced with new image" and
-      // "explicitly removed" cases. Skipped entirely above if nothing changed.
       const { data: existingFiles, error: listError } = await supabase.storage
         .from('team-cover-images')
         .list(folderPath, { limit: 100 });
@@ -117,7 +106,7 @@ const TeamCoverImage = () => {
       if (!listError && existingFiles?.length) {
         const oldPaths = existingFiles
           .map((f) => `${folderPath}${f.name}`)
-          .filter((path) => path !== newImagePath); // don't delete the one we just uploaded
+          .filter((path) => path !== newImagePath);
 
         if (oldPaths.length) {
           const { error: deleteError } = await supabase.storage
@@ -128,8 +117,8 @@ const TeamCoverImage = () => {
           }
         }
       }
-      await refetch();
-      await queryClient.invalidateQueries(['TeamProfile', currentRole?.team?.id]);
+
+      await queryClient.invalidateQueries(['TeamProfile', teamId]);
       router.back();
       Toast.show({
         type: 'success',
@@ -151,7 +140,7 @@ const TeamCoverImage = () => {
         options={{
           header: () => (
             <SafeViewWrapper useBottomInset={false}>
-              <CustomHeader title="Team Cover Image" />
+              <CustomHeader title="Cover Image Editor" />
             </SafeViewWrapper>
           ),
         }}
@@ -188,6 +177,4 @@ const TeamCoverImage = () => {
   );
 };
 
-export default TeamCoverImage;
-
-const styles = StyleSheet.create({});
+export default ManageCoverImagePage;

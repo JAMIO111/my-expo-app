@@ -13,9 +13,9 @@ const EditableSettingsItem = ({
   placeholder = '',
   iconColor = '#333',
   routerPath,
-  lastItem = false,
   editable = true,
   keyboardType = 'default',
+  autoCapitalize = 'none',
 }) => {
   const router = useRouter();
   const colorScheme = useColorScheme();
@@ -46,12 +46,12 @@ const EditableSettingsItem = ({
             <Text
               numberOfLines={1}
               style={{ flexShrink: 0 }}
-              className="w-32 pl-2 text-lg font-medium text-text-1">
+              className="w-32 flex-1 pl-2 text-lg font-medium text-text-1">
               {title}
             </Text>
 
             <TextInput
-              className="flex-1 py-1 pr-5 text-right text-xl text-text-2"
+              className="flex-1 py-1 pr-5 text-left text-xl text-text-2"
               style={{ lineHeight: 22, padding: 0 }}
               value={value}
               onChangeText={onChangeText}
@@ -60,6 +60,9 @@ const EditableSettingsItem = ({
               keyboardType={keyboardType}
               numberOfLines={1}
               ellipsizeMode="tail"
+              autoCapitalize={autoCapitalize}
+              autoComplete="off"
+              autoCorrect={false}
             />
 
             {routerPath && <IonIcons name="chevron-forward" size={18} color={themeColors.icon} />}

@@ -63,6 +63,10 @@ import {
   Search,
   Binoculars,
   CalendarCheck2,
+  ArrowLeftRight,
+  Shield,
+  BookKey,
+  KeySquare,
 } from 'lucide-react-native';
 
 export const iconMap = {
@@ -121,6 +125,10 @@ export const iconMap = {
   search: Search,
   binoculars: Binoculars,
   calendarCheck2: CalendarCheck2,
+  arrowLeftRight: ArrowLeftRight,
+  shield: Shield,
+  bookKey: BookKey,
+  keySquare: KeySquare,
 };
 
 const SettingsItem = ({

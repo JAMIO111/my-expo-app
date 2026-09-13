@@ -40,7 +40,7 @@ const TYPES = [
   'Quartered',
 ];
 
-const CrestEditor = ({ crest, handleSave, buttonText = 'Save Changes' }) => {
+const CrestEditor = ({ crest, handleSave, buttonText = 'Save Changes', isSaving }) => {
   const [primaryColor, setPrimaryColor] = useState(crest?.color1 || '#000000');
   const [secondaryColor, setSecondaryColor] = useState(crest?.color2 || '#FFFFFF'); //Yellow
   const [thickness, setThickness] = useState(crest?.thickness || '2.7');
@@ -152,20 +152,18 @@ const CrestEditor = ({ crest, handleSave, buttonText = 'Save Changes' }) => {
         <View className="w-full">
           <CTAButton
             type="yellow"
+            loading={isSaving}
+            loadingText="Saving..."
             text={buttonText}
             callbackFn={() => {
-              console.log('Saving changes:', {
-                type,
-                color1: primaryColor,
-                color2: secondaryColor,
-                thickness,
-              });
-              handleSave({
-                type,
-                color1: primaryColor,
-                color2: secondaryColor,
-                thickness,
-              });
+              if (!isSaving) {
+                handleSave({
+                  type,
+                  color1: primaryColor,
+                  color2: secondaryColor,
+                  thickness,
+                });
+              }
             }}
           />
         </View>

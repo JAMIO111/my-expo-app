@@ -1,18 +1,18 @@
 import { useState } from 'react';
-import { View, Text, Pressable, Platform, UIManager, ActivityIndicator } from 'react-native';
+import { View, Text, Pressable, Platform, UIManager } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import TeamLogo from '@components/TeamLogo';
 import { useRouter } from 'expo-router';
 import CTAButton from '@components/CTAButton';
 import { useTeamPlayers } from '@hooks/useTeamPlayers';
 import Avatar from '@components/Avatar';
-import { UserRoundCog } from 'lucide-react-native';
+import { UserCog } from 'lucide-react-native';
 
 if (Platform.OS === 'android') {
   UIManager.setLayoutAnimationEnabledExperimental?.(true);
 }
 
-const DivisionAccordion = ({ isExpanded, onPress, divisionName, teams = [] }) => {
+const MembersAccordion = ({ divisionName, teams = [] }) => {
   const router = useRouter();
   const [expandedTeam, setExpandedTeam] = useState(null);
   const { data: teamPlayers, isLoading } = useTeamPlayers(expandedTeam);
@@ -20,6 +20,7 @@ const DivisionAccordion = ({ isExpanded, onPress, divisionName, teams = [] }) =>
   const teamsExist = teams && teams.length > 0;
 
   console.log('DivisionAccordion Props - divisionName:', divisionName, 'teams:', teams);
+  console.log('Team Players', teamPlayers);
 
   return (
     <View className="w-full gap-2 rounded-2xl">
@@ -37,8 +38,8 @@ const DivisionAccordion = ({ isExpanded, onPress, divisionName, teams = [] }) =>
               thickness={team.crest?.thickness}
             />
             <View className="flex flex-1 flex-row items-center gap-4 pl-4">
-              <Text className="font-saira-medium text-lg text-text-2">{team.abbreviation}</Text>
-              <Text className="font-saira-medium text-lg text-text-1">{team.name}</Text>
+              <Text className="font-tektur-medium text-lg text-text-2">{team.abbreviation}</Text>
+              <Text className="font-tektur-medium text-lg text-text-1">{team.name}</Text>
             </View>
             <Ionicons
               name="chevron-down"
@@ -57,32 +58,34 @@ const DivisionAccordion = ({ isExpanded, onPress, divisionName, teams = [] }) =>
                 ) : !teamPlayers || teamPlayers?.length === 0 ? (
                   <Text className="font-tektur text-text-2">No players assigned.</Text>
                 ) : (
-                  teamPlayers?.map((player) => (
-                    <View key={player.id} className="flex-row items-center gap-3">
-                      <Avatar player={player} size={32} borderRadius={8} />
-                      <Text key={player.id} className="font-tektur flex-1 text-lg text-text-1">
-                        {`${player.first_name} ${player.surname} ${player.nickname ? `(${player.nickname})` : ''}`}
-                      </Text>
-                      {team?.captain === player?.id && (
-                        <View className="h-8 w-14 justify-center rounded border bg-yellow-500 shadow-[0_2px_4px_rgba(0,0,0,0.2)]">
-                          <View className="w-full items-center justify-center bg-white px-1">
-                            <Text style={{ lineHeight: 16 }} className="font-tektur text-xs">
-                              Captain
-                            </Text>
+                  teamPlayers
+                    ?.sort((a, b) => a.surname.localeCompare(b.surname))
+                    .map((player) => (
+                      <View key={player.id} className="flex-row items-center gap-3">
+                        <Avatar player={player} size={32} borderRadius={8} />
+                        <Text key={player.id} className="flex-1 font-tektur text-lg text-text-1">
+                          {`${player.first_name} ${player.surname} ${player.nickname ? `(${player.nickname})` : ''}`}
+                        </Text>
+                        {player?.role === 'captain' && (
+                          <View className="h-8 w-14 justify-center rounded border bg-yellow-500 shadow-[0_2px_4px_rgba(0,0,0,0.2)]">
+                            <View className="w-full items-center justify-center bg-white px-1">
+                              <Text style={{ lineHeight: 16 }} className="font-tektur text-xs">
+                                Captain
+                              </Text>
+                            </View>
                           </View>
-                        </View>
-                      )}
-                      {team?.vice_captain === player?.id && (
-                        <View className="h-8 w-14 justify-center rounded border border-brand-light bg-brand-light shadow-[0_2px_4px_rgba(0,0,0,0.2)]">
-                          <View className="w-full items-center justify-center bg-white px-1">
-                            <Text style={{ lineHeight: 16 }} className="font-tektur text-xs">
-                              VC
-                            </Text>
+                        )}
+                        {player?.role === 'vice_captain' && (
+                          <View className="h-8 w-14 justify-center rounded border border-brand-light bg-brand-light shadow-[0_2px_4px_rgba(0,0,0,0.2)]">
+                            <View className="w-full items-center justify-center bg-white px-1">
+                              <Text style={{ lineHeight: 16 }} className="font-tektur text-xs">
+                                VC
+                              </Text>
+                            </View>
                           </View>
-                        </View>
-                      )}
-                    </View>
-                  ))
+                        )}
+                      </View>
+                    ))
                 )}
               </View>
               <CTAButton
@@ -90,7 +93,7 @@ const DivisionAccordion = ({ isExpanded, onPress, divisionName, teams = [] }) =>
                 text="Manage Team"
                 callbackFn={() => router.push(`/my-leagues/${team.id}/manage-team`)}
                 className="mt-3"
-                lucideIcon={<UserRoundCog size={20} color="black" />}
+                lucideIcon={<UserCog size={20} color="black" />}
               />
             </View>
           )}
@@ -100,4 +103,4 @@ const DivisionAccordion = ({ isExpanded, onPress, divisionName, teams = [] }) =>
   );
 };
 
-export default DivisionAccordion;
+export default MembersAccordion;
