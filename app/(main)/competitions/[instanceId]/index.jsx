@@ -468,7 +468,7 @@ const index = () => {
       queryClient.invalidateQueries(['CompetitionInstanceDetails', instanceId]);
       queryClient.invalidateQueries(['CompetitionInstances']);
     } catch (err) {
-      console.error(err);
+      console.log(err);
       Toast.show({
         type: 'error',
         text1: 'Action Failed',
@@ -580,7 +580,7 @@ const index = () => {
             <View className="gap-2">
               {competitionInstance?.CompetitionInstanceSponsors?.[0]?.is_paid && (
                 <SponsorshipCard
-                  sponsor={competitionInstance?.CompetitionInstanceSponsors?.[0]?.sponsor}
+                  sponsorInstance={competitionInstance?.CompetitionInstanceSponsors?.[0]}
                   tagline={`Proud sponsor of the ${competitionInstance?.name} competition`}
                 />
               )}
@@ -601,7 +601,7 @@ const index = () => {
               {canJoin &&
                 checkEligibility(player, competitionInstance, currentRole).status ===
                   'Eligible' && (
-                  <View className="p-4 pt-0">
+                  <View className=" pt-3">
                     <CTAButton
                       callbackFn={() => {
                         showSheet({

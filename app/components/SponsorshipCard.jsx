@@ -1,13 +1,32 @@
 import { View, Text, Pressable, Image, Linking } from 'react-native';
 import { ExternalLink, Globe } from 'lucide-react-native';
+import { supabase } from '@lib/supabase';
 
-export default function SponsorshipCard({ sponsor, variant = 'featured', tagline }) {
-  if (!sponsor) return null;
+export default function SponsorshipCard({ sponsorInstance, variant = 'featured', tagline }) {
+  if (!sponsorInstance) return null;
 
-  const { name, logo_url, website_url } = sponsor;
+  const { name, logo_url, website_url } = sponsorInstance.sponsor;
 
-  const handlePress = () => {
-    if (website_url) Linking.openURL(website_url);
+  const handlePress = async () => {
+    if (website_url) {
+      Linking.openURL(website_url);
+      console.log('Sponsor clicked:', sponsorInstance);
+    }
+
+    if (!sponsorInstance?.id) {
+      console.error('No sponsor ID found');
+      return;
+    }
+
+    const { data, error } = await supabase.rpc('increment_sponsor_clicks', {
+      p_competition_instance_sponsor_id: sponsorInstance.id,
+    });
+
+    console.log('RPC result:', { data, error });
+
+    if (error) {
+      console.error('Failed to increment sponsor clicks:', error);
+    }
   };
 
   const logoSource = typeof logo_url === 'string' ? { uri: logo_url } : logo_url;

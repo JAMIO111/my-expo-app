@@ -23,6 +23,9 @@ import {
 import CTAButton from '@components/CTAButton';
 import PlayerProfileHeader from '@components/PlayerProfileHeader';
 import AdBanner from '@components/AdBanner';
+import TrophyCabinet from '@components/TrophyCabinet';
+import { trophyIcons } from '@lib/badgeIcons';
+import usePlayerAwards from '@hooks/usePlayerAwards';
 
 const ProfilePage = () => {
   const router = useRouter();
@@ -30,13 +33,23 @@ const ProfilePage = () => {
   const { data: globalRank, isLoading: isGlobalRankLoading } = useGlobalRank(player?.id);
   const { data: recentBadges, isLoading: isRecentBadgesLoading } = useRecentBadges(player?.id);
 
-  console.log('Recent Badges:', recentBadges);
+  const {
+    data: playerAwards,
+    isLoading: isLoadingPlayerAwards,
+    error: playerAwardsError,
+  } = usePlayerAwards(player?.id);
 
-  const getInitials = (firstName, lastName) => {
-    const firstInitial = firstName ? firstName.charAt(0).toUpperCase() : '';
-    const lastInitial = lastName ? lastName.charAt(0).toUpperCase() : '';
-    return `${firstInitial}${lastInitial}`;
-  };
+  const trophyIconMap = Object.fromEntries(trophyIcons.map((t) => [t.key, t]));
+  const trophies = playerAwards?.map((award) => {
+    const trophyDef = trophyIconMap[award.reward];
+
+    return {
+      ...award,
+      image: trophyDef?.icon ?? null,
+    };
+  });
+
+  console.log('Recent Badges:', recentBadges);
 
   return (
     <SafeViewWrapper topColor="bg-brand" bottomColor="bg-brand">
@@ -183,6 +196,16 @@ const ProfilePage = () => {
                 lucideIcon={<Award size={24} color="white" />}
               />
             </View>
+          </View>
+          <View className="p-4">
+            <Heading text="Trophy Cabinet" />
+            <TrophyCabinet
+              trophies={trophies || []}
+              displayName={[player?.first_name, player?.surname].filter(Boolean).join(' ')}
+              establishedYear={
+                player?.created_at ? new Date(player?.created_at).getFullYear() : '2026'
+              }
+            />
           </View>
           <View
             style={{ borderRadius: 28 }}

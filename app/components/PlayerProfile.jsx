@@ -398,7 +398,9 @@ const PlayerProfile = ({ context, isLoading, playerProfile, error }) => {
             <Heading text="Trophy Cabinet" />
             <TrophyCabinet
               trophies={trophies || []}
-              displayName={`${playerProfile?.first_name} ${playerProfile?.surname}`}
+              displayName={[playerProfile?.first_name, playerProfile?.surname]
+                .filter(Boolean)
+                .join(' ')}
               establishedYear={
                 playerProfile?.created_at
                   ? new Date(playerProfile.created_at).getFullYear()
