@@ -54,7 +54,6 @@ import ExpandableView from '@components/ExpandableView';
 import { useKnockoutBracket } from '@hooks/useKnockoutBracket';
 import PressableScale from '@components/PressableScale';
 import SponsorshipCard from '@components/SponsorshipCard';
-import { initConnection } from 'react-native-iap';
 
 export function getStatusColors(status) {
   switch (status) {

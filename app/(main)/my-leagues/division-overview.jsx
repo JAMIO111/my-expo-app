@@ -8,7 +8,6 @@ import { ScrollView } from 'react-native-gesture-handler';
 import MembersAccordion from '@components/MembersAccordion';
 import { useTeamsByDivision } from '@hooks/useTeamsByDivision';
 import FixturesAccordion from '@components/FixturesAccordion';
-import Heading from '@components/Heading';
 import ExpandableView from '@components/ExpandableView';
 import BottomSheetModal from '@components/BottomSheetModal';
 import CTAButton from '@components/CTAButton';
@@ -25,6 +24,8 @@ import {
   ChevronUp,
   ChevronDown,
   Wrench,
+  CalendarClock,
+  ShieldCheck,
 } from 'lucide-react-native';
 
 const DivisionOverview = () => {
@@ -48,6 +49,7 @@ const DivisionOverview = () => {
   const [expandedAccordion, setExpandedAccordion] = useState(null);
   const [showDetails, setShowDetails] = useState(true);
   const [showActiveCompetition, setShowActiveCompetition] = useState(true);
+  const [showFixtures, setShowFixtures] = useState(false);
   const [showDivisionMembers, setShowDivisionMembers] = useState(true);
   const [modalType, setModalType] = useState(null);
   const [showModal, setShowModal] = useState(false);
@@ -146,14 +148,18 @@ const DivisionOverview = () => {
                 </Text>
               </View>
             ) : !currentRole?.activeSeason && !isCompetitionsLoading ? (
-              <View className="mb-4 rounded-2xl bg-bg-2 px-4 py-1 shadow-sm">
-                <Text className="px-1 py-3 text-center font-tektur text-lg text-text-2">
+              <View className="rounded-2xl bg-bg-2 px-4 py-1">
+                <Text className="px-1 py-4 text-center font-tektur text-text-2">
                   There is no active season. Please come back once the new season has been
                   initiated.
                 </Text>
               </View>
             ) : !currentSeasonComp && !isCompetitionsLoading ? (
-              <View className="mx-2 my-2">
+              <View>
+                <Text className="mb-4 px-2 font-tektur text-sm text-text-2">
+                  You haven't initiated a competition for the {currentRole?.activeSeason?.name}{' '}
+                  season yet. Please initiate a competition to add teams and create fixtures.
+                </Text>
                 <CTAButton
                   type="yellow"
                   text={`Initiate ${currentRole?.activeSeason?.name} competition`}
@@ -162,58 +168,57 @@ const DivisionOverview = () => {
                     setModalType('initiate-competition');
                   }}
                 />
-                <Text className="mt-4 px-2 font-tektur text-sm text-text-2">
-                  You haven't initiated a competition for the {currentRole?.activeSeason?.name}{' '}
-                  season yet. Please initiate a competition to add teams and create fixtures.
-                </Text>
               </View>
             ) : !isCompetitionsLoading ? (
-              <View className="mb-4 gap-2 rounded-2xl bg-bg-2 p-4 shadow-sm">
-                <Text className="font-saira-semibold text-xl text-text-1">
-                  {`${currentRole?.activeSeason?.name} ${currentSeasonComp?.name || 'Competition'} - ${currentSeasonComp?.status
-                    .charAt(0)
-                    .toUpperCase()}${currentSeasonComp?.status?.slice(1)}`}
+              <View className="flex-row items-start justify-between gap-4 rounded-2xl bg-bg-2 p-4">
+                <Text className="flex-1 font-saira-semibold text-xl text-text-1">
+                  {`${currentRole?.activeSeason?.name} ${currentSeasonComp?.name || 'Competition'}`}
                 </Text>
-                <Text className="font-saira-medium text-text-2">{`Initiated ${new Date(
-                  currentSeasonComp?.created_at
-                ).toLocaleDateString('en-GB', {
-                  weekday: 'short',
-                  day: 'numeric',
-                  month: 'short',
-                  year: '2-digit',
-                  hour: '2-digit',
-                  minute: '2-digit',
-                })}`}</Text>
+
+                <View
+                  className={`flex shrink-0 flex-row items-center gap-1 rounded-full px-2 py-1 ${
+                    currentSeasonComp?.status === 'active'
+                      ? 'bg-theme-green/20'
+                      : 'bg-theme-orange/20'
+                  }`}>
+                  {currentSeasonComp?.status === 'active' ? (
+                    <ShieldCheck size={16} color="#22c55e" />
+                  ) : (
+                    <CalendarClock size={16} color="#f97316" />
+                  )}
+                  <Text
+                    className={`font-saira-medium ${
+                      currentSeasonComp?.status === 'active' ? 'text-[#22c55e]' : 'text-[#f97316]'
+                    }`}>
+                    {currentSeasonComp?.status?.charAt(0).toUpperCase() +
+                      currentSeasonComp?.status?.slice(1)}
+                  </Text>
+                </View>
               </View>
             ) : null}
             {currentRole?.type === 'admin' &&
               currentSeasonComp &&
               !currentSeasonComp?.fixtures_generated && (
-                <CTAButton
-                  type="yellow"
-                  text={`Generate ${currentRole?.activeSeason?.name} fixtures`}
-                  callbackFn={() => {
-                    setModalType('generate-fixtures');
-                    setShowModal(true);
-                  }}
-                />
+                <View className="mt-3">
+                  <CTAButton
+                    type="yellow"
+                    text={`Generate ${currentRole?.activeSeason?.name} fixtures`}
+                    callbackFn={() => {
+                      setModalType('generate-fixtures');
+                      setShowModal(true);
+                    }}
+                  />
+                </View>
               )}
           </ExpandableView>
 
           {currentSeasonComp?.fixtures_generated && (
-            <View className="gap-3 bg-bg-1 p-3 py-6">
-              <View className="">
-                <Heading text="Fixtures" />
-              </View>
-              <FixturesAccordion
-                isExpanded={expandedAccordion === 'fixtures'}
-                onPress={() =>
-                  setExpandedAccordion(expandedAccordion === 'fixtures' ? null : 'fixtures')
-                }
-                season={currentRole.activeSeason}
-                competitionInstance={currentSeasonComp}
-              />
-            </View>
+            <ExpandableView
+              title={`${currentRole?.activeSeason?.name} Fixtures`}
+              show={showFixtures}
+              setShow={setShowFixtures}>
+              <FixturesAccordion competitionInstance={currentSeasonComp} />
+            </ExpandableView>
           )}
           <ExpandableView
             title="Members"

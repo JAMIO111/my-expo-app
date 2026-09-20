@@ -20,7 +20,7 @@ if (Platform.OS === 'android') {
   UIManager.setLayoutAnimationEnabledExperimental?.(true);
 }
 
-const FixturesAccordion = ({ season, competitionInstance, isExpanded, onPress }) => {
+const FixturesAccordion = ({ competitionInstance }) => {
   const [expandedDate, setExpandedDate] = useState(null); // inner date toggle
   const [showModal, setShowModal] = useState(false);
   const [selectedFixture, setSelectedFixture] = useState(null);
@@ -67,42 +67,15 @@ const FixturesAccordion = ({ season, competitionInstance, isExpanded, onPress })
   const hasFixtures = combinedGrouped && Object.keys(combinedGrouped).length > 0;
 
   return (
-    <View className="w-full rounded-2xl bg-bg-2 shadow-sm">
-      {/* Top-level header */}
-      <Pressable
-        onPress={hasFixtures ? onPress : null} // external control
-        className="flex-row items-center justify-between p-4">
-        <View>
-          <Text className="font-saira-semibold text-xl text-text-1">{season?.name} Fixtures</Text>
-          {!isExpanded && (
-            <View className="mt-1 flex-row items-center gap-2">
-              {isLoading && <ActivityIndicator size="small" color="gray" animating={isLoading} />}
-              <Text className="font-saira-medium text-text-2">
-                {isLoading
-                  ? 'Loading Fixtures...'
-                  : `${Object.keys(fixturesGrouped || {}).length} matchday${Object.keys(fixturesGrouped || {}).length !== 1 ? 's' : ''}`}
-              </Text>
-            </View>
-          )}
-        </View>
-        {hasFixtures && (
-          <Ionicons
-            name="chevron-down"
-            size={22}
-            color="gray"
-            style={{ transform: [{ rotate: isExpanded ? '180deg' : '0deg' }] }}
-          />
-        )}
-      </Pressable>
-
+    <View className="w-full rounded-2xl">
       {/* Expanded content */}
-      {isExpanded && (
-        <View className="gap-2 border-t border-theme-gray-5 p-3">
+      {hasFixtures && (
+        <View className="gap-3">
           {isLoading ? (
             <Text className="text-text-2">Loading fixtures...</Text>
           ) : (
             Object.entries(combinedGrouped || {}).map(([date, fixturesForDate]) => (
-              <View key={date} className="rounded-2xl bg-bg-1 shadow-sm">
+              <View key={date} className="rounded-2xl bg-bg-2 ">
                 {/* Date header */}
                 <Pressable
                   onPress={() => toggleDate(date)}
@@ -144,7 +117,8 @@ const FixturesAccordion = ({ season, competitionInstance, isExpanded, onPress })
                               setSelectedFixture(fixture);
                               setShowModal(true);
                             }}
-                            className="flex flex-1 flex-col items-center justify-between gap-2 rounded-2xl bg-bg-2 p-2 shadow-sm">
+                            style={{ borderRadius: 10 }}
+                            className="flex flex-1 flex-col items-center justify-between gap-2 bg-bg-1 p-2">
                             <View className="flex flex-row items-center justify-between gap-2">
                               <View className="flex-1 flex-col items-center justify-between gap-2">
                                 <View className="flex-1 flex-row items-center justify-between gap-2">
