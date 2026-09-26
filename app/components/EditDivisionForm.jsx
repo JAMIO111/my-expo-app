@@ -685,7 +685,7 @@ const EditDivisionForm = ({ competition, division, participants, closeModal, con
               <View className="flex-1 flex-col items-center justify-end">
                 {winnerReward === null ? (
                   <View className="h-30 w-30 mb-4 flex-1 items-center justify-center rounded-2xl">
-                    <Ionicons name="add" size={120} color="#000000" />
+                    <Ionicons name="add" size={120} color={themeColors.primaryText} />
                   </View>
                 ) : (
                   <Image source={winnerTrophy?.icon} className="h-30 w-30 mb-4" />
@@ -702,7 +702,7 @@ const EditDivisionForm = ({ competition, division, participants, closeModal, con
               <View className="flex-1 flex-col items-center justify-end">
                 {runnerUpReward === null ? (
                   <View className="mb-4 flex-1 items-center justify-center rounded-2xl">
-                    <Ionicons name="add" size={120} color="#000000" />
+                    <Ionicons name="add" size={120} color={themeColors.primaryText} />
                   </View>
                 ) : (
                   <Image source={runnerUpTrophy?.icon} className="h-30 w-30 mb-4" />
@@ -805,7 +805,7 @@ const EditDivisionForm = ({ competition, division, participants, closeModal, con
             paddingTop: 8,
             paddingBottom: 8,
             borderBottomWidth: 1,
-            borderBottomColor: '#ccc',
+            borderBottomColor: themeColors.border,
             backgroundColor: themeColors.bgGrouped2,
             zIndex: 10,
             flexDirection: 'row',

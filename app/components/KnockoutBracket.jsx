@@ -6,6 +6,7 @@ import Svg, { Path } from 'react-native-svg';
 import { useKnockoutBracket } from '@/hooks/useKnockoutBracket';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useUser } from '@contexts/UserProvider';
+import { useTheme } from '@contexts/ThemeProvider';
 import BottomSheetModal from './BottomSheetModal';
 import MenuContainer from './MenuContainer';
 import SettingsItem from './SettingsItem';
@@ -69,6 +70,8 @@ const StatCard = ({ icon, label, value, wide }) => (
 
 // ─── Slot ────────────────────────────────────────────────
 const Slot = ({ name, isWinner, isBye, isHome, isFrames, score }) => {
+  const { colors: themeColors } = useTheme();
+  const styles = createStyles(themeColors);
   const isEmpty = !name && !isBye;
 
   const label = isBye ? 'BYE' : isEmpty ? 'TBD' : name;
@@ -113,6 +116,8 @@ const MatchCard = ({
   competitionInstanceId,
 }) => {
   const router = useRouter();
+  const { colors: themeColors } = useTheme();
+  const styles = createStyles(themeColors);
   const fadeAnim = useRef(new Animated.Value(0)).current;
 
   const getParticipantName = (fixture, side) => {
@@ -224,7 +229,7 @@ export default function KnockoutBracket({ competitionInstanceId }) {
 
   const thirdPlaceFixture = useMemo(
     () =>
-      thirdPlaceStage ? (allFixtures.find((f) => f.stage_id === thirdPlaceStage.id) ?? null) : null,
+      thirdPlaceStage ? allFixtures.find((f) => f.stage_id === thirdPlaceStage.id) ?? null : null,
     [allFixtures, thirdPlaceStage]
   );
 
@@ -576,66 +581,69 @@ export default function KnockoutBracket({ competitionInstanceId }) {
 }
 
 // ─── Styles ──────────────────────────────────────────────
-const styles = StyleSheet.create({
-  loading: {
-    textAlign: 'center',
-    marginTop: 40,
-    color: '#9ca3af',
-  },
+// Theme-aware: rebuilt with the active theme colours so bracket cards
+// follow light/dark mode instead of always rendering as white cards.
+const createStyles = (themeColors) =>
+  StyleSheet.create({
+    loading: {
+      textAlign: 'center',
+      marginTop: 40,
+      color: themeColors.secondaryText,
+    },
 
-  card: {
-    width: COL_W,
-    height: CARD_H,
-    borderRadius: 8,
-    overflow: 'hidden',
-    backgroundColor: '#fff',
-  },
+    card: {
+      width: COL_W,
+      height: CARD_H,
+      borderRadius: 8,
+      overflow: 'hidden',
+      backgroundColor: themeColors.bg1,
+    },
 
-  normalCard: {
-    borderWidth: 0.5,
-    borderColor: '#e5e7eb',
-  },
+    normalCard: {
+      borderWidth: 0.5,
+      borderColor: themeColors.border,
+    },
 
-  finalCard: {
-    borderWidth: 1.5,
-    borderColor: '#f59e0b',
-  },
+    finalCard: {
+      borderWidth: 1.5,
+      borderColor: '#f59e0b',
+    },
 
-  slot: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 10,
-  },
+    slot: {
+      flex: 1,
+      flexDirection: 'row',
+      alignItems: 'center',
+      paddingHorizontal: 10,
+    },
 
-  slotDivider: {
-    borderBottomWidth: 0.5,
-    borderBottomColor: '#e5e7eb',
-  },
+    slotDivider: {
+      borderBottomWidth: 0.5,
+      borderBottomColor: themeColors.border,
+    },
 
-  slotWinner: {
-    backgroundColor: '#fef3c7',
-  },
+    slotWinner: {
+      backgroundColor: '#fef3c766',
+    },
 
-  slotText: {
-    fontSize: 14,
-    color: '#111827',
-    flexShrink: 1,
-    fontFamily: 'Saira',
-    fontWeight: '500',
-  },
+    slotText: {
+      fontSize: 14,
+      color: themeColors.primaryText,
+      flexShrink: 1,
+      fontFamily: 'Saira',
+      fontWeight: '500',
+    },
 
-  winnerText: {
-    fontWeight: '600',
-    color: '#92400e',
-    paddingLeft: 6,
-  },
+    winnerText: {
+      fontWeight: '600',
+      color: '#92400e',
+      paddingLeft: 6,
+    },
 
-  byeText: {
-    color: '#9ca3af',
-  },
+    byeText: {
+      color: themeColors.secondaryText,
+    },
 
-  emptyText: {
-    color: '#b5b7ba',
-  },
-});
+    emptyText: {
+      color: themeColors.secondaryText,
+    },
+  });
