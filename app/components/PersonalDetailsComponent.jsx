@@ -39,8 +39,8 @@ const PersonalDetailsComponent = () => {
   const [showGenderPicker, setShowGenderPicker] = useState(false); // inline for iOS
   const [isSaving, setIsSaving] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
-  const { colorScheme } = useColorScheme();
-  const themeColors = colorScheme === 'dark' ? colors.dark : colors.light; // Adjust based on your theme
+  const colorScheme = useColorScheme();
+  const themeColors = colorScheme === 'dark' ? colors.dark : colors.light;
 
   const { uploadToSupabase, uploading } = useCompressAndUploadImage();
 

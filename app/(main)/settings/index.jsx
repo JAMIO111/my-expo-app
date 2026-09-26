@@ -1,4 +1,4 @@
-import { StyleSheet, ScrollView, Alert, View, Text, useColorScheme, Pressable } from 'react-native';
+import { StyleSheet, ScrollView, Alert, View, Text, Pressable } from 'react-native';
 import { useRouter, Stack } from 'expo-router';
 import Toast from 'react-native-toast-message';
 import Avatar from '@components/Avatar';
@@ -14,11 +14,11 @@ import { supabase } from '@/lib/supabase';
 import BottomSheetWrapper from '@components/BottomSheetWrapper';
 import { BottomSheetView, BottomSheetScrollView, BottomSheetFooter } from '@gorhom/bottom-sheet';
 import Ionicons from '@expo/vector-icons/Ionicons';
-import colors from '@lib/colors';
 import TeamLogo from '@components/TeamLogo';
 import { ShieldCheck } from 'lucide-react-native';
 import CTAButton from '@components/CTAButton';
 import { clearPushTokenOnLogout } from '@/lib/pushNotifications';
+import { useTheme } from '@contexts/ThemeProvider';
 
 const index = () => {
   const bottomSheetRef = useRef(null);
@@ -26,8 +26,7 @@ const index = () => {
   const [isSigningOut, setIsSigningOut] = useState(false);
   const [isBottomSheetOpen, setBottomSheetOpen] = useState(false);
   const router = useRouter();
-  const colorScheme = useColorScheme();
-  const themeColors = colors[colorScheme];
+  const { scheme: colorScheme, mode, accent, colors: themeColors } = useTheme();
 
   const { session, user, player, roles, currentRole, setCurrentRole, isLoading, refetch } =
     useUser();
@@ -114,12 +113,12 @@ const index = () => {
             <Text className="font-saira text-text-2">{user?.email}</Text>
           </View>
         </Pressable>
-        <Text className="w-full pb-3 pl-1 font-saira-bold text-xl">Your Role</Text>
+        <Text className="w-full pb-3 pl-1 font-saira-bold text-xl text-text-1">Your Role</Text>
         <Pressable
           onPress={openSwitchRoleBottomSheet}
           className="mb-8 w-full flex-row items-center justify-between rounded-3xl bg-bg-1 p-4 py-3">
           {currentRole?.type === 'admin' ? (
-            <ShieldCheck size={48} color="#333" />
+            <ShieldCheck size={48} color={themeColors.primaryText} />
           ) : (
             <TeamLogo
               thickness={currentRole?.team?.crest?.thickness}
@@ -169,6 +168,16 @@ const index = () => {
             routerPath="/settings/Subscriptions"
             title="Subscriptions & Billing"
             icon="wallet"
+          />
+        </MenuContainer>
+        <MenuContainer title="Display">
+          <SettingsItem
+            routerPath="/settings/Appearance"
+            title="Appearance"
+            icon="palette"
+            text={`${mode === 'system' ? 'Auto' : mode === 'dark' ? 'Dark' : 'Light'} · ${
+              accent === 'blue' ? 'Blue' : 'Green'
+            }`}
           />
         </MenuContainer>
         {currentRole?.type === 'admin' && (

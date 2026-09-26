@@ -1,6 +1,6 @@
-import { Pressable, Text, Animated, useColorScheme, ActivityIndicator, View } from 'react-native';
+import { Pressable, Text, Animated, ActivityIndicator, View } from 'react-native';
 import { useRef } from 'react';
-import colors from '@lib/colors';
+import { useTheme } from '@contexts/ThemeProvider';
 
 const CTAButton = ({
   type = 'default',
@@ -16,8 +16,7 @@ const CTAButton = ({
   textSize = 'text-xl',
   fontWeight = 'font-medium',
 }) => {
-  const colorScheme = useColorScheme();
-  const themeColors = colorScheme === 'dark' ? colors.dark : colors.light;
+  const { colors: themeColors } = useTheme();
   const buttonTheme = themeColors[type] || themeColors.default;
   const hasNavigated = useRef(false);
 

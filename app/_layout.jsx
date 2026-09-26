@@ -1,3 +1,4 @@
+import '../global.css';
 import { Slot } from 'expo-router';
 import { View } from 'react-native';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
@@ -25,6 +26,7 @@ import AppRealtimeProvider from '@contexts/AppRealtimeProvider';
 import RevenueCatProvider from '@contexts/RevenueCatProvider';
 import { NotificationsPanelProvider } from '@contexts/NotificationsPanelProvider';
 import { BadgeUnlockProvider } from '@contexts/BadgeUnlockProvider';
+import { ThemeProvider } from '@contexts/ThemeProvider';
 import { useUnseenBadgesTrigger } from '@hooks/useUnseenBadgesTrigger';
 import mobileAds from 'react-native-google-mobile-ads';
 
@@ -67,36 +69,37 @@ export default function RootLayout() {
 
   if (!fontsLoaded) return null;
 
-  // ✅ ✅ This is the KEY — manually apply the `dark` class to the outermost View
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
-      <QueryClientProvider client={queryClientRef.current}>
-        <UserProvider>
-          <AdminProvider>
-            <RevenueCatProvider
-              iosApiKey="appl_DQoRBoSRUxeKJVXLtoWXeWeNGCn"
-              androidApiKey="goog_yTNNoAuahqqKnkHPLDcDmmaPrXG">
-              <AppRealtimeProvider>
-                <NotificationsPanelProvider>
-                  <BadgeUnlockProvider>
-                    <BadgeTrigger />
-                    <View className={`flex-1 bg-brand`}>
-                      <Slot />
-                    </View>
-                    <Toast
-                      config={toastConfig}
-                      position="top"
-                      visibilityTime={5000}
-                      autoHide={true}
-                      topOffset={80}
-                    />
-                  </BadgeUnlockProvider>
-                </NotificationsPanelProvider>
-              </AppRealtimeProvider>
-            </RevenueCatProvider>
-          </AdminProvider>
-        </UserProvider>
-      </QueryClientProvider>
+      <ThemeProvider>
+        <QueryClientProvider client={queryClientRef.current}>
+          <UserProvider>
+            <AdminProvider>
+              <RevenueCatProvider
+                iosApiKey="appl_DQoRBoSRUxeKJVXLtoWXeWeNGCn"
+                androidApiKey="goog_yTNNoAuahqqKnkHPLDcDmmaPrXG">
+                <AppRealtimeProvider>
+                  <NotificationsPanelProvider>
+                    <BadgeUnlockProvider>
+                      <BadgeTrigger />
+                      <View className={`flex-1 bg-brand`}>
+                        <Slot />
+                      </View>
+                      <Toast
+                        config={toastConfig}
+                        position="top"
+                        visibilityTime={5000}
+                        autoHide={true}
+                        topOffset={80}
+                      />
+                    </BadgeUnlockProvider>
+                  </NotificationsPanelProvider>
+                </AppRealtimeProvider>
+              </RevenueCatProvider>
+            </AdminProvider>
+          </UserProvider>
+        </QueryClientProvider>
+      </ThemeProvider>
     </GestureHandlerRootView>
   );
 }

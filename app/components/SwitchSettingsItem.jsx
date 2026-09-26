@@ -1,6 +1,5 @@
 import { Pressable, Text, View } from 'react-native';
-import { useColorScheme } from 'react-native';
-import colors from '@lib/colors';
+import { useTheme } from '@contexts/ThemeProvider';
 import { useEffect, useState } from 'react';
 import { Switch } from 'react-native-gesture-handler';
 import { iconMap } from './SettingsItem';
@@ -8,13 +7,12 @@ import { iconMap } from './SettingsItem';
 const SwitchSettingsItem = ({
   title,
   icon,
-  iconColor = '#000',
+  iconColor,
   setValue,
   defaultValue,
   disabled = false,
 }) => {
-  const colorScheme = useColorScheme();
-  const themeColors = colors[colorScheme];
+  const { colors: themeColors } = useTheme();
   const [enabled, setEnabled] = useState(defaultValue);
   const [saving, setSaving] = useState(false);
 
@@ -57,7 +55,7 @@ const SwitchSettingsItem = ({
             className={`flex-row items-center gap-5 px-4 py-3 ${
               pressed ? 'bg-theme-gray-5' : 'bg-bg-grouped-2'
             }`}>
-            {icon && Icon && <Icon size={24} color={iconColor} />}
+            {icon && Icon && <Icon size={24} color={iconColor ?? themeColors.primaryText} />}
             <Text className="flex-1 text-lg font-medium text-text-1">{title}</Text>
             <View className="justify-center">
               <Switch

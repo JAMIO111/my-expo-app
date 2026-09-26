@@ -1,8 +1,7 @@
 import { Pressable, Text, View, Linking } from 'react-native';
 import { useRef } from 'react';
 import { useRouter } from 'expo-router';
-import { useColorScheme } from 'react-native';
-import colors from '@lib/colors';
+import { useTheme } from '@contexts/ThemeProvider';
 import Avatar from './Avatar';
 import TeamLogo from './TeamLogo';
 import {
@@ -67,6 +66,8 @@ import {
   Shield,
   BookKey,
   KeySquare,
+  Palette,
+  SunMoon,
 } from 'lucide-react-native';
 
 export const iconMap = {
@@ -129,6 +130,8 @@ export const iconMap = {
   shield: Shield,
   bookKey: BookKey,
   keySquare: KeySquare,
+  palette: Palette,
+  sunMoon: SunMoon,
 };
 
 const SettingsItem = ({
@@ -139,15 +142,14 @@ const SettingsItem = ({
   textColor,
   routerPath,
   routerParams,
-  iconColor = '#333',
+  iconColor,
   disabled = false,
   callbackFn,
   player,
   team,
   link,
 }) => {
-  const colorScheme = useColorScheme();
-  const themeColors = colors[colorScheme];
+  const { colors: themeColors } = useTheme();
   const router = useRouter();
   const hasNavigated = useRef(false);
 
@@ -179,7 +181,7 @@ const SettingsItem = ({
               pressed ? 'bg-theme-gray-5' : 'bg-bg-grouped-2'
             }`}>
             {Icon ? (
-              <Icon size={24} color={iconColor} strokeWidth={2} />
+              <Icon size={24} color={iconColor ?? themeColors.primaryText} strokeWidth={2} />
             ) : player ? (
               <Avatar size={32} player={player} />
             ) : team ? (
@@ -205,7 +207,7 @@ const SettingsItem = ({
             )}
 
             {routerPath && <ChevronRight size={18} color={themeColors?.icon} />}
-            {link && <ExternalLink size={24} color="#444" />}
+            {link && <ExternalLink size={24} color={themeColors.icon} />}
           </View>
         </View>
       )}
