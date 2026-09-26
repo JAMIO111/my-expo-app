@@ -26,8 +26,10 @@ import MultiOptionSlidingToggle from './MultiOptionSlidingToggle';
 import ProGate from './ProGate';
 import ChipSelector from './ChipSelector';
 import { Globe, List, Landmark } from 'lucide-react-native';
+import { useTheme } from '@contexts/ThemeProvider';
 
 export default function CompareTeamStats() {
+  const { colors: themeColors } = useTheme();
   const { currentRole } = useUser();
   const { defaultEntity, entityType } = useLocalSearchParams();
   const [selectedScope, setSelectedScope] = useState('District');
@@ -117,7 +119,7 @@ export default function CompareTeamStats() {
 
   const EmptySearchState = ({ type }) => (
     <View className="w-full items-center justify-center rounded-2xl bg-bg-2 py-8">
-      <Ionicons name="search-outline" size={36} color="#333" />
+      <Ionicons name="search-outline" size={36} color={themeColors.secondaryText} />
 
       <Text className="mt-3 text-lg text-text-1" style={{ fontFamily: 'Saira-SemiBold' }}>
         No {type} found
@@ -131,7 +133,7 @@ export default function CompareTeamStats() {
 
   return (
     <>
-      <View style={styles.container}>
+      <View style={[styles.container, { backgroundColor: themeColors.bgGrouped1 }]}>
         <StatusBar barStyle="light-content" />
         {stats1 && stats2 ? (
           <Animated.ScrollView

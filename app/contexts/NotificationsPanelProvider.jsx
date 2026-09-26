@@ -28,6 +28,7 @@ import {
 } from 'lucide-react-native';
 import { useNotifications } from '@hooks/useNotifications';
 import { useUser } from '@contexts/UserProvider';
+import { useTheme } from '@contexts/ThemeProvider';
 import SafeViewWrapper from '@components/SafeViewWrapper';
 import { supabase } from '@lib/supabase';
 import { useRouter } from 'expo-router';
@@ -156,10 +157,13 @@ function NotificationRow({ item, onPress, onMarkAsRead, onMarkAsUnread }) {
 // ─── Empty state ──────────────────────────────────────────────────────────────
 
 function EmptyNotifications() {
+  const { colors: themeColors } = useTheme();
   return (
     <View className="flex-1 items-center justify-center pb-20">
-      <View className="mb-4 h-16 w-16 items-center justify-center rounded-full bg-text-1">
-        <BellOff size={28} color="rgba(255,255,255,0.25)" />
+      <View
+        className="mb-4 h-16 w-16 items-center justify-center rounded-full"
+        style={{ backgroundColor: themeColors.icon }}>
+        <BellOff size={28} color="rgba(255,255,255,0.45)" />
       </View>
       <Text className="text-base text-text-2" style={{ fontFamily: 'Tektur_500Medium' }}>
         No notifications yet
@@ -192,6 +196,7 @@ function NotificationsPanelInner({
   onMarkAsUnread,
 }) {
   const insets = useSafeAreaInsets();
+  const { colors: themeColors } = useTheme();
   const { isOpen, close } = useContext(NotificationsPanelContext);
 
   const translateX = useRef(new Animated.Value(PANEL_WIDTH)).current;
@@ -330,7 +335,7 @@ function NotificationsPanelInner({
                   onPress={close}
                   style={({ pressed }) => ({ opacity: pressed ? 0.6 : 1 })}
                   className="items-center justify-center rounded-full">
-                  <PanelRightClose size={30} color="#666" />
+                  <PanelRightClose size={30} color={themeColors.secondaryText} />
                 </Pressable>
               </View>
             </View>
