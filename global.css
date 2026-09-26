@@ -62,7 +62,7 @@
   --color-gray-6: 238, 238, 243;
 }
 
-.dark {
+.dark:root {
   --color-brand: hsl(205, 80%, 20%);
   --color-brand-dark: hsl(205, 80%, 10%);
   --color-brand-light: hsl(205, 80%, 30%);
