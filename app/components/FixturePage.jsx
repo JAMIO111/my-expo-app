@@ -134,7 +134,7 @@ const FixturePage = ({ fixtureDetails, isLoading, context }) => {
                       <Text
                         numberOfLines={1}
                         style={{ color: homeTextColor }}
-                        className={`font-tektur-semibold flex-1 py-1 pl-2 pr-4 text-center text-3xl`}>
+                        className={`flex-1 py-1 pl-2 pr-4 text-center font-tektur-semibold text-3xl`}>
                         {competitorType === 'team'
                           ? fixtureDetails?.homeCompetitor?.abbreviation
                           : `${fixtureDetails?.homeCompetitor?.nickname?.toUpperCase() || fixtureDetails?.homeCompetitor?.surname?.toUpperCase()}`}
@@ -149,7 +149,7 @@ const FixturePage = ({ fixtureDetails, isLoading, context }) => {
                       <Text
                         numberOfLines={1}
                         style={{ color: competitorType === 'team' ? awayTextColor : '#fff' }}
-                        className={`font-tektur-semibold flex-1 py-1 pl-2 pr-4 text-center text-3xl`}>
+                        className={`flex-1 py-1 pl-2 pr-4 text-center font-tektur-semibold text-3xl`}>
                         {competitorType === 'team'
                           ? fixtureDetails?.awayCompetitor?.abbreviation
                           : `${fixtureDetails?.awayCompetitor?.nickname?.toUpperCase() || fixtureDetails?.awayCompetitor?.surname?.toUpperCase()}`}
@@ -199,14 +199,14 @@ const FixturePage = ({ fixtureDetails, isLoading, context }) => {
                     <Text
                       adjustsFontSizeToFit
                       numberOfLines={1}
-                      className="font-tektur-medium flex-1 text-right text-lg text-text-1">
+                      className="flex-1 text-right font-tektur-medium text-lg text-text-1">
                       {fixtureDetails?.homeCompetitor?.display_name}
                     </Text>
-                    <Text className="font-tektur w-6 text-text-2"> vs </Text>
+                    <Text className="w-6 font-tektur text-text-2"> vs </Text>
                     <Text
                       adjustsFontSizeToFit
                       numberOfLines={1}
-                      className="font-tektur-medium flex-1 text-left text-lg
+                      className="flex-1 text-left font-tektur-medium text-lg
                        text-text-1">
                       {fixtureDetails?.awayCompetitor?.display_name}
                     </Text>
@@ -353,7 +353,9 @@ const FixturePage = ({ fixtureDetails, isLoading, context }) => {
             </View>
             {fixtureDetails?.competition?.competition_type?.competition_type === 'league' && (
               <>
-                <Text className="mt-2 font-saira-medium text-2xl text-text-1">Current Season</Text>
+                <Text className="mt-2 px-2 font-tektur-medium text-2xl text-text-1">
+                  Current Season
+                </Text>
                 <SeasonStats
                   fixtureDetails={fixtureDetails}
                   homeTeam={fixtureDetails?.homeCompetitor}
@@ -361,7 +363,7 @@ const FixturePage = ({ fixtureDetails, isLoading, context }) => {
                 />
               </>
             )}
-            <Text className="mt-2 pl-2 font-saira-medium text-2xl text-text-1">
+            <Text className="mt-2 px-2 font-tektur-medium text-2xl text-text-1">
               Head to Head - All Time
             </Text>
             <HeadToHead

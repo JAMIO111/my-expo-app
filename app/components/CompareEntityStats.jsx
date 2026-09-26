@@ -336,8 +336,8 @@ export default function CompareTeamStats() {
       <BottomSheetWrapper ref={bottomSheetRef} initialIndex={-1} snapPoints={['100%']}>
         <AnimatedSearchBar
           cancelColor="text-text-2"
-          backColor="bg-bg-1"
-          searchBarColor="bg-bg-2"
+          backColor="bg-bg-2"
+          searchBarColor="bg-bg-1"
           searchActive={searchActive}
           setSearchActive={setSearchActive}
           onDebouncedChange={setSearchQuery}
@@ -390,7 +390,7 @@ export default function CompareTeamStats() {
                       {teams.map((entity, index) => (
                         <Pressable
                           key={entity.id}
-                          className={`relative rounded-xl bg-bg-2 py-4 ${
+                          className={`relative rounded-xl bg-bg-grouped-3 py-4 ${
                             (changingEntity === 'entity1' && entity.id === entity1?.id) ||
                             (changingEntity === 'entity2' && entity.id === entity2?.id)
                               ? 'border-2 border-brand'
@@ -461,7 +461,7 @@ export default function CompareTeamStats() {
                     {filteredEntities.map((entity, index) => (
                       <Pressable
                         key={entity.id}
-                        className={`relative rounded-xl bg-bg-2 py-4 ${
+                        className={`relative rounded-xl bg-bg-3 py-4 ${
                           (changingEntity === 'entity1' && entity.id === entity1?.id) ||
                           (changingEntity === 'entity2' && entity.id === entity2?.id)
                             ? 'border-2 border-brand'

@@ -46,12 +46,12 @@ export default function SponsorshipCard({ sponsorInstance, variant = 'featured',
         onPress={handlePress}
         disabled={!website_url}
         style={({ pressed }) => ({ opacity: pressed ? 0.75 : 1 })}
-        className="w-full flex-row items-center gap-3 rounded-2xl bg-bg-1 px-4 py-3">
+        className="w-full flex-row items-center gap-3 rounded-2xl border border-theme-gray-5 bg-bg-grouped-2 px-4 py-3">
         <View className="h-11 w-11 items-center justify-center rounded-xl bg-bg-grouped-2">
           {logoSource ? (
             <Image source={logoSource} style={{ width: 30, height: 30 }} resizeMode="contain" />
           ) : (
-            <Globe size={18} color="rgba(255,255,255,0.35)" />
+            <Globe size={18} color={themeColors.icon} />
           )}
         </View>
 
@@ -74,14 +74,14 @@ export default function SponsorshipCard({ sponsorInstance, variant = 'featured',
       onPress={handlePress}
       disabled={!website_url}
       style={({ pressed }) => ({ opacity: pressed ? 0.85 : 1 })}
-      className="w-full overflow-hidden rounded-3xl border border-theme-gray-5 bg-bg-1 p-3">
+      className="w-full overflow-hidden rounded-3xl border border-theme-gray-5 bg-bg-grouped-2 p-3">
       <View className="items-center gap-2">
         <View className="w-full flex-row items-center gap-6">
-          <View className="h-20 w-20 items-center justify-center overflow-hidden rounded-2xl bg-bg-grouped-2">
+          <View className="h-20 w-20 items-center justify-center overflow-hidden rounded-2xl bg-bg-grouped-3">
             {logoSource ? (
               <Image source={logoSource} style={{ width: 70, height: 70 }} resizeMode="contain" />
             ) : (
-              <Globe size={28} color="rgba(255,255,255,0.35)" />
+              <Globe size={28} color={themeColors.icon} />
             )}
           </View>
 
@@ -96,7 +96,7 @@ export default function SponsorshipCard({ sponsorInstance, variant = 'featured',
         </View>
 
         {website_url && hostname && (
-          <View className="w-full flex-row items-center gap-3 rounded-2xl bg-bg-2 px-5 py-4">
+          <View className="w-full flex-row items-center gap-3 rounded-2xl bg-bg-grouped-3 px-5 py-4">
             <Globe size={18} color={themeColors.secondaryText} />
             <Text className="flex-1 font-tektur-medium text-text-2">{hostname}</Text>
             <ExternalLink size={18} color={themeColors.secondaryText} strokeWidth={2.25} />

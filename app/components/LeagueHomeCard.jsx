@@ -38,7 +38,8 @@ const LeagueHomeCard = ({ standings }) => {
         }, 500); // Reset navigation state after 500ms
         router.push('/home/league');
       }}
-      className={`h-28 w-full rounded-2xl bg-bg-grouped-2 shadow-sm`}>
+      style={{ borderWidth: 0.5 }}
+      className={`h-28 w-full rounded-2xl border border-theme-gray-4 bg-bg-3`}>
       <View className="mx-3 flex-row items-center justify-between border-b border-theme-gray-5 px-1 pb-1 pt-2">
         <Text className="font-tektur-medium text-2xl text-text-1">
           League Table{' '}
@@ -50,7 +51,7 @@ const LeagueHomeCard = ({ standings }) => {
       </View>
       {standings === undefined || standings?.standings.length === 0 ? (
         <View className="items-left flex-1 justify-center px-4">
-          <Text className="font-tektur text-left text-xl text-text-2">
+          <Text className="text-left font-tektur text-xl text-text-2">
             No standings available yet.
           </Text>
         </View>

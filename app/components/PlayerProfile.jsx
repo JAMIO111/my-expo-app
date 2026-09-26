@@ -318,7 +318,7 @@ const PlayerProfile = ({ context, isLoading, playerProfile, error }) => {
         contentContainerStyle={{ alignItems: 'center', justifyContent: 'center' }}
         className="w-full bg-brand">
         <PlayerProfileHeader playerProfile={playerProfile} currentTeam={currentTeam} />
-        <View className="w-full bg-bg-grouped-1">
+        <View className="w-full gap-2 bg-bg-grouped-1">
           <View className="w-full bg-bg-grouped-2 px-2 py-6">
             <Heading className="pl-3" text="Showcase Stats" />
             <View className="mt-2 gap-4 px-2">
@@ -394,7 +394,7 @@ const PlayerProfile = ({ context, isLoading, playerProfile, error }) => {
               />
             </View>
           </View>
-          <View className="mt-1 w-full gap-3 bg-bg-grouped-2 px-4 pb-8 pt-4">
+          <View className="w-full gap-3 bg-bg-grouped-2 px-4 pb-8 pt-4">
             <Heading text="Trophy Cabinet" />
             <TrophyCabinet
               trophies={trophies || []}

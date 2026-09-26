@@ -181,7 +181,7 @@ const SettingsItem = ({
               pressed ? 'bg-theme-gray-5' : 'bg-bg-grouped-2'
             }`}>
             {Icon ? (
-              <Icon size={24} color={iconColor ?? themeColors.primaryText} strokeWidth={2} />
+              <Icon size={24} color={iconColor ?? themeColors.icon} strokeWidth={2} />
             ) : player ? (
               <Avatar size={32} player={player} />
             ) : team ? (

@@ -574,7 +574,7 @@ const index = () => {
         <SafeViewWrapper useBottomInset={false} topColor="bg-brand">
           <ScrollView
             contentContainerStyle={{ display: 'flex', flexGrow: 1, gap: 12 }}
-            className="mt-16 flex-1 bg-bg-2 p-3">
+            className="mt-16 flex-1 bg-bg-grouped-1 p-3">
             <View className="gap-2">
               {competitionInstance?.CompetitionInstanceSponsors?.[0]?.is_paid && (
                 <SponsorshipCard
@@ -675,11 +675,9 @@ const index = () => {
                   competitionInstance?.status === 'closed'
                 }
                 fixedClosedComponent={
-                  <View className="flex-row items-center gap-2 rounded-lg bg-bg-2 p-2 px-3">
+                  <View className="flex-row items-center gap-2 rounded-lg bg-bg-grouped-1 p-2 px-3">
                     <CalendarClock size={20} color={themeColors.secondaryText} />
-                    <Text className="font-saira text-lg text-text-2">
-                      No Fixtures available yet.
-                    </Text>
+                    <Text className="font-saira text-lg text-text-2">No fixtures yet.</Text>
                   </View>
                 }>
                 <View style={{ display: showFixtures ? 'flex' : 'none' }}>
@@ -704,14 +702,14 @@ const index = () => {
                         default:
                           return (
                             <Text className="pl-1 font-saira-medium text-xl text-text-2">
-                              No Fixtures available yet.
+                              No fixtures yet.
                             </Text>
                           );
                       }
                     })()
                   ) : (
                     <Text className="pl-1 font-saira-medium text-xl text-text-2">
-                      No Fixtures available yet.
+                      No fixtures yet.
                     </Text>
                   )}
                 </View>
@@ -724,7 +722,7 @@ const index = () => {
                 setShow={setShowParticipants}
                 fixedClosed={visibleParticipants?.length === 0}
                 fixedClosedComponent={
-                  <View className="flex-row items-center gap-2 rounded-lg bg-bg-2 p-2 px-3">
+                  <View className="flex-row items-center gap-2 rounded-lg bg-bg-grouped-1 p-2 px-3">
                     <Users size={20} color={themeColors.secondaryText} />
                     <Text className="font-saira text-lg text-text-2">No Participants yet.</Text>
                   </View>
@@ -912,7 +910,7 @@ const index = () => {
             </View>
             <View
               style={{ minHeight: 360 }}
-              className="rounded-3xl border border-theme-gray-5 bg-bg-1 p-4 pb-8">
+              className="rounded-3xl border border-theme-gray-6 bg-bg-grouped-2 p-4 pb-8">
               <Text className="pb-4 font-tektur-semibold text-2xl text-text-1">
                 Competition Awards
               </Text>
@@ -962,7 +960,7 @@ const index = () => {
                 </Pressable>
               </View>
             </View>
-            <View className="mb-16 gap-3 rounded-3xl border border-theme-gray-5 bg-bg-1 p-4">
+            <View className="mb-16 gap-3 rounded-3xl border border-theme-gray-6 bg-bg-grouped-2 p-4">
               <Text
                 numberOfLines={1}
                 adjustsFontSizeToFit

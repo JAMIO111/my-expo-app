@@ -104,7 +104,7 @@ const index = () => {
         className="mt-16 flex-1 bg-bg-grouped-1 p-5">
         <Pressable
           onPress={() => router.push('/settings/PersonalDetails')}
-          className="mb-8 w-full flex-row items-center justify-center rounded-3xl bg-bg-1 p-4">
+          className="mb-8 w-full flex-row items-center justify-center rounded-3xl bg-bg-grouped-2 p-4">
           <Avatar player={player} size={76} borderRadius={14} />
           <View className="ml-6 flex-1 gap-1">
             <Text className="mt-2 font-saira-medium text-3xl text-text-1">
@@ -116,7 +116,7 @@ const index = () => {
         <Text className="w-full pb-3 pl-1 font-saira-bold text-xl text-text-1">Your Role</Text>
         <Pressable
           onPress={openSwitchRoleBottomSheet}
-          className="mb-8 w-full flex-row items-center justify-between rounded-3xl bg-bg-1 p-4 py-3">
+          className="mb-8 w-full flex-row items-center justify-between rounded-3xl bg-bg-grouped-2 p-4 py-3">
           {currentRole?.type === 'admin' ? (
             <ShieldCheck size={48} color={themeColors.primaryText} />
           ) : (

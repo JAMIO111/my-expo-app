@@ -72,7 +72,7 @@ const BadgeList = ({ badges }) => {
   };
 
   return (
-    <View className="items-center pt-6" onLayout={onLayout} style={styles.wrapper}>
+    <View className="items-center bg-bg-1 pt-6" onLayout={onLayout} style={styles.wrapper}>
       {parentWidth && (
         <FlatList
           data={badges}

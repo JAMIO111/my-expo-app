@@ -21,7 +21,7 @@ const DEFAULT_RANK = {
 
 const index = () => {
   const { data, statKey, type, title, label, percent } = useLocalSearchParams();
-  const parsedData = JSON.parse(data);
+  const parsedData = JSON?.parse(data);
   const sortedData = parsedData.sort((a, b) => b[statKey] - a[statKey]);
 
   const getValue =

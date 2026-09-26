@@ -2,8 +2,10 @@ import { useRef } from 'react';
 import { View, Text, Pressable, Animated } from 'react-native';
 import { ArrowRight, ArrowRightLeft } from 'lucide-react-native';
 import LivePulseCard from './LivePulseCard';
+import { useTheme } from '@contexts/ThemeProvider';
 
 const TransferWindowCard = ({ onPress }) => {
+  const { isDark } = useTheme();
   const scale = useRef(new Animated.Value(1)).current;
 
   const onPressIn = () => {
@@ -22,14 +24,14 @@ const TransferWindowCard = ({ onPress }) => {
 
   return (
     <View
-      className="rounded-3xl border bg-theme-yellow shadow-sm"
+      className={`rounded-3xl border`}
       style={{
         borderWidth: 4,
-        shadowColor: '#6D28D9',
         shadowOffset: { width: 0, height: 10 },
         shadowOpacity: 0.3,
         shadowRadius: 15,
         elevation: 8,
+        backgroundColor: isDark ? '#FFD70055' : '#FFD700',
       }}>
       <View className="p-3">
         <View className="flex-row justify-between">

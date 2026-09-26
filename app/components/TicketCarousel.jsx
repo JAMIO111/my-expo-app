@@ -2,6 +2,7 @@ import React, { useCallback, useMemo, useRef, useState } from 'react';
 import { View, Text, useWindowDimensions } from 'react-native';
 import Animated, { useAnimatedScrollHandler, useSharedValue } from 'react-native-reanimated';
 import TicketCard from './TicketCard';
+import { useTheme } from '@contexts/ThemeProvider';
 
 const MemoTicketCard = React.memo(TicketCard);
 
@@ -15,6 +16,7 @@ export default function TicketCarousel({
   const { width: screenWidth } = useWindowDimensions();
   const cardWidth = screenWidth - sidePeek * 2;
   const snapInterval = cardWidth + cardGap;
+  const { colors: themeColors } = useTheme();
 
   const [activeIndex, setActiveIndex] = useState(0);
   const lastIndexRef = useRef(0);
@@ -88,7 +90,8 @@ export default function TicketCarousel({
                   style={{
                     width: i === activeIndex ? 22 : 8,
                     height: 8,
-                    backgroundColor: i === activeIndex ? '#0b3910' : '#0b391066',
+                    backgroundColor:
+                      i === activeIndex ? themeColors.brandLight : themeColors.brandNormal,
                   }}
                 />
               ))}

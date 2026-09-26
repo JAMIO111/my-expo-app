@@ -160,7 +160,7 @@ const TeamProfile = ({ context, profile, isLoading }) => {
         )}
 
         <TeamProfileHeader profile={profile} />
-        <View className="gap-1 bg-bg-grouped-1">
+        <View className="gap-2 bg-bg-grouped-1">
           <View className="mt-1 bg-bg-grouped-2 px-4 py-6">
             <Heading text="Team Stats" />
             <View className="gap-5 pt-3">
@@ -275,7 +275,7 @@ const TeamProfile = ({ context, profile, isLoading }) => {
               error={playersError}
             />
           </View>
-          <View className="p-3">
+          <View>
             <TeamJoinRequests teamId={profile?.id} />
           </View>
 
