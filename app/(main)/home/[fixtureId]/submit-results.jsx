@@ -2,7 +2,6 @@ import { useState, useEffect, useRef, useMemo } from 'react';
 import { View, Text, Pressable, Switch, StyleSheet } from 'react-native';
 import { supabase } from '@/lib/supabase';
 import { Stack, useRouter, useLocalSearchParams } from 'expo-router';
-import colors from '@lib/colors';
 import { Ionicons } from '@expo/vector-icons';
 import CTAButton from '@components/CTAButton';
 import TeamLogo from '@components/TeamLogo';
@@ -12,7 +11,6 @@ import SafeViewWrapper from '@components/SafeViewWrapper';
 import Toast from 'react-native-toast-message';
 import FloatingBottomSheet from '@components/FloatingBottomSheet';
 import { useFixtureDetails } from '@hooks/useFixtureDetails';
-import { useColorScheme } from 'react-native';
 import { useTeamPlayers } from '@hooks/useTeamPlayers';
 import { useResultsByFixture } from '@hooks/useResultsByFixture';
 import { useSaveMatchResults } from '@hooks/useSaveMatchResults';
@@ -39,6 +37,7 @@ import {
   ClipboardCheck,
 } from 'lucide-react-native';
 import PlayerStatSelector from '@components/PlayerStatSelector';
+import { useTheme } from '@contexts/ThemeProvider';
 
 const SubmitResultsScreen = () => {
   const [confirmDeleteModalVisible, setConfirmDeleteModalVisible] = useState(false);
@@ -49,8 +48,7 @@ const SubmitResultsScreen = () => {
   const [selectedPlayer, setSelectedPlayer] = useState(null);
   const [queryLoading, setQueryLoading] = useState(false);
   const router = useRouter();
-  const colorScheme = useColorScheme();
-  const themeColors = colors[colorScheme];
+  const { colors: themeColors, scheme: colorScheme } = useTheme();
   const bottomSheetRef = useRef(null);
   const { fixtureId } = useLocalSearchParams();
   const { data: existingResults, isLoading: isExistingResultsLoading } =

@@ -10,15 +10,14 @@ import {
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter, Stack } from 'expo-router';
-import { useColorScheme } from 'nativewind';
 import Purchases from 'react-native-purchases';
 import SettingsItem from '@components/SettingsItem';
 import SwitchSettingsItem from '@components/SwitchSettingsItem';
 import MenuContainer from '@components/MenuContainer';
 import SafeViewWrapper from '@components/SafeViewWrapper';
 import CustomHeader from '@components/CustomHeader';
-import colors from '@lib/colors';
 import Toast from 'react-native-toast-message';
+import { useTheme } from '@contexts/ThemeProvider';
 
 const planImages = {
   pro: {
@@ -49,8 +48,7 @@ const formatDate = (isoString) => {
 
 const Subscriptions = () => {
   const router = useRouter();
-  const { colorScheme } = useColorScheme();
-  const themeColors = colorScheme === 'dark' ? colors.dark : colors.light;
+  const { colors: themeColors, scheme: colorScheme } = useTheme();
 
   const [customerInfo, setCustomerInfo] = useState(null);
   const [loading, setLoading] = useState(true);

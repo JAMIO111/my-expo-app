@@ -16,8 +16,6 @@ import CustomTextInput from '@components/CustomTextInput';
 import BottomSheetWrapper from '@/components/BottomSheetWrapper';
 import { BottomSheetFooter, BottomSheetScrollView, BottomSheetView } from '@gorhom/bottom-sheet';
 import Ionicons from '@expo/vector-icons/Ionicons';
-import colors from '@lib/colors';
-import { useColorScheme } from 'react-native';
 import { PanGestureHandler } from 'react-native-gesture-handler';
 import Animated, {
   useAnimatedGestureHandler,
@@ -27,6 +25,7 @@ import Animated, {
   withSpring,
   interpolate,
 } from 'react-native-reanimated';
+import { useTheme } from '@contexts/ThemeProvider';
 
 // SwipeableCard component for individual division cards
 const SwipeableCard = ({ item, onDelete, children }) => {
@@ -138,8 +137,7 @@ export default function CreateDivisions() {
   const [specialMatchAbbreviation, setSpecialMatchAbbreviation] = useState('');
   const [selectedDivision, setSelectedDivision] = useState(null);
   const bottomSheetRef = useRef(null);
-  const colorScheme = useColorScheme();
-  const themeColors = colors[colorScheme] || colors.light;
+  const { colors: themeColors } = useTheme();
   const router = useRouter();
   const { districtId, districtName, privateDistrict } = useLocalSearchParams();
   console.log('District:', districtName);

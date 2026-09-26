@@ -5,20 +5,18 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 import BottomSheetWrapper from '@/components/BottomSheetWrapper';
 import { BottomSheetScrollView, BottomSheetView } from '@gorhom/bottom-sheet';
 import { trophyIcons } from '@lib/badgeIcons';
-import { useColorScheme } from 'react-native';
-import colors from '@lib/colors';
 import CTAButton from '@components/CTAButton';
 import { ScrollView } from 'react-native-gesture-handler';
 import StepPillGroup from '@components/StepPillGroup';
 import { supabase } from '@/lib/supabase';
+import { useTheme } from '@contexts/ThemeProvider';
 
 const DivisionRewards = () => {
   const router = useRouter();
 
   const { divisions, districtId, districtName, privateDistrict } = useLocalSearchParams();
   const parsedDivisions = JSON.parse(divisions || '[]');
-  const colorScheme = useColorScheme();
-  const themeColors = colors[colorScheme];
+  const { colors: themeColors } = useTheme();
 
   const bottomSheetRef = useRef(null);
 

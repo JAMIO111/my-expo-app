@@ -1,13 +1,4 @@
-import {
-  View,
-  Text,
-  Switch,
-  ScrollView,
-  Pressable,
-  Image,
-  useColorScheme,
-  Alert,
-} from 'react-native';
+import { View, Text, Switch, ScrollView, Pressable, Image, Alert } from 'react-native';
 import { useState, useEffect, useRef } from 'react';
 import CustomTextInput from './CustomTextInput';
 import CTAButton from './CTAButton';
@@ -18,18 +9,17 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import { trophyIcons } from '@lib/badgeIcons';
 import BottomSheetWrapper from '@/components/BottomSheetWrapper';
 import { BottomSheetScrollView, BottomSheetView } from '@gorhom/bottom-sheet';
-import colors from '@lib/colors';
 import Heading from './Heading';
 import { useUser } from '@contexts/UserProvider';
 import CustomDropdown from './CustomDropdown';
 import ExpandableView from './ExpandableView';
 import TeamLogo from './TeamLogo';
+import { useTheme } from '@contexts/ThemeProvider';
 
 const EditDivisionForm = ({ competition, division, participants, closeModal, context }) => {
   const bottomSheetRef = useRef();
-  const colorScheme = useColorScheme();
+  const { colors: themeColors, scheme: colorScheme } = useTheme();
   const { currentRole } = useUser();
-  const themeColors = colors[colorScheme] || colors.light; // Fallback to light theme if colorScheme is undefined
   const [showParticipants, setShowParticipants] = useState(true);
   const [selectedRewardType, setSelectedRewardType] = useState(null); // 'winner' or 'runnerUp'
   const [winnerReward, setWinnerReward] = useState(null);

@@ -15,6 +15,7 @@ import { Stack } from 'expo-router';
 import SettingsItem from '@components/SettingsItem';
 import MenuContainer from '@components/MenuContainer';
 import { useUser } from '@contexts/UserProvider';
+import { useTheme } from '@contexts/ThemeProvider';
 import SafeViewWrapper from '@components/SafeViewWrapper';
 import CTAButton from '@components/CTAButton';
 import FloatingBottomSheet from '@components/FloatingBottomSheet';
@@ -46,12 +47,14 @@ const getPasswordStrength = (pw) => {
 // ─── Secure input ─────────────────────────────────────────
 const PasswordInput = ({ placeholder, value, onChangeText, hasError }) => {
   const [visible, setVisible] = useState(false);
+  const { colors: themeColors } = useTheme();
+  const styles = createStyles(themeColors);
   return (
     <View style={[styles.inputWrap, hasError && styles.inputWrapError]}>
       <TextInput
         style={styles.input}
         placeholder={placeholder}
-        placeholderTextColor="#9ca3af"
+        placeholderTextColor={themeColors.secondaryText}
         secureTextEntry={!visible}
         value={value}
         onChangeText={onChangeText}
@@ -60,7 +63,11 @@ const PasswordInput = ({ placeholder, value, onChangeText, hasError }) => {
         textContentType="password"
       />
       <Pressable onPress={() => setVisible((v) => !v)} style={styles.eyeBtn} hitSlop={8}>
-        <IonIcons name={visible ? 'eye-off-outline' : 'eye-outline'} size={20} color="#9ca3af" />
+        <IonIcons
+          name={visible ? 'eye-off-outline' : 'eye-outline'}
+          size={20}
+          color={themeColors.secondaryText}
+        />
       </Pressable>
     </View>
   );
@@ -98,6 +105,8 @@ const PROVIDERS = [
 
 // ─── Connected Logins Section ─────────────────────────────
 const ConnectedLoginsSection = ({ user, onIdentitiesChange }) => {
+  const { colors: themeColors } = useTheme();
+  const styles = createStyles(themeColors);
   const [identities, setIdentities] = useState(user?.identities ?? []);
   const [loadingKey, setLoadingKey] = useState(null);
   const [confirmUnlink, setConfirmUnlink] = useState(null);
@@ -275,22 +284,33 @@ const ConnectedLoginsSection = ({ user, onIdentitiesChange }) => {
                   <Text style={styles.providerLabel}>{provider.label}</Text>
                   <Text
                     className="font-saira-medium text-sm"
-                    style={[styles.providerStatus, { color: connected ? '#199345' : '#9ca3af' }]}>
+                    style={[
+                      styles.providerStatus,
+                      {
+                        color: connected ? themeColors.success.primary : themeColors.secondaryText,
+                      },
+                    ]}>
                     {connected ? 'Connected' : 'Not connected'}
                   </Text>
                 </View>
 
                 {/* Action */}
                 {isLoading ? (
-                  <ActivityIndicator size="small" color="#6b7280" />
+                  <ActivityIndicator size="small" color={themeColors.secondaryText} />
                 ) : provider.key === 'email' ? (
                   <View
-                    className="bg-brand-light/10 w-32 items-center justify-center rounded-xl border p-2"
+                    className="w-32 items-center justify-center rounded-xl border p-2"
                     style={[
                       styles.providerBadge,
-                      { borderColor: '#199345', backgroundColor: '#19934515' },
+                      {
+                        borderColor: themeColors.success.primary,
+                        backgroundColor: `${themeColors.success.primary}1A`,
+                      },
                     ]}>
-                    <Text style={[styles.providerBadgeText, { color: '#199345' }]}>Primary</Text>
+                    <Text
+                      style={[styles.providerBadgeText, { color: themeColors.success.primary }]}>
+                      Primary
+                    </Text>
                   </View>
                 ) : connected ? (
                   <Pressable
@@ -298,22 +318,29 @@ const ConnectedLoginsSection = ({ user, onIdentitiesChange }) => {
                     style={({ pressed }) => [
                       styles.providerBadge,
                       {
-                        backgroundColor: canUnlink ? '#fef2f2' : '#f9fafb',
-                        borderColor: canUnlink ? '#fecaca' : '#e5e7eb',
+                        backgroundColor: canUnlink
+                          ? `${themeColors.error.primary}1A`
+                          : themeColors.bgGrouped1,
+                        borderColor: canUnlink
+                          ? `${themeColors.error.primary}66`
+                          : themeColors.border,
                         opacity: pressed ? 0.7 : 1,
                       },
                     ]}>
-                    <View
-                      className={`w-32 flex-row items-center justify-center gap-2 rounded-xl border ${canUnlink ? 'border-theme-red' : 'border-gray-300'} p-2`}>
+                    <View className="w-32 flex-row items-center justify-center gap-2 rounded-xl border p-2">
                       {canUnlink ? (
-                        <Unlink size={16} color="#ef4444" />
+                        <Unlink size={16} color={themeColors.error.primary} />
                       ) : (
-                        <Link size={16} color="#9ca3af" />
+                        <Link size={16} color={themeColors.secondaryText} />
                       )}
                       <Text
                         style={[
                           styles.providerBadgeText,
-                          { color: canUnlink ? '#ef4444' : '#9ca3af' },
+                          {
+                            color: canUnlink
+                              ? themeColors.error.primary
+                              : themeColors.secondaryText,
+                          },
                         ]}>
                         {canUnlink ? 'Unlink' : 'Linked'}
                       </Text>
@@ -325,14 +352,16 @@ const ConnectedLoginsSection = ({ user, onIdentitiesChange }) => {
                     style={({ pressed }) => [
                       styles.providerBadge,
                       {
-                        backgroundColor: '#f0f9ff',
-                        borderColor: '#bae6fd',
+                        backgroundColor: `${themeColors.info.primary}1A`,
+                        borderColor: `${themeColors.info.primary}66`,
                         opacity: pressed ? 0.7 : 1,
                       },
                     ]}>
-                    <View className="w-32 flex-row items-center justify-center gap-2 rounded-xl border border-theme-blue p-2">
-                      <Link size={16} color="#0284c7" />
-                      <Text style={[styles.providerBadgeText, { color: '#0284c7' }]}>Link Now</Text>
+                    <View className="w-32 flex-row items-center justify-center gap-2 rounded-xl border p-2">
+                      <Link size={16} color={themeColors.info.primary} />
+                      <Text style={[styles.providerBadgeText, { color: themeColors.info.primary }]}>
+                        Link Now
+                      </Text>
                     </View>
                   </Pressable>
                 )}
@@ -362,6 +391,8 @@ const ConnectedLoginsSection = ({ user, onIdentitiesChange }) => {
 
 // ─── Main page ────────────────────────────────────────────
 const SignInAndSecurity = () => {
+  const { colors: themeColors } = useTheme();
+  const styles = createStyles(themeColors);
   const { user, player } = useUser();
   const [deleteAccountModal, setDeleteAccountModal] = useState(false);
   const [isChangingPassword, setIsChangingPassword] = useState(false);
@@ -518,7 +549,7 @@ const SignInAndSecurity = () => {
                       },
                     ],
                   }}>
-                  <IonIcons name="chevron-down" size={20} color="#6b7280" />
+                  <IonIcons name="chevron-down" size={20} color={themeColors.secondaryText} />
                 </Animated.View>
               </Pressable>
 
@@ -531,7 +562,11 @@ const SignInAndSecurity = () => {
                 <View style={styles.passwordForm}>
                   {passwordSuccess ? (
                     <View style={styles.successBanner}>
-                      <IonIcons name="checkmark-circle" size={20} color="#22c55e" />
+                      <IonIcons
+                        name="checkmark-circle"
+                        size={20}
+                        color={themeColors.success.primary}
+                      />
                       <Text style={styles.successText}>Password updated successfully!</Text>
                     </View>
                   ) : (
@@ -577,41 +612,45 @@ const SignInAndSecurity = () => {
                       )}
                       {passwordError && (
                         <View style={styles.errorBanner}>
-                          <IonIcons name="alert-circle-outline" size={16} color="#ef4444" />
+                          <IonIcons
+                            name="alert-circle-outline"
+                            size={16}
+                            color={themeColors.error.primary}
+                          />
                           <Text style={styles.errorText}>{passwordError}</Text>
                         </View>
                       )}
                       <View className="mt-2 flex-row gap-2 px-1">
                         {minimumLength ? (
-                          <Check size={16} color="#22c55e" />
+                          <Check size={16} color={themeColors.success.primary} />
                         ) : (
-                          <X size={16} color="#ef4444" />
+                          <X size={16} color={themeColors.error.primary} />
                         )}
-                        <Text>Minimum 8 characters long.</Text>
+                        <Text className="text-text-1">Minimum 8 characters long.</Text>
                       </View>
                       <View className="flex-row gap-2 px-1">
                         {hasNumber ? (
-                          <Check size={16} color="#22c55e" />
+                          <Check size={16} color={themeColors.success.primary} />
                         ) : (
-                          <X size={16} color="#ef4444" />
+                          <X size={16} color={themeColors.error.primary} />
                         )}
-                        <Text>Contains at least one number.</Text>
+                        <Text className="text-text-1">Contains at least one number.</Text>
                       </View>
                       <View className="flex-row gap-2 px-1">
                         {hasUppercase ? (
-                          <Check size={16} color="#22c55e" />
+                          <Check size={16} color={themeColors.success.primary} />
                         ) : (
-                          <X size={16} color="#ef4444" />
+                          <X size={16} color={themeColors.error.primary} />
                         )}
-                        <Text>Contains at least one uppercase letter.</Text>
+                        <Text className="text-text-1">Contains at least one uppercase letter.</Text>
                       </View>
                       <View className="mb-2 flex-row gap-2 px-1">
                         {passwordsMatch ? (
-                          <Check size={16} color="#22c55e" />
+                          <Check size={16} color={themeColors.success.primary} />
                         ) : (
-                          <X size={16} color="#ef4444" />
+                          <X size={16} color={themeColors.error.primary} />
                         )}
-                        <Text>Passwords must match.</Text>
+                        <Text className="text-text-1">Passwords must match.</Text>
                       </View>
                       <CTAButton
                         text={isSaving ? 'Updating...' : 'Change Password'}
@@ -630,9 +669,13 @@ const SignInAndSecurity = () => {
 
         {isOAuthUser && (
           <>
-            <Text style={styles.sectionLabel}>PASSWORD</Text>
+            <Text className="pb-3 pl-1 font-saira-bold text-xl text-text-1">PASSWORD</Text>
             <View style={styles.oauthNotice}>
-              <IonIcons name="information-circle-outline" size={18} color="#6b7280" />
+              <IonIcons
+                name="information-circle-outline"
+                size={18}
+                color={themeColors.secondaryText}
+              />
               <Text style={styles.oauthNoticeText}>
                 You signed in with {providerLabel}. Password management is handled by your{' '}
                 {providerLabel} account.
@@ -645,7 +688,7 @@ const SignInAndSecurity = () => {
         <View className="mt-8 rounded-3xl border border-theme-red bg-bg-1 p-4 pb-2">
           <Text
             className="pb-3 pl-1 font-saira-bold text-xl"
-            style={[styles.sectionLabel, { color: '#ef4444', marginTop: 8 }]}>
+            style={{ color: themeColors.error.primary, marginTop: 8 }}>
             DANGER ZONE
           </Text>
           <View style={styles.dangerSection}>
@@ -716,142 +759,148 @@ const SignInAndSecurity = () => {
 
 export default SignInAndSecurity;
 
-const styles = StyleSheet.create({
-  // ── Provider list ──
-  providerList: {
-    backgroundColor: '#ffffff',
-    borderRadius: 24,
-    overflow: 'hidden',
-    marginBottom: 36,
-  },
+// Theme-aware styles: rebuilt whenever the active theme colours change,
+// so this screen follows light/dark mode and the selected accent.
+const createStyles = (themeColors) =>
+  StyleSheet.create({
+    // ── Provider list ──
+    providerList: {
+      backgroundColor: themeColors.bg1,
+      borderRadius: 24,
+      overflow: 'hidden',
+      marginBottom: 36,
+    },
 
-  providerRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-    gap: 12,
-  },
+    providerRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      paddingHorizontal: 16,
+      paddingVertical: 14,
+      gap: 12,
+    },
 
-  providerDivider: {
-    height: 1,
-    backgroundColor: '#f3f4f6',
-    marginHorizontal: 16,
-  },
+    providerDivider: {
+      height: 1,
+      backgroundColor: themeColors.border,
+      marginHorizontal: 16,
+    },
 
-  providerIconWrap: {
-    width: 38,
-    height: 38,
-    borderRadius: 10,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
+    providerIconWrap: {
+      width: 38,
+      height: 38,
+      borderRadius: 10,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
 
-  providerInfo: {
-    flex: 1,
-    gap: 2,
-  },
+    providerInfo: {
+      flex: 1,
+      gap: 2,
+    },
 
-  providerLabel: {
-    fontSize: 15,
-    fontWeight: '600',
-    color: '#111827',
-  },
+    providerLabel: {
+      fontSize: 15,
+      fontWeight: '600',
+      color: themeColors.primaryText,
+    },
 
-  providerStatus: {
-    fontSize: 12,
-  },
+    providerStatus: {
+      fontSize: 12,
+    },
 
-  providerBadge: {
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 8,
-    borderWidth: 1,
-  },
+    providerBadge: {
+      paddingHorizontal: 12,
+      paddingVertical: 6,
+      borderRadius: 8,
+      borderWidth: 1,
+    },
 
-  providerBadgeText: {
-    fontSize: 13,
-    fontWeight: '600',
-  },
+    providerBadgeText: {
+      fontSize: 13,
+      fontWeight: '600',
+    },
 
-  // ── Password section ──
-  passwordSection: {
-    backgroundColor: '#ffffff',
-    borderRadius: 24,
-  },
+    // ── Password section ──
+    passwordSection: {
+      backgroundColor: themeColors.bg1,
+      borderRadius: 24,
+    },
 
-  passwordHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    padding: 16,
-  },
+    passwordHeader: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      padding: 16,
+    },
 
-  passwordTitle: { fontSize: 16, fontWeight: '600', color: '#111827' },
-  passwordSubtitle: { fontSize: 13, color: '#6b7280', marginTop: 2 },
+    passwordTitle: { fontSize: 16, fontWeight: '600', color: themeColors.primaryText },
+    passwordSubtitle: { fontSize: 13, color: themeColors.secondaryText, marginTop: 2 },
 
-  passwordForm: { paddingHorizontal: 16, paddingBottom: 16, gap: 12 },
+    passwordForm: { paddingHorizontal: 16, paddingBottom: 16, gap: 12 },
 
-  inputWrap: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    height: 50,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: '#e5e7eb',
-    backgroundColor: '#f9fafb',
-    paddingHorizontal: 14,
-  },
+    inputWrap: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      height: 50,
+      borderRadius: 12,
+      borderWidth: 1,
+      borderColor: themeColors.border,
+      backgroundColor: themeColors.bgGrouped1,
+      paddingHorizontal: 14,
+    },
 
-  inputWrapError: { borderColor: '#ef4444', backgroundColor: '#fff5f5' },
-  input: { flex: 1, fontSize: 16, color: '#111827' },
-  eyeBtn: { paddingLeft: 8 },
+    inputWrapError: {
+      borderColor: themeColors.error.primary,
+      backgroundColor: `${themeColors.error.primary}1A`,
+    },
+    input: { flex: 1, fontSize: 16, color: themeColors.primaryText },
+    eyeBtn: { paddingLeft: 8 },
 
-  strengthRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  strengthTrack: {
-    flex: 1,
-    height: 4,
-    borderRadius: 4,
-    backgroundColor: '#e5e7eb',
-    overflow: 'hidden',
-  },
-  strengthFill: { height: '100%', borderRadius: 4 },
-  strengthLabel: { fontSize: 12, fontWeight: '600', width: 44, textAlign: 'right' },
+    strengthRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+    strengthTrack: {
+      flex: 1,
+      height: 4,
+      borderRadius: 4,
+      backgroundColor: themeColors.border,
+      overflow: 'hidden',
+    },
+    strengthFill: { height: '100%', borderRadius: 4 },
+    strengthLabel: { fontSize: 12, fontWeight: '600', width: 44, textAlign: 'right' },
 
-  errorBanner: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    backgroundColor: '#fef2f2',
-    borderRadius: 10,
-    paddingVertical: 10,
-    paddingHorizontal: 12,
-  },
-  errorText: { fontSize: 13, color: '#ef4444', flex: 1 },
+    errorBanner: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 6,
+      backgroundColor: `${themeColors.error.primary}1A`,
+      borderRadius: 10,
+      paddingVertical: 10,
+      paddingHorizontal: 12,
+    },
+    errorText: { fontSize: 13, color: themeColors.error.primary, flex: 1 },
 
-  successBanner: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    backgroundColor: '#f0fdf4',
-    borderRadius: 10,
-    paddingVertical: 14,
-    paddingHorizontal: 12,
-    marginBottom: 4,
-  },
-  successText: { fontSize: 14, fontWeight: '600', color: '#16a34a' },
+    successBanner: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 8,
+      backgroundColor: `${themeColors.success.primary}1A`,
+      borderRadius: 10,
+      paddingVertical: 14,
+      paddingHorizontal: 12,
+      marginBottom: 4,
+    },
+    successText: { fontSize: 14, fontWeight: '600', color: themeColors.success.primary },
 
-  oauthNotice: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    gap: 8,
-    backgroundColor: '#f9fafb',
-    borderRadius: 12,
-    padding: 14,
-    borderWidth: 0.5,
-    borderColor: '#e5e7eb',
-  },
-  oauthNoticeText: { fontSize: 13, color: '#6b7280', flex: 1, lineHeight: 20 },
+    oauthNotice: {
+      flexDirection: 'row',
+      alignItems: 'flex-start',
+      gap: 8,
+      backgroundColor: themeColors.bgGrouped1,
+      borderRadius: 12,
+      padding: 14,
+      borderWidth: 0.5,
+      borderColor: themeColors.border,
+    },
+    oauthNoticeText: { fontSize: 13, color: themeColors.secondaryText, flex: 1, lineHeight: 20 },
 
-  dangerSection: { marginBottom: 8 },
-});
+    dangerSection: { marginBottom: 8 },
+  });

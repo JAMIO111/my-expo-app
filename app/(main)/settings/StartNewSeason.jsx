@@ -1,4 +1,4 @@
-import { Text, View, ScrollView, Pressable, Platform, useColorScheme } from 'react-native';
+import { Text, View, ScrollView, Pressable, Platform } from 'react-native';
 import { Stack } from 'expo-router';
 import SettingsItem from '@components/SettingsItem';
 import MenuContainer from '@components/MenuContainer';
@@ -11,7 +11,6 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 import IonIcons from '@expo/vector-icons/Ionicons';
 import { useQueryClient } from '@tanstack/react-query';
 import { useFixtureConfig } from '@contexts/AdminContext'; // Adjust the import path as necessary
-import colors from '@lib/colors'; // Adjust the import path as necessary
 import { useUser } from '@contexts/UserProvider'; // Adjust the import path as necessary
 import { matchFrequencyOptions } from '@lib/fixtureOptions'; // Adjust the import path as necessary
 import { matchDaysOptions } from '@lib/fixtureOptions'; // Adjust the import path as necessary
@@ -19,6 +18,7 @@ import SafeViewWrapper from '@components/SafeViewWrapper'; // Adjust the import 
 import Toast from 'react-native-toast-message';
 import { useRouter } from 'expo-router'; // Adjust the import path as necessary
 import CustomHeader from '@components/CustomHeader'; // Adjust the import path as necessary
+import { useTheme } from '@contexts/ThemeProvider';
 
 const StartNewSeason = () => {
   const queryClient = useQueryClient();
@@ -38,8 +38,7 @@ const StartNewSeason = () => {
   if (!fixtureConfig) {
     return <div>Loading config...</div>;
   }
-  const { colorScheme } = useColorScheme();
-  const themeColors = colors[colorScheme];
+  const { colors: themeColors, scheme: colorScheme } = useTheme();
   const districtId = currentRole?.district?.id;
   const [seasonStartModalVisible, setSeasonStartModalVisible] = useState(false);
   const [showDatePicker, setShowDatePicker] = useState(false);

@@ -1,4 +1,4 @@
-import { Pressable, StyleSheet, Text, View, useColorScheme, Platform, Alert } from 'react-native';
+import { Pressable, StyleSheet, Text, View, Platform, Alert } from 'react-native';
 import { useState, useRef } from 'react';
 import CTAButton from '@components/CTAButton';
 import { useRouter, useLocalSearchParams, Stack } from 'expo-router';
@@ -6,15 +6,14 @@ import StepPillGroup from '@components/StepPillGroup';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import BottomSheetWrapper from '@components/BottomSheetWrapper';
 import { BottomSheetFooter, BottomSheetView } from '@gorhom/bottom-sheet';
-import colors from '@lib/colors';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import Toast from 'react-native-toast-message';
+import { useTheme } from '@contexts/ThemeProvider';
 
 const Dob = () => {
   const [dob, setDob] = useState(null);
   const router = useRouter();
-  const colorScheme = useColorScheme();
-  const themeColors = colors[colorScheme];
+  const { colors: themeColors } = useTheme();
   const bottomSheetRef = useRef(null);
   const params = useLocalSearchParams();
   console.log('dob', dob);

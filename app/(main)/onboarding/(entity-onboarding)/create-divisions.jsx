@@ -7,8 +7,6 @@ import CustomTextInput from '@components/CustomTextInput';
 import BottomSheetWrapper from '@/components/BottomSheetWrapper';
 import { BottomSheetFooter, BottomSheetScrollView, BottomSheetView } from '@gorhom/bottom-sheet';
 import Ionicons from '@expo/vector-icons/Ionicons';
-import colors from '@lib/colors';
-import { useColorScheme } from 'react-native';
 import { PanGestureHandler } from 'react-native-gesture-handler';
 import Animated, {
   useAnimatedGestureHandler,
@@ -20,6 +18,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import CustomMultiSelect from '@components/CustomMultiSelect';
 import { StatusBar } from 'expo-status-bar';
+import { useTheme } from '@contexts/ThemeProvider';
 
 // SwipeableCard (Keeping your existing logic)
 const SwipeableCard = ({ item, onDelete, children }) => {
@@ -123,8 +122,7 @@ export default function CreateDivisions() {
   const router = useRouter();
   const { districtId, districtName, privateDistrict } = useLocalSearchParams();
   const bottomSheetRef = useRef(null);
-  const colorScheme = useColorScheme();
-  const themeColors = colors[colorScheme] || colors.light;
+  const { colors: themeColors } = useTheme();
 
   // --- STATE ---
   const [groups, setGroups] = useState([]); // [{id: 1, name: 'Main', type: 'team'}]

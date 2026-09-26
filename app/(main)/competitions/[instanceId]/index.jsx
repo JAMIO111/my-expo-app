@@ -1,5 +1,5 @@
 import { useState, useRef } from 'react';
-import { StyleSheet, View, Text, Image, Pressable, useColorScheme } from 'react-native';
+import { StyleSheet, View, Text, Image, Pressable } from 'react-native';
 import { Stack, useLocalSearchParams } from 'expo-router';
 import { useUser } from '@contexts/UserProvider';
 import CustomHeader from '@components/CustomHeader';
@@ -13,7 +13,6 @@ import LoadingScreen from '@components/LoadingScreen';
 import CTAButton from '@components/CTAButton';
 import { supabase } from '@lib/supabase';
 import { useQueryClient } from '@tanstack/react-query';
-import colors from '@lib/colors';
 import {
   checkEligibility,
   formatCompetitionType,
@@ -54,6 +53,7 @@ import ExpandableView from '@components/ExpandableView';
 import { useKnockoutBracket } from '@hooks/useKnockoutBracket';
 import PressableScale from '@components/PressableScale';
 import SponsorshipCard from '@components/SponsorshipCard';
+import { useTheme } from '@contexts/ThemeProvider';
 
 export function getStatusColors(status) {
   switch (status) {
@@ -92,8 +92,7 @@ const index = () => {
   const [showParticipants, setShowParticipants] = useState(true);
   const [showFixtures, setShowFixtures] = useState(false);
   const queryClient = useQueryClient();
-  const colorScheme = useColorScheme();
-  const themeColors = colors[colorScheme];
+  const { colors: themeColors, scheme: colorScheme } = useTheme();
   const { loading, currentRole, player } = useUser();
   const { instanceId } = useLocalSearchParams();
   const { data: competitionInstance, error, isLoading } = useCompetitionInstanceDetails(instanceId);
