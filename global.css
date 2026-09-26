@@ -15,7 +15,7 @@
   --color-border: hsl(0, 0%, 75%);
   --color-input-background: hsl(0, 0%, 100%);
   --color-bg-1: 255, 255, 255;
-  --color-bg-2: 242, 242, 247;
+  --color-bg-2: 240, 240, 245;
   --color-bg-3: 255, 255, 255;
   --color-bg-grouped-1: 242, 242, 247;
   --color-bg-grouped-2: 255, 255, 255;
@@ -59,7 +59,7 @@
   --color-gray-3: 199, 199, 204;
   --color-gray-4: 209, 209, 214;
   --color-gray-5: 229, 229, 234;
-  --color-gray-6: 242, 242, 247;
+  --color-gray-6: 238, 238, 243;
 }
 
 .dark {
