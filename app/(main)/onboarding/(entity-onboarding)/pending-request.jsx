@@ -1,7 +1,6 @@
 import { StyleSheet, Text, View, ScrollView, RefreshControl } from 'react-native';
 import { useRouter, Stack } from 'expo-router';
 import { useState } from 'react';
-import { StatusBar } from 'expo-status-bar';
 import { useQueryClient } from '@tanstack/react-query';
 import RequestStatusCard from '@components/RequestStatusCard';
 import { usePlayerInvitesAndRequests } from '@hooks/usePlayerInvitesAndRequests';
@@ -71,7 +70,6 @@ const PendingRequest = () => {
           gestureEnabled: false,
         }}
       />
-      <StatusBar style="light" />
       <View className="flex-1 bg-brand">
         <View className="px-6">
           <Text className="mb-4 pt-2 font-delagothic text-4xl font-bold text-text-on-brand">

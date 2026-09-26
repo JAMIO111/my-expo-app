@@ -1,7 +1,6 @@
 import { StyleSheet, Text, View, Image } from 'react-native';
 import { useRouter, Stack } from 'expo-router';
 import CTAButton from '@components/CTAButton';
-import { StatusBar } from 'expo-status-bar';
 
 const AdminOrPlayer = () => {
   const router = useRouter();
@@ -15,7 +14,6 @@ const AdminOrPlayer = () => {
           gestureEnabled: false,
         }}
       />
-      <StatusBar style="light" />
       <View className="flex-1 bg-brand">
         <View className="p-5">
           <Text className="mb-4 pt-2 font-delagothic text-6xl font-bold text-text-on-brand">

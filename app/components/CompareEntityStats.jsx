@@ -1,14 +1,6 @@
 import { useRef, useState } from 'react';
-import {
-  View,
-  Image,
-  Text,
-  Animated,
-  StyleSheet,
-  StatusBar,
-  Pressable,
-  TouchableOpacity,
-} from 'react-native';
+import { View, Image, Text, Animated, StyleSheet, Pressable, TouchableOpacity } from 'react-native';
+import { StatusBar } from 'expo-status-bar';
 import { Ionicons } from '@expo/vector-icons';
 import BottomSheetWrapper from '@/components/BottomSheetWrapper';
 import { BottomSheetScrollView } from '@gorhom/bottom-sheet';
@@ -134,7 +126,7 @@ export default function CompareTeamStats() {
   return (
     <>
       <View style={[styles.container, { backgroundColor: themeColors.bgGrouped1 }]}>
-        <StatusBar barStyle="light-content" />
+        <StatusBar style="light" />
         {stats1 && stats2 ? (
           <Animated.ScrollView
             className="bg-brand-dark p-3"

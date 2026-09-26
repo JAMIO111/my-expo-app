@@ -277,7 +277,7 @@ const Home = () => {
 
   return (
     <SafeViewWrapper topColor="bg-brand" bottomColor="bg-brand">
-      <StatusBar style="light" backgroundColor="#000" />
+      <StatusBar style="light" />
       <View className="flex-1 bg-brand">
         <Stack.Screen
           options={{

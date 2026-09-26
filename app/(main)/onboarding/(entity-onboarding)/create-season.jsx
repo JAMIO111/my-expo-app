@@ -9,7 +9,6 @@ import { supabase } from '@/lib/supabase';
 import Toast from 'react-native-toast-message';
 import CustomDatePicker from '@components/CustomDatePicker';
 import CustomMultiSelect from '@components/CustomMultiSelect';
-import { StatusBar } from 'expo-status-bar';
 import { useUser } from '@contexts/UserProvider';
 import { useQueryClient } from '@tanstack/react-query';
 
@@ -108,7 +107,6 @@ export default function SeasonName() {
           title: 'Step 4 of 4',
         }}
       />
-      <StatusBar style="light" />
       <View className="flex-1 bg-brand px-4">
         <StepPillGroup steps={4} currentStep={4} />
         <Text className="my-4 pt-2 font-delagothic text-3xl text-text-on-brand">

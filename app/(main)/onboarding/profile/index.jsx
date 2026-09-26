@@ -1,5 +1,4 @@
 import { Text, View, ScrollView } from 'react-native';
-import { StatusBar } from 'expo-status-bar';
 import { Stack } from 'expo-router';
 import { Cog } from 'lucide-react-native';
 import SafeViewWrapper from '@components/SafeViewWrapper';
@@ -27,7 +26,6 @@ const ProfilePage = () => {
 
   return (
     <SafeViewWrapper topColor="bg-brand" bottomColor="bg-brand">
-      <StatusBar style="light" backgroundColor="#000" />
       <Stack.Screen
         options={{
           header: () => (

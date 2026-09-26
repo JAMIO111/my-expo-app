@@ -212,7 +212,7 @@ const ManageTeam = () => {
   return (
     <>
       <SafeViewWrapper topColor="bg-brand" useBottomInset={false} bottomColor="bg-brand">
-        <StatusBar style="light" backgroundColor="#000" />
+        <StatusBar style="light" />
         <View className="flex-1">
           <Stack.Screen
             options={{

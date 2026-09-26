@@ -1,5 +1,5 @@
 import { router, Stack, usePathname } from 'expo-router';
-import { View, useColorScheme } from 'react-native';
+import { View } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import CustomHeader from '@components/CustomNativeHeader';
 import SafeViewWrapper from '@components/SafeViewWrapper';
@@ -9,7 +9,6 @@ import LoadingScreen from '@components/LoadingScreen';
 
 const _layout = () => {
   const { player, user, loading, currentRole } = useUser();
-  const colorScheme = useColorScheme();
   const pathname = usePathname();
 
   useEffect(() => {
@@ -38,7 +37,10 @@ const _layout = () => {
   return (
     <SafeViewWrapper useBottomInset={false} topColor="bg-brand">
       <View className={`flex-1`}>
-        <StatusBar style={colorScheme === 'dark' ? 'light' : 'dark'} />
+        {/* This wrapper's SafeViewWrapper always paints bg-brand behind the status
+            bar for every onboarding screen, so it always needs light content —
+            not whichever style matches the device's own light/dark setting. */}
+        <StatusBar style="light" />
         <Stack
           screenOptions={{
             animation: 'none', // 🔥 kills the slide

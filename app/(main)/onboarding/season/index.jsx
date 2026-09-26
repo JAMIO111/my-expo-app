@@ -2,7 +2,6 @@ import { View, ScrollView, Text, Pressable } from 'react-native';
 import { useRef, useState } from 'react';
 import NavBar from '@components/NavBar2';
 import SafeViewWrapper from '@components/SafeViewWrapper';
-import { StatusBar } from 'expo-status-bar';
 import { Stack } from 'expo-router';
 import CustomHeader from '@components/CustomHeader';
 import { useUser } from '@contexts/UserProvider';
@@ -45,7 +44,6 @@ const Season = () => {
   return (
     <>
       <SafeViewWrapper topColor="bg-brand" bottomColor="bg-brand">
-        <StatusBar style="light" backgroundColor="#000" />
         <Stack.Screen
           options={{
             header: () => (
