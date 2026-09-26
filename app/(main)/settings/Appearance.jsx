@@ -16,6 +16,8 @@ const MODE_OPTIONS = [
 const ACCENT_OPTIONS = [
   { value: 'green', title: 'Green' },
   { value: 'blue', title: 'Blue' },
+  { value: 'teal', title: 'Teal' },
+  { value: 'red', title: 'Red' },
 ];
 
 const Appearance = () => {

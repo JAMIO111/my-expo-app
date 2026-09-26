@@ -4,7 +4,7 @@ import colors from './colors';
 export const THEME_MODES = ['system', 'light', 'dark'];
 
 // Accent (brand) colour the user can pick, independently of the mode.
-export const THEME_ACCENTS = ['green', 'blue'];
+export const THEME_ACCENTS = ['green', 'blue', 'teal', 'red'];
 
 export const DEFAULT_MODE = 'system';
 // Each mode has its own accent, so e.g. light can be green while dark is blue.
@@ -47,6 +47,84 @@ export const accents = {
           primary: 'hsl(140, 60%, 26%)',
           secondary: 'hsl(140, 60%, 36%)',
           transparent: 'rgba(14, 57, 30, 0.15)',
+          text: '#ffffff',
+        },
+      },
+    },
+  },
+  // Tournament-cloth teal — the blue-green felt used on a lot of pro tables.
+  teal: {
+    light: {
+      css: {
+        '--color-brand': 'hsl(180, 65%, 20%)',
+        '--color-brand-dark': 'hsl(180, 65%, 13%)',
+        '--color-brand-light': 'hsl(180, 65%, 28%)',
+      },
+      js: {
+        brandNormal: 'hsl(180, 65%, 20%)',
+        brandDark: 'hsl(180, 65%, 13%)',
+        brandLight: 'hsl(180, 65%, 28%)',
+        brand: {
+          primary: 'hsl(180, 65%, 22%)',
+          secondary: 'hsl(180, 65%, 14%)',
+          transparent: 'rgba(20, 93, 93, 0.15)', // from #145D5D
+          text: '#ffffff',
+        },
+      },
+    },
+    dark: {
+      css: {
+        '--color-brand': 'hsl(178, 55%, 26%)',
+        '--color-brand-dark': 'hsl(178, 55%, 16%)',
+        '--color-brand-light': 'hsl(178, 55%, 34%)',
+      },
+      js: {
+        brandNormal: 'hsl(178, 55%, 26%)',
+        brandDark: 'hsl(178, 55%, 16%)',
+        brandLight: 'hsl(178, 55%, 34%)',
+        brand: {
+          primary: 'hsl(178, 55%, 32%)',
+          secondary: 'hsl(178, 55%, 42%)',
+          transparent: 'rgba(48, 166, 162, 0.15)', // from #30A6A2
+          text: '#ffffff',
+        },
+      },
+    },
+  },
+  // Tournament-cloth red — the deep wine/burgundy felt some tables use instead of green.
+  red: {
+    light: {
+      css: {
+        '--color-brand': 'hsl(355, 60%, 24%)',
+        '--color-brand-dark': 'hsl(355, 60%, 15%)',
+        '--color-brand-light': 'hsl(355, 60%, 32%)',
+      },
+      js: {
+        brandNormal: 'hsl(355, 60%, 24%)',
+        brandDark: 'hsl(355, 60%, 15%)',
+        brandLight: 'hsl(355, 60%, 32%)',
+        brand: {
+          primary: 'hsl(355, 60%, 26%)',
+          secondary: 'hsl(355, 60%, 16%)',
+          transparent: 'rgba(106, 27, 33, 0.15)', // from #6A1B21
+          text: '#ffffff',
+        },
+      },
+    },
+    dark: {
+      css: {
+        '--color-brand': 'hsl(355, 50%, 32%)',
+        '--color-brand-dark': 'hsl(355, 50%, 20%)',
+        '--color-brand-light': 'hsl(355, 50%, 40%)',
+      },
+      js: {
+        brandNormal: 'hsl(355, 50%, 32%)',
+        brandDark: 'hsl(355, 50%, 20%)',
+        brandLight: 'hsl(355, 50%, 40%)',
+        brand: {
+          primary: 'hsl(355, 50%, 36%)',
+          secondary: 'hsl(355, 50%, 46%)',
+          transparent: 'rgba(176, 59, 68, 0.15)', // from #B03B44
           text: '#ffffff',
         },
       },
