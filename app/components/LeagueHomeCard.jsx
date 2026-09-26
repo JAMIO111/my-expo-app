@@ -2,14 +2,12 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import Ioconicons from 'react-native-vector-icons/Ionicons';
 import { useRouter } from 'expo-router';
 import TeamLogo from './TeamLogo';
-import colors from '@lib/colors';
 import { useUser } from '@contexts/UserProvider';
-import { useColorScheme } from 'react-native';
 import { useRef } from 'react';
+import { useTheme } from '@contexts/ThemeProvider';
 
 const LeagueHomeCard = ({ standings }) => {
-  const colorScheme = useColorScheme();
-  const themeColors = colors[colorScheme];
+  const { colors: themeColors } = useTheme();
   const router = useRouter();
   const { currentRole } = useUser();
   const hasNavigated = useRef(false);

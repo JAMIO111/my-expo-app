@@ -1,8 +1,7 @@
 import { forwardRef, useMemo, useCallback } from 'react';
-import { useColorScheme } from 'react-native';
 import BottomSheet, { BottomSheetBackdrop } from '@gorhom/bottom-sheet';
-import colors from '@lib/colors';
 import { Keyboard } from 'react-native';
+import { useTheme } from '@contexts/ThemeProvider';
 
 const BottomSheetWrapper = forwardRef(
   (
@@ -20,8 +19,7 @@ const BottomSheetWrapper = forwardRef(
     ref
   ) => {
     const memoizedSnapPoints = useMemo(() => snapPoints, [snapPoints]);
-    const colorScheme = useColorScheme();
-    const themeColors = colors[colorScheme] || colors.light;
+    const { colors: themeColors } = useTheme();
 
     const renderBackdrop = useCallback(
       (props) => (

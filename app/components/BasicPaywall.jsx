@@ -7,14 +7,12 @@ import {
   Modal,
   Animated,
   Easing,
-  useColorScheme,
   Linking,
 } from 'react-native';
 import { useEffect, useRef, useState } from 'react';
 import IonIcons from 'react-native-vector-icons/Ionicons';
 import CTAButton from '@components/CTAButton';
 import { ScrollView, Switch } from 'react-native-gesture-handler';
-import colors from '../lib/colors';
 import { ActivityIndicator } from 'react-native';
 import Purchases, { INTRO_ELIGIBILITY_STATUS } from 'react-native-purchases';
 import {
@@ -23,6 +21,7 @@ import {
   useCustomerInfo,
   useRevenueCat,
 } from '@contexts/RevenueCatProvider';
+import { useTheme } from '@contexts/ThemeProvider';
 
 const reviews = [
   {
@@ -91,8 +90,7 @@ const BasicPaywall = () => {
 
   const scaleAnim = useRef(new Animated.Value(0.8)).current;
   const opacityAnim = useRef(new Animated.Value(0)).current;
-  const colorScheme = useColorScheme();
-  const themeColors = colors[colorScheme];
+  const { colors: themeColors } = useTheme();
   const scrollRef = useRef(null);
 
   const isLoading = offeringsLoading || isSubscribing || isRestoring;

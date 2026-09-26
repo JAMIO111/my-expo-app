@@ -1,13 +1,4 @@
-import {
-  StyleSheet,
-  ScrollView,
-  Text,
-  View,
-  Pressable,
-  useColorScheme,
-  Linking,
-  Platform,
-} from 'react-native';
+import { StyleSheet, ScrollView, Text, View, Pressable, Linking, Platform } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
 import { useState, useRef } from 'react';
 import TeamLogo from '@components/TeamLogo';
@@ -15,7 +6,6 @@ import useKickoffCountdown from '@hooks/Countdown';
 import SlidingTabButton from '@components/SlidingTabButton';
 import { useRouter } from 'expo-router';
 import PlayersList from '@components/PlayersList';
-import colors from '@lib/colors';
 import { getContrastColor } from '@lib/helperFunctions';
 import FormWidget from '@components/FormWidget';
 import { FixtureDetailsSkeleton } from '@components/Skeletons';
@@ -29,11 +19,11 @@ import LoadingScreen from '@components/LoadingScreen';
 import { useResultsByFixture } from '@hooks/useResultsByFixture';
 import SevenSegmentScoreboard from './SevenSegmentScoreboard';
 import Ionicons from '@expo/vector-icons/Ionicons';
+import { useTheme } from '@contexts/ThemeProvider';
 
 const FixturePage = ({ fixtureDetails, isLoading, context }) => {
   const router = useRouter();
-  const colorScheme = useColorScheme();
-  const themeColors = colors[colorScheme];
+  const { colors: themeColors } = useTheme();
   const { fixtureId } = useLocalSearchParams();
   const { days, hours, minutes, seconds, isPast, isOverdue } = useKickoffCountdown(
     fixtureDetails?.date_time

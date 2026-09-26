@@ -4,15 +4,14 @@ import { useRef } from 'react';
 import { useRouter } from 'expo-router';
 import { useLocalSearchParams, usePathname } from 'expo-router';
 import { isBirthdayToday } from '@lib/helperFunctions';
-import { useColorScheme } from 'react-native';
-import colors from '@lib/colors';
 import Avatar from './Avatar';
+import { useTheme } from '@contexts/ThemeProvider';
 
 const PlayerCard = ({ player, team, context }) => {
-  const colorScheme = useColorScheme();
+  const { colors: themeColors } = useTheme();
   const router = useRouter();
   const { teamId, fixtureId } = useLocalSearchParams();
-  const iconColor = colors[colorScheme]?.icon || '#000';
+  const iconColor = themeColors?.icon || '#000';
   const hasNavigated = useRef(false);
 
   console.log('PlayerCard Data:', player);

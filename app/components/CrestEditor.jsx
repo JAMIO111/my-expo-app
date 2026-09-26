@@ -1,12 +1,12 @@
-import { StyleSheet, Text, View, Pressable, useColorScheme, ScrollView } from 'react-native';
+import { StyleSheet, Text, View, Pressable, ScrollView } from 'react-native';
 import { useState } from 'react';
 import TeamLogo from '@components/TeamLogo';
 import CTAButton from '@components/CTAButton';
 import ColorPickerGrid from '@components/ColorPickerGrid';
 import BottomSheetModal from '@components/BottomSheetModal';
 import Ionicons from '@expo/vector-icons/Ionicons';
-import colors from '@lib/colors';
 import { Palette, Shapes, SlidersVertical } from 'lucide-react-native';
+import { useTheme } from '@contexts/ThemeProvider';
 
 const THICKNESSES = [
   {
@@ -45,8 +45,7 @@ const CrestEditor = ({ crest, handleSave, buttonText = 'Save Changes', isSaving 
   const [secondaryColor, setSecondaryColor] = useState(crest?.color2 || '#FFFFFF'); //Yellow
   const [thickness, setThickness] = useState(crest?.thickness || '2.7');
   const [type, setType] = useState(crest?.type || 'Horizontal Stripe'); // Assuming 'default' is a valid type
-  const colorScheme = useColorScheme();
-  const themeColors = colors[colorScheme] || colors.light; // Fallback to light theme if colorScheme is undefined
+  const { colors: themeColors } = useTheme();
   const [activeMenu, setActiveMenu] = useState(null);
 
   const hasChanges = () => {

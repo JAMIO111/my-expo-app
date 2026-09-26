@@ -1,14 +1,13 @@
-import { Pressable, StyleSheet, Text, View, useColorScheme } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 import Ioconicons from 'react-native-vector-icons/Ionicons';
 import { useRouter } from 'expo-router';
 import TeamLogo from './TeamLogo';
-import colors from '@lib/colors';
 import { useRef } from 'react';
 import { CalendarFold } from 'lucide-react-native';
+import { useTheme } from '@contexts/ThemeProvider';
 
 const FixturesHomeCard = ({ fixture, isLoading }) => {
-  const colorScheme = useColorScheme();
-  const themeColors = colors[colorScheme];
+  const { colors: themeColors } = useTheme();
   const router = useRouter();
   const hasNavigated = useRef(false);
 

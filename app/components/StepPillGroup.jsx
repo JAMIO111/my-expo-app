@@ -1,10 +1,8 @@
-import { View, StyleSheet, useColorScheme } from 'react-native';
+import { View, StyleSheet } from 'react-native';
 
 const StepPillGroup = ({ steps, currentStep }) => {
-  const colorScheme = useColorScheme();
-
   return (
-    <View style={styles.container} className={colorScheme}>
+    <View style={styles.container}>
       {[...Array(steps)].map((_, i) => {
         const stepNum = i + 1;
         const isActive = stepNum === currentStep;
@@ -12,7 +10,7 @@ const StepPillGroup = ({ steps, currentStep }) => {
         return (
           <View
             key={stepNum}
-            className={`${colorScheme} ${isActive ? 'bg-text-on-brand' : 'bg-text-on-brand-2'}`}
+            className={isActive ? 'bg-text-on-brand' : 'bg-text-on-brand-2'}
             style={[
               styles.pill,
               isActive ? styles.pillActive : styles.pillInactive,

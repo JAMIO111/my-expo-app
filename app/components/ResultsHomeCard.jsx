@@ -1,15 +1,14 @@
-import { Pressable, StyleSheet, Text, View, useColorScheme } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { useRouter } from 'expo-router';
-import colors from '@lib/colors';
 import TeamLogo from './TeamLogo';
 import { useRef } from 'react';
+import { useTheme } from '@contexts/ThemeProvider';
 
 const ResultsHomeCard = ({ result }) => {
   const hasNavigated = useRef(false);
   const router = useRouter();
-  const colorScheme = useColorScheme();
-  const themeColors = colors[colorScheme];
+  const { colors: themeColors } = useTheme();
   console.log('ResultsHomeCard result:', result);
   return (
     <Pressable

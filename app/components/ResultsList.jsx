@@ -10,8 +10,6 @@ import { useRouter } from 'expo-router';
 import { FixtureSkeleton } from '@components/Skeletons';
 import BottomSheetWrapper from '@components/BottomSheetWrapper';
 import { BottomSheetFooter, BottomSheetScrollView, BottomSheetView } from '@gorhom/bottom-sheet';
-import { useColorScheme } from 'react-native';
-import colors from '@lib/colors';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import CTAButton from '@components/CTAButton';
 import { useDistricts } from '@hooks/useDistricts';
@@ -20,14 +18,14 @@ import { useCompetitionInstances } from '@hooks/useCompetitionInstances';
 import { getActiveSeason } from '@lib/helperFunctions';
 import Avatar from './Avatar';
 import LoadingScreen from './LoadingScreen';
+import { useTheme } from '@contexts/ThemeProvider';
 
 const ResultsList = () => {
   const router = useRouter();
   const { currentRole } = useUser();
   const seasonStartDate = currentRole?.activeSeason?.start_date;
   const hasNavigated = useRef(false);
-  const colorScheme = useColorScheme();
-  const themeColors = colors[colorScheme] || colors.light; // Fallback to light theme
+  const { colors: themeColors } = useTheme();
 
   const bottomSheetRef = useRef(null);
 
