@@ -99,7 +99,7 @@ const LeaderboardLayout = () => {
               }
             }}
             style={[styles.chipBar, chipAnimatedStyle]}
-            className="border-b border-theme-gray-5 bg-white py-2">
+            className="border-b border-theme-gray-5 bg-bg-1 py-2">
             <ChipSelector
               options={[
                 {

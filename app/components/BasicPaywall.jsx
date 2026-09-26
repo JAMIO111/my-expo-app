@@ -181,12 +181,12 @@ const BasicPaywall = () => {
   // ─── Modal animations ─────────────────────────────────────────────────────────
   const planImages = {
     pro: {
-      monthly: require('@assets/pro-monthly.jpg'),
-      annual: require('@assets/pro-annual.jpg'),
+      monthly: require('@assets/pro-monthly.png'),
+      annual: require('@assets/pro-annual.png'),
     },
     core: {
-      monthly: require('@assets/core-monthly.jpg'),
-      annual: require('@assets/core-annual.jpg'),
+      monthly: require('@assets/core-monthly.png'),
+      annual: require('@assets/core-annual.png'),
     },
   };
 
@@ -386,7 +386,7 @@ const BasicPaywall = () => {
                         setSelectedTier(plan.tier);
                         setSelectedPlan(plan);
                       }}
-                      className={`relative w-full flex-row items-center justify-start gap-4 rounded-3xl border-2 bg-bg-1 p-2 pr-5 shadow-sm ${
+                      className={`relative w-full flex-row items-center justify-start gap-4 rounded-3xl border-2 bg-bg-grouped-2 p-2 pr-5 shadow-sm ${
                         isCurrentPlan
                           ? 'border-brand opacity-50'
                           : selectedBilling === plan.interval && selectedTier === plan.tier

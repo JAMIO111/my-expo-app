@@ -15,7 +15,7 @@ const colors = {
     border: 'hsl(0, 0%, 75%)',
     primaryText: '#000000',
     secondaryText: '#4B5563',
-    icon: 'hsl(0, 0%, 60%)',
+    icon: 'hsl(0, 0%, 30%)',
     themeGray1: 'rgba(142, 142, 147, 1)',
     themeGray2: 'rgba(174, 174, 178, 1)',
     themeGray3: 'rgba(199, 199, 204, 1)',
@@ -33,6 +33,12 @@ const colors = {
       primary: '#15803d',
       secondary: '#166534',
       transparent: 'rgba(21, 128, 61, 0.15)', // from #15803d
+      text: '#ffffff',
+    },
+    warning: {
+      primary: '#b45309',
+      secondary: '#78350f',
+      transparent: 'rgba(180, 83, 9, 0.15)', // from #b45309
       text: '#ffffff',
     },
     error: {
@@ -79,10 +85,10 @@ const colors = {
     brandLight: 'rgba(15, 58, 91, 1)',
     bg1: 'rgba(0, 0, 0, 1)',
     bg2: 'rgba(23, 23, 26, 1)',
-    bg3: 'rgba(44, 44, 46, 1)',
+    bg3: 'rgba(40, 40, 42, 1)',
     bgGrouped1: 'rgba(0, 0, 0, 1)',
     bgGrouped2: 'rgba(23, 23, 26, 1)',
-    bgGrouped3: 'rgba(44, 44, 46, 1)',
+    bgGrouped3: 'rgba(40, 40, 42, 1)',
     background: 'hsl(219, 15%, 8%)',
     backgroundLight: 'hsl(219, 15%, 15%)',
     backgroundDark: 'hsl(0, 15%, 3%)',
@@ -109,10 +115,16 @@ const colors = {
       transparent: 'rgba(22, 101, 52, 0.15)', // from #166534
       text: '#ffffff',
     },
+    warning: {
+      primary: '#b45309',
+      secondary: '#78350f',
+      transparent: 'rgba(180, 83, 9, 0.15)', // from #b45309
+      text: '#ffffff',
+    },
     error: {
-      primary: '#7f1d1d',
-      secondary: '#ef4444',
-      transparent: 'rgba(127, 29, 29, 0.15)', // from #7f1d1d
+      primary: '#b91c1c',
+      secondary: '#7f1d1d',
+      transparent: 'rgba(185, 28, 28, 0.15)', // from #b91c1c
       text: '#ffffff',
     },
     info: {

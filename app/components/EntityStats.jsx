@@ -63,12 +63,12 @@ const EntityStats = ({ entityId, entityType }) => {
     const currentStreak = stats?.[`current_${prefix.slice(0, -1)}_streak`] ?? 0;
 
     return (
-      <View className="gap-3 bg-bg-grouped-1">
-        <View className="flex-col items-center rounded-3xl border border-theme-gray-5 bg-bg-1 p-3">
+      <View className="gap-3">
+        <View className="flex-col items-center rounded-3xl  bg-bg-3 p-3">
           <Text className="w-full flex-1 px-2 pt-2 text-left font-saira-medium text-3xl text-text-1">
             {title}
           </Text>
-          <View className="flex-row gap-10 rounded-3xl bg-bg-1 p-4">
+          <View className="flex-row gap-10 rounded-3xl p-4">
             <DonutChart
               wins={won}
               draws={drawn}
@@ -85,7 +85,7 @@ const EntityStats = ({ entityId, entityType }) => {
           </View>
         </View>
         <View className="flex-row gap-3">
-          <View style={{ borderRadius: 24 }} className="flex-1 border border-theme-gray-5 bg-bg-1">
+          <View style={{ borderRadius: 24 }} className="flex-1 bg-bg-3">
             <StatBlock
               label="Frame Win Streak"
               subLabel="Current"
@@ -101,7 +101,7 @@ const EntityStats = ({ entityId, entityType }) => {
               }
             />
           </View>
-          <View style={{ borderRadius: 24 }} className="flex-1 border border-theme-gray-5 bg-bg-1">
+          <View style={{ borderRadius: 24 }} className="flex-1 bg-bg-3">
             <StatBlock label="Frame Win Streak" subLabel="Career Best" value={bestStreak} />
           </View>
         </View>
@@ -137,7 +137,7 @@ const EntityStats = ({ entityId, entityType }) => {
       </View>
       <StatSection title="Frames" stats={data?.totalStats} type="frames" />
       <View className="gap-3">
-        <View className="flex-row items-center gap-8 rounded-3xl border border-theme-gray-5 bg-bg-1 px-3 py-3">
+        <View className="flex-row items-center gap-8 rounded-3xl bg-bg-3 px-3 py-3">
           <View
             style={{ width: 60, height: 60, borderRadius: 16, backgroundColor: '#7e0fd922' }}
             className="items-center justify-center">
@@ -158,7 +158,7 @@ const EntityStats = ({ entityId, entityType }) => {
             {data?.totalStats?.lags_won ?? 0}
           </Text>
         </View>
-        <View className="flex-row items-center gap-8 rounded-3xl border border-theme-gray-5 bg-bg-1 px-3 py-3">
+        <View className="flex-row items-center gap-8 rounded-3xl bg-bg-3 px-3 py-3">
           <View
             style={{ width: 60, height: 60, borderRadius: 16, backgroundColor: '#d95c0f33' }}
             className="items-center justify-center">
@@ -180,7 +180,7 @@ const EntityStats = ({ entityId, entityType }) => {
             {data?.totalStats?.break_dishes ?? 0}
           </Text>
         </View>
-        <View className="flex-row items-center gap-8 rounded-3xl border border-theme-gray-5 bg-bg-1 px-3 py-3">
+        <View className="flex-row items-center gap-8 rounded-3xl bg-bg-3 px-3 py-3">
           <View
             style={{ width: 60, height: 60, borderRadius: 16, backgroundColor: '#1e870e33' }}
             className="items-center justify-center">

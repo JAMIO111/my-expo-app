@@ -83,14 +83,6 @@ const TeamProfileHeader = ({ profile }) => {
           ))}
         </View>
       </View>
-
-      {/* Bottom separator with fade */}
-      <LinearGradient
-        colors={['transparent', '#e5e7eb']}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 0 }}
-        style={styles.bottomLine}
-      />
     </View>
   );
 };

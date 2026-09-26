@@ -347,9 +347,10 @@ const Home = () => {
               </View>
             </View>
             <View className="w-full bg-bg-2 pb-8">
+              <Heading text="Pending Fixtures" className="ml-4" />
               {(currentRole?.team?.captain === player?.id ||
                 currentRole?.team?.vice_captain === player?.id) && (
-                <View className="w-full gap-3 p-3">
+                <View className="w-full gap-4 p-3">
                   {disputedFixtures && disputedFixtures.length > 0 && (
                     <View className="w-full gap-3">
                       <Heading text="Pending Match Results" />
@@ -380,7 +381,7 @@ const Home = () => {
                         ))}
                     </View>
                   )}
-                  <View className="w-full gap-3">
+                  <View className="w-full gap-4">
                     {fixturesAwaitingResults &&
                       fixturesAwaitingResults.length > 0 &&
                       fixturesAwaitingResults.map((fixture) => (

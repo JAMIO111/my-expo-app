@@ -76,10 +76,9 @@ const LivePulseCard = ({ fontSize = 14, dotSize = 8, showBG = true, text = 'Live
       </View>
 
       <Text
+        className="font-tektur-medium text-text-1"
         style={{
-          fontSize,
-          fontFamily: 'Tektur-SemiBold',
-          color: '#111111',
+          fontSize: fontSize,
         }}>
         {text}
       </Text>

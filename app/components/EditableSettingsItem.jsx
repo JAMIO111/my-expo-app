@@ -11,7 +11,7 @@ const EditableSettingsItem = ({
   value,
   onChangeText,
   placeholder = '',
-  iconColor = '#333',
+  iconColor,
   routerPath,
   editable = true,
   keyboardType = 'default',
@@ -40,7 +40,7 @@ const EditableSettingsItem = ({
             className={`flex-row items-center gap-3 px-4 py-3 ${
               pressed ? 'bg-theme-gray-5' : 'bg-bg-grouped-2'
             }`}>
-            {icon && Icon && <Icon size={24} color={iconColor} />}
+            {icon && Icon && <Icon size={24} color={iconColor ?? themeColors.icon} />}
 
             <Text
               numberOfLines={1}

@@ -21,20 +21,13 @@ import { useTheme } from '@contexts/ThemeProvider';
 
 const planImages = {
   pro: {
-    monthly: require('@assets/pro-monthly.jpg'),
-    annual: require('@assets/pro-annual.jpg'),
+    monthly: require('@assets/pro-monthly.png'),
+    annual: require('@assets/pro-annual.png'),
   },
   core: {
-    monthly: require('@assets/core-monthly.jpg'),
-    annual: require('@assets/core-annual.jpg'),
+    monthly: require('@assets/core-monthly.png'),
+    annual: require('@assets/core-annual.png'),
   },
-};
-
-// productIdentifier like 'pro.monthly' -> { tier: 'pro', interval: 'monthly' }
-const parseProductId = (productId) => {
-  if (!productId) return null;
-  const [tier, interval] = productId.split('.');
-  return { tier, interval };
 };
 
 const formatDate = (isoString) => {
@@ -128,7 +121,7 @@ const Subscriptions = () => {
         contentContainerStyle={{ flexGrow: 1 }}
         className="mt-16 flex-1 bg-bg-grouped-1 p-5">
         <View>
-          <Text className="w-full pb-3 pl-1 font-saira-bold text-xl">Your Plan</Text>
+          <Text className="w-full pb-3 pl-1 font-saira-bold text-xl text-text-1">Your Plan</Text>
 
           {loading ? (
             <View className="mb-8 w-full items-center justify-center rounded-3xl bg-bg-1 p-6">
@@ -138,7 +131,7 @@ const Subscriptions = () => {
             <Pressable
               onPress={handleManageSubscription}
               disabled={managing}
-              className="mb-8 w-full flex-row items-center justify-between rounded-3xl bg-bg-1 p-4 py-3">
+              className="mb-8 w-full flex-row items-center justify-between rounded-3xl bg-bg-grouped-2 p-4 py-3">
               <Image
                 source={planImages[planInfo.tier]?.[planInfo.interval]}
                 className="h-24 w-24 rounded-xl"
@@ -157,7 +150,7 @@ const Subscriptions = () => {
                     : `Expires ${formatDate(activeEntitlement.expirationDate)}`}
                 </Text>
                 {activeEntitlement.periodType === 'TRIAL' && (
-                  <Text className="text-theme-gold mt-1 font-saira text-sm">Free trial</Text>
+                  <Text className="mt-1 font-saira text-sm text-theme-gold">Free trial</Text>
                 )}
               </View>
 

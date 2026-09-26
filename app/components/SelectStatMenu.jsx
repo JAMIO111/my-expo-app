@@ -15,7 +15,7 @@ const SelectStatMenu = ({
   const queryClient = useQueryClient();
   const colorScheme = useColorScheme();
   return (
-    <View className="flex-1 rounded-3xl bg-bg-grouped-2">
+    <View className="flex-1 bg-bg-grouped-1">
       <ScrollView
         contentContainerStyle={{ paddingHorizontal: 8, paddingBottom: 32, paddingTop: 16 }}>
         <View className="flex-row flex-wrap">
@@ -66,14 +66,14 @@ const SelectStatMenu = ({
                 }}
                 className="w-1/2 p-2">
                 <View
-                  className={`relative items-center justify-center rounded-2xl border-2 bg-bg-2 py-6 shadow-sm ${
+                  className={`relative items-center justify-center rounded-2xl border-2 bg-bg-grouped-2 py-6 shadow-sm ${
                     isSelected ? 'border-brand' : 'border-transparent'
                   }`}>
                   {/* SLOT BADGES */}
                   {slotIndexes.map((slotIdx) => (
                     <View
                       key={slotIdx}
-                      className="absolute right-2 top-2 h-8 w-8 items-center justify-center rounded-full bg-brand">
+                      className="absolute right-2 top-2 h-8 w-8 items-center justify-center rounded-full bg-brand-light">
                       <Text className="font-tektur-semibold text-sm text-white">{slotIdx + 1}</Text>
                     </View>
                   ))}

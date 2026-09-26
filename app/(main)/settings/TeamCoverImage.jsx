@@ -156,7 +156,7 @@ const TeamCoverImage = () => {
           ),
         }}
       />
-      <View className="mt-16 gap-5 p-3">
+      <View className="mt-16 flex-1 gap-5 bg-bg-grouped-1 p-3">
         <View style={{ borderRadius: 26 }} className="border border-theme-gray-3">
           <ImageUploader
             ref={imageUploaderRef}

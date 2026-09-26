@@ -11,7 +11,7 @@ const BottomSheetModal = ({ showModal, setShowModal, title, children }) => {
       statusBarTranslucent={false}
       hardwareAccelerated
       onRequestClose={() => setShowModal(false)}>
-      <View className="bg-bg flex-1">
+      <View className="flex-1 bg-bg-2">
         {/* HEADER */}
         <View className="items-center gap-2 bg-brand px-4 pb-4 pt-3">
           <View className="h-1 w-12 rounded-full bg-gray-400" />

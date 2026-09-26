@@ -51,7 +51,7 @@ const BottomSheetWrapper = forwardRef(
         }}
         enablePanDownToClose
         backgroundStyle={{
-          backgroundColor: backgroundColor ? backgroundColor : themeColors.bgGrouped2,
+          backgroundColor: backgroundColor ? backgroundColor : themeColors.bg2,
           borderTopLeftRadius: 26,
           borderTopRightRadius: 26,
         }}

@@ -350,7 +350,7 @@ const PersonalDetailsComponent = () => {
           <Pressable
             onPress={() => setShowGenderPicker((prev) => !prev)}
             className="flex-row items-center justify-between px-5 py-4">
-            <VenusAndMars size={22} color={'#333'} />
+            <VenusAndMars size={22} color={themeColors.icon} />
             <Text className="pl-6 text-lg font-medium text-text-1">Gender</Text>
             <View className="flex-1 flex-row items-center justify-end gap-3">
               <Text className="text-xl text-text-2">
@@ -373,7 +373,7 @@ const PersonalDetailsComponent = () => {
                   setShowGenderPicker(false);
                 }}>
                 <Text className="text-lg text-text-1">Male</Text>
-                <Ionicons name="male" size={22} color="blue" />
+                <Ionicons name="male" size={22} color={themeColors.icon} />
               </Pressable>
               <Pressable
                 className={`mt-2 flex-row items-center justify-between gap-4 p-4 ${gender === 'female' ? 'bg-theme-gray-5' : ''}`}
@@ -382,7 +382,7 @@ const PersonalDetailsComponent = () => {
                   setShowGenderPicker(false);
                 }}>
                 <Text className="text-lg text-text-1">Female</Text>
-                <Ionicons name="female" size={22} color="red" />
+                <Ionicons name="female" size={22} color={themeColors.icon} />
               </Pressable>
               <Pressable
                 style={{ borderBottomLeftRadius: 20, borderBottomRightRadius: 20 }}
@@ -392,7 +392,7 @@ const PersonalDetailsComponent = () => {
                   setShowGenderPicker(false);
                 }}>
                 <Text className="text-lg text-text-1">Prefer Not to Say</Text>
-                <Ionicons name="help-circle" size={22} color="gray" />
+                <Ionicons name="help-circle" size={22} color={themeColors.icon} />
               </Pressable>
             </View>
           )}
@@ -411,7 +411,7 @@ const PersonalDetailsComponent = () => {
           <Pressable
             onPress={() => setShowDatePicker((prev) => !prev)}
             className="flex-row items-center justify-between px-5 py-4">
-            <CalendarDays size={22} color={'#333'} />
+            <CalendarDays size={22} color={themeColors.icon} />
             <Text className="pl-6 text-lg font-medium text-text-1">Date of Birth</Text>
             <View className="flex-1 flex-row items-center justify-end gap-3">
               <Text className="text-xl text-text-2">{dob.toLocaleDateString('en-GB')}</Text>

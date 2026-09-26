@@ -3,6 +3,7 @@ import TeamLogo from '@components/TeamLogo';
 import { useRouter } from 'expo-router';
 import { LeaderboardSkeleton } from '@components/Skeletons';
 import { Ionicons } from '@expo/vector-icons';
+import { useTheme } from '@contexts/ThemeProvider';
 
 const LeaderboardCard = ({
   title,
@@ -15,6 +16,7 @@ const LeaderboardCard = ({
   loading,
 }) => {
   const router = useRouter();
+  const { colors: themeColors } = useTheme();
 
   const getInitials = (firstName, surname) => {
     const firstInitial = firstName?.charAt(0).toUpperCase() || '';
@@ -40,7 +42,7 @@ const LeaderboardCard = ({
     return (
       <View style={{ borderRadius: 24 }} className="bg-bg-2 p-2">
         <View className="h-[300px] w-[300px] items-center justify-center rounded-3xl bg-bg-grouped-2 p-3 shadow-sm">
-          <Ionicons name="file-tray-outline" size={50} color="rgba(0,0,0,0.2)" />
+          <Ionicons name="file-tray-outline" size={50} color={themeColors.icon} />
           <Text className="mt-3 font-saira-semibold text-2xl text-text-1">{title}</Text>
           <Text className="mt-1 px-6 text-center font-saira-medium text-text-3">
             No {type === 'team' ? 'team' : 'player'} stats to rank yet.

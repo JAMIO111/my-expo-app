@@ -79,7 +79,7 @@ function NotificationRow({ item, onPress, onMarkAsRead, onMarkAsUnread }) {
   return (
     <Pressable
       style={({ pressed }) => ({ opacity: pressed ? 0.7 : 1 })}
-      className={`mx-3 flex-row items-start justify-center rounded-2xl ${item?.read ? 'bg-bg-1' : 'border border-theme-blue/50  bg-theme-blue/5'} px-4 py-3`}>
+      className={`mx-3 flex-row items-start justify-center rounded-2xl ${item?.read ? 'bg-bg-3' : 'border border-theme-blue/50  bg-theme-blue/5'} px-4 py-3`}>
       {/* Unread dot + icon */}
       <View className="mr-3 mt-1 items-center justify-center">
         {!item.read && (
@@ -350,13 +350,7 @@ function NotificationsPanelInner({
                 keyExtractor={(item, index) => item.id?.toString() ?? `item-${index}`}
                 renderItem={renderItem}
                 showsVerticalScrollIndicator={false}
-                contentContainerStyle={{ paddingBottom: insets.bottom + 16, gap: 8 }}
-                ItemSeparatorComponent={() => (
-                  <View
-                    className="mx-4"
-                    style={{ height: 3, backgroundColor: 'rgba(255,255,255,0.04)' }}
-                  />
-                )}
+                contentContainerStyle={{ paddingBottom: insets.bottom, gap: 12 }}
               />
             )}
           </SafeAreaView>

@@ -72,13 +72,13 @@ const PlayerCard = ({ player, team, context }) => {
   const isViceCaptain = player?.role === 'vice_captain';
 
   return (
-    <Animated.View className="shadow-sm" style={{ transform: [{ scale }] }}>
+    <Animated.View style={{ transform: [{ scale }] }}>
       <Pressable
         onPressIn={handlePressIn}
         onPressOut={handlePressOut}
         onPress={handlePress}
         className="w-full">
-        <View className="w-full flex-row items-center justify-between gap-4 rounded-2xl border border-theme-gray-6 bg-bg-grouped-1 py-2 pl-2 pr-2">
+        <View className="w-full flex-row items-center justify-between gap-4 rounded-2xl bg-bg-grouped-3 py-2 pl-2 pr-2">
           <View className="relative">
             <View className="absolute -left-1 -top-1 z-10 rounded-full bg-bg-2 p-[2px]">
               <View

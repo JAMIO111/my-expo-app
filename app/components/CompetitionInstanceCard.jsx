@@ -366,10 +366,8 @@ const CompetitionInstanceCard = ({ instance }) => {
         <View style={{ height: 8, backgroundColor: statusColors.accent, width: '100%' }} />
 
         {/* ── Header gradient ── */}
-        <LinearGradient
-          colors={['#1a2a1a', '#111a11']}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
+        <View
+          className="bg-bg-grouped-2"
           style={{ paddingHorizontal: 16, paddingTop: 16, paddingBottom: 14 }}>
           {/* Name row */}
           <View
@@ -442,11 +440,11 @@ const CompetitionInstanceCard = ({ instance }) => {
               </View>
             )}
           </View>
-        </LinearGradient>
+        </View>
 
         {/* ── Footer stats row ── */}
-        <LinearGradient
-          colors={['#0f160f', '#0c130c']}
+        <View
+          className="bg-bg-grouped-2"
           style={{
             flexDirection: 'row',
             alignItems: 'flex-end',
@@ -499,7 +497,7 @@ const CompetitionInstanceCard = ({ instance }) => {
               label={deadline || 'No Deadline'}
             />
           </View>
-        </LinearGradient>
+        </View>
       </Pressable>
     </Animated.View>
   );

@@ -21,7 +21,9 @@ const PendingResultCard = ({ fixture }) => {
             ? router.push(`home/${fixture?.id}/submit-results`)
             : router.push(`home/${fixture?.id}/approve-results`)
       }>
-      <View className="relative items-center justify-between gap-5 rounded-3xl border border-theme-gray-5 bg-bg-grouped-2 px-4 py-4">
+      <View
+        style={{ borderWidth: 0.5 }}
+        className="relative items-center justify-between gap-5 rounded-2xl border border-theme-gray-4 bg-bg-3 px-4 py-4">
         <View className="w-full flex-1 flex-row items-center justify-between">
           <View className="flex-col">
             <Text className="font-saira-medium text-lg text-text-1">

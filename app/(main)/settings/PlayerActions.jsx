@@ -12,8 +12,10 @@ import { supabase } from '@/lib/supabase';
 import { useState } from 'react';
 import Toast from 'react-native-toast-message';
 import { useQueryClient } from '@tanstack/react-query';
+import { useTheme } from '@contexts/ThemeProvider';
 
 const PlayerId = () => {
+  const { colors: themeColors } = useTheme();
   const queryClient = useQueryClient();
   const router = useRouter();
   const { currentRole, refetch, player } = useUser();
@@ -330,9 +332,18 @@ const PlayerId = () => {
       <View className="mt-16 flex-1 bg-bg-grouped-1 pb-12">
         <View
           style={{
-            borderColor: status === 'active' ? 'green' : status === 'left' ? 'gray' : 'orange',
+            borderColor:
+              status === 'active'
+                ? themeColors.success.primary
+                : status === 'left'
+                  ? themeColors.error.primary
+                  : themeColors.warning.primary,
             backgroundColor:
-              status === 'active' ? '#E6F4EA' : status === 'left' ? '#F0F0F0' : '#FFF4E5',
+              status === 'active'
+                ? themeColors.success.transparent
+                : status === 'left'
+                  ? themeColors.error.transparent
+                  : themeColors.warning.transparent,
           }}
           className="flex-row items-center gap-6 border-b bg-bg-1 p-3 px-6">
           <Avatar player={playerProfile} size={46} borderRadius={10} />
