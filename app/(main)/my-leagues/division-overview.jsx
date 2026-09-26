@@ -15,6 +15,7 @@ import EditDivisionForm from '@components/EditDivisionForm';
 import GenerateFixturesForm from '@components/GenerateFixturesForm';
 import { useDivisions } from '@hooks/useDivisions';
 import { useCompetitions } from '@hooks/useCompetitions';
+import { useTheme } from '@contexts/ThemeProvider';
 import {
   Shield,
   Medal,
@@ -29,6 +30,7 @@ import {
 } from 'lucide-react-native';
 
 const DivisionOverview = () => {
+  const { colors: themeColors } = useTheme();
   const { currentRole } = useUser();
   const { divisionId } = useLocalSearchParams();
   const { data: divisions } = useDivisions(currentRole?.district?.id);
@@ -128,7 +130,7 @@ const DivisionOverview = () => {
             <View className="flex-col gap-2 p-2 pt-0">
               {divisionDetailsConfig.map(({ title, value, icon: Icon }) => (
                 <View key={title} className="flex-row gap-2 pt-2">
-                  {Icon && <Icon className="mr-2" size={20} color={'#666'} />}
+                  {Icon && <Icon className="mr-2" size={20} color={themeColors.secondaryText} />}
                   <Text className="flex-1 px-1 font-saira text-lg text-text-2">{title}</Text>
                   <Text className="px-1 font-saira text-xl text-text-1">{value}</Text>
                 </View>

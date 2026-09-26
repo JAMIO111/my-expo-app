@@ -8,12 +8,14 @@ import { supabase } from '@/lib/supabase';
 import Toast from 'react-native-toast-message';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import FloatingBottomSheet from '@components/FloatingBottomSheet';
+import { useTheme } from '@contexts/ThemeProvider';
 import { useUser } from '@contexts/UserProvider';
 import ExpandableView from './ExpandableView';
 import { useQueryClient } from '@tanstack/react-query';
 import { romanNumerals } from '../lib/badgeIcons';
 
 const TeamJoinRequests = ({ districtId, teamId }) => {
+  const { colors: themeColors } = useTheme();
   const queryClient = useQueryClient();
   const { player } = useUser();
   const {
@@ -285,7 +287,7 @@ const TeamJoinRequests = ({ districtId, teamId }) => {
     return (
       <View className="flex-1 bg-bg-1 p-4">
         <View className="flex-row items-center justify-center gap-5 rounded-2xl bg-bg-2 p-8 shadow-sm">
-          <ActivityIndicator size="small" color="#555555" />
+          <ActivityIndicator size="small" color={themeColors.secondaryText} />
           <Text className="font-saira text-text-1">Loading Team Join Requests...</Text>
         </View>
       </View>

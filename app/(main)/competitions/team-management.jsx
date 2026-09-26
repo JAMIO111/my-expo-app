@@ -16,8 +16,10 @@ import TeamInviteCard from '@components/TeamInviteCard2';
 import { useChildTeamInvites } from '@hooks/useChildTeamInvites';
 import { useAcceptTeamInvite } from '@hooks/useAcceptTeamInvite';
 import { useDeclineTeamInvite } from '@hooks/useDeclineTeamInvite';
+import { useTheme } from '@contexts/ThemeProvider';
 
 const TeamManagement = () => {
+  const { colors: themeColors } = useTheme();
   const [teamManagerVisible, setTeamManagerVisible] = useState(false);
   const [managerType, setManagerType] = useState(null);
   const [selectedTeam, setSelectedTeam] = useState(null);
@@ -118,7 +120,11 @@ const TeamManagement = () => {
               ))
             ) : (
               <View className="flex-1 items-center justify-center gap-2 rounded-2xl bg-bg-1 py-8 shadow-sm">
-                <Ionicons name="people-circle-outline" size={64} color="#888" />
+                <Ionicons
+                  name="people-circle-outline"
+                  size={64}
+                  color={themeColors.secondaryText}
+                />
                 <Text className="font-saira-medium text-text-2">No teams available</Text>
               </View>
             )}

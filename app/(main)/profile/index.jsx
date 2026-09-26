@@ -26,8 +26,10 @@ import AdBanner from '@components/AdBanner';
 import TrophyCabinet from '@components/TrophyCabinet';
 import { trophyIcons } from '@lib/badgeIcons';
 import usePlayerAwards from '@hooks/usePlayerAwards';
+import { useTheme } from '@contexts/ThemeProvider';
 
 const ProfilePage = () => {
+  const { colors: themeColors } = useTheme();
   const router = useRouter();
   const { player, currentRole } = useUser();
   const { data: globalRank, isLoading: isGlobalRankLoading } = useGlobalRank(player?.id);
@@ -102,7 +104,7 @@ const ProfilePage = () => {
                   <Ionicons name="earth" size={24} color="white" />
                   <Text className="text-center font-saira text-lg text-text-on-brand">Rank</Text>
                   <Text className="text-center font-saira-semibold text-2xl text-white">
-                    {isGlobalRankLoading ? '...' : (globalRank?.rank ?? 'N/A')}
+                    {isGlobalRankLoading ? '...' : globalRank?.rank ?? 'N/A'}
                   </Text>
                 </View>
               </View>
@@ -164,7 +166,7 @@ const ProfilePage = () => {
                           borderBottomRightRadius: 14,
                         }}
                         className="mt-2 flex-row items-center gap-2 border-t border-theme-gray-4 bg-bg-1 p-2 py-1">
-                        <LockKeyholeOpen size={16} color="#444" />
+                        <LockKeyholeOpen size={16} color={themeColors.secondaryText} />
                         <Text
                           className="text-center font-tektur-semibold text-text-2"
                           numberOfLines={2}

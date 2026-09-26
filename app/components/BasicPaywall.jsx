@@ -248,7 +248,7 @@ const BasicPaywall = () => {
             alignItems: 'center',
           }}>
           <View className="gap-3 rounded-xl bg-bg-1 p-8">
-            <ActivityIndicator size="large" color="#000000" />
+            <ActivityIndicator size="large" color={themeColors.primaryText} />
             <Text className="mt-4 text-center font-saira-medium text-xl text-text-1">
               {isRestoring ? 'Restoring purchases...' : 'Processing subscription...'}
             </Text>

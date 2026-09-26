@@ -222,7 +222,7 @@ const FixturePage = ({ fixtureDetails, isLoading, context }) => {
                       <Ionicons
                         name={address ? 'location-outline' : 'location-outline'}
                         size={24}
-                        color="#888"
+                        color={themeColors.secondaryText}
                       />
                     </View>
                     <View className="flex-1">
@@ -233,13 +233,23 @@ const FixturePage = ({ fixtureDetails, isLoading, context }) => {
                         {address || 'No address available'}
                       </Text>
                     </View>
-                    {address && <Ionicons name="chevron-forward-outline" size={20} color="#888" />}
+                    {address && (
+                      <Ionicons
+                        name="chevron-forward-outline"
+                        size={20}
+                        color={themeColors.secondaryText}
+                      />
+                    )}
                   </Pressable>
 
                   {/* Date row */}
                   <View className="flex-row items-center gap-3">
                     <View className="items-center justify-center rounded-xl bg-bg-1 p-2 shadow-sm">
-                      <Ionicons name="calendar-outline" size={24} color="#888" />
+                      <Ionicons
+                        name="calendar-outline"
+                        size={24}
+                        color={themeColors.secondaryText}
+                      />
                     </View>
                     <View className="flex-1">
                       <Text className="font-saira text-sm text-text-2">
@@ -266,14 +276,18 @@ const FixturePage = ({ fixtureDetails, isLoading, context }) => {
                     </View>
                     {approved ? (
                       <View className="flex-row items-center justify-center gap-2 rounded-xl bg-bg-3 px-2 py-1 shadow-sm">
-                        <Ionicons name="checkmark-circle-outline" size={20} color="#888" />
+                        <Ionicons
+                          name="checkmark-circle-outline"
+                          size={20}
+                          color={themeColors.secondaryText}
+                        />
                         <Text style={{ fontSize: 16 }} className="font-saira-medium text-text-1">
                           Final Score
                         </Text>
                       </View>
                     ) : fixtureDetails?.date_time && !isPast ? (
                       <View className="flex-row items-center justify-center gap-2 rounded-xl bg-bg-3 px-2 py-1 shadow-sm">
-                        <Ionicons name="time-outline" size={20} color="#888" />
+                        <Ionicons name="time-outline" size={20} color={themeColors.secondaryText} />
                         <Text style={{ fontSize: 16 }} className="font-saira-medium text-text-1">
                           {`${days}d ${hours}h ${minutes}m ${seconds}s`}
                         </Text>

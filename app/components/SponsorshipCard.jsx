@@ -1,8 +1,10 @@
 import { View, Text, Pressable, Image, Linking } from 'react-native';
 import { ExternalLink, Globe } from 'lucide-react-native';
 import { supabase } from '@lib/supabase';
+import { useTheme } from '@contexts/ThemeProvider';
 
 export default function SponsorshipCard({ sponsorInstance, variant = 'featured', tagline }) {
+  const { colors: themeColors } = useTheme();
   if (!sponsorInstance) return null;
 
   const { name, logo_url, website_url } = sponsorInstance.sponsor;
@@ -95,9 +97,9 @@ export default function SponsorshipCard({ sponsorInstance, variant = 'featured',
 
         {website_url && hostname && (
           <View className="w-full flex-row items-center gap-3 rounded-2xl bg-bg-2 px-5 py-4">
-            <Globe size={18} color="#666" />
+            <Globe size={18} color={themeColors.secondaryText} />
             <Text className="flex-1 font-tektur-medium text-text-2">{hostname}</Text>
-            <ExternalLink size={18} color="#666" strokeWidth={2.25} />
+            <ExternalLink size={18} color={themeColors.secondaryText} strokeWidth={2.25} />
           </View>
         )}
       </View>
