@@ -589,7 +589,9 @@ const index = () => {
                 <View className="flex-col gap-2 p-2 pt-0">
                   {competitionDetailsConfig.map(({ title, value, icon: Icon }) => (
                     <View key={title} className="flex-row gap-2 pt-2">
-                      {Icon && <Icon className="mr-2" size={20} color={'#666'} />}
+                      {Icon && (
+                        <Icon className="mr-2" size={20} color={themeColors.secondaryText} />
+                      )}
                       <Text className="flex-1 px-1 font-saira text-lg text-text-2">{title}</Text>
                       <Text className="px-1 font-saira text-xl text-text-1">{value}</Text>
                     </View>
@@ -674,7 +676,7 @@ const index = () => {
                 }
                 fixedClosedComponent={
                   <View className="flex-row items-center gap-2 rounded-lg bg-bg-2 p-2 px-3">
-                    <CalendarClock size={20} color="#777" />
+                    <CalendarClock size={20} color={themeColors.secondaryText} />
                     <Text className="font-saira text-lg text-text-2">
                       No Fixtures available yet.
                     </Text>
@@ -723,7 +725,7 @@ const index = () => {
                 fixedClosed={visibleParticipants?.length === 0}
                 fixedClosedComponent={
                   <View className="flex-row items-center gap-2 rounded-lg bg-bg-2 p-2 px-3">
-                    <Users size={20} color="#777" />
+                    <Users size={20} color={themeColors.secondaryText} />
                     <Text className="font-saira text-lg text-text-2">No Participants yet.</Text>
                   </View>
                 }>
@@ -805,7 +807,7 @@ const index = () => {
                               }}>
                               {entity.status === 'champion' && <Crown size={16} color="#ff9100" />}
                               {entity.status === 'runner_up' && (
-                                <CircleStar size={16} color="#666" />
+                                <CircleStar size={16} color={themeColors.secondaryText} />
                               )}
                               {entity.status === 'eliminated' && <Ban size={16} color="#FF0000" />}
                               {entity.status === 'active' && (
@@ -921,8 +923,10 @@ const index = () => {
                   <View className="flex-1 flex-col items-center justify-end">
                     {competitionInstance?.winner_reward === null ? (
                       <View className="h-30 w-30 mb-4 flex-1 items-center justify-center rounded-2xl">
-                        {isAdmin && <Plus size={120} color="#000000" />}
-                        {!isAdmin && <Ghost size={120} color="#999" strokeWidth={1.5} />}
+                        {isAdmin && <Plus size={120} color={themeColors.primaryText} />}
+                        {!isAdmin && (
+                          <Ghost size={120} color={themeColors.secondaryText} strokeWidth={1.5} />
+                        )}
                       </View>
                     ) : (
                       <Image source={winnerTrophy?.icon} className="h-30 w-30 mb-4" />
@@ -940,9 +944,9 @@ const index = () => {
                     {competitionInstance?.runner_up_reward === null ? (
                       <View className="mb-4 flex-1 items-center justify-center rounded-2xl">
                         {isAdmin ? (
-                          <Plus size={120} color="#000000" />
+                          <Plus size={120} color={themeColors.primaryText} />
                         ) : (
-                          <Ghost size={120} color="#999" strokeWidth={1.5} />
+                          <Ghost size={120} color={themeColors.secondaryText} strokeWidth={1.5} />
                         )}
                       </View>
                     ) : (
@@ -1007,7 +1011,7 @@ const index = () => {
             paddingTop: 8,
             paddingBottom: 8,
             borderBottomWidth: 1,
-            borderBottomColor: '#ccc',
+            borderBottomColor: themeColors.border,
             backgroundColor: themeColors.bgGrouped2,
             zIndex: 10,
             flexDirection: 'row',

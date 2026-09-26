@@ -55,7 +55,7 @@ const SubmitResultsScreen = () => {
     useResultsByFixture(fixtureId);
   const { data: fixtureDetails, isLoading: isFixtureDetailsLoading } = useFixtureDetails(fixtureId);
   console.log('Fixture details:', fixtureDetails);
-  const trophyColor = colorScheme === 'dark' ? '#FFD700' : '#FFD700';
+  const trophyColor = '#FFD700';
   const { data: homeTeamPlayers, isLoading: isHomeTeamPlayersLoading } = useTeamPlayers(
     fixtureDetails?.homeTeam?.id
   );
@@ -621,7 +621,7 @@ const SubmitResultsScreen = () => {
                         });
                       }
                     }}
-                    className="flex-row items-center gap-2 rounded-xl border border-[#3ca65c] bg-[#2b7c41] p-2 px-4">
+                    className="flex-row items-center gap-2 rounded-xl border border-theme-green bg-theme-green p-2 px-4">
                     <Ionicons name="checkmark-outline" size={24} color={'white'} />
                     <Text className="font-saira-medium text-lg text-white">Save</Text>
                   </Pressable>
@@ -683,7 +683,7 @@ const SubmitResultsScreen = () => {
                         <Avatar size={32} borderRadius={8} player={frame.homePlayer1} />
                       ) : (
                         <View className="ml-2 h-8 w-8 flex-row items-center justify-center">
-                          <UserPlus size={22} color="#666" />
+                          <UserPlus size={22} color={themeColors.secondaryText} />
                         </View>
                       )}
 
@@ -715,7 +715,7 @@ const SubmitResultsScreen = () => {
                         <Avatar size={32} borderRadius={8} player={frame.awayPlayer1} />
                       ) : (
                         <View className="ml-2 h-8 w-8 flex-row items-center justify-center">
-                          <UserPlus size={22} color="#666" />
+                          <UserPlus size={22} color={themeColors.secondaryText} />
                         </View>
                       )}
                       <Text
@@ -750,7 +750,7 @@ const SubmitResultsScreen = () => {
                             <Avatar size={32} borderRadius={8} player={frame.homePlayer2} />
                           ) : (
                             <View className="ml-2 h-8 w-8 flex-row items-center justify-center">
-                              <UserPlus size={22} color="#666" />
+                              <UserPlus size={22} color={themeColors.secondaryText} />
                             </View>
                           )}
                           <Text
@@ -781,7 +781,7 @@ const SubmitResultsScreen = () => {
                             <Avatar size={32} borderRadius={8} player={frame.awayPlayer2} />
                           ) : (
                             <View className="ml-2 h-8 w-8 flex-row items-center justify-center">
-                              <UserPlus size={22} color="#666" />
+                              <UserPlus size={22} color={themeColors.secondaryText} />
                             </View>
                           )}
                           <Text
@@ -916,12 +916,12 @@ const SubmitResultsScreen = () => {
                   )}
                   {(frame.reverseDish1 || frame.reverseDish2) && frame.winnerSide === 'home' && (
                     <View className="items-center justify-center rounded-lg bg-bg-1 p-2 shadow-sm">
-                      <Undo2 size={14} color="#000000" />
+                      <Undo2 size={14} color={themeColors.primaryText} />
                     </View>
                   )}
                   {(frame.breakDish1 || frame.breakDish2) && frame.winnerSide === 'home' && (
                     <View className="items-center justify-center rounded-lg bg-bg-1 p-2 shadow-sm">
-                      <Zap size={14} color="#000" />
+                      <Zap size={14} color={themeColors.primaryText} />
                     </View>
                   )}
                   {frame.winnerSide === 'home' && (
@@ -961,12 +961,12 @@ const SubmitResultsScreen = () => {
                   )}
                   {(frame.breakDish1 || frame.breakDish2) && frame.winnerSide === 'away' && (
                     <View className="items-center justify-center rounded-lg bg-bg-1 p-2 shadow-sm">
-                      <Zap size={14} color="#000" />
+                      <Zap size={14} color={themeColors.primaryText} />
                     </View>
                   )}
                   {(frame.reverseDish1 || frame.reverseDish2) && frame.winnerSide === 'away' && (
                     <View className="items-center justify-center rounded-lg bg-bg-1 p-2 shadow-sm">
-                      <Undo2 size={14} color="#000000" />
+                      <Undo2 size={14} color={themeColors.primaryText} />
                     </View>
                   )}
                   {(frame.lagWon === frame.awayPlayer1?.id ||
@@ -1160,7 +1160,7 @@ const SubmitResultsScreen = () => {
             paddingTop: 8,
             paddingBottom: 8,
             borderBottomWidth: 1,
-            borderBottomColor: '#ccc',
+            borderBottomColor: themeColors.border,
             backgroundColor: themeColors.bgGrouped2,
             zIndex: 10,
             flexDirection: 'row',
