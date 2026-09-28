@@ -10,6 +10,7 @@ import {
 } from 'react-native';
 import { useState, useRef, useEffect } from 'react';
 import { Check, X, Link, Unlink } from 'lucide-react-native';
+import * as AppleAuthentication from 'expo-apple-authentication';
 import { supabase } from '@/lib/supabase';
 import { Stack } from 'expo-router';
 import SettingsItem from '@components/SettingsItem';
@@ -104,30 +105,15 @@ const PROVIDERS = [
 ];
 
 // ─── Connected Logins Section ─────────────────────────────
-const ConnectedLoginsSection = ({ user, onIdentitiesChange }) => {
+// identities/refreshIdentities are owned by the parent (SignInAndSecurity)
+// now, not this component -- the "Add a password" panel down there needs to
+// see the same live identity list this section links/unlinks, so there's
+// one shared source of truth instead of two copies that can drift apart.
+const ConnectedLoginsSection = ({ identities, refreshIdentities }) => {
   const { colors: themeColors } = useTheme();
   const styles = createStyles(themeColors);
-  const [identities, setIdentities] = useState(user?.identities ?? []);
   const [loadingKey, setLoadingKey] = useState(null);
   const [confirmUnlink, setConfirmUnlink] = useState(null);
-
-  const refreshIdentities = async () => {
-    const { data, error } = await supabase.auth.getUserIdentities();
-    if (error) {
-      console.error('[ConnectedLogins] Failed to fetch identities:', error);
-      return;
-    }
-    setIdentities(data.identities);
-    onIdentitiesChange?.(data.identities);
-  };
-
-  useEffect(() => {
-    refreshIdentities();
-  }, []);
-
-  useEffect(() => {
-    if (user?.identities) setIdentities(user.identities);
-  }, [user]);
 
   const isConnected = (providerKey) => identities.some((i) => i.provider === providerKey);
 
@@ -236,9 +222,7 @@ const ConnectedLoginsSection = ({ user, onIdentitiesChange }) => {
       const { error } = await supabase.auth.unlinkIdentity(identity);
       if (error) throw error;
 
-      const updated = identities.filter((i) => i.provider !== providerKey);
-      setIdentities(updated);
-      onIdentitiesChange?.(updated);
+      await refreshIdentities();
 
       Toast.show({
         type: 'success',
@@ -297,7 +281,10 @@ const ConnectedLoginsSection = ({ user, onIdentitiesChange }) => {
                 {/* Action */}
                 {isLoading ? (
                   <ActivityIndicator size="small" color={themeColors.secondaryText} />
-                ) : provider.key === 'email' ? (
+                ) : provider.key === 'email' && connected ? (
+                  // Only shown once an email/password identity actually exists --
+                  // this used to render unconditionally, claiming "Primary" even
+                  // for accounts with no password set at all.
                   <View
                     className="w-32 items-center justify-center rounded-xl border p-2"
                     style={[
@@ -312,6 +299,14 @@ const ConnectedLoginsSection = ({ user, onIdentitiesChange }) => {
                       Primary
                     </Text>
                   </View>
+                ) : provider.key === 'email' ? (
+                  // No password set yet -- use the "Add a Password" panel
+                  // below rather than a cramped inline form in this row.
+                  <Text
+                    className="w-32 text-right text-xs"
+                    style={{ color: themeColors.secondaryText }}>
+                    Set below
+                  </Text>
                 ) : connected ? (
                   <Pressable
                     onPress={() => (canUnlink ? setConfirmUnlink(provider) : null)}
@@ -348,7 +343,13 @@ const ConnectedLoginsSection = ({ user, onIdentitiesChange }) => {
                   </Pressable>
                 ) : (
                   <Pressable
-                    onPress={() => handleLink(provider.key)}
+                    onPress={() =>
+                      // Apple needs its own native sign-in sheet
+                      // (AppleAuthentication.signInAsync + linkIdentityWithIdToken)
+                      // -- the generic handleLink below opens a web browser OAuth
+                      // session instead, which isn't how Apple linking works here.
+                      provider.key === 'apple' ? handleLinkApple() : handleLink(provider.key)
+                    }
                     style={({ pressed }) => [
                       styles.providerBadge,
                       {
@@ -394,6 +395,11 @@ const SignInAndSecurity = () => {
   const { colors: themeColors } = useTheme();
   const styles = createStyles(themeColors);
   const { user, player } = useUser();
+  // Shared with ConnectedLoginsSection below, so linking/unlinking an
+  // identity there is immediately reflected in the password panel here
+  // (e.g. adding a password makes "Change Password" replace "Add a Password"
+  // without needing a full user refetch).
+  const [identities, setIdentities] = useState(user?.identities ?? []);
   const [deleteAccountModal, setDeleteAccountModal] = useState(false);
   const [isChangingPassword, setIsChangingPassword] = useState(false);
   const [currentPassword, setCurrentPassword] = useState('');
@@ -436,9 +442,28 @@ const SignInAndSecurity = () => {
   };
 
   const strength = getPasswordStrength(newPassword);
-  const provider = user?.identities?.[0]?.provider ?? 'email';
-  const isOAuthUser = provider !== 'email';
-  const providerLabel = `${provider.slice(0, 1).toUpperCase()}${provider.slice(1)}`;
+  // Whether an email/password identity actually exists -- not just whether
+  // the FIRST entry in identities happens to be 'email', which depended on
+  // array order and stayed true/false based on how the account originally
+  // signed up rather than its current, live set of linked identities.
+  const hasEmailIdentity = identities.some((i) => i.provider === 'email');
+
+  const refreshIdentities = async () => {
+    const { data, error } = await supabase.auth.getUserIdentities();
+    if (error) {
+      console.error('[SignInAndSecurity] Failed to fetch identities:', error);
+      return;
+    }
+    setIdentities(data.identities);
+  };
+
+  useEffect(() => {
+    refreshIdentities();
+  }, []);
+
+  useEffect(() => {
+    if (user?.identities) setIdentities(user.identities);
+  }, [user]);
 
   const waitForAuthSettle = () =>
     new Promise((resolve) => {
@@ -486,6 +511,33 @@ const SignInAndSecurity = () => {
     }
   };
 
+  // For accounts with no email/password identity yet (signed up via Apple,
+  // Google or Facebook only). No current password to re-auth with -- the
+  // user is already authenticated via their OAuth session -- so this just
+  // sets a password directly, which links an 'email' identity to the
+  // account's existing email.
+  const handleAddPassword = async () => {
+    setPasswordError(null);
+    if (newPassword.length < 8) return setPasswordError('Password must be at least 8 characters.');
+    if (newPassword !== confirmPassword) return setPasswordError("Passwords don't match.");
+
+    setIsSaving(true);
+    try {
+      const { error: updateError } = await supabase.auth.updateUser({ password: newPassword });
+      if (updateError) {
+        setPasswordError(updateError.message);
+        return;
+      }
+      await refreshIdentities();
+      setPasswordSuccess(true);
+      setTimeout(() => closePanel(), 1800);
+    } catch (err) {
+      setPasswordError('Something went wrong. Please try again.');
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
   const animatedMaxHeight = panelHeight.interpolate({ inputRange: [0, 1], outputRange: [0, 500] });
 
   const minimumLength = newPassword.length >= 8;
@@ -515,7 +567,7 @@ const SignInAndSecurity = () => {
         contentContainerStyle={{ paddingBottom: 60 }}
         className="mt-16 flex-1 bg-bg-grouped-1 p-5">
         {/* ── Connected logins ── */}
-        <ConnectedLoginsSection user={user} />
+        <ConnectedLoginsSection identities={identities} refreshIdentities={refreshIdentities} />
 
         {/* ── Account info ── */}
         <MenuContainer title="Account Info">
@@ -524,165 +576,170 @@ const SignInAndSecurity = () => {
           <SettingsItem disabled lastItem title="Player ID" text={player?.id} />
         </MenuContainer>
 
-        {/* ── Password ── */}
-        {!isOAuthUser && (
-          <>
-            <Text className="pb-3 pl-1 font-saira-bold text-xl">Your Password</Text>
-            <View style={styles.passwordSection}>
-              <Pressable
-                style={styles.passwordHeader}
-                onPress={isChangingPassword ? closePanel : openPanel}>
-                <View>
-                  <Text style={styles.passwordTitle}>Change Password</Text>
-                  <Text style={styles.passwordSubtitle}>
-                    {isChangingPassword ? 'Tap to cancel' : 'Update your account password'}
-                  </Text>
-                </View>
-                <Animated.View
-                  style={{
-                    transform: [
-                      {
-                        rotate: panelHeight.interpolate({
-                          inputRange: [0, 1],
-                          outputRange: ['0deg', '180deg'],
-                        }),
-                      },
-                    ],
-                  }}>
-                  <IonIcons name="chevron-down" size={20} color={themeColors.secondaryText} />
-                </Animated.View>
-              </Pressable>
-
-              <Animated.View
-                style={{
-                  maxHeight: animatedMaxHeight,
-                  opacity: panelOpacity,
-                  overflow: 'hidden',
-                }}>
-                <View style={styles.passwordForm}>
-                  {passwordSuccess ? (
-                    <View style={styles.successBanner}>
-                      <IonIcons
-                        name="checkmark-circle"
-                        size={20}
-                        color={themeColors.success.primary}
-                      />
-                      <Text style={styles.successText}>Password updated successfully!</Text>
-                    </View>
-                  ) : (
-                    <>
-                      <PasswordInput
-                        placeholder="Current password"
-                        value={currentPassword}
-                        onChangeText={setCurrentPassword}
-                        hasError={!!passwordError && !currentPassword}
-                      />
-                      <View style={{ gap: 6 }}>
-                        <PasswordInput
-                          placeholder="New password"
-                          value={newPassword}
-                          onChangeText={setNewPassword}
-                          hasError={!!passwordError && newPassword.length < 8}
-                        />
-                      </View>
-                      <PasswordInput
-                        placeholder="Confirm new password"
-                        value={confirmPassword}
-                        onChangeText={setConfirmPassword}
-                        hasError={
-                          !!passwordError &&
-                          confirmPassword.length > 0 &&
-                          confirmPassword !== newPassword
-                        }
-                      />
-                      {newPassword.length > 0 && strength && (
-                        <View style={styles.strengthRow}>
-                          <View style={styles.strengthTrack}>
-                            <View
-                              style={[
-                                styles.strengthFill,
-                                { width: strength.width, backgroundColor: strength.color },
-                              ]}
-                            />
-                          </View>
-                          <Text style={[styles.strengthLabel, { color: strength.color }]}>
-                            {strength.label}
-                          </Text>
-                        </View>
-                      )}
-                      {passwordError && (
-                        <View style={styles.errorBanner}>
-                          <IonIcons
-                            name="alert-circle-outline"
-                            size={16}
-                            color={themeColors.error.primary}
-                          />
-                          <Text style={styles.errorText}>{passwordError}</Text>
-                        </View>
-                      )}
-                      <View className="mt-2 flex-row gap-2 px-1">
-                        {minimumLength ? (
-                          <Check size={16} color={themeColors.success.primary} />
-                        ) : (
-                          <X size={16} color={themeColors.error.primary} />
-                        )}
-                        <Text className="text-text-1">Minimum 8 characters long.</Text>
-                      </View>
-                      <View className="flex-row gap-2 px-1">
-                        {hasNumber ? (
-                          <Check size={16} color={themeColors.success.primary} />
-                        ) : (
-                          <X size={16} color={themeColors.error.primary} />
-                        )}
-                        <Text className="text-text-1">Contains at least one number.</Text>
-                      </View>
-                      <View className="flex-row gap-2 px-1">
-                        {hasUppercase ? (
-                          <Check size={16} color={themeColors.success.primary} />
-                        ) : (
-                          <X size={16} color={themeColors.error.primary} />
-                        )}
-                        <Text className="text-text-1">Contains at least one uppercase letter.</Text>
-                      </View>
-                      <View className="mb-2 flex-row gap-2 px-1">
-                        {passwordsMatch ? (
-                          <Check size={16} color={themeColors.success.primary} />
-                        ) : (
-                          <X size={16} color={themeColors.error.primary} />
-                        )}
-                        <Text className="text-text-1">Passwords must match.</Text>
-                      </View>
-                      <CTAButton
-                        text={isSaving ? 'Updating...' : 'Change Password'}
-                        type="yellow"
-                        textColor="black"
-                        callbackFn={handleChangePassword}
-                        disabled={isSaving || !isValidPassword}
-                      />
-                    </>
-                  )}
-                </View>
-              </Animated.View>
-            </View>
-          </>
-        )}
-
-        {isOAuthUser && (
-          <>
-            <Text className="pb-3 pl-1 font-saira-bold text-xl text-text-1">PASSWORD</Text>
-            <View style={styles.oauthNotice}>
-              <IonIcons
-                name="information-circle-outline"
-                size={18}
-                color={themeColors.secondaryText}
-              />
-              <Text style={styles.oauthNoticeText}>
-                You signed in with {providerLabel}. Password management is handled by your{' '}
-                {providerLabel} account.
+        {/* ── Password ──
+             Same panel for both cases: hasEmailIdentity picks the copy, the
+             current-password field, and the submit handler. There used to be
+             a separate branch for OAuth-only accounts that just said
+             "password management is handled by your {provider} account" --
+             but that's not true once this panel can add a password to any
+             account, so it's replaced rather than kept as an alternative. */}
+        <Text className="pb-3 pl-1 font-saira-bold text-xl">
+          {hasEmailIdentity ? 'Your Password' : 'Add a Password'}
+        </Text>
+        <View style={styles.passwordSection}>
+          <Pressable
+            style={styles.passwordHeader}
+            onPress={isChangingPassword ? closePanel : openPanel}>
+            <View>
+              <Text style={styles.passwordTitle}>
+                {hasEmailIdentity ? 'Change Password' : 'Add a Password'}
+              </Text>
+              <Text style={styles.passwordSubtitle}>
+                {isChangingPassword
+                  ? 'Tap to cancel'
+                  : hasEmailIdentity
+                    ? 'Update your account password'
+                    : 'Sign in with email as well as your other methods'}
               </Text>
             </View>
-          </>
-        )}
+            <Animated.View
+              style={{
+                transform: [
+                  {
+                    rotate: panelHeight.interpolate({
+                      inputRange: [0, 1],
+                      outputRange: ['0deg', '180deg'],
+                    }),
+                  },
+                ],
+              }}>
+              <IonIcons name="chevron-down" size={20} color={themeColors.secondaryText} />
+            </Animated.View>
+          </Pressable>
+
+          <Animated.View
+            style={{
+              maxHeight: animatedMaxHeight,
+              opacity: panelOpacity,
+              overflow: 'hidden',
+            }}>
+            <View style={styles.passwordForm}>
+              {passwordSuccess ? (
+                <View style={styles.successBanner}>
+                  <IonIcons name="checkmark-circle" size={20} color={themeColors.success.primary} />
+                  <Text style={styles.successText}>
+                    {hasEmailIdentity
+                      ? 'Password updated successfully!'
+                      : 'Password added — you can now sign in with email too!'}
+                  </Text>
+                </View>
+              ) : (
+                <>
+                  {hasEmailIdentity && (
+                    <PasswordInput
+                      placeholder="Current password"
+                      value={currentPassword}
+                      onChangeText={setCurrentPassword}
+                      hasError={!!passwordError && !currentPassword}
+                    />
+                  )}
+                  <View style={{ gap: 6 }}>
+                    <PasswordInput
+                      placeholder="New password"
+                      value={newPassword}
+                      onChangeText={setNewPassword}
+                      hasError={!!passwordError && newPassword.length < 8}
+                    />
+                  </View>
+                  <PasswordInput
+                    placeholder="Confirm new password"
+                    value={confirmPassword}
+                    onChangeText={setConfirmPassword}
+                    hasError={
+                      !!passwordError &&
+                      confirmPassword.length > 0 &&
+                      confirmPassword !== newPassword
+                    }
+                  />
+                  {newPassword.length > 0 && strength && (
+                    <View style={styles.strengthRow}>
+                      <View style={styles.strengthTrack}>
+                        <View
+                          style={[
+                            styles.strengthFill,
+                            { width: strength.width, backgroundColor: strength.color },
+                          ]}
+                        />
+                      </View>
+                      <Text style={[styles.strengthLabel, { color: strength.color }]}>
+                        {strength.label}
+                      </Text>
+                    </View>
+                  )}
+                  {passwordError && (
+                    <View style={styles.errorBanner}>
+                      <IonIcons
+                        name="alert-circle-outline"
+                        size={16}
+                        color={themeColors.error.primary}
+                      />
+                      <Text style={styles.errorText}>{passwordError}</Text>
+                    </View>
+                  )}
+                  <View className="mt-2 flex-row gap-2 px-1">
+                    {minimumLength ? (
+                      <Check size={16} color={themeColors.success.primary} />
+                    ) : (
+                      <X size={16} color={themeColors.error.primary} />
+                    )}
+                    <Text className="text-text-1">Minimum 8 characters long.</Text>
+                  </View>
+                  <View className="flex-row gap-2 px-1">
+                    {hasNumber ? (
+                      <Check size={16} color={themeColors.success.primary} />
+                    ) : (
+                      <X size={16} color={themeColors.error.primary} />
+                    )}
+                    <Text className="text-text-1">Contains at least one number.</Text>
+                  </View>
+                  <View className="flex-row gap-2 px-1">
+                    {hasUppercase ? (
+                      <Check size={16} color={themeColors.success.primary} />
+                    ) : (
+                      <X size={16} color={themeColors.error.primary} />
+                    )}
+                    <Text className="text-text-1">Contains at least one uppercase letter.</Text>
+                  </View>
+                  <View className="mb-2 flex-row gap-2 px-1">
+                    {passwordsMatch ? (
+                      <Check size={16} color={themeColors.success.primary} />
+                    ) : (
+                      <X size={16} color={themeColors.error.primary} />
+                    )}
+                    <Text className="text-text-1">Passwords must match.</Text>
+                  </View>
+                  <CTAButton
+                    text={
+                      isSaving
+                        ? hasEmailIdentity
+                          ? 'Updating...'
+                          : 'Adding...'
+                        : hasEmailIdentity
+                          ? 'Change Password'
+                          : 'Add Password'
+                    }
+                    type="yellow"
+                    textColor="black"
+                    callbackFn={hasEmailIdentity ? handleChangePassword : handleAddPassword}
+                    disabled={
+                      isSaving || !isValidPassword || (hasEmailIdentity && !currentPassword)
+                    }
+                  />
+                </>
+              )}
+            </View>
+          </Animated.View>
+        </View>
 
         {/* ── Danger zone ── */}
         <View className="mt-8 rounded-3xl border border-theme-red bg-bg-1 p-4 pb-2">
@@ -889,18 +946,6 @@ const createStyles = (themeColors) =>
       marginBottom: 4,
     },
     successText: { fontSize: 14, fontWeight: '600', color: themeColors.success.primary },
-
-    oauthNotice: {
-      flexDirection: 'row',
-      alignItems: 'flex-start',
-      gap: 8,
-      backgroundColor: themeColors.bgGrouped1,
-      borderRadius: 12,
-      padding: 14,
-      borderWidth: 0.5,
-      borderColor: themeColors.border,
-    },
-    oauthNoticeText: { fontSize: 13, color: themeColors.secondaryText, flex: 1, lineHeight: 20 },
 
     dangerSection: { marginBottom: 8 },
   });
