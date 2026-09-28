@@ -11,11 +11,16 @@ WebBrowser.maybeCompleteAuthSession();
 const UserContext = createContext(null);
 
 export const UserProvider = ({ children }) => {
-  const { data, isLoading, isFetching, isError, refetch } = useAuthUserProfile();
-
   const [currentRole, setCurrentRole] = useState(null);
   const [loadingAuth, setLoadingAuth] = useState(true);
   const [session, setSession] = useState(null);
+
+  // Single source of truth for the Supabase session — passed straight into
+  // the query instead of having it subscribe to its own auth listener too.
+  const { data, isLoading, isFetching, isError, refetch } = useAuthUserProfile(
+    session,
+    loadingAuth
+  );
 
   const hasUser = !!session?.user;
 

@@ -1,6 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
-import { useAuth } from '@/hooks/useAuth';
 
 export const fetchAuthUserProfile = async () => {
   const {
@@ -28,17 +27,14 @@ export const fetchAuthUserProfile = async () => {
   };
 };
 
-export const useAuthUserProfile = () => {
-  const { session, loading } = useAuth();
-
+// Takes session/loading from UserProvider (the single source of truth for auth
+// state) instead of subscribing to Supabase auth changes a second time here.
+export const useAuthUserProfile = (session, loading) => {
   return useQuery({
     queryKey: ['authUserProfile'],
     queryFn: fetchAuthUserProfile,
     enabled: !!session && !loading,
 
-    // keep your existing caching strategy
-    staleTime: 1000 * 60 * 30,
-    gcTime: 1000 * 60 * 60,
     staleTime: 1000 * 60 * 10,
     gcTime: 1000 * 60 * 60,
     placeholderData: (prev) => prev, // key fix
