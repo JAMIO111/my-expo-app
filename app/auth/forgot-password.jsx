@@ -3,13 +3,18 @@ import { useState } from 'react';
 import { View, Text, TextInput, Alert } from 'react-native';
 import { supabase } from '@/lib/supabase';
 import CTAButton from '@components/CTAButton';
+import * as Linking from 'expo-linking';
 
 const ForgotPassword = () => {
   const [email, setEmail] = useState('');
 
   const handleReset = async () => {
+    // The app's registered scheme is "breakroom" (app.config.js), not
+    // "Break-Room" -- a hardcoded string here meant the reset link in the
+    // email could never actually open the app. Linking.createURL builds it
+    // from the real scheme, same as the OAuth redirect elsewhere.
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: 'Break-Room://reset-password',
+      redirectTo: Linking.createURL('reset-password'),
     });
 
     if (error) {

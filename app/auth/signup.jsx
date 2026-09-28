@@ -52,7 +52,6 @@ const SignUpPage = () => {
 
   const handleSignUp = async () => {
     setError(null);
-    setConfirmError(null);
 
     // ✅ Validate passwords match before hitting Supabase
     if (password !== confirmPassword) {

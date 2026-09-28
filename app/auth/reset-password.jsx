@@ -1,9 +1,30 @@
 import React, { useEffect, useState } from 'react';
-import { View, TextInput, Button, Alert, Text, Pressable } from 'react-native';
+import { View, TextInput, Alert, Text, Pressable } from 'react-native';
 import { supabase } from '@/lib/supabase';
-import { useRouter, useSearchParams } from 'expo-router';
+import { useRouter } from 'expo-router';
+import * as Linking from 'expo-linking';
 import CTAButton from '@components/CTAButton';
 import IonIcons from 'react-native-vector-icons/Ionicons';
+
+// Supabase's recovery link delivers the tokens as a URL *fragment*
+// (#access_token=...&refresh_token=...&type=recovery), not query params, so
+// expo-router's useSearchParams/useLocalSearchParams (which only see what's
+// after "?") can never see them -- this has to read the raw URL itself.
+// Split on the first "=" only, since a token value can itself contain "=".
+const parseFragmentParams = (url) => {
+  const fragment = url?.split('#')[1];
+  if (!fragment) return {};
+
+  const params = {};
+  for (const part of fragment.split('&')) {
+    const eq = part.indexOf('=');
+    if (eq === -1) continue;
+    const key = decodeURIComponent(part.slice(0, eq));
+    const value = decodeURIComponent(part.slice(eq + 1));
+    params[key] = value;
+  }
+  return params;
+};
 
 const ResetPassword = () => {
   const [password, setPassword] = useState('');
@@ -11,25 +32,55 @@ const ResetPassword = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [sessionReady, setSessionReady] = useState(false);
+  const [tokenError, setTokenError] = useState(false);
   const router = useRouter();
-  //const { access_token, refresh_token } = useSearchParams();
-
-  const access_token = 'accesstoken';
-  const refresh_token = 'refreshtoken';
 
   useEffect(() => {
-    if (access_token && refresh_token) {
-      // Set session from tokens in URL query params
-      supabase.auth.setSession({
-        access_token,
-        refresh_token,
-      });
-    }
-  }, [access_token, refresh_token]);
+    let mounted = true;
+
+    const applyTokensFromUrl = async (url) => {
+      const { access_token, refresh_token } = parseFragmentParams(url);
+      if (!access_token || !refresh_token) return false;
+
+      const { error } = await supabase.auth.setSession({ access_token, refresh_token });
+      if (error) {
+        console.error('[ResetPassword] Failed to set session from reset link:', error);
+        return false;
+      }
+      return true;
+    };
+
+    (async () => {
+      const initialUrl = await Linking.getInitialURL();
+      const ok = await applyTokensFromUrl(initialUrl);
+      if (!mounted) return;
+      if (ok) setSessionReady(true);
+      else setTokenError(true);
+    })();
+
+    const subscription = Linking.addEventListener('url', async ({ url }) => {
+      const ok = await applyTokensFromUrl(url);
+      if (!mounted) return;
+      if (ok) {
+        setSessionReady(true);
+        setTokenError(false);
+      }
+    });
+
+    return () => {
+      mounted = false;
+      subscription.remove();
+    };
+  }, []);
 
   const handleUpdatePassword = async () => {
     if (!password) {
       Alert.alert('Error', 'Please enter a new password');
+      return;
+    }
+    if (password !== confirmPassword) {
+      Alert.alert('Error', "Passwords don't match");
       return;
     }
     setLoading(true);
@@ -40,14 +91,24 @@ const ResetPassword = () => {
       Alert.alert('Error', error.message);
     } else {
       Alert.alert('Success', 'Password updated! Please log in.');
-      router.push('/auth/login'); // redirect to login or home screen
+      router.replace('/auth/login');
     }
   };
 
-  if (!access_token) {
+  if (tokenError) {
     return (
       <View style={{ padding: 20 }}>
-        <Text>No valid reset token found.</Text>
+        <Text className="text-text-1">
+          This password reset link is invalid or has expired. Please request a new one.
+        </Text>
+      </View>
+    );
+  }
+
+  if (!sessionReady) {
+    return (
+      <View style={{ padding: 20 }}>
+        <Text className="text-text-1">Verifying your reset link…</Text>
       </View>
     );
   }
