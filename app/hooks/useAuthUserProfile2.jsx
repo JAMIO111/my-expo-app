@@ -37,8 +37,6 @@ export const useAuthUserProfile = () => {
     enabled: !!session && !loading,
 
     // keep your existing caching strategy
-    staleTime: 1000 * 60 * 30,
-    gcTime: 1000 * 60 * 60,
     staleTime: 1000 * 60 * 10,
     gcTime: 1000 * 60 * 60,
     placeholderData: (prev) => prev, // key fix

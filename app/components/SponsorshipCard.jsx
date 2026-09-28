@@ -3,7 +3,12 @@ import { ExternalLink, Globe } from 'lucide-react-native';
 import { supabase } from '@lib/supabase';
 import { useTheme } from '@contexts/ThemeProvider';
 
-export default function SponsorshipCard({ sponsorInstance, variant = 'featured', tagline }) {
+export default function SponsorshipCard({
+  sponsorInstance,
+  competitionName,
+  variant = 'featured',
+  tagline,
+}) {
   const { colors: themeColors } = useTheme();
   if (!sponsorInstance) return null;
 
@@ -85,12 +90,13 @@ export default function SponsorshipCard({ sponsorInstance, variant = 'featured',
             )}
           </View>
 
-          <View className="flex-1 items-start justify-around self-stretch">
+          <View className="flex-1 items-start justify-center gap-2 self-stretch">
             <Text className="text-left font-tektur-bold text-2xl text-text-1" numberOfLines={1}>
               {name}
             </Text>
             <Text className="text-left font-tektur text-sm text-text-1" numberOfLines={2}>
-              {tagline || 'Proud sponsor of this competition'}
+              {tagline ||
+                `Proud sponsor of ${competitionName ? `the ${competitionName}` : 'this competition'}`}
             </Text>
           </View>
         </View>

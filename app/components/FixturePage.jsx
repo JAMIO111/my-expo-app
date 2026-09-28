@@ -20,6 +20,8 @@ import { useResultsByFixture } from '@hooks/useResultsByFixture';
 import SevenSegmentScoreboard from './SevenSegmentScoreboard';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useTheme } from '@contexts/ThemeProvider';
+import SponsorshipCard from './SponsorshipCard';
+import useCompetitionSponsor from '@hooks/useCompetitionSponsor';
 
 const FixturePage = ({ fixtureDetails, isLoading, context }) => {
   const router = useRouter();
@@ -41,6 +43,8 @@ const FixturePage = ({ fixtureDetails, isLoading, context }) => {
   } = useTeamPlayers(team === 'left' ? fixtureDetails?.homeTeam?.id : fixtureDetails?.awayTeam?.id);
 
   console.log('FixturePage fixtureDetails:', fixtureDetails);
+  const { data: sponsorInstance } = useCompetitionSponsor(fixtureDetails?.competition_instance_id);
+  console.log('FixturePage sponsorInstance:', sponsorInstance);
 
   const competitorType = fixtureDetails?.homeCompetitor?.type;
 
@@ -108,7 +112,7 @@ const FixturePage = ({ fixtureDetails, isLoading, context }) => {
         <View className="bg-bg-grouped-1">
           <View
             style={{ borderBottomLeftRadius: 24, borderBottomRightRadius: 24 }}
-            className="bg-brand p-3 pb-4">
+            className="gap-3 bg-brand p-3 pb-4">
             <View className="overflow-hidden rounded-3xl bg-bg-2 p-1">
               <View>
                 <View className="gap-5">
@@ -298,6 +302,10 @@ const FixturePage = ({ fixtureDetails, isLoading, context }) => {
                 </View>
               </View>
             </View>
+            <SponsorshipCard
+              sponsorInstance={sponsorInstance}
+              competitionName={fixtureDetails?.competition?.name}
+            />
           </View>
         </View>
       )}
