@@ -17,6 +17,7 @@ import { useChildTeamInvites } from '@hooks/useChildTeamInvites';
 import { useAcceptTeamInvite } from '@hooks/useAcceptTeamInvite';
 import { useDeclineTeamInvite } from '@hooks/useDeclineTeamInvite';
 import { useTheme } from '@contexts/ThemeProvider';
+import Toast from 'react-native-toast-message';
 
 const TeamManagement = () => {
   const { colors: themeColors } = useTheme();
@@ -67,14 +68,18 @@ const TeamManagement = () => {
                     acceptInvite(
                       { inviteId: invite.id, playerId: player.id },
                       {
+                        onSuccess: () => {
+                          Toast.show({ type: 'success', text1: 'Invite accepted' });
+                        },
                         onError: (err) => {
                           const messages = {
                             INVITE_NOT_FOUND: 'This invite is no longer valid.',
                           };
-                          Alert.alert(
-                            'Could not accept invite',
-                            messages[err.message] ?? err.message
-                          );
+                          Toast.show({
+                            type: 'error',
+                            text1: 'Could not accept invite',
+                            text2: messages[err.message] ?? err.message,
+                          });
                         },
                       }
                     )
@@ -83,14 +88,18 @@ const TeamManagement = () => {
                     declineInvite(
                       { inviteId: invite.id, playerId: player.id },
                       {
+                        onSuccess: () => {
+                          Toast.show({ type: 'success', text1: 'Invite declined' });
+                        },
                         onError: (err) => {
                           const messages = {
                             INVITE_NOT_FOUND: 'This invite is no longer valid.',
                           };
-                          Alert.alert(
-                            'Could not decline invite',
-                            messages[err.message] ?? err.message
-                          );
+                          Toast.show({
+                            type: 'error',
+                            text1: 'Could not decline invite',
+                            text2: messages[err.message] ?? err.message,
+                          });
                         },
                       }
                     )

@@ -51,9 +51,7 @@ const StartNewSeason = () => {
       const newSeasonId = await initiateNewSeason('2025/26', districtId, fixtureConfig.startDate);
 
       if (!newSeasonId) {
-        console.error('Failed to initiate season');
-        setIsLoading(false);
-        return;
+        throw new Error('Failed to initiate the new season.');
       }
 
       // 2. Fetch divisions
@@ -63,13 +61,12 @@ const StartNewSeason = () => {
         .eq('district', districtId);
 
       if (divisionError || !divisions) {
-        console.error('Failed to fetch divisions:', divisionError?.message);
-        setIsLoading(false);
-        return;
+        throw new Error(divisionError?.message || 'Failed to fetch divisions.');
       }
 
       let earliestSeasonStart = null;
       const divisionIds = []; // to collect all division IDs for invalidation
+      const failedDivisions = [];
 
       // 3. Loop through each division
       for (const division of divisions) {
@@ -82,6 +79,7 @@ const StartNewSeason = () => {
 
         if (teamError || !teams) {
           console.error(`Failed to fetch teams for division ${division.id}:`, teamError?.message);
+          failedDivisions.push(division.id);
           continue;
         }
 
@@ -114,6 +112,7 @@ const StartNewSeason = () => {
             `Failed to insert fixtures for division ${division.id}:`,
             fixtureError.message
           );
+          failedDivisions.push(division.id);
         }
       }
 
@@ -125,7 +124,7 @@ const StartNewSeason = () => {
           .eq('id', newSeasonId);
 
         if (updateError) {
-          console.error('Failed to update season start date:', updateError.message);
+          throw new Error(updateError.message || 'Failed to set the season start date.');
         }
       }
 
@@ -144,14 +143,35 @@ const StartNewSeason = () => {
         },
       });
 
-      console.log('Season started and fixtures generated.');
       setIsLoading(false);
+
+      if (failedDivisions.length > 0) {
+        Toast.show({
+          type: 'error',
+          text1: 'Season started with errors',
+          text2: `Fixtures could not be generated for ${failedDivisions.length} division(s). Check them before the season begins.`,
+          props: { colorScheme },
+        });
+      } else {
+        Toast.show({
+          type: 'success',
+          text1: 'Season started',
+          text2: 'Fixtures have been generated for all divisions.',
+          props: { colorScheme },
+        });
+      }
 
       // 6. Navigate away
       router.replace('/(main)/home');
     } catch (err) {
       console.error('Unexpected error during season start:', err);
       setIsLoading(false);
+      Toast.show({
+        type: 'error',
+        text1: 'Failed to start season',
+        text2: err.message,
+        props: { colorScheme },
+      });
     }
   };
 

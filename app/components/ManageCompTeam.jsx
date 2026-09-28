@@ -412,7 +412,10 @@ const ManageCompTeam = ({ type, team, closeModal }) => {
     leaveChildTeam(
       { teamId: team.id, playerId: player.id },
       {
-        onSuccess: () => closeModal(),
+        onSuccess: () => {
+          closeModal();
+          Alert.alert('Left team', `You have left ${team.display_name}.`);
+        },
         onError: (err) => {
           const messages = {
             CAPTAIN_CANNOT_LEAVE: 'Assign a new captain before leaving.',
@@ -422,9 +425,6 @@ const ManageCompTeam = ({ type, team, closeModal }) => {
         },
       }
     );
-    Alert.alert('Left team', `You have left ${team.display_name}.`, [
-      { text: 'OK', onPress: () => closeModal() },
-    ]);
   };
 
   return (

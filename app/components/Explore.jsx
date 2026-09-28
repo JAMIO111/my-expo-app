@@ -297,10 +297,21 @@ const ExploreComponent = () => {
       topButtonType: 'error',
       bottomButtonType: 'default',
       topButtonFn: async () => {
-        await supabase.from('TeamPlayers').delete().eq('id', invite.id);
-        queryClient.invalidateQueries(['PlayerInvitesAndRequests', { playerId: player.id }]);
-        setModalVisible(false);
-        Toast.show({ type: 'success', text1: 'Invite declined' });
+        try {
+          const { error } = await supabase.from('TeamPlayers').delete().eq('id', invite.id);
+          if (error) throw error;
+          queryClient.invalidateQueries(['PlayerInvitesAndRequests', { playerId: player.id }]);
+          setModalVisible(false);
+          Toast.show({ type: 'success', text1: 'Invite declined' });
+        } catch (err) {
+          console.error('[Explore] Failed to decline invite:', err);
+          setModalVisible(false);
+          Toast.show({
+            type: 'error',
+            text1: 'Failed to decline invite',
+            text2: err.message,
+          });
+        }
       },
       bottomButtonFn: () => setModalVisible(false),
     });
