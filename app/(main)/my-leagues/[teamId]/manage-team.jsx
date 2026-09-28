@@ -1,4 +1,5 @@
-import { View, ScrollView, Pressable, Text } from 'react-native';
+import KeyboardAwareScrollView from '@components/KeyboardAwareScrollView';
+import { View, Pressable, Text } from 'react-native';
 import { useState, useEffect } from 'react';
 import { Stack } from 'expo-router';
 import SafeViewWrapper from '@components/SafeViewWrapper';
@@ -228,7 +229,7 @@ const ManageTeam = () => {
               ),
             }}
           />
-          <ScrollView className="mt-16 flex-1 p-4">
+          <KeyboardAwareScrollView className="mt-16 flex-1 p-4">
             <MenuContainer
               title="Team Details"
               footer="As league admin you may edit any of the team details above by tapping on the respective fields. Save changes after by tapping the tick in the top right.">
@@ -318,7 +319,7 @@ const ManageTeam = () => {
                 text={teamProfile?.is_recruiting ? 'Recruiting' : 'Closed'}
               />
             </MenuContainer>
-          </ScrollView>
+          </KeyboardAwareScrollView>
         </View>
       </SafeViewWrapper>
       <FloatingBottomSheet

@@ -1,3 +1,4 @@
+import KeyboardAwareScrollView from '@components/KeyboardAwareScrollView';
 import { StyleSheet, Text, View, TextInput } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useState, useRef, useEffect } from 'react';
@@ -286,79 +287,81 @@ const UniqueCode = () => {
 
         <View
           style={{ borderTopRightRadius: 32, borderTopLeftRadius: 32 }}
-          className="flex-1 gap-5 bg-brand-dark p-6 shadow shadow-brand-light">
-          <View className="flex-row justify-between">
-            {digits.map((digit, i) => (
-              <View key={i} style={{ flex: 1, marginHorizontal: 4 }}>
-                <TextInput
-                  ref={(el) => (inputsRef.current[i] = el)}
-                  value={digit}
-                  onChangeText={(text) => {
-                    // Update digit
-                    if (/^\d?$/.test(text)) {
-                      const newDigits = [...digits];
-                      newDigits[i] = text;
-                      setDigits(newDigits);
+          className="flex-1 bg-brand-dark p-6 shadow shadow-brand-light">
+          <KeyboardAwareScrollView style={{ flex: 1 }} contentContainerStyle={{ gap: 20 }}>
+            <View className="flex-row justify-between">
+              {digits.map((digit, i) => (
+                <View key={i} style={{ flex: 1, marginHorizontal: 4 }}>
+                  <TextInput
+                    ref={(el) => (inputsRef.current[i] = el)}
+                    value={digit}
+                    onChangeText={(text) => {
+                      // Update digit
+                      if (/^\d?$/.test(text)) {
+                        const newDigits = [...digits];
+                        newDigits[i] = text;
+                        setDigits(newDigits);
 
-                      // Move focus forward if typed
-                      if (text && i < inputsRef.current.length - 1) {
-                        inputsRef.current[i + 1].focus();
+                        // Move focus forward if typed
+                        if (text && i < inputsRef.current.length - 1) {
+                          inputsRef.current[i + 1].focus();
+                        }
+
+                        // Update selection to end
+                        const newSelection = [...selectionIndex];
+                        newSelection[i] = { start: text.length, end: text.length };
+                        setSelectionIndex(newSelection);
                       }
-
-                      // Update selection to end
-                      const newSelection = [...selectionIndex];
-                      newSelection[i] = { start: text.length, end: text.length };
-                      setSelectionIndex(newSelection);
-                    }
-                  }}
-                  keyboardType="number-pad"
-                  maxLength={1}
-                  className="border-border-color bg-white font-saira-semibold text-4xl text-black focus:border-theme-blue"
-                  style={styles.input}
-                  textAlign="center"
-                  selection={selectionIndex[i]}
-                  onFocus={() => {
-                    // Only move cursor to end if input has content
-                    if (digits[i]) {
-                      const newSelection = [...selectionIndex];
-                      newSelection[i] = { start: digits[i].length, end: digits[i].length };
-                      setSelectionIndex(newSelection);
-                    }
-                  }}
-                  returnKeyType={i === digits.length - 1 ? 'done' : 'next'}
-                  onKeyPress={({ nativeEvent }) => {
-                    if (nativeEvent.key === 'Backspace') {
-                      if (!digits[i] && i > 0) {
-                        // Move focus to previous box if current is empty
-                        inputsRef.current[i - 1].focus();
-                      } else {
-                        // Clear current box (already handled by onChangeText)
+                    }}
+                    keyboardType="number-pad"
+                    maxLength={1}
+                    className="border-border-color bg-white font-saira-semibold text-4xl text-black focus:border-theme-blue"
+                    style={styles.input}
+                    textAlign="center"
+                    selection={selectionIndex[i]}
+                    onFocus={() => {
+                      // Only move cursor to end if input has content
+                      if (digits[i]) {
+                        const newSelection = [...selectionIndex];
+                        newSelection[i] = { start: digits[i].length, end: digits[i].length };
+                        setSelectionIndex(newSelection);
                       }
-                    }
-                  }}
-                />
-              </View>
-            ))}
-          </View>
+                    }}
+                    returnKeyType={i === digits.length - 1 ? 'done' : 'next'}
+                    onKeyPress={({ nativeEvent }) => {
+                      if (nativeEvent.key === 'Backspace') {
+                        if (!digits[i] && i > 0) {
+                          // Move focus to previous box if current is empty
+                          inputsRef.current[i - 1].focus();
+                        } else {
+                          // Clear current box (already handled by onChangeText)
+                        }
+                      }
+                    }}
+                  />
+                </View>
+              ))}
+            </View>
 
-          <View className="mt-5">
-            <CTAButton
-              type="yellow"
-              disabled={isLoading}
-              text={
-                isLoading
-                  ? 'Fetching Details...'
-                  : isNewLeague
-                    ? 'Get Started'
-                    : isNewTeam
-                      ? 'Find League'
-                      : 'Find Team'
-              }
-              callbackFn={
-                isNewLeague ? handleCreateLeague : isNewTeam ? handleCreateTeam : handleJoinTeam
-              }
-            />
-          </View>
+            <View className="mt-5">
+              <CTAButton
+                type="yellow"
+                disabled={isLoading}
+                text={
+                  isLoading
+                    ? 'Fetching Details...'
+                    : isNewLeague
+                      ? 'Get Started'
+                      : isNewTeam
+                        ? 'Find League'
+                        : 'Find Team'
+                }
+                callbackFn={
+                  isNewLeague ? handleCreateLeague : isNewTeam ? handleCreateTeam : handleJoinTeam
+                }
+              />
+            </View>
+          </KeyboardAwareScrollView>
         </View>
       </View>
     </>

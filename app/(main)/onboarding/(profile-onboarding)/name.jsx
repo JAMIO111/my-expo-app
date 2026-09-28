@@ -1,3 +1,4 @@
+import KeyboardAwareScrollView from '@components/KeyboardAwareScrollView';
 import { StyleSheet, Text, View, TextInput, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useState, useRef } from 'react';
@@ -48,59 +49,61 @@ const Name = () => {
           </Text>
         </View>
 
-        <View className="flex-1 gap-5 rounded-t-3xl bg-brand-dark p-6">
-          <View className="gap-1">
-            <CustomTextInput
-              placeholder="e.g. John"
-              title="First Name"
-              titleColor="text-text-on-brand"
-              leftIconName="person"
-              iconColor="green"
-              value={firstName}
-              onChangeText={setFirstName}
-              autoComplete="given-name"
-              autoCapitalize="words"
-              returnKeyType="next"
-              onSubmitEditing={() => inputRef2.current?.focus()}
-            />
-          </View>
-          <View className="gap-1">
-            <CustomTextInput
-              placeholder="e.g. Doe"
-              title="Surname"
-              titleColor="text-text-on-brand"
-              leftIconName="person"
-              iconColor="green"
-              autoCapitalize="words"
-              value={surname}
-              onChangeText={setSurname}
-              autoComplete="family-name"
-              returnKeyType="done"
-              ref={inputRef2}
-              onSubmitEditing={() => inputRef2.current?.blur()}
-            />
-          </View>
-          <View className="mt-8">
-            <CTAButton
-              type="yellow"
-              textColor="black"
-              text="Continue"
-              callbackFn={() => {
-                if (firstName.trim() === '' || surname.trim() === '') {
-                  Toast.show({
-                    type: 'info',
-                    text1: 'Name Required',
-                    text2: 'Please enter both your first name and surname.',
+        <View className="flex-1 rounded-t-3xl bg-brand-dark p-6">
+          <KeyboardAwareScrollView style={{ flex: 1 }} contentContainerStyle={{ gap: 20 }}>
+            <View className="gap-1">
+              <CustomTextInput
+                placeholder="e.g. John"
+                title="First Name"
+                titleColor="text-text-on-brand"
+                leftIconName="person"
+                iconColor="green"
+                value={firstName}
+                onChangeText={setFirstName}
+                autoComplete="given-name"
+                autoCapitalize="words"
+                returnKeyType="next"
+                onSubmitEditing={() => inputRef2.current?.focus()}
+              />
+            </View>
+            <View className="gap-1">
+              <CustomTextInput
+                placeholder="e.g. Doe"
+                title="Surname"
+                titleColor="text-text-on-brand"
+                leftIconName="person"
+                iconColor="green"
+                autoCapitalize="words"
+                value={surname}
+                onChangeText={setSurname}
+                autoComplete="family-name"
+                returnKeyType="done"
+                ref={inputRef2}
+                onSubmitEditing={() => inputRef2.current?.blur()}
+              />
+            </View>
+            <View className="mt-8">
+              <CTAButton
+                type="yellow"
+                textColor="black"
+                text="Continue"
+                callbackFn={() => {
+                  if (firstName.trim() === '' || surname.trim() === '') {
+                    Toast.show({
+                      type: 'info',
+                      text1: 'Name Required',
+                      text2: 'Please enter both your first name and surname.',
+                    });
+                    return;
+                  }
+                  router.push({
+                    pathname: '/(main)/onboarding/(profile-onboarding)/nickname',
+                    params: { firstName, surname },
                   });
-                  return;
-                }
-                router.push({
-                  pathname: '/(main)/onboarding/(profile-onboarding)/nickname',
-                  params: { firstName, surname },
-                });
-              }}
-            />
-          </View>
+                }}
+              />
+            </View>
+          </KeyboardAwareScrollView>
         </View>
       </View>
     </>

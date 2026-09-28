@@ -1,3 +1,4 @@
+import KeyboardAwareScrollView from '@components/KeyboardAwareScrollView';
 import { StyleSheet, Text, View, Alert } from 'react-native';
 import { useState } from 'react';
 import CTAButton from '@components/CTAButton';
@@ -32,40 +33,42 @@ const Nickname = () => {
         </View>
 
         <View className="flex-1 rounded-t-3xl bg-brand-dark p-6">
-          <View className="gap-1">
-            <CustomTextInput
-              placeholder="e.g. Johnny"
-              title="Display Name"
-              titleColor="text-text-on-brand"
-              leftIconName="person"
-              iconColor="green"
-              value={nickname}
-              onChangeText={setNickname}
-              returnKeyType="done"
-              autoCapitalize="words"
-            />
-          </View>
-          <View className="mt-8">
-            <CTAButton
-              type="yellow"
-              textColor="black"
-              text="Continue"
-              callbackFn={() => {
-                if (nickname.trim() === '') {
-                  Toast.show({
-                    type: 'info',
-                    text1: 'Display Name Required',
-                    text2: 'Please enter a display name.',
+          <KeyboardAwareScrollView style={{ flex: 1 }} contentContainerStyle={{ gap: 0 }}>
+            <View className="gap-1">
+              <CustomTextInput
+                placeholder="e.g. Johnny"
+                title="Display Name"
+                titleColor="text-text-on-brand"
+                leftIconName="person"
+                iconColor="green"
+                value={nickname}
+                onChangeText={setNickname}
+                returnKeyType="done"
+                autoCapitalize="words"
+              />
+            </View>
+            <View className="mt-8">
+              <CTAButton
+                type="yellow"
+                textColor="black"
+                text="Continue"
+                callbackFn={() => {
+                  if (nickname.trim() === '') {
+                    Toast.show({
+                      type: 'info',
+                      text1: 'Display Name Required',
+                      text2: 'Please enter a display name.',
+                    });
+                    return;
+                  }
+                  router.push({
+                    pathname: '/(main)/onboarding/(profile-onboarding)/dob',
+                    params: { ...params, nickname },
                   });
-                  return;
-                }
-                router.push({
-                  pathname: '/(main)/onboarding/(profile-onboarding)/dob',
-                  params: { ...params, nickname },
-                });
-              }}
-            />
-          </View>
+                }}
+              />
+            </View>
+          </KeyboardAwareScrollView>
         </View>
       </View>
     </>

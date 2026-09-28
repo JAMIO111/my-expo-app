@@ -1,3 +1,4 @@
+import KeyboardAwareScrollView from '@components/KeyboardAwareScrollView';
 import { useEffect, useState, useRef } from 'react';
 import AppleSignInButton from '@components/AppleSignInButton';
 import {
@@ -9,7 +10,6 @@ import {
   Pressable,
   Animated,
   Easing,
-  ScrollView,
   Platform,
 } from 'react-native';
 import SafeViewWrapper from '@components/SafeViewWrapper';
@@ -134,7 +134,7 @@ const LoginPage = () => {
             </View>
           </View>
 
-          <ScrollView
+          <KeyboardAwareScrollView
             className="bg-bg-grouped-1"
             contentContainerStyle={{ padding: 32, paddingBottom: 60 }}
             keyboardShouldPersistTaps="handled"
@@ -213,7 +213,7 @@ const LoginPage = () => {
                 Sign Up
               </Link>
             </Text>
-          </ScrollView>
+          </KeyboardAwareScrollView>
         </View>
       </SafeViewWrapper>
     </Animated.View>

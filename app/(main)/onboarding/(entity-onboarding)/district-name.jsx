@@ -1,3 +1,4 @@
+import KeyboardAwareScrollView from '@components/KeyboardAwareScrollView';
 import { View, Text, Switch } from 'react-native';
 import { useState } from 'react';
 import { Stack, useLocalSearchParams } from 'expo-router';
@@ -96,42 +97,49 @@ export default function DistrictName() {
         <Text className="my-4 pt-5 font-delagothic text-5xl text-text-on-brand">
           Please enter the name of your district.
         </Text>
-        <View className="mb-6">
-          <CustomTextInput
-            title="District Name"
-            value={districtName}
-            onChangeText={setDistrictName}
-            leftIconName="map-outline"
-            iconColor="purple"
-            placeholder="e.g. Downtown District"
-            autoCapitalize="words"
-            returnKeyType="done"
-          />
-        </View>
-        <View className="h-16 flex-row items-center gap-5 rounded-xl border border-theme-gray-4 bg-bg-grouped-2 pr-5">
-          <View className="h-full justify-center rounded-l-xl border-r border-theme-gray-3 bg-bg-grouped-1 pl-3 pr-4">
-            <Ionicons name="lock-closed-outline" size={26} color="purple" />
+        <KeyboardAwareScrollView style={{ flex: 1 }} contentContainerStyle={{ paddingBottom: 24 }}>
+          <View className="mb-6">
+            <CustomTextInput
+              title="District Name"
+              value={districtName}
+              onChangeText={setDistrictName}
+              leftIconName="map-outline"
+              iconColor="purple"
+              placeholder="e.g. Downtown District"
+              autoCapitalize="words"
+              returnKeyType="done"
+            />
           </View>
-          <Text className="flex-1 font-saira-medium text-xl text-text-1">Private District</Text>
-          <Switch
-            value={privateDistrict}
-            onValueChange={(newValue) => {
-              setPrivateDistrict(newValue);
-            }}
-            thumbColor="white"
-            trackColor={{
-              false: 'gray',
-              true: '#4CAF50',
-            }}
+          <View className="h-16 flex-row items-center gap-5 rounded-xl border border-theme-gray-4 bg-bg-grouped-2 pr-5">
+            <View className="h-full justify-center rounded-l-xl border-r border-theme-gray-3 bg-bg-grouped-1 pl-3 pr-4">
+              <Ionicons name="lock-closed-outline" size={26} color="purple" />
+            </View>
+            <Text className="flex-1 font-saira-medium text-xl text-text-1">Private District</Text>
+            <Switch
+              value={privateDistrict}
+              onValueChange={(newValue) => {
+                setPrivateDistrict(newValue);
+              }}
+              thumbColor="white"
+              trackColor={{
+                false: 'gray',
+                true: '#4CAF50',
+              }}
+            />
+          </View>
+          <Text
+            style={{ lineHeight: 22 }}
+            className="mb-6 mt-2 font-saira-medium text-lg text-text-on-brand-2">
+            Do you want to hide fixtures, results, standings and leaderboards from users from other
+            districts?
+          </Text>
+          <CTAButton
+            type="yellow"
+            textColor="text-black"
+            text="Continue"
+            callbackFn={handleSubmit}
           />
-        </View>
-        <Text
-          style={{ lineHeight: 22 }}
-          className="mb-6 mt-2 font-saira-medium text-lg text-text-on-brand-2">
-          Do you want to hide fixtures, results, standings and leaderboards from users from other
-          districts?
-        </Text>
-        <CTAButton type="yellow" textColor="text-black" text="Continue" callbackFn={handleSubmit} />
+        </KeyboardAwareScrollView>
       </View>
     </>
   );

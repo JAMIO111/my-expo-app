@@ -1,4 +1,4 @@
-import { ScrollView } from 'react-native';
+import KeyboardAwareScrollView from '@components/KeyboardAwareScrollView';
 import { useEffect, useState } from 'react';
 import { Stack } from 'expo-router';
 import { CircleCheckBig } from 'lucide-react-native';
@@ -83,7 +83,7 @@ const TeamDetails = () => {
         }}
       />
 
-      <ScrollView
+      <KeyboardAwareScrollView
         contentContainerStyle={{ alignItems: 'center', justifyContent: 'center' }}
         className="mt-16 flex-1 bg-bg-grouped-1 p-5">
         <MenuContainer>
@@ -137,7 +137,7 @@ const TeamDetails = () => {
             lastItem={true}
           />
         </MenuContainer>
-      </ScrollView>
+      </KeyboardAwareScrollView>
     </SafeViewWrapper>
   );
 };

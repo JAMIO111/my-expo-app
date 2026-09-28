@@ -1,3 +1,4 @@
+import KeyboardAwareScrollView from '@components/KeyboardAwareScrollView';
 import { useState, useEffect, useRef } from 'react';
 import {
   View,
@@ -8,7 +9,6 @@ import {
   Pressable,
   Animated,
   Easing,
-  ScrollView,
   Platform,
 } from 'react-native';
 import { supabase } from '@/lib/supabase';
@@ -129,7 +129,7 @@ const SignUpPage = () => {
               </View>
             </View>
           </View>
-          <ScrollView
+          <KeyboardAwareScrollView
             className="bg-bg-grouped-1"
             contentContainerStyle={{ padding: 32, paddingBottom: 60 }}
             keyboardShouldPersistTaps="handled"
@@ -210,7 +210,7 @@ const SignUpPage = () => {
                 Login
               </Link>
             </Text>
-          </ScrollView>
+          </KeyboardAwareScrollView>
         </View>
       </SafeViewWrapper>
     </Animated.View>

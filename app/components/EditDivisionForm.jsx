@@ -1,4 +1,5 @@
-import { View, Text, Switch, ScrollView, Pressable, Image, Alert } from 'react-native';
+import KeyboardAwareScrollView from '@components/KeyboardAwareScrollView';
+import { View, Text, Switch, Pressable, Image, Alert } from 'react-native';
 import { useState, useEffect, useRef } from 'react';
 import CustomTextInput from './CustomTextInput';
 import CTAButton from './CTAButton';
@@ -356,7 +357,7 @@ const EditDivisionForm = ({ competition, division, participants, closeModal, con
 
   return (
     <View className="flex-1 gap-4 bg-bg-1">
-      <ScrollView
+      <KeyboardAwareScrollView
         contentContainerStyle={{ gap: 8, paddingBottom: 140 }}
         className="flex-1 gap-4 bg-bg-2">
         {context === 'edit-division' && (
@@ -780,7 +781,7 @@ const EditDivisionForm = ({ competition, division, participants, closeModal, con
             </View>
           </ExpandableView>
         )}
-      </ScrollView>
+      </KeyboardAwareScrollView>
       <View className="absolute bottom-0 left-0 right-0 p-5">
         <View
           style={{ borderRadius: 28 }}

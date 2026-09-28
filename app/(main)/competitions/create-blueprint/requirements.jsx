@@ -1,8 +1,8 @@
+import KeyboardAwareScrollView from '@components/KeyboardAwareScrollView';
 import { StyleSheet, View, Text, Pressable, Image } from 'react-native';
 import { Stack, useRouter, useLocalSearchParams } from 'expo-router';
 import CustomHeader from '@components/CustomHeader';
 import SafeViewWrapper from '@components/SafeViewWrapper';
-import { ScrollView } from 'react-native-gesture-handler';
 import CTAButton from '@components/CTAButton';
 import { useState, useEffect } from 'react';
 import { useUser } from '@contexts/UserProvider';
@@ -126,10 +126,9 @@ const Requirements = () => {
         }}
       />
       <SafeViewWrapper useBottomInset={false} topColor="bg-brand">
-        <ScrollView
+        <KeyboardAwareScrollView
           keyboardShouldPersistTaps="handled"
           keyboardDismissMode="on-drag"
-          automaticallyAdjustKeyboardInsets={true}
           contentContainerStyle={{
             display: 'flex',
             flexGrow: 1,
@@ -346,7 +345,7 @@ const Requirements = () => {
               {`Only ${competitorType === 'individual' ? 'individuals' : 'teams'} in this division will be able to enter. Leave unselected for open competitions.`}
             </Text>
           </View>
-        </ScrollView>
+        </KeyboardAwareScrollView>
         <View style={{ position: 'absolute', bottom: 0, left: 0, right: 0 }} className="p-6">
           <View
             style={{ borderRadius: 30 }}

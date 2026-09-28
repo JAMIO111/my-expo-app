@@ -1,3 +1,4 @@
+import KeyboardAwareScrollView from '@components/KeyboardAwareScrollView';
 import { View, Text } from 'react-native';
 import { useState } from 'react';
 import { Stack, useLocalSearchParams } from 'expo-router';
@@ -6,7 +7,6 @@ import StepPillGroup from '@components/StepPillGroup';
 import CustomDropdown from '@components/CustomDropdown';
 import { useRouter } from 'expo-router';
 import CustomTextInput from '@components/CustomTextInput';
-import { ScrollView } from 'react-native-gesture-handler';
 import Toast from 'react-native-toast-message';
 import SafeViewWrapper from '@components/SafeViewWrapper';
 
@@ -77,7 +77,7 @@ export default function DistrictSettings() {
           <Text className="my-4 pt-5 font-delagothic text-4xl text-text-on-brand">
             Configure the league settings.
           </Text>
-          <ScrollView className="">
+          <KeyboardAwareScrollView style={{ flex: 1 }}>
             <CustomDropdown
               title="Point Scoring System"
               leftIconName="layers-outline"
@@ -136,7 +136,7 @@ export default function DistrictSettings() {
                 />
               </View>
             ) : null}
-          </ScrollView>
+          </KeyboardAwareScrollView>
           <Text
             style={{ lineHeight: 22 }}
             className="mb-4 mt-2 px-2 font-saira-medium text-lg text-text-on-brand-2">

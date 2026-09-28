@@ -1,3 +1,4 @@
+import KeyboardAwareScrollView from '@components/KeyboardAwareScrollView';
 import { StyleSheet, Text, View, TextInput } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useEffect, useState } from 'react';
@@ -9,7 +10,6 @@ import SafeViewWrapper from '@components/SafeViewWrapper';
 import { useTeamProfile } from '@hooks/useTeamProfile';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { supabase } from '@/lib/supabase';
-import { ScrollView } from 'react-native-gesture-handler';
 
 const TeamConfirm = () => {
   const router = useRouter();
@@ -73,7 +73,9 @@ const TeamConfirm = () => {
 
       <View className="flex-1 justify-between bg-brand">
         <StepPillGroup steps={3} currentStep={2} />
-        <ScrollView className="flex-1 gap-3 p-5">
+        <KeyboardAwareScrollView
+          style={{ flex: 1 }}
+          contentContainerStyle={{ gap: 12, padding: 20 }}>
           <Text
             style={{ lineHeight: 50 }}
             className="mb-4 font-delagothic text-5xl font-bold text-text-on-brand">
@@ -142,7 +144,7 @@ const TeamConfirm = () => {
               </View>
             </View>
           </View>
-        </ScrollView>
+        </KeyboardAwareScrollView>
         <View className="gap-5 rounded-t-3xl bg-brand-dark px-5 py-6">
           <CTAButton callbackFn={() => router.back()} type="error" text="No - Go Back" />
           <View>

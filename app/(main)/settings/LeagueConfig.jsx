@@ -1,4 +1,5 @@
-import { StyleSheet, ScrollView, Text } from 'react-native';
+import KeyboardAwareScrollView from '@components/KeyboardAwareScrollView';
+import { StyleSheet, Text } from 'react-native';
 import { Stack } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { CircleCheckBig } from 'lucide-react-native';
@@ -100,7 +101,7 @@ const LeagueConfig = () => {
         }}
       />
 
-      <ScrollView
+      <KeyboardAwareScrollView
         contentContainerStyle={{ alignItems: 'center', justifyContent: 'center' }}
         className="mt-16 flex-1 bg-bg-grouped-1 p-5">
         <MenuContainer title="League Settings">
@@ -231,7 +232,7 @@ const LeagueConfig = () => {
           A Proud Break Room League Since:{' '}
           {` ${new Date(currentRole?.district?.initiated_at).toLocaleDateString()}`}
         </Text>
-      </ScrollView>
+      </KeyboardAwareScrollView>
     </SafeViewWrapper>
   );
 };

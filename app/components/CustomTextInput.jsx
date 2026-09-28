@@ -1,6 +1,7 @@
 import { forwardRef } from 'react';
 import { View, TextInput, Text, Platform } from 'react-native';
 import Ionicons from '@expo/vector-icons/Ionicons';
+import { BottomSheetTextInput, useBottomSheetInternal } from '@gorhom/bottom-sheet';
 
 const CustomTextInput = forwardRef((props, ref) => {
   const {
@@ -30,6 +31,11 @@ const CustomTextInput = forwardRef((props, ref) => {
     disabled = false,
   } = props;
 
+  // Inside a @gorhom/bottom-sheet the sheet has to know which input is focused
+  // to lift itself above the keyboard, so use its input; elsewhere a plain one.
+  const inSheet = !!useBottomSheetInternal(true);
+  const Input = inSheet ? BottomSheetTextInput : TextInput;
+
   // Handles numeric input enforcement
   const handleTextChange = (text) => {
     let newValue = text;
@@ -58,7 +64,7 @@ const CustomTextInput = forwardRef((props, ref) => {
         <View className="h-full justify-center rounded-l-xl border-r border-theme-gray-3 bg-bg-grouped-1 pl-3 pr-4">
           <Ionicons name={leftIconName} size={leftIconSize} color={iconColor} />
         </View>
-        <TextInput
+        <Input
           editable={editable && !disabled}
           keyboardType={keyboardType}
           style={{ lineHeight: 30 }}

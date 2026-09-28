@@ -1,9 +1,9 @@
+import KeyboardAwareScrollView from '@components/KeyboardAwareScrollView';
 import { useState, useEffect, useCallback } from 'react';
 import { View, Text, Platform, Pressable } from 'react-native';
 import { useFixtureDetails } from '@hooks/useFixtureDetails';
 import TeamLogo from './TeamLogo';
 import Avatar from './Avatar';
-import { ScrollView } from 'react-native-gesture-handler';
 import LoadingScreen from './LoadingScreen';
 import CTAButton from './CTAButton';
 import DateTimePicker from '@react-native-community/datetimepicker';
@@ -422,7 +422,7 @@ const FixtureManagement = ({ fixtureId, closeModal }) => {
         </View>
       </View>
 
-      <ScrollView
+      <KeyboardAwareScrollView
         className="flex-1 bg-bg-2"
         contentContainerStyle={{ flexGrow: 1, paddingTop: 8, gap: 8, paddingBottom: 380 }}
         keyboardShouldPersistTaps="handled">
@@ -579,7 +579,7 @@ const FixtureManagement = ({ fixtureId, closeModal }) => {
         <View className="w-full gap-5 bg-bg-1 p-5">
           <Text className="text-center text-xs">{`Fixture ID: ${fixture?.id}`}</Text>
         </View>
-      </ScrollView>
+      </KeyboardAwareScrollView>
       <FloatingBottomSheet
         visible={modalVisible}
         onCancel={closeFloatingModal}

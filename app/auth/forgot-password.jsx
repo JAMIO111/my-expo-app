@@ -1,4 +1,5 @@
 // app/forgot-password.tsx
+import KeyboardAwareScrollView from '@components/KeyboardAwareScrollView';
 import { useState } from 'react';
 import { View, Text, TextInput, Alert } from 'react-native';
 import { supabase } from '@/lib/supabase';
@@ -28,7 +29,14 @@ const ForgotPassword = () => {
   };
 
   return (
-    <View className="flex-1 items-center justify-center gap-12 p-6">
+    <KeyboardAwareScrollView
+      contentContainerStyle={{
+        flexGrow: 1,
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: 48,
+        padding: 24,
+      }}>
       <View className="w-full gap-2">
         <Text className="w-full text-left font-delagothic text-5xl font-bold text-text-1">
           Forgotten Password
@@ -53,7 +61,7 @@ const ForgotPassword = () => {
           <CTAButton text="Send Reset Link" callbackFn={handleReset} />
         </View>
       </View>
-    </View>
+    </KeyboardAwareScrollView>
   );
 };
 

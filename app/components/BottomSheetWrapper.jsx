@@ -50,6 +50,9 @@ const BottomSheetWrapper = forwardRef(
           onChange(index);
         }}
         enablePanDownToClose
+        keyboardBehavior="interactive"
+        keyboardBlurBehavior="restore"
+        android_keyboardInputMode="adjustResize"
         backgroundStyle={{
           backgroundColor: backgroundColor ? backgroundColor : themeColors.bg2,
           borderTopLeftRadius: 26,

@@ -1,4 +1,5 @@
-import { View, Text, ScrollView, Pressable, Alert } from 'react-native';
+import KeyboardAwareScrollView from '@components/KeyboardAwareScrollView';
+import { View, Text, Pressable, Alert } from 'react-native';
 import { useState, useEffect, useRef } from 'react';
 import CustomTextInput from './CustomTextInput';
 import CTAButton from './CTAButton';
@@ -417,7 +418,7 @@ const GenerateFixturesForm = ({
 
   return (
     <View className="flex-1 gap-4">
-      <ScrollView
+      <KeyboardAwareScrollView
         ref={scrollRef}
         contentContainerStyle={{
           gap: 8,
@@ -694,7 +695,7 @@ const GenerateFixturesForm = ({
             </View>
           </View>
         )}
-      </ScrollView>
+      </KeyboardAwareScrollView>
 
       {/* ── Sticky footer ── */}
       <View className="absolute bottom-0 left-0 right-0 p-5">

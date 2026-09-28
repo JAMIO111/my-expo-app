@@ -9,7 +9,7 @@ import { supabase } from '@/lib/supabase';
 import CustomTextInput from '@components/CustomTextInput';
 import Toast from 'react-native-toast-message';
 import Ionicons from '@expo/vector-icons/Ionicons';
-import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
+import KeyboardAwareScrollView from '@components/KeyboardAwareScrollView';
 
 const TeamName = () => {
   const router = useRouter();
@@ -168,9 +168,7 @@ const TeamName = () => {
               padding: 16,
               gap: 12,
             }}
-            enableOnAndroid
-            keyboardShouldPersistTaps="handled"
-            extraScrollHeight={20}
+            bottomOffset={44}
             showsVerticalScrollIndicator={false}>
             <Text
               style={{ lineHeight: 40 }}

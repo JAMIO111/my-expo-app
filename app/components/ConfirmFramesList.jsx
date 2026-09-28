@@ -1,3 +1,4 @@
+import { KeyboardAvoidingView, KeyboardProvider } from 'react-native-keyboard-controller';
 import { Pressable, StyleSheet, Text, View, Modal, TextInput, Keyboard } from 'react-native';
 import { useState } from 'react';
 import CTAButton from './CTAButton';
@@ -183,41 +184,47 @@ const ConfirmFramesList = ({
         visible={commentModalVisible}
         animationType="fade"
         transparent
+        statusBarTranslucent
+        navigationBarTranslucent
         onRequestClose={handleCloseModal}>
-        <View className="flex-1 justify-center bg-black/40 p-6 shadow-md">
-          <View className="gap-3 rounded-3xl bg-bg-2 p-2">
-            <View className="flex-row items-start justify-between p-3">
-              <View className="flex-1 gap-1">
-                <Text className="font-saira-semibold text-2xl text-text-1">Leave a comment</Text>
+        <KeyboardProvider statusBarTranslucent navigationBarTranslucent>
+          <KeyboardAvoidingView
+            behavior="padding"
+            className="flex-1 justify-center bg-black/40 p-6 shadow-md">
+            <View className="gap-3 rounded-3xl bg-bg-2 p-2">
+              <View className="flex-row items-start justify-between p-3">
+                <View className="flex-1 gap-1">
+                  <Text className="font-saira-semibold text-2xl text-text-1">Leave a comment</Text>
 
-                <Text className="font-saira text-text-2">
-                  This should be descriptive enough so that the home team can correct the fixture.
-                  E.g. 'Home player 2 is incorrect, it should be John Doe instead of Jane Doe.' or
-                  'The winner is incorrect, it should be the away team instead of the home team.'
-                </Text>
+                  <Text className="font-saira text-text-2">
+                    This should be descriptive enough so that the home team can correct the fixture.
+                    E.g. 'Home player 2 is incorrect, it should be John Doe instead of Jane Doe.' or
+                    'The winner is incorrect, it should be the away team instead of the home team.'
+                  </Text>
+                </View>
+
+                <Ionicons name="close" size={32} color="#777" onPress={handleCloseModal} />
               </View>
 
-              <Ionicons name="close" size={32} color="#777" onPress={handleCloseModal} />
+              <TextInput
+                value={comment}
+                onChangeText={setComment}
+                placeholder="Add a comment about the disputed frame (required)."
+                placeholderTextColor="#777"
+                multiline
+                returnKeyType="done"
+                maxLength={1000}
+                className="min-h-[220px] rounded-2xl border border-theme-gray-3 bg-bg-1 p-4 text-text-1"
+                style={{ textAlignVertical: 'top' }}
+                blurOnSubmit
+                onSubmitEditing={() => Keyboard.dismiss()}
+              />
+
+              <CTAButton type="error" text="Cancel Dispute" callbackFn={handleCancelDispute} />
+              <CTAButton type="success" text="Save" callbackFn={handleSaveComment} />
             </View>
-
-            <TextInput
-              value={comment}
-              onChangeText={setComment}
-              placeholder="Add a comment about the disputed frame (required)."
-              placeholderTextColor="#777"
-              multiline
-              returnKeyType="done"
-              maxLength={1000}
-              className="min-h-[220px] rounded-2xl border border-theme-gray-3 bg-bg-1 p-4 text-text-1"
-              style={{ textAlignVertical: 'top' }}
-              blurOnSubmit
-              onSubmitEditing={() => Keyboard.dismiss()}
-            />
-
-            <CTAButton type="error" text="Cancel Dispute" callbackFn={handleCancelDispute} />
-            <CTAButton type="success" text="Save" callbackFn={handleSaveComment} />
-          </View>
-        </View>
+          </KeyboardAvoidingView>
+        </KeyboardProvider>
       </Modal>
     </>
   );

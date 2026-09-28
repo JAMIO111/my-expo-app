@@ -1,4 +1,5 @@
-import { ScrollView, View, Text } from 'react-native';
+import KeyboardAwareScrollView from '@components/KeyboardAwareScrollView';
+import { View, Text } from 'react-native';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { CircleCheckBig } from 'lucide-react-native';
@@ -239,7 +240,7 @@ const ManageAddress = () => {
         }}
       />
 
-      <ScrollView
+      <KeyboardAwareScrollView
         contentContainerStyle={{ alignItems: 'center', justifyContent: 'center' }}
         className="mt-16 flex-1 bg-bg-grouped-1 p-5">
         {addressLoading ? (
@@ -364,7 +365,7 @@ const ManageAddress = () => {
             )}
           </>
         )}
-      </ScrollView>
+      </KeyboardAwareScrollView>
     </SafeViewWrapper>
   );
 };

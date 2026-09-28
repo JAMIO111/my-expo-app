@@ -16,7 +16,7 @@ import SafeViewWrapper from '@components/SafeViewWrapper';
 import CustomTextInput from '@components/CustomTextInput';
 import CTAButton from '@components/CTAButton';
 import Toast from 'react-native-toast-message';
-import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
+import KeyboardAwareScrollView from '@components/KeyboardAwareScrollView';
 
 const TeamAddress = () => {
   const router = useRouter();
@@ -117,9 +117,7 @@ const TeamAddress = () => {
                 padding: 16,
                 gap: 12,
               }}
-              enableOnAndroid
-              keyboardShouldPersistTaps="handled"
-              extraScrollHeight={20}
+              bottomOffset={44}
               showsVerticalScrollIndicator={false}>
               <CustomTextInput
                 value={name}

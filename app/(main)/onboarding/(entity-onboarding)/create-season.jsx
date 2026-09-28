@@ -1,4 +1,5 @@
-import { View, Text, Switch, Platform, ScrollView } from 'react-native';
+import KeyboardAwareScrollView from '@components/KeyboardAwareScrollView';
+import { View, Text, Switch, Platform } from 'react-native';
 import { useState } from 'react';
 import { Stack, useLocalSearchParams } from 'expo-router';
 import CTAButton from '@components/CTAButton';
@@ -112,7 +113,9 @@ export default function SeasonName() {
         <Text className="my-4 pt-2 font-delagothic text-3xl text-text-on-brand">
           Let's create your first season!
         </Text>
-        <ScrollView contentContainerStyle={{ paddingBottom: 20, gap: 20 }} className="flex-1">
+        <KeyboardAwareScrollView
+          style={{ flex: 1 }}
+          contentContainerStyle={{ paddingBottom: 20, gap: 20 }}>
           <CustomTextInput
             title="Season Name"
             value={seasonName}
@@ -143,7 +146,7 @@ export default function SeasonName() {
             selectedValues={seasonStatus}
             onValueChange={setSeasonStatus}
           />
-        </ScrollView>
+        </KeyboardAwareScrollView>
         <View className="px-2 py-8">
           <CTAButton
             type="yellow"

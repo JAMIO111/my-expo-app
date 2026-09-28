@@ -24,6 +24,7 @@ import Toast from 'react-native-toast-message';
 import toastConfig from '@lib/toastConfig';
 import { useEffect, useRef } from 'react';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { KeyboardProvider } from 'react-native-keyboard-controller';
 import { UserProvider } from '@contexts/UserProvider';
 import { AdminProvider } from '@contexts/AdminContext';
 import AppRealtimeProvider from '@contexts/AppRealtimeProvider';
@@ -75,35 +76,37 @@ export default function RootLayout() {
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
-      <ThemeProvider>
-        <QueryClientProvider client={queryClientRef.current}>
-          <UserProvider>
-            <AdminProvider>
-              <RevenueCatProvider
-                iosApiKey="appl_DQoRBoSRUxeKJVXLtoWXeWeNGCn"
-                androidApiKey="goog_yTNNoAuahqqKnkHPLDcDmmaPrXG">
-                <AppRealtimeProvider>
-                  <NotificationsPanelProvider>
-                    <BadgeUnlockProvider>
-                      <BadgeTrigger />
-                      <View className={`flex-1 bg-brand`}>
-                        <Slot />
-                      </View>
-                      <Toast
-                        config={toastConfig}
-                        position="top"
-                        visibilityTime={5000}
-                        autoHide={true}
-                        topOffset={80}
-                      />
-                    </BadgeUnlockProvider>
-                  </NotificationsPanelProvider>
-                </AppRealtimeProvider>
-              </RevenueCatProvider>
-            </AdminProvider>
-          </UserProvider>
-        </QueryClientProvider>
-      </ThemeProvider>
+      <KeyboardProvider>
+        <ThemeProvider>
+          <QueryClientProvider client={queryClientRef.current}>
+            <UserProvider>
+              <AdminProvider>
+                <RevenueCatProvider
+                  iosApiKey="appl_DQoRBoSRUxeKJVXLtoWXeWeNGCn"
+                  androidApiKey="goog_yTNNoAuahqqKnkHPLDcDmmaPrXG">
+                  <AppRealtimeProvider>
+                    <NotificationsPanelProvider>
+                      <BadgeUnlockProvider>
+                        <BadgeTrigger />
+                        <View className={`flex-1 bg-brand`}>
+                          <Slot />
+                        </View>
+                        <Toast
+                          config={toastConfig}
+                          position="top"
+                          visibilityTime={5000}
+                          autoHide={true}
+                          topOffset={80}
+                        />
+                      </BadgeUnlockProvider>
+                    </NotificationsPanelProvider>
+                  </AppRealtimeProvider>
+                </RevenueCatProvider>
+              </AdminProvider>
+            </UserProvider>
+          </QueryClientProvider>
+        </ThemeProvider>
+      </KeyboardProvider>
     </GestureHandlerRootView>
   );
 }

@@ -1,3 +1,4 @@
+import KeyboardAwareScrollView from '@components/KeyboardAwareScrollView';
 import React, { useEffect, useState } from 'react';
 import { View, TextInput, Alert, Text, Pressable } from 'react-native';
 import { supabase } from '@/lib/supabase';
@@ -135,7 +136,14 @@ const ResetPassword = () => {
   }
 
   return (
-    <View className="flex-1 items-center justify-center gap-5 p-6">
+    <KeyboardAwareScrollView
+      contentContainerStyle={{
+        flexGrow: 1,
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: 20,
+        padding: 24,
+      }}>
       <Text className="w-full text-left font-delagothic text-3xl font-bold text-text-1">
         Update your password
       </Text>
@@ -195,7 +203,7 @@ const ResetPassword = () => {
           callbackFn={handleUpdatePassword}
         />
       </View>
-    </View>
+    </KeyboardAwareScrollView>
   );
 };
 

@@ -1,13 +1,4 @@
-import {
-  View,
-  Text,
-  FlatList,
-  Pressable,
-  Switch,
-  Platform,
-  KeyboardAvoidingView,
-  Alert,
-} from 'react-native';
+import { View, Text, FlatList, Pressable, Switch, Alert } from 'react-native';
 import { useState, useRef } from 'react';
 import { Stack, useRouter, useLocalSearchParams } from 'expo-router';
 import CTAButton from '@components/CTAButton';
@@ -500,9 +491,7 @@ export default function CreateDivisions() {
             </Pressable>
           </BottomSheetView>
 
-          <KeyboardAvoidingView
-            behavior="height"
-            keyboardVerticalOffset={Platform.OS === 'ios' ? 100 : 0}>
+          <>
             <BottomSheetScrollView
               contentContainerStyle={{
                 paddingBottom: 200,
@@ -676,7 +665,7 @@ export default function CreateDivisions() {
                 )}
               </View>
             </BottomSheetScrollView>
-          </KeyboardAvoidingView>
+          </>
         </BottomSheetWrapper>
       </View>
     </>

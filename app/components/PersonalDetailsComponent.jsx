@@ -1,12 +1,5 @@
-import {
-  Text,
-  View,
-  ScrollView,
-  Pressable,
-  ActivityIndicator,
-  useColorScheme,
-  Alert,
-} from 'react-native';
+import KeyboardAwareScrollView from '@components/KeyboardAwareScrollView';
+import { Text, View, Pressable, ActivityIndicator, useColorScheme, Alert } from 'react-native';
 import { Stack } from 'expo-router';
 import { useEffect, useState, useRef } from 'react';
 import DateTimePicker from '@react-native-community/datetimepicker';
@@ -289,7 +282,7 @@ const PersonalDetailsComponent = () => {
         }}
       />
 
-      <ScrollView
+      <KeyboardAwareScrollView
         contentContainerStyle={{
           alignItems: 'center',
           justifyContent: 'center',
@@ -455,7 +448,7 @@ const PersonalDetailsComponent = () => {
             {player?.dob_changes_remaining} / 2 remaining
           </Text>
         </View>
-      </ScrollView>
+      </KeyboardAwareScrollView>
     </SafeViewWrapper>
   );
 };

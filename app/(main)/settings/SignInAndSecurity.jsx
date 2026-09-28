@@ -23,7 +23,7 @@ import FloatingBottomSheet from '@components/FloatingBottomSheet';
 import CustomHeader from '@components/CustomHeader';
 import Purchases from 'react-native-purchases';
 import IonIcons from 'react-native-vector-icons/Ionicons';
-import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
+import KeyboardAwareScrollView from '@components/KeyboardAwareScrollView';
 import Toast from 'react-native-toast-message';
 import { makeRedirectUri } from 'expo-auth-session';
 import * as WebBrowser from 'expo-web-browser';
@@ -564,9 +564,7 @@ const SignInAndSecurity = () => {
 
       <KeyboardAwareScrollView
         style={{ flex: 1 }}
-        enableOnAndroid
-        keyboardShouldPersistTaps="handled"
-        extraScrollHeight={120}
+        bottomOffset={120}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: 60 }}
         className="mt-16 flex-1 bg-bg-grouped-1 p-5">

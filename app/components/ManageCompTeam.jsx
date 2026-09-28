@@ -1,4 +1,5 @@
-import { View, ScrollView, Text, Pressable, TouchableOpacity, Animated, Alert } from 'react-native';
+import KeyboardAwareScrollView from '@components/KeyboardAwareScrollView';
+import { View, Text, Pressable, TouchableOpacity, Animated, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useState, useRef, useEffect, useMemo } from 'react';
 import Ionicons from '@expo/vector-icons/Ionicons';
@@ -284,7 +285,7 @@ const ManageCompTeam = ({ type, team, closeModal }) => {
 
         // If they're in selectedPlayerIds but not in the existing active/pending
         // set, they've been freshly added this session — treat as new invite
-        const status = existingIds.has(id) ? (teamPlayer?.status ?? null) : null;
+        const status = existingIds.has(id) ? teamPlayer?.status ?? null : null;
 
         return { ...option, status };
       })
@@ -429,9 +430,9 @@ const ManageCompTeam = ({ type, team, closeModal }) => {
 
   return (
     <View className="flex-1">
-      <ScrollView
+      <KeyboardAwareScrollView
         keyboardShouldPersistTaps="handled"
-        contentContainerStyle={{ flex: 1, padding: 20, gap: 20 }}>
+        contentContainerStyle={{ flexGrow: 1, padding: 20, gap: 20 }}>
         {isCreate || canEdit ? (
           <>
             {/* Team name */}
@@ -538,7 +539,7 @@ const ManageCompTeam = ({ type, team, closeModal }) => {
             ))}
           </View>
         )}
-      </ScrollView>
+      </KeyboardAwareScrollView>
 
       <View style={{ position: 'absolute', bottom: 0, left: 0, right: 0 }} className="p-6">
         <View
