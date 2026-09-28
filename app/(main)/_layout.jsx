@@ -94,16 +94,20 @@ const _layout = () => {
   // keeps its own nested Stack for its internal navigation, unaffected.
   return (
     <Stack screenOptions={{ headerShown: false }}>
-      <Stack.Screen name="home" />
-      <Stack.Screen name="profile" />
-      <Stack.Screen name="teams" />
-      <Stack.Screen name="my-leagues" />
-      <Stack.Screen name="competitions" />
-      <Stack.Screen name="rankings" />
+      {/* Top-level sections switched via the bottom nav's router.replace() --
+          no slide, matching how tab switching felt before this Stack existed.
+          settings keeps the default push animation, since that's the one
+          that now properly supports swipe-back. */}
+      <Stack.Screen name="home" options={{ animation: 'none' }} />
+      <Stack.Screen name="profile" options={{ animation: 'none' }} />
+      <Stack.Screen name="teams" options={{ animation: 'none' }} />
+      <Stack.Screen name="my-leagues" options={{ animation: 'none' }} />
+      <Stack.Screen name="competitions" options={{ animation: 'none' }} />
+      <Stack.Screen name="rankings" options={{ animation: 'none' }} />
       <Stack.Screen name="settings" />
       <Stack.Screen name="onboarding" options={{ animation: 'none' }} />
-      <Stack.Screen name="role-select" />
-      <Stack.Screen name="index" />
+      <Stack.Screen name="role-select" options={{ animation: 'none' }} />
+      <Stack.Screen name="index" options={{ animation: 'none' }} />
     </Stack>
   );
 };
