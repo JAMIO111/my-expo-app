@@ -234,7 +234,13 @@ export default function AppRealtimeProvider({ children }) {
       appStateSub.remove();
       teardown();
     };
-  }, [currentRole, player?.id, queryClient]);
+    // currentRole?.id (not the whole currentRole object) on purpose: UserProvider
+    // hands back a new currentRole object reference on every roles refetch even
+    // when nothing about it actually changed, which was tearing down and
+    // rebuilding all four channels on every silent background refresh -- and
+    // the TeamPlayers handler below calls refetch(), so a real event for the
+    // current player was retriggering this effect on itself.
+  }, [currentRole?.id, player?.id, queryClient]);
 
   return children;
 }
