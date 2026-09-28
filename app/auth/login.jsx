@@ -176,7 +176,7 @@ const LoginPage = () => {
               </Pressable>
               <Text className="text-center text-lg text-text-2">
                 Forgotten Password?{' '}
-                <Link className="text-theme-blue underline" href="/auth/reset-password">
+                <Link className="text-theme-blue underline" href="/auth/forgot-password">
                   Reset
                 </Link>
               </Text>
