@@ -5,9 +5,11 @@ import { Stack } from 'expo-router';
 import { useUser } from '@contexts/UserProvider';
 import usePlayerBadges from '@hooks/usePlayerBadges';
 import BadgeList from '@components/BadgeList';
-import { View, ScrollView } from 'react-native';
+import { ScrollView } from 'react-native';
+import { useTheme } from '@contexts/ThemeProvider';
 
 const BadgesPage = () => {
+  const { colors: themeColors } = useTheme();
   const { player, currentRole } = useUser();
   const { badges } = usePlayerBadges(player?.id, currentRole?.activeSeason?.id);
   console.log('Player Badges:', badges, 'Player ID:', player?.id);
@@ -32,7 +34,7 @@ const BadgesPage = () => {
           }}
         />
 
-        <ScrollView style={{ flex: 1, marginTop: 56 }}>
+        <ScrollView style={{ flex: 1, marginTop: 56, backgroundColor: themeColors.bg1 }}>
           <ProGate justifyContent="start" intensity={35}>
             <BadgeList badges={badges} />
           </ProGate>

@@ -37,7 +37,7 @@ const HomeScreenCardLarge = ({ title, body, category, image, onPress }) => {
           onPress?.();
           resetScale(); // 👈 THIS is the key fix
         }}
-        className="w-full items-center justify-between rounded-3xl bg-bg-1 p-1 shadow-md">
+        className="w-full items-center justify-between rounded-3xl bg-bg-3 p-1 shadow-md">
         <Image
           source={image}
           style={{

@@ -1,7 +1,13 @@
 import { useEffect, useRef } from 'react';
 import { Animated, View, Text } from 'react-native';
 
-const LivePulseCard = ({ fontSize = 14, dotSize = 8, showBG = true, text = 'Live' }) => {
+const LivePulseCard = ({
+  fontSize = 14,
+  dotSize = 8,
+  showBG = true,
+  text = 'Live',
+  backgroundColor,
+}) => {
   const scale = useRef(new Animated.Value(1)).current;
   const opacity = useRef(new Animated.Value(1)).current;
 
@@ -41,7 +47,7 @@ const LivePulseCard = ({ fontSize = 14, dotSize = 8, showBG = true, text = 'Live
 
   return (
     <View
-      className={`flex-row items-center justify-center gap-2 rounded-xl px-3 py-0.5 ${showBG ? 'bg-bg-1 shadow-sm' : ''}`}>
+      className={`flex-row items-center justify-center gap-2 rounded-xl px-3 py-1 ${showBG ? `${backgroundColor ?? 'bg-bg-1'} shadow-sm` : ''}`}>
       <View
         style={{
           width: containerSize,

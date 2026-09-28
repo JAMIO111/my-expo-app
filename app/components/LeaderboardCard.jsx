@@ -4,6 +4,7 @@ import { useRouter } from 'expo-router';
 import { LeaderboardSkeleton } from '@components/Skeletons';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '@contexts/ThemeProvider';
+import { Crown } from 'lucide-react-native';
 
 const LeaderboardCard = ({
   title,
@@ -40,7 +41,7 @@ const LeaderboardCard = ({
 
   if (sortedData.length === 0) {
     return (
-      <View style={{ borderRadius: 24 }} className="bg-bg-2 p-2">
+      <View style={{ borderRadius: 24 }} className="bg-bg-grouped-1 p-2">
         <View className="h-[300px] w-[300px] items-center justify-center rounded-3xl bg-bg-grouped-2 p-3 shadow-sm">
           <Ionicons name="file-tray-outline" size={50} color={themeColors.icon} />
           <Text className="mt-3 font-saira-semibold text-2xl text-text-1">{title}</Text>
@@ -53,7 +54,7 @@ const LeaderboardCard = ({
   }
 
   return (
-    <View style={{ borderRadius: 24 }} className="bg-bg-2 p-2">
+    <View style={{ borderRadius: 24 }} className="bg-bg-grouped-1 p-2">
       <Pressable
         onPress={
           onPress ||

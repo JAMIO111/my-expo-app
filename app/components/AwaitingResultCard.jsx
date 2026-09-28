@@ -3,9 +3,11 @@ import TeamLogo from './TeamLogo';
 import Avatar from './Avatar';
 import { useRouter } from 'expo-router';
 import { Swords } from 'lucide-react-native';
+import { useTheme } from '@contexts/ThemeProvider';
 
 const AwaitingResultCard = ({ fixture }) => {
   const router = useRouter();
+  const { colors: themeColors } = useTheme();
   return (
     <Pressable
       style={{ borderWidth: 0.5 }}
@@ -26,7 +28,7 @@ const AwaitingResultCard = ({ fixture }) => {
               })}`}
             </Text>
             <View className="flex-row items-center gap-2">
-              <Swords size={14} color="#000" />
+              <Swords size={14} color={themeColors.icon} />
               <Text className="text-md font-saira text-text-1">
                 {fixture?.competition_instance?.name} Fixture
               </Text>

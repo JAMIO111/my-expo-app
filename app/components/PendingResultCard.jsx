@@ -4,8 +4,10 @@ import Avatar from './Avatar';
 import { useResultsByFixture } from '@hooks/useResultsByFixture';
 import { useRouter } from 'expo-router';
 import { Swords } from 'lucide-react-native';
+import { useTheme } from '@contexts/ThemeProvider';
 
 const PendingResultCard = ({ fixture }) => {
+  const { colors: themeColors } = useTheme();
   const router = useRouter();
   const { data: results, isLoading } = useResultsByFixture(fixture?.id);
   const homeScore = results?.filter((result) => result.winner_side === 'home').length || 0;
@@ -38,7 +40,7 @@ const PendingResultCard = ({ fixture }) => {
               })}`}
             </Text>
             <View className="flex-row items-center gap-2">
-              <Swords size={14} color="#000" />
+              <Swords size={14} color={themeColors.icon} />
               <Text className="text-md font-saira text-text-1">
                 {fixture?.competition_instance?.name} Fixture
               </Text>

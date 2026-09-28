@@ -45,7 +45,7 @@ const ACHIEVEMENT_CONFIG = {
 
 const AchievementCard = ({ player, labels }) => {
   return (
-    <View className="my-1 gap-2 rounded-2xl border border-theme-gray-5 bg-bg-2 px-3 py-2">
+    <View className="my-1 gap-2 rounded-2xl border border-theme-gray-5 bg-bg-grouped-3 px-3 py-2">
       <View className="flex-row items-center gap-3">
         <Avatar size={28} borderRadius={8} player={player} />
         <Text
@@ -103,13 +103,14 @@ const FrameRow = ({ frame, playersById, player }) => {
   }));
 
   return (
-    <View className="my-2 gap-2 rounded-3xl border border-theme-gray-5 bg-bg-1">
+    <View className="my-2 gap-2 rounded-3xl border border-theme-gray-5 bg-bg-grouped-2">
       <View
         style={{ borderTopRightRadius: 20, borderTopLeftRadius: 20 }}
         className="gap-2 px-3 pt-3">
         <View className="flex-row items-center justify-between gap-2 border-b border-theme-gray-5 pb-1">
           <Text className="p-1 font-saira-medium text-sm text-text-2">
-            {frame?.competition_name} {frame?.stage_name ? ` | ${frame.stage_name}` : ''}
+            {frame?.competition_name ? `${frame.competition_name}` : 'Fixture'}{' '}
+            {frame?.stage_name ? ` | ${frame.stage_name}` : ''}
           </Text>
           <Text className="p-1 font-saira-medium text-sm text-text-2">
             {new Date(frame?.fixture_date_time).toLocaleDateString('en-GB', {
@@ -179,7 +180,7 @@ const PlayerFrameList = ({ playerId }) => {
   }
 
   return (
-    <View className="flex-1 bg-bg-2 pb-16">
+    <View className="flex-1 bg-bg-grouped-1 pb-16">
       <FlatList
         style={{ padding: 10 }}
         data={frames}

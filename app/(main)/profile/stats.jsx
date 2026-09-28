@@ -4,9 +4,10 @@ import CustomHeader from '@components/CustomHeader';
 import { Stack } from 'expo-router';
 import { useUser } from '@contexts/UserProvider';
 import EntityStats from '@components/EntityStats';
-import { View, ScrollView } from 'react-native';
-
-const BadgesPage = () => {
+import { ScrollView } from 'react-native';
+import { useTheme } from '@contexts/ThemeProvider';
+const StatsPage = () => {
+  const { colors: themeColors } = useTheme();
   const { player } = useUser();
   return (
     <>
@@ -29,7 +30,7 @@ const BadgesPage = () => {
           }}
         />
 
-        <ScrollView style={{ flex: 1, marginTop: 56 }}>
+        <ScrollView style={{ flex: 1, marginTop: 56, backgroundColor: themeColors.bg1 }}>
           <ProGate justifyContent="start" intensity={30}>
             <EntityStats entityId={player?.id} entityType="player" />
           </ProGate>
@@ -39,4 +40,4 @@ const BadgesPage = () => {
   );
 };
 
-export default BadgesPage;
+export default StatsPage;

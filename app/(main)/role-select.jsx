@@ -24,7 +24,7 @@ const RoleSelect = () => {
   return (
     <SafeViewWrapper topColor="bg-brand" useBottomInset={false}>
       <BrandHeader />
-      <View className="flex-1 items-stretch justify-start border-t-2 border-brand-dark bg-bg-grouped-1 p-5">
+      <View className="flex-1 items-stretch justify-start border-t-2 border-brand-dark bg-bg-2 p-5">
         <Text
           style={{ lineHeight: 40 }}
           className="my-2 px-2 font-tektur-bold text-4xl text-text-1">
@@ -55,7 +55,7 @@ const RoleSelect = () => {
                     } else router.replace('/(main)/home/paywall');
                   }
                 }}>
-                <View className="mb-3 flex-row items-center justify-between gap-5 rounded-3xl border border-theme-gray-6 bg-bg-grouped-2 px-4 py-3">
+                <View className="mb-3 flex-row items-center justify-between gap-5 rounded-3xl border border-theme-gray-6 bg-bg-3 px-4 py-3">
                   {role?.type === 'admin' ? (
                     <IonIcon
                       name={role?.type === 'admin' ? 'shield-half-sharp' : 'people'}

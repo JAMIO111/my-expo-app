@@ -21,8 +21,10 @@ import BottomSheetModal from './BottomSheetModal';
 import SelectStatMenu from './SelectStatMenu';
 import TeamProfileHeader from '@components/TeamProfileHeader';
 import AdBanner from '@/components/AdBanner';
+import { useTheme } from '@contexts/ThemeProvider';
 
 const TeamProfile = ({ context, profile, isLoading }) => {
+  const { colors: themeColors } = useTheme();
   const { currentRole, player } = useUser();
   const router = useRouter();
   const { teamId, fixtureId } = useLocalSearchParams();
@@ -242,7 +244,7 @@ const TeamProfile = ({ context, profile, isLoading }) => {
               {safeMatches.length > 0 && (
                 <View className="">
                   <Animated.View style={{ transform: [{ rotate }] }}>
-                    <Ionicons className="" name="chevron-down" size={30} />
+                    <Ionicons color={themeColors.icon} name="chevron-down" size={30} />
                   </Animated.View>
                 </View>
               )}

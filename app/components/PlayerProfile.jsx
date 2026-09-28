@@ -21,6 +21,7 @@ import SelectStatMenu from './SelectStatMenu';
 import PlayerProfileHeader from './PlayerProfileHeader';
 import FloatingBottomSheet from './FloatingBottomSheet';
 import { UserMinus, Star, UserStar } from 'lucide-react-native';
+import AdBanner from './AdBanner';
 
 const PlayerProfile = ({ context, isLoading, playerProfile, error }) => {
   const router = useRouter();
@@ -393,6 +394,9 @@ const PlayerProfile = ({ context, isLoading, playerProfile, error }) => {
                 text="Compare Stats"
               />
             </View>
+          </View>
+          <View className="py-4">
+            <AdBanner />
           </View>
           <View className="w-full gap-3 bg-bg-grouped-2 px-4 pb-8 pt-4">
             <Heading text="Trophy Cabinet" />

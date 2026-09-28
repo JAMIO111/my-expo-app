@@ -423,7 +423,7 @@ const SubmitResultsScreen = () => {
 
   // ─── Score card rendered as the list header ───────────────────────────────
   const ScoreHeader = (
-    <View className="my-4 rounded-3xl bg-bg-1 p-4 shadow-sm">
+    <View className="my-4 rounded-3xl bg-bg-grouped-2 p-4 shadow-sm">
       <View className="flex-row items-center justify-between gap-3 px-2">
         {/* HOME */}
         <View style={{ flex: 1 }} className="items-center">
@@ -442,19 +442,19 @@ const SubmitResultsScreen = () => {
           )}
           {fixtureDetails?.competitor_type === 'team' ? (
             <View className="mt-3 items-center">
-              <Text className="text-center font-saira-semibold text-lg text-text-1">
+              <Text className="text-center font-tektur-semibold text-lg text-text-1">
                 {fixtureDetails?.homeTeam?.abbreviation}
               </Text>
-              <Text className="text-center font-saira-semibold text-lg text-text-2">
+              <Text className="text-center font-tektur-semibold text-lg text-text-2">
                 {fixtureDetails?.homeTeam?.display_name}
               </Text>
             </View>
           ) : (
             <View className="flex-1 items-center">
-              <Text className="text-center font-saira-medium text-lg text-text-1">
+              <Text className="text-center font-tektur-medium text-lg text-text-1">
                 {fixtureDetails?.homePlayer?.first_name}
               </Text>
-              <Text className="text-center font-saira-medium text-lg text-text-2">
+              <Text className="text-center font-tektur-medium text-lg text-text-2">
                 {fixtureDetails?.homePlayer?.surname}
               </Text>
             </View>
@@ -463,24 +463,24 @@ const SubmitResultsScreen = () => {
 
         {/* CENTRE */}
         <View style={{ flex: 1.5 }} className="items-center justify-center">
-          <Text className="mb-2 text-center font-saira text-lg text-text-1">
+          <Text className="mb-2 text-center font-tektur text-lg text-text-1">
             {fixtureDetails?.competition?.name}
           </Text>
-          <View className="mx-2 flex-row items-center justify-center gap-1 rounded-2xl bg-bg-2 px-2 pb-1 pt-3 shadow-sm">
-            <Text className="w-12 text-center font-saira-bold text-3xl text-text-1">
+          <View className="mx-2 flex-row items-center justify-center gap-1 rounded-2xl bg-bg-grouped-3 px-2 pb-1 pt-3 shadow-sm">
+            <Text className="w-12 text-center font-tektur-bold text-3xl text-text-1">
               {homeScore}
             </Text>
-            <Text className="mb-2 font-saira text-text-2">vs</Text>
-            <Text className="w-12 text-center font-saira-bold text-3xl text-text-1">
+            <Text className="mb-2 font-tektur text-text-2">vs</Text>
+            <Text className="w-12 text-center font-tektur-bold text-3xl text-text-1">
               {awayScore}
             </Text>
           </View>
-          <Text className="mt-2 text-center font-saira-medium text-text-2">
+          <Text className="mt-2 text-center font-tektur-medium text-text-2">
             {fixtureDetails?.competition?.best_of
               ? `Best of ${fixtureDetails?.competition?.best_of} frames`
               : 'Open Frame Format'}
           </Text>
-          <Text className="mt-1 text-center font-saira text-text-2">
+          <Text className="mt-1 text-center font-tektur text-text-2">
             {new Date(fixtureDetails?.date_time).toLocaleDateString('en-GB', {
               weekday: 'short',
               day: 'numeric',
@@ -510,19 +510,19 @@ const SubmitResultsScreen = () => {
           )}
           {fixtureDetails?.competitor_type === 'team' ? (
             <View className="mt-3 items-center">
-              <Text className="font-saira-semibold text-lg text-text-1">
+              <Text className="font-tektur-semibold text-lg text-text-1">
                 {fixtureDetails?.awayTeam?.abbreviation}
               </Text>
-              <Text className="text-center font-saira-semibold text-lg text-text-2">
+              <Text className="text-center font-tektur-semibold text-lg text-text-2">
                 {fixtureDetails?.awayTeam?.display_name}
               </Text>
             </View>
           ) : (
             <View className="flex-1 items-center">
-              <Text className="text-center font-saira-medium text-lg text-text-1">
+              <Text className="text-center font-tektur-medium text-lg text-text-1">
                 {fixtureDetails?.awayPlayer?.first_name}
               </Text>
-              <Text className="text-center font-saira-medium text-lg text-text-2">
+              <Text className="text-center font-tektur-medium text-lg text-text-2">
                 {fixtureDetails?.awayPlayer?.surname}
               </Text>
             </View>
@@ -545,6 +545,38 @@ const SubmitResultsScreen = () => {
         : homeCount === 1 && awayCount === 1;
 
     const dragDisabled = !!activeFrameId || (amendMode && !isDisputed);
+
+    const PlayerSlot = ({ player, context, opponent, onPress, activeFrame, updateActiveFrame }) => (
+      <View
+        style={{ borderRadius: 18 }}
+        className="flex-1 flex-col gap-2 border border-theme-gray-5 p-1">
+        <Pressable
+          onPress={onPress}
+          className="flex-1 flex-row items-center justify-start gap-3 rounded-2xl bg-bg-grouped-3 p-2">
+          {player ? (
+            <Avatar size={32} borderRadius={8} player={player} />
+          ) : (
+            <View className="ml-2 h-8 w-8 flex-row items-center justify-center">
+              <UserPlus size={22} color={themeColors.secondaryText} />
+            </View>
+          )}
+
+          <Text
+            numberOfLines={1}
+            className={`text-center font-saira-medium ${player ? 'text-text-1' : 'text-text-2'}`}>
+            {getPlayerName(player)}
+          </Text>
+        </Pressable>
+
+        {player && opponent && (
+          <PlayerStatSelector
+            activeFrame={activeFrame}
+            updateActiveFrame={updateActiveFrame}
+            context={context}
+          />
+        )}
+      </View>
+    );
 
     return (
       <ScaleDecorator>
@@ -583,12 +615,12 @@ const SubmitResultsScreen = () => {
                 style={{ borderTopRightRadius: 14, borderTopLeftRadius: 14 }}
                 className={`gap-2 border-b border-theme-gray-5 ${amendMode && isDisputed ? 'bg-theme-red' : ''} pb-4`}>
                 <Text
-                  className={`mt-6 w-full px-5 ${isActive ? 'text-left' : 'text-center'} font-saira-semibold text-xl ${isDisputed ? 'text-white' : 'text-text-2'}`}>
+                  className={`mt-6 w-full px-5 ${isActive ? 'text-left' : 'text-center'} font-tektur-medium text-xl ${isDisputed ? 'text-white' : 'text-text-2'}`}>
                   {index}
                   {`${getOrdinalSuffix(index)} Frame ${fixtureDetails?.is_disputed ? '- Disputed' : ''}`}
                 </Text>
                 {amendMode && isDisputed && (
-                  <Text className="px-5 text-left font-saira text-sm text-white">
+                  <Text className="px-5 text-left font-tektur text-sm text-white">
                     {frame?.comment}
                   </Text>
                 )}
@@ -621,7 +653,12 @@ const SubmitResultsScreen = () => {
                         });
                       }
                     }}
-                    className="flex-row items-center gap-2 rounded-xl border border-theme-green bg-theme-green p-2 px-4">
+                    style={{
+                      backgroundColor: themeColors.success.primary,
+                      borderColor: themeColors.success.secondary,
+                      borderWidth: 1,
+                    }}
+                    className="flex-row items-center gap-2 rounded-xl p-2 px-4">
                     <Ionicons name="checkmark-outline" size={24} color={'white'} />
                     <Text className="font-saira-medium text-lg text-white">Save</Text>
                   </Pressable>
@@ -631,7 +668,12 @@ const SubmitResultsScreen = () => {
                         setFrameToDelete(frame.tempId);
                         setConfirmDeleteModalVisible(true);
                       }}
-                      className="rounded-xl border border-theme-red/50 bg-theme-red/80 p-2">
+                      style={{
+                        backgroundColor: themeColors.error.primary,
+                        borderColor: themeColors.error.secondary,
+                        borderWidth: 1,
+                      }}
+                      className="rounded-xl p-2">
                       <Ionicons name="trash-outline" size={24} color={'white'} />
                     </Pressable>
                   )}
@@ -645,19 +687,19 @@ const SubmitResultsScreen = () => {
                       {
                         value: 'singles',
                         label: 'Singles',
-                        icon: <User size={14} color="#000" />,
+                        icon: <User size={14} color={themeColors.icon} />,
                         selectedIcon: <User size={14} color="#fff" />,
                       },
                       {
                         value: 'scotch-doubles',
                         label: 'Scotch Doubles',
-                        icon: <Users size={14} color="#000" />,
+                        icon: <Users size={14} color={themeColors.icon} />,
                         selectedIcon: <Users size={14} color="#fff" />,
                       },
                       {
                         value: 'standard-doubles',
                         label: 'Standard Doubles',
-                        icon: <Users size={14} color="#000" />,
+                        icon: <Users size={14} color={themeColors.icon} />,
                         selectedIcon: <Users size={14} color="#fff" />,
                       },
                     ]}
@@ -668,140 +710,51 @@ const SubmitResultsScreen = () => {
                   />
                 )}
 
-                <View className="flex-row gap-5">
-                  <View
-                    style={{ borderRadius: 18 }}
-                    className="flex-1 flex-col gap-2 border border-theme-gray-5 p-1">
-                    <Pressable
-                      onPress={() => {
-                        if (fixtureDetails?.competitor_type === 'individual') return;
-                        setEditingPlayer('homePlayer1');
-                        openSheet();
-                      }}
-                      className="flex-1 flex-row items-center justify-start gap-3 rounded-2xl bg-bg-2 p-2">
-                      {frame.homePlayer1 ? (
-                        <Avatar size={32} borderRadius={8} player={frame.homePlayer1} />
-                      ) : (
-                        <View className="ml-2 h-8 w-8 flex-row items-center justify-center">
-                          <UserPlus size={22} color={themeColors.secondaryText} />
-                        </View>
-                      )}
+                <View className="flex-col gap-3">
+                  {[1, 2].map((playerNumber) => {
+                    if (playerNumber === 2 && activeFrame?.frameType === 'singles') {
+                      return null;
+                    }
 
-                      <Text
-                        numberOfLines={1}
-                        className={`text-center ${frame.homePlayer1 ? 'font-saira-medium text-text-1' : 'font-saira-medium text-text-2'}`}>
-                        {getPlayerName(frame.homePlayer1)}
-                      </Text>
-                    </Pressable>
-                    {frame.homePlayer1 && frame.awayPlayer1 && (
-                      <PlayerStatSelector
-                        activeFrame={activeFrame}
-                        updateActiveFrame={updateActiveFrame}
-                        context="homePlayer1"
-                      />
-                    )}
-                  </View>
-                  <View
-                    style={{ borderRadius: 18 }}
-                    className="flex-1 flex-col gap-2 border border-theme-gray-5 p-1">
-                    <Pressable
-                      onPress={() => {
-                        if (fixtureDetails?.competitor_type === 'individual') return;
-                        setEditingPlayer('awayPlayer1');
-                        openSheet();
-                      }}
-                      className="flex-1 flex-row items-center justify-start gap-3 rounded-2xl bg-bg-2 p-2">
-                      {frame.awayPlayer1 ? (
-                        <Avatar size={32} borderRadius={8} player={frame.awayPlayer1} />
-                      ) : (
-                        <View className="ml-2 h-8 w-8 flex-row items-center justify-center">
-                          <UserPlus size={22} color={themeColors.secondaryText} />
-                        </View>
-                      )}
-                      <Text
-                        numberOfLines={1}
-                        className={`text-center ${frame.awayPlayer1 ? 'font-saira-medium text-text-1' : 'font-saira-medium text-text-2'}`}>
-                        {getPlayerName(frame.awayPlayer1)}
-                      </Text>
-                    </Pressable>
-                    {frame.homePlayer1 && frame.awayPlayer1 && (
-                      <PlayerStatSelector
-                        activeFrame={activeFrame}
-                        updateActiveFrame={updateActiveFrame}
-                        context="awayPlayer1"
-                      />
-                    )}
-                  </View>
+                    const homeContext = `homePlayer${playerNumber}`;
+                    const awayContext = `awayPlayer${playerNumber}`;
+
+                    const homePlayer = frame[homeContext];
+                    const awayPlayer = frame[awayContext];
+
+                    return (
+                      <View key={playerNumber} className="flex-row gap-5">
+                        <PlayerSlot
+                          player={homePlayer}
+                          context={homeContext}
+                          opponent={awayPlayer}
+                          activeFrame={activeFrame}
+                          updateActiveFrame={updateActiveFrame}
+                          onPress={() => {
+                            if (fixtureDetails?.competitor_type === 'individual') return;
+
+                            setEditingPlayer(homeContext);
+                            openSheet();
+                          }}
+                        />
+
+                        <PlayerSlot
+                          player={awayPlayer}
+                          context={awayContext}
+                          opponent={homePlayer}
+                          activeFrame={activeFrame}
+                          updateActiveFrame={updateActiveFrame}
+                          onPress={() => {
+                            if (fixtureDetails?.competitor_type === 'individual') return;
+
+                            setEditingPlayer(awayContext);
+                            openSheet();
+                          }}
+                        />
+                      </View>
+                    );
+                  })}
                 </View>
-                {activeFrame?.frameType !== 'singles' && (
-                  <View className="mt-3 flex-col">
-                    <View className="flex-row gap-5">
-                      <View
-                        style={{ borderRadius: 18 }}
-                        className="flex-1 flex-col gap-2 border border-theme-gray-5 p-1">
-                        <Pressable
-                          onPress={() => {
-                            if (fixtureDetails?.competitor_type === 'individual') return;
-                            setEditingPlayer('homePlayer2');
-                            openSheet();
-                          }}
-                          className="flex-1 flex-row items-center justify-start gap-3 rounded-2xl bg-bg-2 p-2">
-                          {frame.homePlayer2 ? (
-                            <Avatar size={32} borderRadius={8} player={frame.homePlayer2} />
-                          ) : (
-                            <View className="ml-2 h-8 w-8 flex-row items-center justify-center">
-                              <UserPlus size={22} color={themeColors.secondaryText} />
-                            </View>
-                          )}
-                          <Text
-                            numberOfLines={1}
-                            className={`text-center ${frame.homePlayer2 ? 'font-saira-medium text-text-1' : 'font-saira-medium text-text-2'}`}>
-                            {getPlayerName(frame.homePlayer2)}
-                          </Text>
-                        </Pressable>
-                        {frame.homePlayer2 && frame.awayPlayer2 && (
-                          <PlayerStatSelector
-                            activeFrame={activeFrame}
-                            updateActiveFrame={updateActiveFrame}
-                            context="homePlayer2"
-                          />
-                        )}
-                      </View>
-                      <View
-                        style={{ borderRadius: 18 }}
-                        className="flex-1 flex-col gap-2 border border-theme-gray-5 p-1">
-                        <Pressable
-                          onPress={() => {
-                            if (fixtureDetails?.competitor_type === 'individual') return;
-                            setEditingPlayer('awayPlayer2');
-                            openSheet();
-                          }}
-                          className="flex-1 flex-row items-center justify-start gap-3 rounded-2xl bg-bg-2 p-2">
-                          {frame.awayPlayer2 ? (
-                            <Avatar size={32} borderRadius={8} player={frame.awayPlayer2} />
-                          ) : (
-                            <View className="ml-2 h-8 w-8 flex-row items-center justify-center">
-                              <UserPlus size={22} color={themeColors.secondaryText} />
-                            </View>
-                          )}
-                          <Text
-                            numberOfLines={1}
-                            className={`text-center ${frame.awayPlayer2 ? 'font-saira-medium text-text-1' : 'font-saira-medium text-text-2'}`}>
-                            {getPlayerName(frame.awayPlayer2)}
-                          </Text>
-                        </Pressable>
-                        {frame.awayPlayer2 && frame.homePlayer2 && (
-                          <PlayerStatSelector
-                            activeFrame={activeFrame}
-                            updateActiveFrame={updateActiveFrame}
-                            context="awayPlayer2"
-                          />
-                        )}
-                      </View>
-                    </View>
-                    <View className="flex-row gap-5 pb-2"></View>
-                  </View>
-                )}
 
                 {isValidPlayers && (
                   <View className="flex-col items-center justify-center gap-3">
@@ -1050,7 +1003,7 @@ const SubmitResultsScreen = () => {
       isAwayTeamPlayersLoading ? (
         <LoadingScreen />
       ) : (
-        <View className="flex-1 bg-bg-2">
+        <View className="flex-1 bg-bg-grouped-1">
           {/* ── DraggableFlatList replaces the old ScrollView + .map() ── */}
           <DraggableFlatList
             // Display in reverse so newest frame is at the top
@@ -1147,9 +1100,7 @@ const SubmitResultsScreen = () => {
         snapPoints={['90%']}
         footerComponent={(props) => (
           <BottomSheetFooter {...props}>
-            <View
-              style={{ paddingBottom: 140 }}
-              className="w-full rounded-t-3xl bg-bg-grouped-3 p-6">
+            <View style={{ paddingBottom: 140 }} className="w-full rounded-t-3xl bg-bg-3 p-6">
               <CTAButton text="Save" type="brand" callbackFn={handlePlayerSave} />
             </View>
           </BottomSheetFooter>
@@ -1161,7 +1112,7 @@ const SubmitResultsScreen = () => {
             paddingBottom: 8,
             borderBottomWidth: 1,
             borderBottomColor: themeColors.border,
-            backgroundColor: themeColors.bgGrouped2,
+            backgroundColor: themeColors.bg2,
             zIndex: 10,
             flexDirection: 'row',
             alignItems: 'center',
@@ -1190,7 +1141,7 @@ const SubmitResultsScreen = () => {
                   if (isAlreadySelected) return;
                   setSelectedPlayer(player);
                 }}
-                className={`mb-3 flex-row items-center gap-3 rounded-2xl border-2 bg-bg-2 p-2 ${
+                className={`mb-3 flex-row items-center gap-3 rounded-2xl border-2 bg-bg-3 p-2 ${
                   selectedPlayer?.id === player.id
                     ? 'border-brand'
                     : isAlreadySelected
