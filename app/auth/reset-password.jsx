@@ -105,6 +105,11 @@ const ResetPassword = () => {
     if (error) {
       Alert.alert('Error', error.message);
     } else {
+      // The recovery session from the reset link is still active here --
+      // sign out of it so landing on /auth/login actually shows the login
+      // form instead of the auth layout's own redirect immediately sending
+      // an authenticated user straight into (main) again.
+      await supabase.auth.signOut();
       Alert.alert('Success', 'Password updated! Please log in.');
       router.replace('/auth/login');
     }
