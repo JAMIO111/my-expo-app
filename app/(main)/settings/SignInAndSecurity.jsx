@@ -100,6 +100,7 @@ const PROVIDERS = [
     key: 'apple',
     label: 'Apple',
     icon: require('../../assets/apple-logo.png'),
+    iconDark: require('../../assets/apple-logo-dark.png'),
     canUnlink: true,
   },
 ];
@@ -110,7 +111,7 @@ const PROVIDERS = [
 // see the same live identity list this section links/unlinks, so there's
 // one shared source of truth instead of two copies that can drift apart.
 const ConnectedLoginsSection = ({ identities, refreshIdentities }) => {
-  const { colors: themeColors } = useTheme();
+  const { colors: themeColors, isDark } = useTheme();
   const styles = createStyles(themeColors);
   const [loadingKey, setLoadingKey] = useState(null);
   const [confirmUnlink, setConfirmUnlink] = useState(null);
@@ -239,7 +240,7 @@ const ConnectedLoginsSection = ({ identities, refreshIdentities }) => {
 
   return (
     <>
-      <Text className="pb-3 pl-1 font-saira-bold text-xl">Social Logins</Text>
+      <Text className="pb-3 pl-1 font-saira-bold text-xl text-text-1">Social Logins</Text>
       <View style={styles.providerList}>
         {PROVIDERS.map((provider, index) => {
           const connected = isConnected(provider.key);
@@ -257,8 +258,8 @@ const ConnectedLoginsSection = ({ identities, refreshIdentities }) => {
                     <IonIcons name="mail-outline" size={28} color={provider.color} />
                   ) : (
                     <Image
-                      source={provider.icon}
-                      style={{ width: 28, height: 28, tintColor: provider.color, paddingBottom: 2 }}
+                      source={isDark && provider.iconDark ? provider.iconDark : provider.icon}
+                      style={{ width: 28, height: 32, tintColor: provider.color, paddingBottom: 2 }}
                     />
                   )}
                 </View>
@@ -322,7 +323,8 @@ const ConnectedLoginsSection = ({ identities, refreshIdentities }) => {
                         opacity: pressed ? 0.7 : 1,
                       },
                     ]}>
-                    <View className="w-32 flex-row items-center justify-center gap-2 rounded-xl border p-2">
+                    <View
+                      className={`w-32 flex-row items-center justify-center gap-2 rounded-xl border ${canUnlink ? 'border-theme-red' : 'border-theme-blue'} p-2`}>
                       {canUnlink ? (
                         <Unlink size={16} color={themeColors.error.primary} />
                       ) : (
@@ -358,9 +360,10 @@ const ConnectedLoginsSection = ({ identities, refreshIdentities }) => {
                         opacity: pressed ? 0.7 : 1,
                       },
                     ]}>
-                    <View className="w-32 flex-row items-center justify-center gap-2 rounded-xl border p-2">
-                      <Link size={16} color={themeColors.info.primary} />
-                      <Text style={[styles.providerBadgeText, { color: themeColors.info.primary }]}>
+                    <View className="w-32 flex-row items-center justify-center gap-2 rounded-xl border border-theme-blue p-2">
+                      <Link size={16} color={themeColors.info.secondary} />
+                      <Text
+                        style={[styles.providerBadgeText, { color: themeColors.info.secondary }]}>
                         Link Now
                       </Text>
                     </View>
@@ -583,7 +586,7 @@ const SignInAndSecurity = () => {
              "password management is handled by your {provider} account" --
              but that's not true once this panel can add a password to any
              account, so it's replaced rather than kept as an alternative. */}
-        <Text className="pb-3 pl-1 font-saira-bold text-xl">
+        <Text className="pb-3 pl-1 font-saira-bold text-xl text-text-1">
           {hasEmailIdentity ? 'Your Password' : 'Add a Password'}
         </Text>
         <View style={styles.passwordSection}>
@@ -742,7 +745,7 @@ const SignInAndSecurity = () => {
         </View>
 
         {/* ── Danger zone ── */}
-        <View className="mt-8 rounded-3xl border border-theme-red bg-bg-1 p-4 pb-2">
+        <View className="mt-8 rounded-3xl border border-theme-red bg-bg-grouped-2 p-4 pb-2">
           <Text
             className="pb-3 pl-1 font-saira-bold text-xl"
             style={{ color: themeColors.error.primary, marginTop: 8 }}>
@@ -822,7 +825,7 @@ const createStyles = (themeColors) =>
   StyleSheet.create({
     // ── Provider list ──
     providerList: {
-      backgroundColor: themeColors.bg1,
+      backgroundColor: themeColors.bgGrouped2,
       borderRadius: 24,
       overflow: 'hidden',
       marginBottom: 36,
@@ -832,14 +835,8 @@ const createStyles = (themeColors) =>
       flexDirection: 'row',
       alignItems: 'center',
       paddingHorizontal: 16,
-      paddingVertical: 14,
+      paddingVertical: 10,
       gap: 12,
-    },
-
-    providerDivider: {
-      height: 1,
-      backgroundColor: themeColors.border,
-      marginHorizontal: 16,
     },
 
     providerIconWrap: {
@@ -879,7 +876,7 @@ const createStyles = (themeColors) =>
 
     // ── Password section ──
     passwordSection: {
-      backgroundColor: themeColors.bg1,
+      backgroundColor: themeColors.bgGrouped2,
       borderRadius: 24,
     },
 
