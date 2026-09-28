@@ -129,10 +129,7 @@ const LeagueConfig = () => {
                 .eq('id', currentRole?.district?.id)
                 .select();
 
-              if (error) {
-                console.error(error);
-                return;
-              }
+              if (error) throw error;
 
               await refetch();
             }}
@@ -150,10 +147,7 @@ const LeagueConfig = () => {
                 .eq('id', currentRole?.district?.id)
                 .select();
 
-              if (error) {
-                console.error(error);
-                return;
-              }
+              if (error) throw error;
 
               await refetch();
             }}
@@ -175,10 +169,7 @@ const LeagueConfig = () => {
                 .eq('id', currentRole?.district?.id)
                 .select();
 
-              if (error) {
-                console.error(error);
-                return;
-              }
+              if (error) throw error;
 
               await refetch();
             }}

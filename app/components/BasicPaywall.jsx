@@ -22,6 +22,7 @@ import {
   useRevenueCat,
 } from '@contexts/RevenueCatProvider';
 import { useTheme } from '@contexts/ThemeProvider';
+import Toast from 'react-native-toast-message';
 
 const reviews = [
   {
@@ -73,7 +74,12 @@ const BasicPaywall = () => {
   // ─── RC hooks ────────────────────────────────────────────────────────────────
   const { offerings, fetch: fetchOfferings, isLoading: offeringsLoading } = useOfferings();
   const { customerInfo } = useCustomerInfo();
-  const { purchasePackage: rcPurchase, restorePurchases: rcRestore } = usePurchase();
+  const {
+    purchasePackage: rcPurchase,
+    restorePurchases: rcRestore,
+    error: purchaseError,
+    clearError: clearPurchaseError,
+  } = usePurchase();
   const { isPro, isCore } = useRevenueCat();
 
   console.log('Offerings in Paywall:', offerings);
@@ -156,6 +162,18 @@ const BasicPaywall = () => {
       )
     : 0;
 
+  // RevenueCatProvider never throws -- it stores failures in `error` (user
+  // cancellations are deliberately not stored), so surface them here.
+  useEffect(() => {
+    if (!purchaseError) return;
+    Toast.show({
+      type: 'error',
+      text1: 'Purchase failed',
+      text2: purchaseError.message,
+    });
+    clearPurchaseError();
+  }, [purchaseError]);
+
   // ─── Actions ──────────────────────────────────────────────────────────────────
   const handleSubscribe = async (plan) => {
     if (!plan?.package) return;
@@ -163,7 +181,8 @@ const BasicPaywall = () => {
     try {
       // RC automatically applies the intro offer when the user is eligible —
       // no separate "purchase with trial" call is needed.
-      await rcPurchase(plan.package);
+      const info = await rcPurchase(plan.package);
+      if (info) Toast.show({ type: 'success', text1: 'Subscription started' });
     } finally {
       setIsSubscribing(false);
     }
@@ -172,7 +191,9 @@ const BasicPaywall = () => {
   const handleRestore = async () => {
     setIsRestoring(true);
     try {
-      return await rcRestore();
+      const info = await rcRestore();
+      if (info) Toast.show({ type: 'success', text1: 'Purchases Restored' });
+      return info;
     } finally {
       setIsRestoring(false);
     }

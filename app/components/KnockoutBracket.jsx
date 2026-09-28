@@ -536,6 +536,7 @@ export default function KnockoutBracket({ competitionInstanceId }) {
                     );
                   } catch (error) {
                     console.error('Failed to update neutral venue:', error);
+                    throw error;
                   } finally {
                     setIsUpdatingNeutralVenue(false);
                   }

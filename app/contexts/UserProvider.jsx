@@ -5,6 +5,7 @@ import * as Linking from 'expo-linking';
 import { useAuthUserProfile } from '@hooks/useAuthUserProfile2';
 import Purchases from 'react-native-purchases'; // ✅ added
 import { syncPushToken } from '@/lib/pushNotifications';
+import Toast from 'react-native-toast-message';
 
 WebBrowser.maybeCompleteAuthSession();
 
@@ -172,10 +173,7 @@ export const UserProvider = ({ children }) => {
         },
       });
 
-      if (error) {
-        console.log('[AUTH] OAuth error:', error);
-        return;
-      }
+      if (error) throw error;
 
       const result = await WebBrowser.openAuthSessionAsync(data.url, redirectUri);
       console.log('[AUTH] Browser result:', result);
@@ -184,7 +182,12 @@ export const UserProvider = ({ children }) => {
         await handleAuthRedirect(result.url);
       }
     } catch (err) {
-      console.error('[AUTH] OAuth crash:', err);
+      console.error('[AUTH] OAuth failed:', err);
+      Toast.show({
+        type: 'error',
+        text1: `Couldn't sign in with ${provider.charAt(0).toUpperCase() + provider.slice(1)}`,
+        text2: err.message,
+      });
     }
   };
 

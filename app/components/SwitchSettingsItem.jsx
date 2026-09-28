@@ -2,6 +2,7 @@ import { Pressable, Text, View } from 'react-native';
 import { useTheme } from '@contexts/ThemeProvider';
 import { useEffect, useState } from 'react';
 import { Switch } from 'react-native-gesture-handler';
+import Toast from 'react-native-toast-message';
 import { iconMap } from './SettingsItem';
 
 const SwitchSettingsItem = ({
@@ -39,7 +40,13 @@ const SwitchSettingsItem = ({
       setEnabled(newValue);
     } catch (error) {
       // Revert: the write failed, so don't show the toggle as changed.
+      console.error(`[SwitchSettingsItem] Failed to save "${title}":`, error);
       setEnabled(enabled);
+      Toast.show({
+        type: 'error',
+        text1: 'Failed to save change',
+        text2: error?.message,
+      });
     } finally {
       setSaving(false);
     }

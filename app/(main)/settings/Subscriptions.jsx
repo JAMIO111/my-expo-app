@@ -90,6 +90,11 @@ const Subscriptions = () => {
       await Purchases.showManageSubscriptions();
     } catch (err) {
       console.error('Failed to open manage subscriptions:', err);
+      Toast.show({
+        type: 'error',
+        text1: "Couldn't open subscription management",
+        text2: err.message,
+      });
     } finally {
       setManaging(false);
     }

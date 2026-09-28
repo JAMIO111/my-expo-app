@@ -20,7 +20,7 @@ const TeamCrest = () => {
     setIsSaving(true);
     // Save the changes to the database
     try {
-      await supabase
+      const { error } = await supabase
         .from('Teams')
         .update({
           crest: {
@@ -31,6 +31,8 @@ const TeamCrest = () => {
           },
         })
         .eq('id', currentRole?.team?.id);
+
+      if (error) throw error;
 
       await refetch();
       await queryClient.invalidateQueries(['TeamProfile', currentRole?.team?.id]);
