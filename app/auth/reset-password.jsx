@@ -2,9 +2,9 @@ import React, { useEffect, useState } from 'react';
 import { View, TextInput, Alert, Text, Pressable } from 'react-native';
 import { supabase } from '@/lib/supabase';
 import { useRouter } from 'expo-router';
-import * as Linking from 'expo-linking';
 import CTAButton from '@components/CTAButton';
 import IonIcons from 'react-native-vector-icons/Ionicons';
+import { getLastDeepLink, subscribeDeepLink } from '@lib/lastDeepLink';
 
 // Supabase's recovery link delivers the tokens as a URL *fragment*
 // (#access_token=...&refresh_token=...&type=recovery), not query params, so
@@ -33,44 +33,59 @@ const ResetPassword = () => {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [sessionReady, setSessionReady] = useState(false);
-  const [tokenError, setTokenError] = useState(false);
+  const [tokenError, setTokenError] = useState(null); // null | string reason
   const router = useRouter();
 
   useEffect(() => {
     let mounted = true;
 
     const applyTokensFromUrl = async (url) => {
-      const { access_token, refresh_token } = parseFragmentParams(url);
-      if (!access_token || !refresh_token) return false;
+      console.log('[ResetPassword] Checking URL for tokens:', url);
+      if (!url) return 'No reset link URL was received.';
 
-      const { error } = await supabase.auth.setSession({ access_token, refresh_token });
+      const params = parseFragmentParams(url);
+
+      // Supabase embeds its own reason here (e.g. otp_expired) when the link
+      // itself was rejected server-side, instead of returning tokens.
+      if (params.error) {
+        return params.error_description || params.error || 'This reset link was rejected.';
+      }
+
+      if (!params.access_token || !params.refresh_token) {
+        return 'No reset tokens were found in this link.';
+      }
+
+      const { error } = await supabase.auth.setSession({
+        access_token: params.access_token,
+        refresh_token: params.refresh_token,
+      });
       if (error) {
         console.error('[ResetPassword] Failed to set session from reset link:', error);
-        return false;
+        return error.message;
       }
-      return true;
+      return null; // success
     };
 
-    (async () => {
-      const initialUrl = await Linking.getInitialURL();
-      const ok = await applyTokensFromUrl(initialUrl);
+    const tryUrl = async (url) => {
+      const reason = await applyTokensFromUrl(url);
       if (!mounted) return;
-      if (ok) setSessionReady(true);
-      else setTokenError(true);
-    })();
-
-    const subscription = Linking.addEventListener('url', async ({ url }) => {
-      const ok = await applyTokensFromUrl(url);
-      if (!mounted) return;
-      if (ok) {
+      if (reason) {
+        setTokenError(reason);
+      } else {
         setSessionReady(true);
-        setTokenError(false);
+        setTokenError(null);
       }
-    });
+    };
+
+    tryUrl(getLastDeepLink());
+
+    // Covers the same URL arriving again, or a second link tapped while
+    // this screen is already open.
+    const unsubscribe = subscribeDeepLink(tryUrl);
 
     return () => {
       mounted = false;
-      subscription.remove();
+      unsubscribe();
     };
   }, []);
 
@@ -97,10 +112,11 @@ const ResetPassword = () => {
 
   if (tokenError) {
     return (
-      <View style={{ padding: 20 }}>
+      <View style={{ padding: 20, gap: 8 }}>
         <Text className="text-text-1">
           This password reset link is invalid or has expired. Please request a new one.
         </Text>
+        <Text className="text-text-2">({tokenError})</Text>
       </View>
     );
   }

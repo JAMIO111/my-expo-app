@@ -1,4 +1,8 @@
 import '../global.css';
+// Side-effect import: starts capturing deep links immediately, before any
+// navigation happens -- see app/lib/lastDeepLink.js for why this can't just
+// live inside the screen (reset-password) that needs it.
+import '@lib/lastDeepLink';
 import { Slot } from 'expo-router';
 import { View } from 'react-native';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
