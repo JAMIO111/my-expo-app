@@ -131,7 +131,7 @@ const ConnectedLoginsSection = ({ identities, refreshIdentities }) => {
         throw new Error('No identity token returned from Apple');
       }
 
-      const { error } = await supabase.auth.linkIdentityWithIdToken({
+      const { error } = await supabase.auth.linkIdentity({
         provider: 'apple',
         token: credential.identityToken,
       });
@@ -345,8 +345,9 @@ const ConnectedLoginsSection = ({ identities, refreshIdentities }) => {
                   <Pressable
                     onPress={() =>
                       // Apple needs its own native sign-in sheet
-                      // (AppleAuthentication.signInAsync + linkIdentityWithIdToken)
-                      // -- the generic handleLink below opens a web browser OAuth
+                      // (AppleAuthentication.signInAsync + linkIdentity with the
+                      // resulting id token) -- the generic handleLink below opens
+                      // a web browser OAuth
                       // session instead, which isn't how Apple linking works here.
                       provider.key === 'apple' ? handleLinkApple() : handleLink(provider.key)
                     }
