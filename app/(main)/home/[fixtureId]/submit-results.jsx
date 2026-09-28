@@ -43,6 +43,7 @@ const SubmitResultsScreen = () => {
   const [confirmDeleteModalVisible, setConfirmDeleteModalVisible] = useState(false);
   const [confirmSubmitModalVisible, setConfirmSubmitModalVisible] = useState(false);
   const [forfeitModalVisible, setForfeitModalVisible] = useState(false);
+  const [isForfeiting, setIsForfeiting] = useState(false);
   const [frameToDelete, setFrameToDelete] = useState(null);
   const [editingPlayer, setEditingPlayer] = useState(null);
   const [selectedPlayer, setSelectedPlayer] = useState(null);
@@ -390,13 +391,13 @@ const SubmitResultsScreen = () => {
     setForfeitModalVisible(false);
   };
 
-  const handleConfirmForfeit = async () => {
+  const handleConfirmForfeit = async ({ side, reason }) => {
     setIsForfeiting(true);
     try {
       const { data, error } = await supabase.rpc('forfeit_fixture', {
         p_fixture_id: fixtureId,
         p_side: side,
-        p_reason: forfeitReason || null,
+        p_reason: reason || null,
         p_admin: currentRole?.role === 'admin' ? true : false,
       });
 
@@ -410,7 +411,7 @@ const SubmitResultsScreen = () => {
       router.back();
     } catch (err) {
       console.error(err);
-      Toast.show({ type: 'error', text1: 'Error', text2: 'Failed to request forfeit.' });
+      Toast.show({ type: 'error', text1: 'Failed to request forfeit', text2: err.message });
     } finally {
       setIsForfeiting(false);
       setForfeitModalVisible(false);
@@ -1159,6 +1160,7 @@ const SubmitResultsScreen = () => {
             visible={forfeitModalVisible}
             onCancel={handleCancelForfeit}
             onConfirm={handleConfirmForfeit}
+            loading={isForfeiting}
           />
         </BottomSheetScrollView>
       </BottomSheetWrapper>

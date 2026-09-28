@@ -6,8 +6,10 @@ import { Ionicons } from '@expo/vector-icons';
 import CTAButton from './CTAButton';
 import SlidingTabButton from './SlidingTabButton';
 
-const ForfeitRequestModal = ({ visible, onCancel, onConfirm }) => {
-  const [forfeitSide, setForfeitSide] = useState('home');
+const ForfeitRequestModal = ({ visible, onCancel, onConfirm, loading = false }) => {
+  // SlidingTabButton speaks 'left' | 'right'; the forfeit_fixture RPC wants 'home' | 'away'.
+  const [tab, setTab] = useState('left');
+  const [reason, setReason] = useState('');
   return (
     <Modal
       visible={visible}
@@ -62,7 +64,14 @@ const ForfeitRequestModal = ({ visible, onCancel, onConfirm }) => {
 
             {/* Buttons */}
             <View className="mt-6 gap-3">
-              <CTAButton text="Request Forfeit" type="error" callbackFn={onConfirm} />
+              <CTAButton
+                text={loading ? 'Requesting...' : 'Request Forfeit'}
+                type="error"
+                disabled={loading}
+                callbackFn={() =>
+                  onConfirm({ side: tab === 'left' ? 'home' : 'away', reason: reason.trim() })
+                }
+              />
 
               <CTAButton text="Cancel" type="default" callbackFn={onCancel} />
             </View>
