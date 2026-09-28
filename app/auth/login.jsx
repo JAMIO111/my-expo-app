@@ -17,7 +17,6 @@ import { Link } from 'expo-router';
 import { useFonts } from 'expo-font';
 import { Michroma_400Regular } from '@expo-google-fonts/michroma';
 import { supabase } from '@/lib/supabase';
-import * as Linking from 'expo-linking';
 import { useUser } from '@contexts/UserProvider';
 import Purchases from 'react-native-purchases'; // ✅ default import, not named
 
@@ -51,44 +50,15 @@ const LoginPage = () => {
     ]).start();
   }, []);
 
-  // ─── OAuth deep link handler ──────────────────────────────────────────────────
-  useEffect(() => {
-    const handleUrl = async (event) => {
-      try {
-        const { url } = event;
-
-        const { data, error } = await supabase.auth.getSessionFromUrl({ url });
-        if (error) throw error;
-
-        const session = data.session;
-        if (!session) return;
-
-        const userId = session.user.id;
-
-        // ✅ Log in to RC after successful OAuth
-        await Purchases.logIn(userId);
-
-        const { data: profile, error: profileError } = await supabase
-          .from('Players')
-          .select('onboarding')
-          .eq('auth_id', userId)
-          .single();
-
-        if (profileError) throw profileError;
-      } catch (err) {
-        console.error('OAuth redirect error:', err);
-      }
-    };
-
-    const subscription = Linking.addEventListener('url', handleUrl);
-
-    (async () => {
-      const initialUrl = await Linking.getInitialURL();
-      if (initialUrl) handleUrl({ url: initialUrl });
-    })();
-
-    return () => subscription.remove();
-  }, []);
+  // Note: OAuth redirects (Google/Facebook via signInWithProvider, Apple via
+  // AppleSignInButton) are handled by UserProvider.jsx's own auth listener --
+  // there used to be a second deep-link handler here too, but it called
+  // supabase.auth.getSessionFromUrl(), a method that doesn't exist in
+  // supabase-js v2 (removed from v1), so it threw and did nothing on every
+  // redirect. Removed rather than fixed into a working duplicate: having two
+  // places set the session from the same URL is exactly the kind of race
+  // this app has had bugs from elsewhere (see AppRealtimeProvider/UserProvider
+  // and RevenueCatProvider/UserProvider's duplicate identity management).
 
   // ─── Email / password login ───────────────────────────────────────────────────
   const handleLogin = async () => {

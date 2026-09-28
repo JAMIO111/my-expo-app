@@ -6,7 +6,6 @@ import {
   StyleSheet,
   Image,
   Pressable,
-  Alert,
   Animated,
   Easing,
   ScrollView,
@@ -14,15 +13,15 @@ import {
 } from 'react-native';
 import { supabase } from '@/lib/supabase';
 import { useRouter, Link } from 'expo-router';
-import { makeRedirectUri } from 'expo-auth-session';
-import * as WebBrowser from 'expo-web-browser';
 import SafeViewWrapper from '@components/SafeViewWrapper';
 import Purchases from 'react-native-purchases'; // ✅ default import, not named
 import Toast from 'react-native-toast-message';
 import AppleSignInButton from '@components/AppleSignInButton';
+import { useUser } from '@contexts/UserProvider';
 
 const SignUpPage = () => {
   const router = useRouter();
+  const { signInWithProvider } = useUser();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -91,70 +90,11 @@ const SignUpPage = () => {
     }
   };
 
-  const signInWithProvider = async (provider) => {
-    try {
-      const redirectTo = makeRedirectUri({
-        scheme: 'breakroom',
-        path: 'auth',
-        useProxy: true, // true in Expo Go, false for production builds
-      });
-
-      const { data, error } = await supabase.auth.signInWithOAuth({
-        provider, // 'google' | 'facebook'
-        options: { redirectTo },
-      });
-
-      if (error) throw error;
-
-      if (data?.url) {
-        const result = await WebBrowser.openAuthSessionAsync(data.url, redirectTo);
-
-        if (result.type === 'success') {
-          // ✅ Session should now be set by Supabase after the redirect
-          const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
-
-          if (sessionError) throw sessionError;
-
-          if (sessionData?.session?.user) {
-            await Purchases.logIn(sessionData.session.user.id);
-          }
-        } else if (result.type === 'cancel' || result.type === 'dismiss') {
-          // User backed out of the auth flow — nothing to do
-          console.log(`${provider} sign-in cancelled`);
-        }
-      }
-    } catch (err) {
-      console.error(`${provider} login error`, err);
-      Alert.alert('Login Error', err.message || 'Something went wrong');
-    }
-  };
-
-  const signInWithGoogle = async () => {
-    try {
-      // Use proxy for dev (Expo Go), scheme for production
-      const redirectTo = makeRedirectUri({
-        scheme: 'breakroom',
-        path: 'auth',
-        useProxy: false, // true in Expo Go
-      });
-
-      const { data, error } = await supabase.auth.signInWithOAuth({
-        provider: 'google',
-        options: { redirectTo },
-      });
-
-      if (error) throw error;
-
-      // Open the system browser
-      if (data?.url) {
-        const result = await WebBrowser.openAuthSessionAsync(data.url, redirectTo);
-        console.log('OAuth result', result);
-      }
-    } catch (err) {
-      console.error('Google login error', err);
-      Alert.alert('Login Error', err.message || 'Something went wrong');
-    }
-  };
+  // Facebook and Google both go through UserProvider's signInWithProvider --
+  // there used to be two separate, subtly different local implementations
+  // here (different useProxy settings, and the Google one never called
+  // Purchases.logIn after a successful sign-in), instead of reusing the one
+  // login.jsx already uses correctly.
 
   return (
     <Animated.View
@@ -257,7 +197,7 @@ const SignUpPage = () => {
 
             <Pressable
               className="mt-4 h-16 flex-row items-center justify-center gap-2 rounded-xl border border-border-color bg-input-background"
-              onPress={() => signInWithGoogle()}>
+              onPress={() => signInWithProvider('google')}>
               <Image source={require('@assets/google-logo.png')} className="h-6 w-6" />
               <Text className="text-center text-xl font-semibold text-text-1">
                 Sign in with Google

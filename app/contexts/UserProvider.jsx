@@ -38,7 +38,27 @@ export const UserProvider = ({ children }) => {
       return;
     }
 
-    const params = Object.fromEntries(fragment.split('&').map((part) => part.split('=')));
+    // Split each pair on the *first* '=' only -- fragment.split('=') would
+    // truncate a token value that itself contains an '=' (e.g. base64
+    // padding), since Object.fromEntries only keeps the first two pieces.
+    // safeDecode falls back to the raw value instead of throwing on a
+    // malformed sequence, since these tokens aren't expected to need
+    // decoding in practice -- better to keep working than to start throwing
+    // here when the previous version never decoded at all.
+    const safeDecode = (value) => {
+      try {
+        return decodeURIComponent(value);
+      } catch {
+        return value;
+      }
+    };
+    const params = Object.fromEntries(
+      fragment.split('&').map((part) => {
+        const eq = part.indexOf('=');
+        if (eq === -1) return [safeDecode(part), ''];
+        return [safeDecode(part.slice(0, eq)), safeDecode(part.slice(eq + 1))];
+      })
+    );
 
     console.log('[AUTH] Parsed fragment:', params);
 
