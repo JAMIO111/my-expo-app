@@ -2,8 +2,10 @@ import { useEffect, useState } from 'react';
 import { Alert } from 'react-native';
 import * as AppleAuthentication from 'expo-apple-authentication';
 import { supabase } from '@/lib/supabase';
+import { useTheme } from '@contexts/ThemeProvider';
 
 export default function AppleSignInButton() {
+  const { isDark } = useTheme();
   const [isAvailable, setIsAvailable] = useState(false);
 
   useEffect(() => {
@@ -67,7 +69,11 @@ export default function AppleSignInButton() {
   return (
     <AppleAuthentication.AppleAuthenticationButton
       buttonType={AppleAuthentication.AppleAuthenticationButtonType.SIGN_IN}
-      buttonStyle={AppleAuthentication.AppleAuthenticationButtonStyle.BLACK}
+      buttonStyle={
+        isDark
+          ? AppleAuthentication.AppleAuthenticationButtonStyle.WHITE
+          : AppleAuthentication.AppleAuthenticationButtonStyle.BLACK
+      }
       cornerRadius={8}
       style={{
         width: '100%',
