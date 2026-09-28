@@ -104,7 +104,7 @@ const ProfilePage = () => {
                   <Ionicons name="earth" size={24} color="white" />
                   <Text className="text-center font-saira text-lg text-text-on-brand">Rank</Text>
                   <Text className="text-center font-saira-semibold text-2xl text-white">
-                    {isGlobalRankLoading ? '...' : globalRank?.rank ?? 'N/A'}
+                    {isGlobalRankLoading ? '...' : (globalRank?.rank ?? 'N/A')}
                   </Text>
                 </View>
               </View>
@@ -128,11 +128,13 @@ const ProfilePage = () => {
               />
             </View>
           </View>
-          <AdBanner />
+          <View className="my-6">
+            <AdBanner />
+          </View>
           <Heading text="Recently Earned Badges" className="mx-4 mb-2 mt-4" />
           <View
             style={{ borderRadius: 28 }}
-            className="mx-4 gap-2 border border-theme-gray-4 bg-bg-1 py-3">
+            className="mx-4 gap-2 border border-theme-gray-4 bg-bg-grouped-2 py-3">
             {recentBadges && recentBadges?.length > 0 ? (
               <ScrollView
                 horizontal
@@ -153,7 +155,7 @@ const ProfilePage = () => {
                   return (
                     <Pressable
                       onPress={() => router.push('/profile/badges')}
-                      className="flex-1 items-center rounded-2xl border border-theme-gray-5 bg-bg-2 shadow-sm"
+                      className="flex-1 items-center rounded-2xl border border-theme-gray-5 bg-bg-grouped-3 shadow-sm"
                       key={badge.id}>
                       <Image
                         source={iconSource}
@@ -166,9 +168,9 @@ const ProfilePage = () => {
                           borderBottomRightRadius: 14,
                         }}
                         className="mt-2 flex-row items-center gap-2 border-t border-theme-gray-4 bg-bg-1 p-2 py-1">
-                        <LockKeyholeOpen size={16} color={themeColors.secondaryText} />
+                        <LockKeyholeOpen size={14} color={themeColors.secondaryText} />
                         <Text
-                          className="text-center font-tektur-semibold text-text-2"
+                          className="text-center font-tektur-semibold text-sm text-text-2"
                           numberOfLines={2}
                           ellipsizeMode="tail">
                           {new Date(badge?.unlocked_at).toLocaleDateString()}

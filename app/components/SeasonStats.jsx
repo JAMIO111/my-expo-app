@@ -22,17 +22,13 @@ const SeasonStats = ({ homeTeam, awayTeam, fixtureDetails }) => {
 
   if (isLoading)
     return (
-      <View
-        style={{ borderWidth: 0.5 }}
-        className="rounded-3xl border border-theme-gray-4 bg-bg-3 p-8">
+      <View className="rounded-3xl bg-bg-grouped-2 p-8">
         <Text className="w-full text-center font-saira text-lg text-text-2">Loading...</Text>
       </View>
     );
   if (!standings || standings.standings.length < 2)
     return (
-      <View
-        style={{ borderWidth: 0.5 }}
-        className="rounded-3xl border border-theme-gray-4 bg-bg-3 p-8">
+      <View className="rounded-3xl bg-bg-grouped-2 p-8">
         <Text className="w-full text-center font-saira text-lg text-text-2">
           No Seasons stats available.
         </Text>
@@ -94,9 +90,7 @@ const SeasonStats = ({ homeTeam, awayTeam, fixtureDetails }) => {
   ];
 
   return (
-    <View
-      style={{ borderWidth: 0.5 }}
-      className="rounded-3xl border border-theme-gray-4 bg-bg-3 p-3">
+    <View className="rounded-3xl bg-bg-grouped-2 p-3">
       {/* Stat rows */}
       {statRows.map((stat, index) => (
         <StatCardCompare

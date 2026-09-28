@@ -14,17 +14,13 @@ const HeadToHead = ({ homeCompetitor, awayCompetitor, competitorType }) => {
 
   if (isLoading)
     return (
-      <View
-        style={{ borderWidth: 0.5 }}
-        className="rounded-3xl border border-theme-gray-4 bg-bg-3 p-8">
+      <View className="rounded-3xl bg-bg-3 p-8">
         <Text className="w-full text-center font-saira text-lg text-text-2">Loading...</Text>
       </View>
     );
   if (!data || data.length < 2)
     return (
-      <View
-        style={{ borderWidth: 0.5 }}
-        className="rounded-3xl border border-theme-gray-4 bg-bg-3 p-8">
+      <View className="rounded-3xl bg-bg-3 p-8">
         <Text className="w-full text-center font-saira text-lg text-text-2">
           No head-to-head data available.
         </Text>
@@ -76,9 +72,7 @@ const HeadToHead = ({ homeCompetitor, awayCompetitor, competitorType }) => {
   ];
 
   return (
-    <View
-      style={{ borderWidth: 0.5 }}
-      className="rounded-3xl border border-theme-gray-4 bg-bg-3 p-3 pb-5">
+    <View className="rounded-3xl bg-bg-3 p-3 pb-5">
       {/* Header */}
       <View className="mb-1 flex-row justify-between bg-bg-grouped-2 p-3">
         <View className="flex-1 flex-row items-center justify-start gap-3">
