@@ -12,9 +12,12 @@ const ForgotPassword = () => {
     // The app's registered scheme is "breakroom" (app.config.js), not
     // "Break-Room" -- a hardcoded string here meant the reset link in the
     // email could never actually open the app. Linking.createURL builds it
-    // from the real scheme, same as the OAuth redirect elsewhere.
+    // from the real scheme, same as the OAuth redirect elsewhere. The path
+    // has to match the actual route -- this file lives at
+    // app/auth/reset-password.jsx, so the route is /auth/reset-password,
+    // not /reset-password.
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: Linking.createURL('reset-password'),
+      redirectTo: Linking.createURL('auth/reset-password'),
     });
 
     if (error) {
