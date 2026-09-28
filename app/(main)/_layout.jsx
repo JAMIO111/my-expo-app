@@ -1,6 +1,5 @@
-import { View } from 'react-native';
 import '../../global.css'; // Ensure global styles are imported
-import { Slot, useRouter, useSegments } from 'expo-router';
+import { Stack, useRouter, useSegments } from 'expo-router';
 import { useEffect, useRef } from 'react';
 import { useUser } from '@contexts/UserProvider';
 import LoadingScreen from '../components/LoadingScreen';
@@ -85,10 +84,27 @@ const _layout = () => {
     return <LoadingScreen />;
   }
 
+  // A real Stack (not just <Slot />) so home/profile/teams/settings/etc. are
+  // screens on ONE shared navigator instead of independent root stacks each
+  // with their own push history. Without this, pushing from Profile or Teams
+  // into /settings lands in a completely separate native stack that has
+  // nothing behind it -- the in-app back button still works (it walks Expo
+  // Router's own JS history), but the native swipe-back gesture doesn't
+  // (there's nothing in *that* stack's own history to reveal). Each section
+  // keeps its own nested Stack for its internal navigation, unaffected.
   return (
-    <View className={`flex-1`}>
-      <Slot />
-    </View>
+    <Stack screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="home" />
+      <Stack.Screen name="profile" />
+      <Stack.Screen name="teams" />
+      <Stack.Screen name="my-leagues" />
+      <Stack.Screen name="competitions" />
+      <Stack.Screen name="rankings" />
+      <Stack.Screen name="settings" />
+      <Stack.Screen name="onboarding" options={{ animation: 'none' }} />
+      <Stack.Screen name="role-select" />
+      <Stack.Screen name="index" />
+    </Stack>
   );
 };
 
