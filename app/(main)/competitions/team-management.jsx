@@ -24,7 +24,7 @@ const TeamManagement = () => {
   const [managerType, setManagerType] = useState(null);
   const [selectedTeam, setSelectedTeam] = useState(null);
   const { currentRole, player } = useUser();
-  const { data: invites } = useChildTeamInvites(player?.id, currentRole?.team.id);
+  const { data: invites } = useChildTeamInvites(player?.id, currentRole?.team?.id);
 
   const { mutate: acceptInvite, isPending: isAccepting } = useAcceptTeamInvite();
   const { mutate: declineInvite, isPending: isDeclining } = useDeclineTeamInvite();

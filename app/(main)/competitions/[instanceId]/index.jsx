@@ -146,15 +146,16 @@ const index = () => {
     setSheetConfig(null);
   };
 
-  const visibleParticipants = competitionInstance?.CompetitionParticipants.filter((p) => {
-    const isOwn = p.team_id === currentRole?.team?.id || p.player_id === player?.id;
+  const visibleParticipants =
+    competitionInstance?.CompetitionParticipants?.filter((p) => {
+      const isOwn = p.team_id === currentRole?.team?.id || p.player_id === player?.id;
 
-    if (isAdmin) return true;
+      if (isAdmin) return true;
 
-    const publicStatuses = ['active', 'eliminated', 'champion', 'runner_up'];
+      const publicStatuses = ['active', 'eliminated', 'champion', 'runner_up'];
 
-    return publicStatuses.includes(p.status) || (p.status === 'requested' && isOwn);
-  });
+      return publicStatuses.includes(p.status) || (p.status === 'requested' && isOwn);
+    }) ?? [];
 
   console.log('Competition Instance Details:', competitionInstance);
 
@@ -540,8 +541,8 @@ const index = () => {
     {
       title: 'Gender',
       value:
-        competitionInstance?.gender.slice(0, 1).toUpperCase() +
-        competitionInstance?.gender.slice(1),
+        competitionInstance?.gender?.slice(0, 1).toUpperCase() +
+        competitionInstance?.gender?.slice(1),
       icon:
         competitionInstance?.gender === 'male'
           ? Mars

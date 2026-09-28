@@ -49,7 +49,7 @@ const LeagueHomeCard = ({ standings }) => {
         </Text>
         <Ioconicons name="chevron-forward" size={20} color={themeColors?.icon} />
       </View>
-      {standings === undefined || standings?.standings.length === 0 ? (
+      {standings === undefined || standings?.standings?.length === 0 ? (
         <View className="items-left flex-1 justify-center px-4">
           <Text className="text-left font-tektur text-xl text-text-2">
             No standings available yet.

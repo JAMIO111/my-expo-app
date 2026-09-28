@@ -116,8 +116,8 @@ const index = () => {
               onEnd={handleEndSeason}
             />
           </View>
-          <DivisionsList districtId={currentRole?.district.id} />
-          <TeamJoinRequests districtId={currentRole?.district.id} />
+          <DivisionsList districtId={currentRole?.district?.id} />
+          <TeamJoinRequests districtId={currentRole?.district?.id} />
           <View className="bg-bg-1 p-4"></View>
         </ScrollView>
         <NavBar />

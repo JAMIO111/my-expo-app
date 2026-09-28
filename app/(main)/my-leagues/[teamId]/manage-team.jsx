@@ -91,7 +91,7 @@ const ManageTeam = () => {
   const handleRemoveTeam = () => {
     openConfirm({
       title: 'Remove from Competitions too?',
-      message: `You are about to remove ${teamProfile?.name}'s membership from ${teamProfile?.division.name}? Would you also like to remove them from any active competitions?`,
+      message: `You are about to remove ${teamProfile?.name}'s membership from ${teamProfile?.division?.name}? Would you also like to remove them from any active competitions?`,
       topButtonText: 'Remove from division only',
       bottomButtonText: 'Remove from all comps',
       topButtonType: 'default',

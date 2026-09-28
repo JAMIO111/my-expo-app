@@ -18,7 +18,7 @@ const index = () => {
   const hasNavigated = useRef(false);
   const { loading, currentRole } = useUser();
   const { data: competitionsInstances, isLoading: isCompetitionsLoading } = useCompetitionInstances(
-    currentRole?.activeSeason.id
+    currentRole?.activeSeason?.id
   );
   console.log('Competitions:', competitionsInstances);
 

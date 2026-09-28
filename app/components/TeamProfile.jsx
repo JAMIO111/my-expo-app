@@ -101,7 +101,7 @@ const TeamProfile = ({ context, profile, isLoading }) => {
     if (context === 'home/league/team') {
       router.push(`home/league/${teamId}/team-stats`);
     } else if (context === 'teams') {
-      router.push(`/teams/${currentRole?.team.id}/team-stats`);
+      router.push(`/teams/${currentRole?.team?.id}/team-stats`);
     } else if (context === 'home/upcoming-fixture') {
       router.push(`home/${fixtureId}/${teamId}/team-stats`);
     }

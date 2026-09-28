@@ -23,15 +23,17 @@ const Last5MatchesList = ({ matches = [] }) => {
               <View className="flex-1 flex-row items-center justify-start gap-2">
                 <TeamLogo
                   size={20}
-                  color1={match?.home_competitor.image?.color1}
-                  color2={match?.home_competitor.image?.color2}
-                  type={match?.home_competitor.image?.type}
-                  thickness={match?.home_competitor.image?.thickness}
+                  color1={match?.home_competitor?.image?.color1}
+                  color2={match?.home_competitor?.image?.color2}
+                  type={match?.home_competitor?.image?.type}
+                  thickness={match?.home_competitor?.image?.thickness}
                 />
                 <Text className="font-saira-medium text-text-2">
-                  {match?.home_competitor.abbreviation}
+                  {match?.home_competitor?.abbreviation}
                 </Text>
-                <Text className="font-saira-medium text-text-1">{match?.home_competitor.name}</Text>
+                <Text className="font-saira-medium text-text-1">
+                  {match?.home_competitor?.name}
+                </Text>
               </View>
               <Text className="min-w-6 text-center font-saira-medium text-xl text-text-1">
                 {match?.home_score}
@@ -41,15 +43,17 @@ const Last5MatchesList = ({ matches = [] }) => {
               <View className="flex-1 flex-row items-center justify-start gap-2">
                 <TeamLogo
                   size={20}
-                  color1={match?.away_competitor.image?.color1}
-                  color2={match?.away_competitor.image?.color2}
-                  type={match?.away_competitor.image?.type}
-                  thickness={match?.away_competitor.image?.thickness}
+                  color1={match?.away_competitor?.image?.color1}
+                  color2={match?.away_competitor?.image?.color2}
+                  type={match?.away_competitor?.image?.type}
+                  thickness={match?.away_competitor?.image?.thickness}
                 />
                 <Text className="font-saira-medium text-text-2">
-                  {match?.away_competitor.abbreviation}
+                  {match?.away_competitor?.abbreviation}
                 </Text>
-                <Text className="font-saira-medium text-text-1">{match?.away_competitor.name}</Text>
+                <Text className="font-saira-medium text-text-1">
+                  {match?.away_competitor?.name}
+                </Text>
               </View>
               <Text className="min-w-6 text-center font-saira-medium text-xl text-text-1">
                 {match?.away_score}

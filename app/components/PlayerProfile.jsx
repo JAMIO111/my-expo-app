@@ -66,17 +66,17 @@ const PlayerProfile = ({ context, isLoading, playerProfile, error }) => {
 
   const currentTeam =
     context === 'teams'
-      ? playerProfile?.teams.find((t) => t.team_id === currentRole?.team?.id)
-      : playerProfile?.teams.find((t) => t.team_id === teamId) || null;
+      ? playerProfile?.teams?.find((t) => t.team_id === currentRole?.team?.id)
+      : playerProfile?.teams?.find((t) => t.team_id === teamId) || null;
   console.log('Current Teams:', playerProfile?.teams);
   const inMyTeam = currentTeam?.team_id === currentRole?.team?.id;
   const isMe = playerProfile?.id === player?.id;
   const iAmCaptain = currentRole?.role === 'captain';
   const iAmViceCaptain = currentRole?.role === 'vice_captain';
-  const playerIsCaptain = playerProfile?.teams.some(
+  const playerIsCaptain = playerProfile?.teams?.some(
     (t) => t.team_id === currentTeam?.team_id && t.role === 'captain'
   );
-  const playerIsViceCaptain = playerProfile?.teams.some(
+  const playerIsViceCaptain = playerProfile?.teams?.some(
     (t) => t.team_id === currentTeam?.team_id && t.role === 'vice_captain'
   );
 
@@ -88,7 +88,7 @@ const PlayerProfile = ({ context, isLoading, playerProfile, error }) => {
   console.log('Player is Vice Captain:', playerIsViceCaptain);
 
   useEffect(() => {
-    if (playerStats?.playerMeta?.displayed_stats.length) {
+    if (playerStats?.playerMeta?.displayed_stats?.length) {
       setStatSlots(playerStats.playerMeta.displayed_stats);
     }
   }, [playerStats?.playerMeta?.displayed_stats]);

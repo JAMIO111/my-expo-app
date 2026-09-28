@@ -650,7 +650,7 @@ const GenerateFixturesForm = ({
                     <>
                       <View className="h-px bg-theme-gray-4" />
                       <View className="gap-2">
-                        {date?.fixtures.map((fixture, fixtureIndex) => {
+                        {date?.fixtures?.map((fixture, fixtureIndex) => {
                           const homeTeam = fixturePreview.participants.find(
                             (p) => p.id === fixture.home_id
                           );

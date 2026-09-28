@@ -135,8 +135,8 @@ const index = () => {
                 : currentRole?.team?.display_name}
             </Text>
             <Text className="ml-4 font-saira text-lg text-text-2">
-              {currentRole?.role.charAt(0).toUpperCase() +
-                currentRole?.role.slice(1).replace('_', ' ')}
+              {currentRole?.role?.charAt(0).toUpperCase() +
+                currentRole?.role?.slice(1).replace('_', ' ')}
             </Text>
           </View>
 

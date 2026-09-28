@@ -59,7 +59,7 @@ export default function BadgeUnlockModal({ visible, badges = [], onComplete }) {
   const remaining = badges.length - index - 1;
   const isLast = remaining <= 0;
 
-  const iconKey = currentBadge?.icon.uri;
+  const iconKey = currentBadge?.icon?.uri;
   const iconSource = iconKey && badgeIcons[iconKey] ? badgeIcons[iconKey] : null;
   const color = (bgColors[currentBadge?.tier] && bgColors[currentBadge?.tier].color) || '#773F00';
   const textColor = (bgColors[currentBadge?.tier] && bgColors[currentBadge?.tier].text) || '#fff';

@@ -65,7 +65,7 @@ export function usePlayerFrames(playerId) {
    * Combine all frames from all loaded pages
    */
   const frames = useMemo(() => {
-    return query.data?.pages.flatMap((page) => page?.frames ?? []) ?? [];
+    return query.data?.pages?.flatMap((page) => page?.frames ?? []) ?? [];
   }, [query.data]);
 
   /*
@@ -75,7 +75,7 @@ export function usePlayerFrames(playerId) {
   const players = useMemo(() => {
     const playerMap = new Map();
 
-    query.data?.pages.forEach((page) => {
+    query.data?.pages?.forEach((page) => {
       page?.players?.forEach((player) => {
         if (player?.id) {
           playerMap.set(player.id, player);

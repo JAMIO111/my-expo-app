@@ -289,7 +289,7 @@ export default function CompareTeamStats() {
               </Text>
               <Text className="text-sm text-text-on-brand-2">
                 {entityType === 'team'
-                  ? entity1?.division.name
+                  ? entity1?.division?.name
                   : entity1?.nickname?.toUpperCase() || ''}
               </Text>
             </View>
@@ -305,7 +305,7 @@ export default function CompareTeamStats() {
               </Text>
               <Text className="text-sm text-text-on-brand-2">
                 {entityType === 'team'
-                  ? entity2?.division.name
+                  ? entity2?.division?.name
                   : entity2?.nickname?.toUpperCase() || ''}
               </Text>
             </View>
