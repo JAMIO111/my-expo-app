@@ -71,8 +71,8 @@ const FixtureStatusBadge = ({ status }) => {
   const config = FIXTURE_STATUS_CONFIG[status];
   if (!config) return null;
   return (
-    <View className="absolute -top-3 right-4 z-10 rounded-full bg-bg-grouped-2">
-      <View className={`rounded-full px-2.5 py-0.5 ${config.bgClass}`}>
+    <View style={{ bottom: 6, right: 6 }} className="absolute z-10 rounded-full bg-bg-grouped-2">
+      <View className={`rounded-full px-2 py-0.5 ${config.bgClass}`}>
         <Text className={`font-saira-medium text-xs ${config.textClass}`}>{config.label}</Text>
       </View>
     </View>
@@ -240,7 +240,7 @@ export const FramePreviewRow = ({ frame, playersById, player, onPress }) => {
   return (
     <Pressable
       onPress={onPress}
-      className="flex-row items-stretch rounded-2xl border border-theme-gray-5 bg-bg-grouped-2">
+      className="flex-row items-stretch overflow-hidden rounded-2xl border border-theme-gray-5 bg-bg-grouped-2">
       <FixtureStatusBadge status={frame.fixture_status} />
       <View
         style={{ borderTopLeftRadius: 14, borderBottomLeftRadius: 14 }}
@@ -272,7 +272,7 @@ export const FramePreviewRow = ({ frame, playersById, player, onPress }) => {
           </View>
         </View>
         {myAchievements.length > 0 && (
-          <View className="flex-row items-center gap-1.5">
+          <View className="mt-2 flex-row items-center gap-1.5">
             {myAchievements.map((label) => {
               const config = ACHIEVEMENT_CONFIG[label];
               const Icon = config.icon;
@@ -288,8 +288,10 @@ export const FramePreviewRow = ({ frame, playersById, player, onPress }) => {
           </View>
         )}
       </View>
-      <View className="items-center justify-center pr-3">
-        <Text className={`rounded-full px-3 py-1 font-saira-semibold text-base ${styles.pill}`}>
+      <View
+        style={{ top: 6, right: 6, position: 'absolute' }}
+        className="items-center justify-center">
+        <Text className={`rounded-xl px-3 py-1 font-saira-semibold text-base ${styles.pill}`}>
           {result}
           {frame?.forfeited ? '*' : ''}
         </Text>
