@@ -2,10 +2,11 @@ import { View, Text, Pressable, Animated, TouchableOpacity } from 'react-native'
 import { useRef } from 'react';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { LinearGradient } from 'expo-linear-gradient';
 import { useUser } from '@contexts/UserProvider';
 import { useRouter } from 'expo-router';
 import Toast from 'react-native-toast-message';
+import { useTheme } from '@contexts/ThemeProvider';
+import { Shield } from 'lucide-react-native';
 
 // ─── Helpers (unchanged) ──────────────────────────────────────────────────────
 
@@ -35,14 +36,14 @@ export function formatAgeRestrictions(minAge, maxAge) {
 export function getStatusColors(status) {
   switch (status) {
     case 'Eligible':
-      return { background: '#00800033', text: '#4ade80', border: '#4ade8044', accent: '#4ade80' };
+      return { background: '#4ade8022', text: '#4ade80', border: '#4ade8044', accent: '#4ade80' };
     case 'Ineligible':
     case 'Full':
     case 'Closed':
     case 'closed':
       return { background: '#FF000022', text: '#f87171', border: '#f8717144', accent: '#f87171' };
     case 'Entered':
-      return { background: '#00800033', text: '#4ade80', border: '#4ade8044', accent: '#4ade80' };
+      return { background: '#4ade8022', text: '#4ade80', border: '#4ade8044', accent: '#4ade80' };
     case 'active':
       return { background: '#3b82f622', text: '#60a5fa', border: '#60a5fa44', accent: '#60a5fa' };
     case 'upcoming':
@@ -272,19 +273,18 @@ const StatusBadge = ({ label, colors, iconName, disabled, onPress }) => (
 
 const StatPill = ({ icon, label }) => (
   <View
+    className="border border-theme-gray-6 bg-bg-grouped-3"
     style={{
       flexDirection: 'row',
       alignItems: 'center',
       gap: 5,
-      backgroundColor: 'rgba(255,255,255,0.06)',
       borderRadius: 8,
       paddingHorizontal: 9,
       paddingVertical: 4,
       borderWidth: 1,
-      borderColor: 'rgba(255,255,255,0.06)',
     }}>
     {icon}
-    <Text style={{ fontFamily: 'Saira_400Regular', fontSize: 12, color: 'rgba(255,255,255,0.55)' }}>
+    <Text className="text-text-1" style={{ fontFamily: 'Saira_400Regular', fontSize: 12 }}>
       {label}
     </Text>
   </View>
@@ -293,6 +293,7 @@ const StatPill = ({ icon, label }) => (
 // ─── Main card ────────────────────────────────────────────────────────────────
 
 const CompetitionInstanceCard = ({ instance }) => {
+  const { colors: themeColors } = useTheme();
   const hasNavigated = useRef(false);
   const scale = useRef(new Animated.Value(1)).current;
   const router = useRouter();
@@ -346,6 +347,7 @@ const CompetitionInstanceCard = ({ instance }) => {
   return (
     <Animated.View style={{ transform: [{ scale }] }}>
       <Pressable
+        className="border border-theme-gray-6"
         onPress={() => {
           if (hasNavigated.current) return;
           hasNavigated.current = true;
@@ -360,7 +362,6 @@ const CompetitionInstanceCard = ({ instance }) => {
           borderRadius: 16,
           overflow: 'hidden',
           borderWidth: 1,
-          borderColor: 'rgba(255,255,255,0.07)',
         }}>
         {/* ── Top accent bar (status colour) ── */}
         <View style={{ height: 8, backgroundColor: statusColors.accent, width: '100%' }} />
@@ -380,20 +381,20 @@ const CompetitionInstanceCard = ({ instance }) => {
             }}>
             <View style={{ flex: 1 }}>
               <Text
+                className="text-text-1"
                 style={{
                   fontFamily: 'Saira_700Bold',
                   fontSize: 20,
-                  color: '#fff',
                   marginBottom: 3,
                 }}
                 numberOfLines={2}>
                 {instance.name}
               </Text>
               <Text
+                className="text-text-1"
                 style={{
                   fontFamily: 'Saira_400Regular',
                   fontSize: 13,
-                  color: 'rgba(255,255,255,0.4)',
                   letterSpacing: 0.3,
                 }}>
                 {`${teamType} ${competitorLabel} · ${formatCompetitionType(instance.competition.competition_type)}`}
@@ -421,19 +422,19 @@ const CompetitionInstanceCard = ({ instance }) => {
             <StatusBadge label={statusLabel} colors={statusColors} />
             {instance.division && (
               <View
+                className="flex-row items-center gap-1 border-theme-gray-5 bg-bg-grouped-3"
                 style={{
-                  backgroundColor: 'rgba(255,255,255,0.06)',
-                  borderColor: 'rgba(255,255,255,0.1)',
                   borderWidth: 1,
                   borderRadius: 8,
                   paddingHorizontal: 10,
                   paddingVertical: 4,
                 }}>
+                <Shield size={14} color={themeColors.icon} />
                 <Text
+                  className="text-text-1"
                   style={{
                     fontFamily: 'Saira_500Medium',
                     fontSize: 12,
-                    color: 'rgba(255,255,255,0.5)',
                   }}>
                   {instance.division.name}
                 </Text>
@@ -444,7 +445,7 @@ const CompetitionInstanceCard = ({ instance }) => {
 
         {/* ── Footer stats row ── */}
         <View
-          className="bg-bg-grouped-2"
+          className="border-t border-theme-gray-5 bg-bg-grouped-2"
           style={{
             flexDirection: 'row',
             alignItems: 'flex-end',
@@ -452,7 +453,6 @@ const CompetitionInstanceCard = ({ instance }) => {
             paddingHorizontal: 12,
             paddingVertical: 10,
             borderTopWidth: 1,
-            borderTopColor: 'rgba(255,255,255,0.05)',
           }}>
           {/* Left cluster */}
           <View
@@ -464,7 +464,7 @@ const CompetitionInstanceCard = ({ instance }) => {
               flex: 1,
             }}>
             <StatPill
-              icon={<Ionicons name="people-outline" size={14} color="rgba(255,255,255,0.45)" />}
+              icon={<Ionicons name="people-outline" size={14} color={themeColors.icon} />}
               label={`${activeCount}${instance.max_competitors ? `/${instance.max_competitors}` : ''}`}
             />
             {(instance.max_age || instance.min_age) && (
@@ -473,7 +473,8 @@ const CompetitionInstanceCard = ({ instance }) => {
                   <MaterialCommunityIcons
                     name="cake-variant-outline"
                     size={14}
-                    color="rgba(255,255,255,0.45)"
+                    color={themeColors.icon}
+                    themeColors={themeColors}
                   />
                 }
                 label={formatAgeRestrictions(instance?.min_age, instance?.max_age)}
@@ -493,7 +494,7 @@ const CompetitionInstanceCard = ({ instance }) => {
           {/* Right: deadline */}
           <View style={{ flexShrink: 0, marginLeft: 8 }}>
             <StatPill
-              icon={<Ionicons name="calendar-outline" size={14} color="rgba(255,255,255,0.45)" />}
+              icon={<Ionicons name="calendar-outline" size={14} color={themeColors.icon} />}
               label={deadline || 'No Deadline'}
             />
           </View>

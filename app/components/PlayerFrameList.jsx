@@ -73,7 +73,7 @@ const AchievementCard = ({ player, labels }) => {
   );
 };
 
-const FrameRow = ({ frame, playersById, player }) => {
+export const FrameRow = ({ frame, playersById, player }) => {
   const homePlayer1 = playersById.get(frame.home_player_1);
   const awayPlayer1 = playersById.get(frame.away_player_1);
   const homePlayer2 = frame.home_player_2 ? playersById.get(frame.home_player_2) : null;

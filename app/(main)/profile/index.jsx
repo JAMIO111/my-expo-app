@@ -27,6 +27,8 @@ import TrophyCabinet from '@components/TrophyCabinet';
 import { trophyIcons } from '@lib/badgeIcons';
 import usePlayerAwards from '@hooks/usePlayerAwards';
 import { useTheme } from '@contexts/ThemeProvider';
+import usePlayerRecentFrames from '@hooks/usePlayerRecentFrames';
+import { FrameRow } from '@components/PlayerFrameList';
 
 const ProfilePage = () => {
   const { colors: themeColors } = useTheme();
@@ -34,6 +36,11 @@ const ProfilePage = () => {
   const { player, currentRole } = useUser();
   const { data: globalRank, isLoading: isGlobalRankLoading } = useGlobalRank(player?.id);
   const { data: recentBadges, isLoading: isRecentBadgesLoading } = useRecentBadges(player?.id);
+  const { data: recentFrames, isLoading: isRecentFramesLoading } = usePlayerRecentFrames(
+    player?.id
+  );
+
+  console.log('Recent Frames:', recentFrames);
 
   const {
     data: playerAwards,
@@ -211,15 +218,32 @@ const ProfilePage = () => {
               }
             />
           </View>
-          <View
-            style={{ borderRadius: 28 }}
-            className="mx-4 mt-4 gap-2 border border-theme-gray-4 bg-bg-1 p-3">
-            <CTAButton
-              text="View Match History"
-              type="brand"
-              callbackFn={() => router.push('/profile/frames')}
-              lucideIcon={<ClipboardClock size={24} color="white" />}
-            />
+          <View className="mx-4 gap-1">
+            <Heading text="Recent Frames" />
+            <View
+              style={{ borderRadius: 28 }}
+              className="gap-2 border border-theme-gray-4 bg-bg-1 p-3">
+              {isRecentFramesLoading ? (
+                <Text className="text-center text-text-2">Loading recent frames...</Text>
+              ) : recentFrames?.frames?.length > 0 ? (
+                recentFrames.frames.map((frame) => (
+                  <FrameRow
+                    key={frame.id}
+                    frame={frame}
+                    playersById={playersById}
+                    player={player}
+                  />
+                ))
+              ) : (
+                <Text className="text-center text-text-2">No recent frames available.</Text>
+              )}
+              <CTAButton
+                text="View All Frames"
+                type="brand"
+                callbackFn={() => router.push('/profile/frames')}
+                lucideIcon={<ClipboardClock size={24} color="white" />}
+              />
+            </View>
           </View>
         </View>
       </ScrollView>

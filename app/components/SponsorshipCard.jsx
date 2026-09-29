@@ -51,7 +51,7 @@ export default function SponsorshipCard({
         onPress={handlePress}
         disabled={!website_url}
         style={({ pressed }) => ({ opacity: pressed ? 0.75 : 1 })}
-        className="w-full flex-row items-center gap-3 rounded-2xl border border-theme-gray-5 bg-bg-grouped-2 px-4 py-3">
+        className="w-full flex-row items-center gap-3 rounded-2xl border border-theme-gray-6 bg-bg-grouped-2 px-4 py-3">
         <View className="h-11 w-11 items-center justify-center rounded-xl bg-bg-grouped-2">
           {logoSource ? (
             <Image source={logoSource} style={{ width: 30, height: 30 }} resizeMode="contain" />
@@ -79,7 +79,7 @@ export default function SponsorshipCard({
       onPress={handlePress}
       disabled={!website_url}
       style={({ pressed }) => ({ opacity: pressed ? 0.85 : 1 })}
-      className="w-full overflow-hidden rounded-3xl border border-theme-gray-5 bg-bg-grouped-2 p-3">
+      className="w-full overflow-hidden rounded-3xl border border-theme-gray-6 bg-bg-grouped-2 p-3">
       <View className="items-center gap-2">
         <View className="w-full flex-row items-center gap-6">
           <View className="h-20 w-20 items-center justify-center overflow-hidden rounded-2xl bg-bg-grouped-3">
