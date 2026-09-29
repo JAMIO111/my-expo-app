@@ -64,12 +64,17 @@ const FIXTURE_STATUS_CONFIG = {
   },
 };
 
+// Pinned to the card's top-right corner, straddling its top border like a tag.
+// The solid outer view stops the border line showing through the tinted badge.
+// Must be a direct child of the (relative-positioned) card.
 const FixtureStatusBadge = ({ status }) => {
   const config = FIXTURE_STATUS_CONFIG[status];
   if (!config) return null;
   return (
-    <View className={`self-start rounded-full px-2 py-0.5 ${config.bgClass}`}>
-      <Text className={`font-saira-medium text-xs ${config.textClass}`}>{config.label}</Text>
+    <View className="absolute -top-3 right-4 z-10 rounded-full bg-bg-grouped-2">
+      <View className={`rounded-full px-2.5 py-0.5 ${config.bgClass}`}>
+        <Text className={`font-saira-medium text-xs ${config.textClass}`}>{config.label}</Text>
+      </View>
     </View>
   );
 };
@@ -135,6 +140,7 @@ export const FrameRow = ({ frame, playersById, player }) => {
 
   return (
     <View className="my-2 gap-2 rounded-3xl border border-theme-gray-5 bg-bg-grouped-2">
+      <FixtureStatusBadge status={frame.fixture_status} />
       <View
         style={{ borderTopRightRadius: 20, borderTopLeftRadius: 20 }}
         className="gap-2 px-3 pt-3">
@@ -152,7 +158,6 @@ export const FrameRow = ({ frame, playersById, player }) => {
             | Frame {frame?.frame_number}
           </Text>
         </View>
-        <FixtureStatusBadge status={frame.fixture_status} />
       </View>
       <View className="flex-row items-center justify-between gap-2 px-3 py-1">
         <PlayerCard player={homePlayer1} side="home" />
@@ -235,15 +240,18 @@ export const FramePreviewRow = ({ frame, playersById, player, onPress }) => {
   return (
     <Pressable
       onPress={onPress}
-      className="flex-row items-stretch overflow-hidden rounded-2xl border border-theme-gray-5 bg-bg-grouped-2">
-      <View className={`w-1.5 ${styles.bar}`} />
+      className="flex-row items-stretch rounded-2xl border border-theme-gray-5 bg-bg-grouped-2">
+      <FixtureStatusBadge status={frame.fixture_status} />
+      <View
+        style={{ borderTopLeftRadius: 14, borderBottomLeftRadius: 14 }}
+        className={`w-1.5 ${styles.bar}`}
+      />
       <View className="flex-1 gap-1 px-3 py-2">
         <Text className="font-saira-medium text-sm text-text-2" numberOfLines={1}>
           {frame?.competition_name ?? 'Fixture'}
           {frame?.stage_name ? ` | ${frame.stage_name}` : ''}
           {date ? ` | ${date}` : ''} | Frame {frame?.frame_number}
         </Text>
-        <FixtureStatusBadge status={frame.fixture_status} />
         <View className="flex-row items-center gap-2">
           <View className="flex-row">
             {opponents.map((opponent, i) => (
