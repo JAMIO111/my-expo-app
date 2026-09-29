@@ -6,6 +6,7 @@ import SafeViewWrapper from '@components/SafeViewWrapper';
 import CustomHeader from '@components/CustomHeader';
 import { useTheme } from '@contexts/ThemeProvider';
 import { accents as accentPalettes } from '@lib/theme';
+import ProGate from '@components/ProGate';
 
 const MODE_OPTIONS = [
   { value: 'system', title: 'Use Device Setting' },
@@ -14,10 +15,10 @@ const MODE_OPTIONS = [
 ];
 
 const ACCENT_OPTIONS = [
-  { value: 'green', title: 'Green' },
-  { value: 'blue', title: 'Blue' },
-  { value: 'teal', title: 'Teal' },
-  { value: 'red', title: 'Red' },
+  { value: 'green', title: 'Green', pro: false },
+  { value: 'blue', title: 'Blue', pro: false },
+  { value: 'teal', title: 'Teal', pro: true },
+  { value: 'red', title: 'Red', pro: true },
 ];
 
 const Appearance = () => {
@@ -58,17 +59,27 @@ const Appearance = () => {
             footer={
               forScheme === scheme ? 'This is the colour theme you are seeing now.' : undefined
             }>
-            {ACCENT_OPTIONS.map((option, index) => (
-              <SelectionSettingsItem
-                key={option.value}
-                title={option.title}
-                value={accents[forScheme]}
-                internalValue={option.value}
-                setValue={(value) => setAccent(forScheme, value)}
-                swatchColor={accentPalettes[option.value][forScheme].js.brandNormal}
-                lastItem={index === ACCENT_OPTIONS.length - 1}
-              />
-            ))}
+            {ACCENT_OPTIONS.map((option, index) => {
+              const item = (
+                <SelectionSettingsItem
+                  key={option.value}
+                  title={option.title}
+                  value={accents[forScheme]}
+                  internalValue={option.value}
+                  setValue={(value) => setAccent(forScheme, value)}
+                  swatchColor={accentPalettes[option.value][forScheme].js.brandNormal}
+                  lastItem={index === ACCENT_OPTIONS.length - 1}
+                />
+              );
+
+              return option.pro ? (
+                <ProGate mode="click" pro={true} key={option.value}>
+                  {item}
+                </ProGate>
+              ) : (
+                item
+              );
+            })}
           </MenuContainer>
         ))}
       </ScrollView>

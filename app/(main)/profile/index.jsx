@@ -236,7 +236,6 @@ const ProfilePage = () => {
                     frame={frame}
                     playersById={recentFramePlayers}
                     player={player}
-                    onPress={() => router.push('/profile/frames')}
                   />
                 ))
               ) : (

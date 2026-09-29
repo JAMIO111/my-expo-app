@@ -11,8 +11,21 @@ import {
   Text,
   View,
 } from 'react-native';
-import IonIcons from 'react-native-vector-icons/Ionicons';
-import { Gem } from 'lucide-react-native';
+import {
+  Gem,
+  BarChart3,
+  Swords,
+  Trophy,
+  CheckCheck,
+  EyeOff,
+  Check,
+  Frown,
+  Info,
+  ArrowRight,
+  Star,
+  Medal,
+  Palette,
+} from 'lucide-react-native';
 import Purchases from 'react-native-purchases';
 import Toast from 'react-native-toast-message';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -34,19 +47,32 @@ const TIER_INFO = {
     name: 'Core',
     tagline: 'Everything you need to follow your league',
     benefits: [
-      { text: 'Live results as they happen', icon: 'play-outline' },
-      { text: 'In-depth team & player stats', icon: 'stats-chart-outline' },
-      { text: 'All upcoming fixtures', icon: 'calendar-outline' },
-      { text: 'Leaderboards & global rankings', icon: 'podium-outline' },
-      { text: 'Exclusive badges & trophy cabinet', icon: 'trophy-outline' },
+      {
+        text: 'In-depth team & player stats broken down by season and competition',
+        icon: BarChart3,
+      },
+      {
+        text: 'View all of your historical matches',
+        icon: Swords,
+      },
+      {
+        text: "Display your trophy cabinet on your profile and view others' awards",
+        icon: Trophy,
+      },
+      {
+        text: 'Unlock and display badges for participation and achievements',
+        icon: Medal,
+      },
     ],
   },
+
   pro: {
     name: 'Pro',
     tagline: 'The full Break Room experience',
     benefits: [
-      { text: 'Everything in Core', icon: 'checkmark-done-outline' },
-      { text: 'Ad-free experience', icon: 'eye-off-outline' },
+      { text: 'Everything in Core', icon: CheckCheck },
+      { text: 'Ad-free experience', icon: EyeOff },
+      { text: '2 exclusive app themes (Teal & Red)', icon: Palette },
     ],
   },
 };
@@ -97,11 +123,12 @@ const REVIEWS = [
 const capitalise = (str) => (str ? str.charAt(0).toUpperCase() + str.slice(1) : '');
 
 // ─── Small pieces ──────────────────────────────────────────────────────────────
-const BenefitRow = ({ text, icon }) => (
+const BenefitRow = ({ text, icon: Icon }) => (
   <View className="flex-row items-center gap-3">
     <View className="h-9 w-9 items-center justify-center rounded-xl bg-brand">
-      <IonIcons name={icon} size={20} color="white" />
+      <Icon size={20} color="white" strokeWidth={2.2} />
     </View>
+
     <Text className="flex-1 font-saira-medium text-lg text-text-1">{text}</Text>
   </View>
 );
@@ -114,7 +141,7 @@ const ReviewCard = ({ item }) => (
       <Image source={item.avatar} className="h-10 w-10 rounded-xl" />
       <View className="flex-row">
         {Array.from({ length: item.rating }, (_, i) => (
-          <IonIcons key={i} name="star" size={18} color="#FFD700" />
+          <Star key={i} size={18} color="#FFD700" />
         ))}
       </View>
     </View>
@@ -183,7 +210,7 @@ const TierCard = ({ tier, plan, selected, onPress }) => {
         className={`h-7 w-7 items-center justify-center rounded-full border-2 ${
           selected ? 'border-theme-purple bg-theme-purple' : 'border-theme-gray-4'
         }`}>
-        {selected ? <IonIcons name="checkmark" size={18} color="white" /> : null}
+        {selected ? <Check size={18} color="white" strokeWidth={3} /> : null}
       </View>
     </Pressable>
   );
@@ -221,7 +248,7 @@ const BasicPaywall = () => {
   const availableTiers = isPro ? [] : isCore ? ['pro'] : ['core', 'pro'];
   const selectedTier = availableTiers.includes(selectedTierState)
     ? selectedTierState
-    : availableTiers[0] ?? null;
+    : (availableTiers[0] ?? null);
 
   // Packages are identified like "core.monthly", "pro.annual".
   const subscriptions = useMemo(
@@ -370,8 +397,8 @@ const BasicPaywall = () => {
         }
       : {
           eyebrow: 'BREAK ROOM PREMIUM',
-          title: "Unlock everyone's stats",
-          subtitle: 'Follow every frame, track your progress and climb the leaderboards.',
+          title: 'Unlock every last stat',
+          subtitle: 'Follow every frame, unlock exclusive badges and climb the leaderboards.',
         };
 
   // Pro users see everything they have; Core users see what Pro adds; free users see Core.
@@ -477,7 +504,7 @@ const BasicPaywall = () => {
             ) : (
               <View className="flex-row items-center gap-4 rounded-3xl bg-bg-grouped-2 p-4">
                 <View className="rounded-2xl bg-theme-red p-3">
-                  <IonIcons name="sad-outline" size={32} color="#FFFFFF" />
+                  <Frown size={32} color="#FFFFFF" strokeWidth={2.5} />
                 </View>
                 <Text className="flex-1 font-saira text-lg text-text-2">
                   No subscription plans are available right now. Please check back later.
@@ -538,7 +565,12 @@ const BasicPaywall = () => {
                 <View
                   style={{ borderRadius: 20 }}
                   className="overflow-hidden border border-theme-gray-5 bg-theme-gray-1 p-1">
-                  <Image resizeMode="contain" className="h-80 w-40 rounded-2xl" source={src} />
+                  <Image
+                    style={{ width: 144, height: 310 }}
+                    resizeMode="contain"
+                    className="rounded-2xl"
+                    source={src}
+                  />
                 </View>
               </Pressable>
             ))}
@@ -546,18 +578,18 @@ const BasicPaywall = () => {
           <Pressable
             className="mx-4 mt-4 flex-row items-center gap-3 rounded-2xl border border-theme-gray-5 bg-bg-grouped-2 p-4"
             onPress={() => Linking.openURL('https://www.break-room.uk/features')}>
-            <IonIcons name="information-circle-outline" size={24} color={themeColors.primaryText} />
+            <Info size={24} color={themeColors.primaryText} strokeWidth={2.5} />
             <Text className="flex-1 font-saira-medium text-base text-text-1">
               See everything included on our website
             </Text>
-            <IonIcons name="arrow-forward" size={18} color={themeColors.primaryText} />
+            <ArrowRight size={18} color={themeColors.primaryText} strokeWidth={2.5} />
           </Pressable>
         </View>
 
         {/* ── Reviews ── */}
         <View className="mt-8">
           <Text className="mb-3 px-6 font-saira-semibold text-xl text-text-1">
-            Loved by players and captains
+            Loved by players and admins alike
           </Text>
           <ScrollView
             horizontal
