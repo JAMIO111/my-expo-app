@@ -1,10 +1,10 @@
 import { Pressable, ScrollView, Text, View } from 'react-native';
-import { Lock, SlidersHorizontal, X } from 'lucide-react-native';
+import { SlidersHorizontal, X } from 'lucide-react-native';
 import { useTheme } from '@contexts/ThemeProvider';
 
 // "Filters" button (with an active-count badge) followed by one removable chip
 // per active filter, so filters can be seen and undone without reopening the sheet.
-const StatsFilterBar = ({ activeChips, onOpen, onClearAll, locked = false }) => {
+const StatsFilterBar = ({ activeChips, onOpen, onClearAll }) => {
   const { colors: themeColors } = useTheme();
   const count = activeChips.length;
 
@@ -21,7 +21,6 @@ const StatsFilterBar = ({ activeChips, onOpen, onClearAll, locked = false }) => 
             className={`font-saira-semibold text-base ${count > 0 ? 'text-white' : 'text-text-1'}`}>
             Filters
           </Text>
-          {locked && <Lock size={14} color={themeColors.icon} />}
           {count > 0 && (
             <View className="h-5 min-w-5 items-center justify-center rounded-full bg-white px-1">
               <Text className="font-saira-bold text-xs text-brand">{count}</Text>

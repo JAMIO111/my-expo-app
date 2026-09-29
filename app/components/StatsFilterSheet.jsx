@@ -6,6 +6,7 @@ import {
   BottomSheetModal,
   BottomSheetScrollView,
 } from '@gorhom/bottom-sheet';
+import { Gem, Lock } from 'lucide-react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import ChipSelector from '@components/ChipSelector';
 import CTAButton from '@components/CTAButton';
@@ -52,7 +53,16 @@ const MultiWithAll = ({ options, value, onChange }) => (
 // Filter sheet for the stats page. Edits a local draft; nothing changes on the
 // page until "Apply". Open it with ref.current.present().
 const StatsFilterSheet = forwardRef(function StatsFilterSheet(
-  { seasons = [], competitions = [], isLoadingOptions, optionsError, value, onApply },
+  {
+    seasons = [],
+    competitions = [],
+    isLoadingOptions,
+    optionsError,
+    value,
+    onApply,
+    locked = false,
+    onLockedApply,
+  },
   ref
 ) {
   const { colors: themeColors } = useTheme();
@@ -62,10 +72,16 @@ const StatsFilterSheet = forwardRef(function StatsFilterSheet(
   // Reopening always starts from what is currently applied.
   useEffect(() => setDraft(value), [value]);
 
+  // Free users can explore the sheet, but applying is gated: the upgrade prompt
+  // opens over this sheet (which keeps their draft) instead of applying.
   const apply = useCallback(() => {
+    if (locked) {
+      onLockedApply?.();
+      return;
+    }
     onApply(draft);
     ref?.current?.dismiss();
-  }, [draft, onApply, ref]);
+  }, [draft, locked, onApply, onLockedApply, ref]);
 
   const renderBackdrop = useCallback(
     (props) => (
@@ -94,12 +110,18 @@ const StatsFilterSheet = forwardRef(function StatsFilterSheet(
             />
           </View>
           <View style={{ flex: 2 }}>
-            <CTAButton type="yellow" textColor="black" text="Apply" callbackFn={apply} />
+            <CTAButton
+              type="yellow"
+              textColor="black"
+              text="Apply"
+              lucideIcon={locked ? <Lock size={18} color="black" /> : undefined}
+              callbackFn={apply}
+            />
           </View>
         </View>
       </BottomSheetFooter>
     ),
-    [insets.bottom, draft, apply]
+    [insets.bottom, draft, apply, locked]
   );
 
   return (
@@ -121,6 +143,16 @@ const StatsFilterSheet = forwardRef(function StatsFilterSheet(
         contentContainerStyle={{ padding: 16, paddingBottom: 140, gap: 24 }}
         showsVerticalScrollIndicator={false}>
         <Text className="px-2 font-saira-semibold text-2xl text-text-1">Filter stats</Text>
+
+        {locked && (
+          <View className="flex-row items-center gap-3 rounded-2xl border border-theme-gray-5 bg-bg-grouped-2 p-4">
+            <Gem size={22} color="#FFD700" />
+            <Text className="flex-1 font-saira text-base text-text-2">
+              Stat filters are a Core and Pro feature. Have a play with them here, then upgrade to
+              apply them.
+            </Text>
+          </View>
+        )}
 
         {optionsError ? (
           <Text className="px-2 font-saira text-base text-theme-red">

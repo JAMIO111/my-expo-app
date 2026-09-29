@@ -33,7 +33,7 @@ const EntityStats = ({ entityId, entityType }) => {
 
   const statsQuery = useEntityStats(entityType, entityId, activeFilters);
   const optionsQuery = useEntityFilterOptions(entityType, entityId, {
-    enabled: canFilter && filtersOpened,
+    enabled: filtersOpened,
   });
 
   const data = statsQuery.data;
@@ -75,20 +75,24 @@ const EntityStats = ({ entityId, entityType }) => {
     return chips;
   }, [activeFilters, seasonOptions, competitionOptions]);
 
+  // Everyone can open the filter sheet (free users get a taste); only Core and
+  // Pro can apply, which is gated inside the sheet.
   const openFilters = () => {
-    if (!canFilter) {
-      openUpgradeSheet({
-        title: 'Stat Filters',
-        planName: 'Core',
-        description:
-          'Filter your stats by season, competition, frame type and venue with a Core or Pro plan.',
-        onUpgrade: () => router.push('/(main)/home/paywall'),
-      });
-      return;
-    }
     setFiltersOpened(true);
     sheetRef.current?.present();
   };
+
+  const promptUpgrade = () =>
+    openUpgradeSheet({
+      title: 'Stat Filters',
+      planName: 'Core',
+      description:
+        'Apply filters to see your stats by season, competition, frame type and venue with a Core or Pro plan.',
+      onUpgrade: () => {
+        sheetRef.current?.dismiss();
+        router.push('/(main)/home/paywall');
+      },
+    });
 
   const StatRow = ({ label, value, color }) => (
     <View className="flex flex-row items-center gap-3">
@@ -182,7 +186,6 @@ const EntityStats = ({ entityId, entityType }) => {
         activeChips={activeChips}
         onOpen={openFilters}
         onClearAll={() => setFilters(EMPTY_STATS_FILTERS)}
-        locked={!canFilter}
       />
       <StatsFilterSheet
         ref={sheetRef}
@@ -192,6 +195,8 @@ const EntityStats = ({ entityId, entityType }) => {
         optionsError={optionsQuery.isError}
         value={filters}
         onApply={setFilters}
+        locked={!canFilter}
+        onLockedApply={promptUpgrade}
       />
       {statsQuery.isError && (
         <Pressable
