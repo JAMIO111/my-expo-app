@@ -1,5 +1,5 @@
 import { usePlayerFrames } from '@/hooks/usePlayerFrames';
-import { FlatList, View, Text } from 'react-native';
+import { FlatList, View, Text, Pressable } from 'react-native';
 import Avatar from './Avatar';
 import { useUser } from '@contexts/UserProvider';
 import { ArrowUpDown, Undo2, Zap } from 'lucide-react-native';
@@ -157,6 +157,103 @@ export const FrameRow = ({ frame, playersById, player }) => {
         </Text>
       </View>
     </View>
+  );
+};
+
+const RESULT_STYLES = {
+  Win: { bar: 'bg-theme-green', pill: 'bg-theme-green/20 text-theme-green' },
+  Loss: { bar: 'bg-theme-red', pill: 'bg-theme-red/20 text-theme-red' },
+  Draw: { bar: 'bg-theme-blue', pill: 'bg-theme-blue/20 text-theme-blue' },
+};
+
+const fullName = (p) => (p ? `${p.first_name ?? ''} ${p.surname ?? ''}`.trim() : 'Unknown');
+
+// Compact one-line summary of a frame, used for the "Recent Frames" preview
+// on the profile page. FrameRow above is the full-detail version.
+export const FramePreviewRow = ({ frame, playersById, player, onPress }) => {
+  const isHome = frame.home_player_1 === player?.id || frame.home_player_2 === player?.id;
+  const mySide = isHome ? 'home' : 'away';
+  const result =
+    frame.winner_side === null ? 'Draw' : frame.winner_side === mySide ? 'Win' : 'Loss';
+  const styles = RESULT_STYLES[result];
+
+  const mine = (
+    isHome ? [frame.home_player_1, frame.home_player_2] : [frame.away_player_1, frame.away_player_2]
+  ).filter(Boolean);
+  const opponentIds = (
+    isHome ? [frame.away_player_1, frame.away_player_2] : [frame.home_player_1, frame.home_player_2]
+  ).filter(Boolean);
+  const partner = mine.find((id) => id !== player?.id);
+  const opponents = opponentIds.map((id) => playersById.get(id));
+
+  const myAchievements = [];
+  if (frame.lag_won === player?.id) myAchievements.push('Lag Won');
+  if (frame.break_dish_player_1 === player?.id || frame.break_dish_player_2 === player?.id)
+    myAchievements.push('Break Dish');
+  if (frame.reverse_dish_player_1 === player?.id || frame.reverse_dish_player_2 === player?.id)
+    myAchievements.push('Reverse Dish');
+
+  const date = frame?.fixture_date_time
+    ? new Date(frame.fixture_date_time).toLocaleDateString('en-GB', {
+        day: 'numeric',
+        month: 'short',
+      })
+    : '';
+
+  return (
+    <Pressable
+      onPress={onPress}
+      className="flex-row items-stretch overflow-hidden rounded-2xl border border-theme-gray-5 bg-bg-grouped-2">
+      <View className={`w-1.5 ${styles.bar}`} />
+      <View className="flex-1 gap-1 px-3 py-2">
+        <Text className="font-saira-medium text-sm text-text-2" numberOfLines={1}>
+          {frame?.competition_name ?? 'Fixture'}
+          {frame?.stage_name ? ` | ${frame.stage_name}` : ''}
+          {date ? ` | ${date}` : ''} | Frame {frame?.frame_number}
+        </Text>
+        <View className="flex-row items-center gap-2">
+          <View className="flex-row">
+            {opponents.map((opponent, i) => (
+              <View key={opponent?.id ?? i} style={{ marginLeft: i === 0 ? 0 : -10 }}>
+                <Avatar size={28} borderRadius={8} player={opponent} />
+              </View>
+            ))}
+          </View>
+          <View className="flex-1">
+            <Text className="font-saira-medium text-base text-text-1" numberOfLines={1}>
+              vs {opponents.map(fullName).join(' & ')}
+            </Text>
+            {partner && (
+              <Text className="font-saira text-sm text-text-2" numberOfLines={1}>
+                with {fullName(playersById.get(partner))}
+              </Text>
+            )}
+          </View>
+        </View>
+        {myAchievements.length > 0 && (
+          <View className="flex-row items-center gap-1.5">
+            {myAchievements.map((label) => {
+              const config = ACHIEVEMENT_CONFIG[label];
+              const Icon = config.icon;
+              return (
+                <View
+                  key={label}
+                  className={`flex-row items-center gap-1 rounded-full px-2 py-0.5 ${config.bgClass}`}>
+                  <Icon size={12} color={config.color} />
+                  <Text className={`font-saira-medium text-xs ${config.textClass}`}>{label}</Text>
+                </View>
+              );
+            })}
+          </View>
+        )}
+      </View>
+      <View className="items-center justify-center pr-3">
+        <Text className={`rounded-full px-3 py-1 font-saira-semibold text-base ${styles.pill}`}>
+          {result}
+          {frame?.forfeited ? '*' : ''}
+        </Text>
+      </View>
+    </Pressable>
   );
 };
 

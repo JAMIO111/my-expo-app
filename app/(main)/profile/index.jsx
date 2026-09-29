@@ -28,7 +28,7 @@ import { trophyIcons } from '@lib/badgeIcons';
 import usePlayerAwards from '@hooks/usePlayerAwards';
 import { useTheme } from '@contexts/ThemeProvider';
 import usePlayerRecentFrames from '@hooks/usePlayerRecentFrames';
-import { FrameRow } from '@components/PlayerFrameList';
+import { FramePreviewRow } from '@components/PlayerFrameList';
 
 const ProfilePage = () => {
   const { colors: themeColors } = useTheme();
@@ -36,11 +36,12 @@ const ProfilePage = () => {
   const { player, currentRole } = useUser();
   const { data: globalRank, isLoading: isGlobalRankLoading } = useGlobalRank(player?.id);
   const { data: recentBadges, isLoading: isRecentBadgesLoading } = useRecentBadges(player?.id);
-  const { data: recentFrames, isLoading: isRecentFramesLoading } = usePlayerRecentFrames(
-    player?.id
-  );
-
-  console.log('Recent Frames:', recentFrames);
+  const {
+    frames: recentFrames,
+    playersById: recentFramePlayers,
+    isLoading: isRecentFramesLoading,
+    isError: isRecentFramesError,
+  } = usePlayerRecentFrames(player?.id);
 
   const {
     data: playerAwards,
@@ -111,7 +112,7 @@ const ProfilePage = () => {
                   <Ionicons name="earth" size={24} color="white" />
                   <Text className="text-center font-saira text-lg text-text-on-brand">Rank</Text>
                   <Text className="text-center font-saira-semibold text-2xl text-white">
-                    {isGlobalRankLoading ? '...' : (globalRank?.rank ?? 'N/A')}
+                    {isGlobalRankLoading ? '...' : globalRank?.rank ?? 'N/A'}
                   </Text>
                 </View>
               </View>
@@ -225,17 +226,20 @@ const ProfilePage = () => {
               className="gap-2 border border-theme-gray-4 bg-bg-1 p-3">
               {isRecentFramesLoading ? (
                 <Text className="text-center text-text-2">Loading recent frames...</Text>
-              ) : recentFrames?.frames?.length > 0 ? (
-                recentFrames.frames.map((frame) => (
-                  <FrameRow
+              ) : isRecentFramesError ? (
+                <Text className="text-center text-text-2">Couldn't load recent frames.</Text>
+              ) : recentFrames.length > 0 ? (
+                recentFrames.map((frame) => (
+                  <FramePreviewRow
                     key={frame.id}
                     frame={frame}
-                    playersById={playersById}
+                    playersById={recentFramePlayers}
                     player={player}
+                    onPress={() => router.push('/profile/frames')}
                   />
                 ))
               ) : (
-                <Text className="text-center text-text-2">No recent frames available.</Text>
+                <Text className="text-center text-text-2">No frames played yet.</Text>
               )}
               <CTAButton
                 text="View All Frames"
