@@ -1,9 +1,9 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
 import { View, Text, StyleSheet, Animated, Pressable } from 'react-native';
 import { BlurView } from 'expo-blur';
 import { useRouter } from 'expo-router';
 import CTAButton from '@components/CTAButton';
-import UpgradeSheet from '@components/UpgradeSheet';
+import { useUpgradeSheet } from '@contexts/UpgradeSheetProvider';
 import { useRevenueCat } from '@contexts/RevenueCatProvider';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { Gem } from 'lucide-react-native';
@@ -27,7 +27,7 @@ const ProGate = ({
   description,
 }) => {
   const router = useRouter();
-  const [sheetVisible, setSheetVisible] = useState(false);
+  const { openUpgradeSheet } = useUpgradeSheet();
   const { isPro, isCore } = useRevenueCat();
 
   // ── entitlement rank system
@@ -101,11 +101,6 @@ const ProGate = ({
   if (mode === 'hide') return null;
 
   if (mode === 'click') {
-    const goToPaywall = () => {
-      setSheetVisible(false);
-      router.push(paywallRoute);
-    };
-
     return (
       <View style={styles.wrapper}>
         {/* Content looks normal but can't be interacted with */}
@@ -114,15 +109,14 @@ const ProGate = ({
           accessibilityRole="button"
           accessibilityLabel={`${title} – upgrade to unlock`}
           style={StyleSheet.absoluteFill}
-          onPress={() => setSheetVisible(true)}
-        />
-        <UpgradeSheet
-          visible={sheetVisible}
-          onClose={() => setSheetVisible(false)}
-          onUpgrade={goToPaywall}
-          title={title}
-          planName={planName}
-          description={description}
+          onPress={() =>
+            openUpgradeSheet({
+              title,
+              planName,
+              description,
+              onUpgrade: () => router.push(paywallRoute),
+            })
+          }
         />
       </View>
     );

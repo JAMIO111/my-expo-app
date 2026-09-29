@@ -33,6 +33,7 @@ import RevenueCatProvider from '@contexts/RevenueCatProvider';
 import { NotificationsPanelProvider } from '@contexts/NotificationsPanelProvider';
 import { BadgeUnlockProvider } from '@contexts/BadgeUnlockProvider';
 import { ThemeProvider } from '@contexts/ThemeProvider';
+import { UpgradeSheetProvider } from '@contexts/UpgradeSheetProvider';
 import { useUnseenBadgesTrigger } from '@hooks/useUnseenBadgesTrigger';
 import mobileAds from 'react-native-google-mobile-ads';
 
@@ -90,9 +91,11 @@ export default function RootLayout() {
                       <BadgeUnlockProvider>
                         <BadgeTrigger />
                         <BottomSheetModalProvider>
-                          <View className={`flex-1 bg-brand`}>
-                            <Slot />
-                          </View>
+                          <UpgradeSheetProvider>
+                            <View className={`flex-1 bg-brand`}>
+                              <Slot />
+                            </View>
+                          </UpgradeSheetProvider>
                         </BottomSheetModalProvider>
                         <Toast
                           config={toastConfig}
