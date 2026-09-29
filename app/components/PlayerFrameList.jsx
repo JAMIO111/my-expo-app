@@ -43,6 +43,37 @@ const ACHIEVEMENT_CONFIG = {
   },
 };
 
+// Frames are shown for every fixture, not just approved ones; anything not yet
+// approved gets a badge (fixture_status comes from get_player_frames).
+const FIXTURE_STATUS_CONFIG = {
+  pending: {
+    label: 'Awaiting approval',
+    bgClass: 'bg-theme-orange/15',
+    textClass: 'text-theme-orange',
+  },
+  disputed: { label: 'Disputed', bgClass: 'bg-theme-red/15', textClass: 'text-theme-red' },
+  escalated: {
+    label: 'Escalated',
+    bgClass: 'bg-theme-purple/15',
+    textClass: 'text-theme-purple',
+  },
+  in_progress: {
+    label: 'In progress',
+    bgClass: 'bg-theme-blue/15',
+    textClass: 'text-theme-blue',
+  },
+};
+
+const FixtureStatusBadge = ({ status }) => {
+  const config = FIXTURE_STATUS_CONFIG[status];
+  if (!config) return null;
+  return (
+    <View className={`self-start rounded-full px-2 py-0.5 ${config.bgClass}`}>
+      <Text className={`font-saira-medium text-xs ${config.textClass}`}>{config.label}</Text>
+    </View>
+  );
+};
+
 const AchievementCard = ({ player, labels }) => {
   return (
     <View className="my-1 gap-2 rounded-2xl border border-theme-gray-5 bg-bg-grouped-3 px-3 py-2">
@@ -121,6 +152,7 @@ export const FrameRow = ({ frame, playersById, player }) => {
             | Frame {frame?.frame_number}
           </Text>
         </View>
+        <FixtureStatusBadge status={frame.fixture_status} />
       </View>
       <View className="flex-row items-center justify-between gap-2 px-3 py-1">
         <PlayerCard player={homePlayer1} side="home" />
@@ -211,6 +243,7 @@ export const FramePreviewRow = ({ frame, playersById, player, onPress }) => {
           {frame?.stage_name ? ` | ${frame.stage_name}` : ''}
           {date ? ` | ${date}` : ''} | Frame {frame?.frame_number}
         </Text>
+        <FixtureStatusBadge status={frame.fixture_status} />
         <View className="flex-row items-center gap-2">
           <View className="flex-row">
             {opponents.map((opponent, i) => (
