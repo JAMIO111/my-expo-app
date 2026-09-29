@@ -1,20 +1,22 @@
+import { useEffect, useMemo, useRef, useState } from 'react';
 import {
-  Pressable,
-  StyleSheet,
-  Text,
-  View,
-  Image,
-  Modal,
+  ActivityIndicator,
   Animated,
   Easing,
+  Image,
   Linking,
+  Modal,
+  Pressable,
+  ScrollView,
+  Text,
+  View,
 } from 'react-native';
-import { useEffect, useRef, useState } from 'react';
 import IonIcons from 'react-native-vector-icons/Ionicons';
+import { Gem } from 'lucide-react-native';
+import Purchases from 'react-native-purchases';
+import Toast from 'react-native-toast-message';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import CTAButton from '@components/CTAButton';
-import { ScrollView, Switch } from 'react-native-gesture-handler';
-import { ActivityIndicator } from 'react-native';
-import Purchases, { INTRO_ELIGIBILITY_STATUS } from 'react-native-purchases';
 import {
   useOfferings,
   usePurchase,
@@ -22,13 +24,57 @@ import {
   useRevenueCat,
 } from '@contexts/RevenueCatProvider';
 import { useTheme } from '@contexts/ThemeProvider';
-import Toast from 'react-native-toast-message';
 
-const reviews = [
+// ─── Static content ────────────────────────────────────────────────────────────
+// Only list what each tier genuinely unlocks -- Core is everything behind the
+// ProGate/Core checks; Pro additionally removes ads (AdBanner). Extend the Pro
+// list here as more Pro-only features ship.
+const TIER_INFO = {
+  core: {
+    name: 'Core',
+    tagline: 'Everything you need to follow your league',
+    benefits: [
+      { text: 'Live results as they happen', icon: 'play-outline' },
+      { text: 'In-depth team & player stats', icon: 'stats-chart-outline' },
+      { text: 'All upcoming fixtures', icon: 'calendar-outline' },
+      { text: 'Leaderboards & global rankings', icon: 'podium-outline' },
+      { text: 'Exclusive badges & trophy cabinet', icon: 'trophy-outline' },
+    ],
+  },
+  pro: {
+    name: 'Pro',
+    tagline: 'The full Break Room experience',
+    benefits: [
+      { text: 'Everything in Core', icon: 'checkmark-done-outline' },
+      { text: 'Ad-free experience', icon: 'eye-off-outline' },
+    ],
+  },
+};
+
+const PLAN_IMAGES = {
+  pro: {
+    monthly: require('@assets/pro-monthly.png'),
+    annual: require('@assets/pro-annual.png'),
+  },
+  core: {
+    monthly: require('@assets/core-monthly.png'),
+    annual: require('@assets/core-annual.png'),
+  },
+};
+
+const SCREENSHOTS = [
+  require('@assets/league-table-light.png'),
+  require('@assets/trophy-cabinet-light.png'),
+  require('@assets/live-fixtures-light.png'),
+  require('@assets/stats-light.png'),
+  require('@assets/home-dashboard-light.png'),
+];
+
+const REVIEWS = [
   {
     id: '1',
     title: 'I love this app!',
-    body: 'Its great seeing the scores come in live as they happen! ',
+    body: 'Its great seeing the scores come in live as they happen!',
     avatar: require('@assets/avatar.jpg'),
     rating: 5,
   },
@@ -48,30 +94,103 @@ const reviews = [
   },
 ];
 
-const ReviewCard = ({ item }) => {
-  return (
-    <View
-      style={{ width: 300, flexShrink: 0 }}
-      className="mb-8 rounded-3xl bg-bg-grouped-2 px-6 py-4 shadow-sm">
-      <View className="mb-4 flex-row items-center justify-between">
-        <Image contentFit="contain" className="h-12 w-12 rounded-xl border" source={item.avatar} />
+const capitalise = (str) => (str ? str.charAt(0).toUpperCase() + str.slice(1) : '');
 
-        <View className="ml-2 flex-row">
-          {Array.from({ length: item.rating }, (_, i) => (
-            <IonIcons key={i} name="star" size={24} color="#FFD700" />
-          ))}
-        </View>
-      </View>
-
-      <Text className="font-saira-medium text-xl text-text-1">"{item.title}"</Text>
-
-      <Text className="mt-2 font-saira text-lg text-text-2">"{item.body}"</Text>
+// ─── Small pieces ──────────────────────────────────────────────────────────────
+const BenefitRow = ({ text, icon }) => (
+  <View className="flex-row items-center gap-3">
+    <View className="h-9 w-9 items-center justify-center rounded-xl bg-brand">
+      <IonIcons name={icon} size={20} color="white" />
     </View>
+    <Text className="flex-1 font-saira-medium text-lg text-text-1">{text}</Text>
+  </View>
+);
+
+const ReviewCard = ({ item }) => (
+  <View
+    style={{ width: 280 }}
+    className="rounded-3xl border border-theme-gray-5 bg-bg-grouped-2 p-5">
+    <View className="mb-3 flex-row items-center justify-between">
+      <Image source={item.avatar} className="h-10 w-10 rounded-xl" />
+      <View className="flex-row">
+        {Array.from({ length: item.rating }, (_, i) => (
+          <IonIcons key={i} name="star" size={18} color="#FFD700" />
+        ))}
+      </View>
+    </View>
+    <Text className="font-saira-semibold text-lg text-text-1">{item.title}</Text>
+    <Text className="mt-1 font-saira text-base text-text-2">{item.body}</Text>
+  </View>
+);
+
+const Segmented = ({ options, value, onChange }) => (
+  <View className="flex-row rounded-2xl border border-theme-gray-5 bg-bg-grouped-2 p-1">
+    {options.map((opt) => {
+      const active = opt.value === value;
+      return (
+        <Pressable
+          key={opt.value}
+          onPress={() => onChange(opt.value)}
+          className={`flex-1 flex-row items-center justify-center gap-2 rounded-xl py-3 ${
+            active ? 'bg-brand' : ''
+          }`}>
+          <Text className={`font-saira-semibold text-lg ${active ? 'text-white' : 'text-text-2'}`}>
+            {opt.label}
+          </Text>
+          {opt.badge ? (
+            <View
+              className={`rounded-full px-2 py-0.5 ${active ? 'bg-white/25' : 'bg-theme-green/20'}`}>
+              <Text
+                className={`font-saira-semibold text-xs ${active ? 'text-white' : 'text-theme-green'}`}>
+                {opt.badge}
+              </Text>
+            </View>
+          ) : null}
+        </Pressable>
+      );
+    })}
+  </View>
+);
+
+const TierCard = ({ tier, plan, selected, onPress }) => {
+  const info = TIER_INFO[tier];
+  return (
+    <Pressable
+      onPress={onPress}
+      className={`flex-row items-center gap-4 rounded-3xl border-2 bg-bg-grouped-2 p-3 pr-4 ${
+        selected ? 'border-theme-purple' : 'border-transparent'
+      }`}>
+      <Image
+        source={PLAN_IMAGES[tier]?.[plan?.interval ?? 'monthly']}
+        resizeMode="contain"
+        className="h-16 w-16 rounded-2xl"
+      />
+      <View className="flex-1">
+        <Text className="font-saira-semibold text-2xl text-text-1">{info.name}</Text>
+        <Text className="font-saira text-sm text-text-2" numberOfLines={2}>
+          {info.tagline}
+        </Text>
+      </View>
+      <View className="items-end">
+        <Text className="font-saira-semibold text-xl text-text-1">
+          {plan?.displayPrice ?? '--'}
+        </Text>
+        <Text className="font-saira text-sm text-text-2">
+          per {plan?.interval === 'annual' ? 'year' : 'month'}
+        </Text>
+      </View>
+      <View
+        className={`h-7 w-7 items-center justify-center rounded-full border-2 ${
+          selected ? 'border-theme-purple bg-theme-purple' : 'border-theme-gray-4'
+        }`}>
+        {selected ? <IonIcons name="checkmark" size={18} color="white" /> : null}
+      </View>
+    </Pressable>
   );
 };
 
+// ─── Paywall ───────────────────────────────────────────────────────────────────
 const BasicPaywall = () => {
-  // ─── RC hooks ────────────────────────────────────────────────────────────────
   const { offerings, fetch: fetchOfferings, isLoading: offeringsLoading } = useOfferings();
   const { customerInfo } = useCustomerInfo();
   const {
@@ -81,162 +200,105 @@ const BasicPaywall = () => {
     clearError: clearPurchaseError,
   } = usePurchase();
   const { isPro, isCore } = useRevenueCat();
+  const { colors: themeColors } = useTheme();
+  const insets = useSafeAreaInsets();
 
-  console.log('Offerings in Paywall:', offerings);
-
-  // ─── Local state ─────────────────────────────────────────────────────────────
-  const [selectedBilling, setSelectedBilling] = useState('monthly');
-  const [selectedTier, setSelectedTier] = useState(null);
-  const [selectedPlan, setSelectedPlan] = useState(null);
+  const [selectedBilling, setSelectedBilling] = useState('annual');
+  const [selectedTierState, setSelectedTierState] = useState(null);
   const [fullscreenImage, setFullscreenImage] = useState(null);
-  const [isTrialEnabled, setIsTrialEnabled] = useState(false);
-  const [introEligibility, setIntroEligibility] = useState({});
   const [isSubscribing, setIsSubscribing] = useState(false);
   const [isRestoring, setIsRestoring] = useState(false);
+  const [isManaging, setIsManaging] = useState(false);
 
   const scaleAnim = useRef(new Animated.Value(0.8)).current;
   const opacityAnim = useRef(new Animated.Value(0)).current;
-  const { colors: themeColors } = useTheme();
-  const scrollRef = useRef(null);
 
-  const isLoading = offeringsLoading || isSubscribing || isRestoring;
+  const isBusy = isSubscribing || isRestoring;
 
-  // ─── Derive subscriptions list from RC packages ───────────────────────────────
-  // Packages use identifiers like "core.monthly", "pro.annual" etc.
-  const packages = offerings?.current?.availablePackages ?? [];
+  // The paywall adapts to what the user already has:
+  //   free -> offered Core or Pro; Core -> offered Pro only; Pro -> nothing to buy.
+  const currentTier = isPro ? 'pro' : isCore ? 'core' : null;
+  const availableTiers = isPro ? [] : isCore ? ['pro'] : ['core', 'pro'];
+  const selectedTier = availableTiers.includes(selectedTierState)
+    ? selectedTierState
+    : availableTiers[0] ?? null;
 
-  const subscriptions = packages.map((pkg) => {
-    const [tier, interval] = pkg.identifier.split('.');
-    return {
-      tier,
-      interval,
-      displayPrice: pkg.product.priceString,
-      price: pkg.product.price,
-      package: pkg,
-    };
-  });
+  // Packages are identified like "core.monthly", "pro.annual".
+  const subscriptions = useMemo(
+    () =>
+      (offerings?.current?.availablePackages ?? []).map((pkg) => {
+        const [tier, interval] = pkg.identifier.split('.');
+        return {
+          tier,
+          interval,
+          displayPrice: pkg.product.priceString,
+          price: pkg.product.price,
+          package: pkg,
+        };
+      }),
+    [offerings]
+  );
 
-  // ─── Derive current plan info from customerInfo ───────────────────────────────
+  const findPlan = (tier, interval) =>
+    subscriptions.find((p) => p.tier === tier && p.interval === interval);
+
+  const savingsPercent = (tier) => {
+    const monthly = findPlan(tier, 'monthly')?.price;
+    const annual = findPlan(tier, 'annual')?.price;
+    if (!monthly || !annual) return 0;
+    return Math.round(((monthly * 12 - annual) / (monthly * 12)) * 100);
+  };
+
+  const selectedPlan = selectedTier ? findPlan(selectedTier, selectedBilling) : null;
+  // Only claim a *free* trial when the intro price really is free (an intro offer
+  // can also be a paid discount); RevenueCat/the store applies it if eligible.
+  const introPrice = selectedPlan?.package?.product?.introPrice;
+  const hasTrial = introPrice != null && introPrice.price === 0;
+
   const activeEntitlement =
-    isPro || isCore
-      ? customerInfo?.entitlements?.active?.['isPro'] ||
-        customerInfo?.entitlements?.active?.['isCore']
-      : null;
-
+    customerInfo?.entitlements?.active?.['isPro'] ??
+    customerInfo?.entitlements?.active?.['isCore'] ??
+    null;
   const currentProductId = activeEntitlement?.productIdentifier ?? null;
-
-  // Match the active product back to one of our packages so we know tier + interval
-  const currentPackage = packages.find((pkg) => pkg.product.productIdentifier === currentProductId);
+  const currentPackage = (offerings?.current?.availablePackages ?? []).find(
+    (pkg) => pkg.product.productIdentifier === currentProductId
+  );
   const currentInterval = currentPackage?.identifier?.split('.')?.[1] ?? null;
+  const currentPlanLabel = currentTier
+    ? `${TIER_INFO[currentTier].name}${currentInterval ? ` – ${capitalise(currentInterval)}` : ''}`
+    : 'Free';
 
-  // "subscription" here mirrors the old hook's truthiness check (any active plan)
-  const subscription = isPro || isCore ? activeEntitlement : null;
-
-  // ─── Fetch offerings on mount ─────────────────────────────────────────────────
   useEffect(() => {
     fetchOfferings();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Is the currently selected plan's product eligible for an intro offer?
-  const selectedProductId = selectedPlan?.package?.product?.productIdentifier;
-  const hasTrial = selectedPlan?.package?.product?.introPrice != null;
-  const isTrialEligible = hasTrial;
-
-  // ─── Percentage-off calculations ─────────────────────────────────────────────
-  const proPercentageOff = subscriptions.length
-    ? Math.round(
-        ((subscriptions.find((p) => p.tier === 'pro' && p.interval === 'monthly')?.price * 12 -
-          subscriptions.find((p) => p.tier === 'pro' && p.interval === 'annual')?.price) /
-          (subscriptions.find((p) => p.tier === 'pro' && p.interval === 'monthly')?.price * 12)) *
-          100
-      )
-    : 0;
-
-  const corePercentageOff = subscriptions.length
-    ? Math.round(
-        ((subscriptions.find((p) => p.tier === 'core' && p.interval === 'monthly')?.price * 12 -
-          subscriptions.find((p) => p.tier === 'core' && p.interval === 'annual')?.price) /
-          (subscriptions.find((p) => p.tier === 'core' && p.interval === 'monthly')?.price * 12)) *
-          100
-      )
-    : 0;
-
   // RevenueCatProvider never throws -- it stores failures in `error` (user
   // cancellations are deliberately not stored), so surface them here.
   useEffect(() => {
     if (!purchaseError) return;
-    Toast.show({
-      type: 'error',
-      text1: 'Purchase failed',
-      text2: purchaseError.message,
-    });
+    Toast.show({ type: 'error', text1: 'Purchase failed', text2: purchaseError.message });
     clearPurchaseError();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [purchaseError]);
 
-  // ─── Actions ──────────────────────────────────────────────────────────────────
-  const handleSubscribe = async (plan) => {
-    if (!plan?.package) return;
-    setIsSubscribing(true);
-    try {
-      // RC automatically applies the intro offer when the user is eligible —
-      // no separate "purchase with trial" call is needed.
-      const info = await rcPurchase(plan.package);
-      if (info) Toast.show({ type: 'success', text1: 'Subscription started' });
-    } finally {
-      setIsSubscribing(false);
-    }
-  };
-
-  const handleRestore = async () => {
-    setIsRestoring(true);
-    try {
-      const info = await rcRestore();
-      if (info) Toast.show({ type: 'success', text1: 'Purchases Restored' });
-      return info;
-    } finally {
-      setIsRestoring(false);
-    }
-  };
-
-  // ─── Modal animations ─────────────────────────────────────────────────────────
-  const planImages = {
-    pro: {
-      monthly: require('@assets/pro-monthly.png'),
-      annual: require('@assets/pro-annual.png'),
-    },
-    core: {
-      monthly: require('@assets/core-monthly.png'),
-      annual: require('@assets/core-annual.png'),
-    },
-  };
-
-  const screenshots = [
-    require('@assets/league-table-light.png'),
-    require('@assets/trophy-cabinet-light.png'),
-    require('@assets/live-fixtures-light.png'),
-    require('@assets/stats-light.png'),
-    require('@assets/home-dashboard-light.png'),
-  ];
-
   useEffect(() => {
-    if (fullscreenImage) {
-      Animated.parallel([
-        Animated.timing(scaleAnim, {
-          toValue: 1,
-          duration: 250,
-          useNativeDriver: true,
-          easing: Easing.out(Easing.ease),
-        }),
-        Animated.timing(opacityAnim, {
-          toValue: 1,
-          duration: 250,
-          useNativeDriver: true,
-          easing: Easing.out(Easing.ease),
-        }),
-      ]).start();
-    }
-  }, [fullscreenImage]);
+    if (!fullscreenImage) return;
+    Animated.parallel([
+      Animated.timing(scaleAnim, {
+        toValue: 1,
+        duration: 250,
+        useNativeDriver: true,
+        easing: Easing.out(Easing.ease),
+      }),
+      Animated.timing(opacityAnim, {
+        toValue: 1,
+        duration: 250,
+        useNativeDriver: true,
+        easing: Easing.out(Easing.ease),
+      }),
+    ]).start();
+  }, [fullscreenImage, scaleAnim, opacityAnim]);
 
   const handleCloseModal = () => {
     Animated.parallel([
@@ -255,352 +317,325 @@ const BasicPaywall = () => {
     ]).start(() => setFullscreenImage(null));
   };
 
-  // ─── Render ───────────────────────────────────────────────────────────────────
+  const handleSubscribe = async () => {
+    if (!selectedPlan?.package) return;
+    setIsSubscribing(true);
+    try {
+      // RevenueCat applies the intro/trial offer automatically when eligible.
+      const info = await rcPurchase(selectedPlan.package);
+      if (info) Toast.show({ type: 'success', text1: 'Subscription started' });
+    } finally {
+      setIsSubscribing(false);
+    }
+  };
+
+  const handleRestore = async () => {
+    setIsRestoring(true);
+    try {
+      const info = await rcRestore();
+      if (info) Toast.show({ type: 'success', text1: 'Purchases Restored' });
+    } finally {
+      setIsRestoring(false);
+    }
+  };
+
+  const handleManage = async () => {
+    setIsManaging(true);
+    try {
+      await Purchases.showManageSubscriptions();
+    } catch (err) {
+      console.error('Failed to open manage subscriptions:', err);
+      Toast.show({
+        type: 'error',
+        text1: "Couldn't open subscription management",
+        text2: err.message,
+      });
+    } finally {
+      setIsManaging(false);
+    }
+  };
+
+  // ─── Copy that depends on the plan ──────────────────────────────────────────
+  const hero = isPro
+    ? {
+        eyebrow: 'PRO MEMBER',
+        title: "You're on the Pro plan",
+        subtitle: 'Thanks for supporting Break Room. Here is everything you have unlocked.',
+      }
+    : isCore
+      ? {
+          eyebrow: 'UPGRADE TO PRO',
+          title: 'Take Break Room further',
+          subtitle: 'You already have Core. Go Pro for the complete experience.',
+        }
+      : {
+          eyebrow: 'BREAK ROOM PREMIUM',
+          title: "Unlock everyone's stats",
+          subtitle: 'Follow every frame, track your progress and climb the leaderboards.',
+        };
+
+  // Pro users see everything they have; Core users see what Pro adds; free users see Core.
+  const benefitsHeading = isPro
+    ? 'Your Pro benefits'
+    : isCore
+      ? 'What you get with Pro'
+      : `What's included in ${TIER_INFO[selectedTier ?? 'core'].name}`;
+  const benefits = isPro
+    ? [...TIER_INFO.core.benefits, ...TIER_INFO.pro.benefits.slice(1)]
+    : TIER_INFO[selectedTier ?? 'core'].benefits;
+
+  const ctaLabel = isBusy
+    ? 'Processing...'
+    : !selectedPlan
+      ? 'Select a plan'
+      : hasTrial
+        ? 'Start Free Trial'
+        : isCore
+          ? 'Upgrade to Pro'
+          : `Get ${TIER_INFO[selectedTier].name}`;
+
+  const summary = selectedPlan
+    ? `${selectedPlan.displayPrice} per ${selectedBilling === 'annual' ? 'year' : 'month'}`
+    : null;
+
+  const showPurchaseUI = availableTiers.length > 0;
+  const annualSaving = selectedTier ? savingsPercent(selectedTier) : 0;
+
   return (
-    <>
+    <View className="flex-1 bg-bg-grouped-1">
       {(isRestoring || isSubscribing) && (
         <View
-          className="absolute z-10 flex-1 items-center justify-center bg-black/40 px-4"
-          style={{
-            width: '100%',
-            height: '100%',
-            position: 'absolute',
-            justifyContent: 'center',
-            alignItems: 'center',
-          }}>
-          <View className="gap-3 rounded-xl bg-bg-1 p-8">
+          className="absolute inset-0 z-10 items-center justify-center bg-black/40 px-4"
+          pointerEvents="auto">
+          <View className="gap-3 rounded-2xl bg-bg-1 p-8">
             <ActivityIndicator size="large" color={themeColors.primaryText} />
-            <Text className="mt-4 text-center font-saira-medium text-xl text-text-1">
+            <Text className="mt-2 text-center font-saira-medium text-xl text-text-1">
               {isRestoring ? 'Restoring purchases...' : 'Processing subscription...'}
             </Text>
           </View>
         </View>
       )}
 
-      <ScrollView ref={scrollRef} className="relative w-full flex-1 bg-bg-grouped-1 py-6">
-        <Text
-          style={{ lineHeight: 44 }}
-          className="px-6 text-left font-delagothic text-4xl text-text-1">
-          {!isPro && !isCore
-            ? "Get Access to everyone's stats for just £1.99/month"
-            : isCore
-              ? 'Go Pro and unlock exclusive insights and features!'
-              : "You're on the Pro plan! Thanks for your support!"}
-        </Text>
-
-        <View className="my-6 mt-8 w-full px-6">
-          {!isPro && (
-            <CTAButton
-              type="yellow"
-              textColor="black"
-              text="Upgrade Now!"
-              callbackFn={() => scrollRef.current?.scrollToEnd({ animated: true })}
-            />
-          )}
-        </View>
-
-        <View className="mb-5 w-full items-start justify-start gap-4 rounded-2xl p-6">
-          {[
-            { text: 'Access to Live Results', icon: 'play-outline' },
-            { text: 'In Depth Team & Player Stats', icon: 'list-outline' },
-            { text: 'See All Upcoming Fixtures', icon: 'calendar-outline' },
-            { text: 'Climb the Leaderboards', icon: 'podium-outline' },
-            { text: 'Unlock Exclusive Badges', icon: 'star-outline' },
-          ].map((item, idx) => (
-            <View key={idx} className="flex-row items-center justify-start gap-3">
-              <View
-                style={{ padding: 5 }}
-                className="rounded-xl border-2 border-brand bg-brand-light">
-                <IonIcons name={item.icon} size={24} color="white" />
-              </View>
-              <Text className="font-saira-medium text-xl text-text-1">{item.text}</Text>
+      <ScrollView
+        className="flex-1"
+        contentContainerStyle={{ paddingBottom: showPurchaseUI ? 24 : insets.bottom + 24 }}
+        showsVerticalScrollIndicator={false}>
+        {/* ── Hero ── */}
+        <View
+          style={{ borderBottomLeftRadius: 32, borderBottomRightRadius: 32 }}
+          className="bg-brand px-6 pb-8 pt-6">
+          <View className="mb-4 flex-row items-center justify-between">
+            <View className="flex-row items-center gap-2 rounded-full bg-white/15 px-3 py-1.5">
+              <Gem size={14} color="#FFD700" />
+              <Text className="font-saira-semibold text-xs tracking-widest text-white">
+                {hero.eyebrow}
+              </Text>
             </View>
-          ))}
-        </View>
-        <View className="gap-6 border-y border-theme-gray-5 bg-bg-grouped-2 px-6 py-6">
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} className="w-full">
-            {screenshots.map((src, idx) => (
-              <View key={idx} className="pr-8">
-                <Pressable onPress={() => setFullscreenImage(src)}>
-                  <View
-                    style={{ borderRadius: 17 }}
-                    className="overflow-hidden bg-theme-gray-1 p-1">
-                    <Image
-                      contentFit="contain"
-                      className="mx-auto h-96 w-48 rounded-2xl"
-                      source={src}
-                    />
-                  </View>
-                </Pressable>
-              </View>
-            ))}
-          </ScrollView>
-          <Pressable
-            className="mt-2 flex-row items-center gap-3 rounded-2xl border border-brand-dark bg-brand p-4"
-            onPress={() => Linking.openURL('https://www.break-room.uk/features')}>
-            <IonIcons name="information-circle-outline" size={24} color="#fff" />
-            <Text className="flex-1 font-saira-medium text-lg text-white">
-              See more about features here
-            </Text>
-            <IonIcons name="arrow-forward" size={20} color="#fff" />
-          </Pressable>
+            <View className="rounded-full bg-black/25 px-3 py-1.5">
+              <Text className="font-saira-medium text-xs text-white">
+                Your plan: {currentPlanLabel}
+              </Text>
+            </View>
+          </View>
+          <Text style={{ lineHeight: 42 }} className="font-delagothic text-4xl text-white">
+            {hero.title}
+          </Text>
+          <Text className="mt-3 font-saira text-lg text-white/80">{hero.subtitle}</Text>
         </View>
 
-        <Modal visible={!!fullscreenImage} transparent>
-          <Pressable
-            style={{
-              flex: 1,
-              backgroundColor: 'rgba(0,0,0,0.8)',
-              justifyContent: 'center',
-              alignItems: 'center',
-            }}
-            onPress={handleCloseModal}>
-            <Animated.Image
-              source={fullscreenImage}
-              style={{
-                width: '100%',
-                height: '100%',
-                resizeMode: 'contain',
-                transform: [{ scale: scaleAnim }],
-                opacity: opacityAnim,
-              }}
+        {/* ── Plan picker ── */}
+        {showPurchaseUI && (
+          <View className="mt-6 gap-4 px-4">
+            <Segmented
+              value={selectedBilling}
+              onChange={setSelectedBilling}
+              options={[
+                { value: 'monthly', label: 'Monthly' },
+                {
+                  value: 'annual',
+                  label: 'Annual',
+                  badge: annualSaving > 0 ? `Save ${annualSaving}%` : null,
+                },
+              ]}
             />
-          </Pressable>
-        </Modal>
 
-        <View className="w-full pt-8">
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={{
-              flexDirection: 'row',
-              gap: 20,
-              paddingHorizontal: 20,
-            }}>
-            {reviews.map((item) => (
-              <ReviewCard key={item.id} item={item} />
-            ))}
-          </ScrollView>
-
-          {/* ── Plan cards ── */}
-          <View className="mt-4 w-full gap-4 overflow-visible px-4">
-            {subscriptions && subscriptions.length > 0 ? (
-              subscriptions
-                .sort(
-                  (a, b) =>
-                    (a.tier === 'pro' ? 1 : 0) - (b.tier === 'pro' ? 1 : 0) ||
-                    (a.interval === 'annual' ? 1 : 0) - (b.interval === 'annual' ? 1 : 0)
-                )
-                .map((plan, idx) => {
-                  const isCurrentPlan = currentProductId === plan.package.product.identifier;
-
-                  console.log('Current Product ID:', currentProductId);
-                  console.log('Plan Product ID:', plan.package.product.identifier);
-
-                  return (
-                    <Pressable
-                      key={idx}
-                      disabled={isCurrentPlan || isLoading}
-                      onPress={() => {
-                        if (isCurrentPlan) return;
-                        setSelectedBilling(plan.interval);
-                        setSelectedTier(plan.tier);
-                        setSelectedPlan(plan);
-                      }}
-                      className={`relative w-full flex-row items-center justify-start gap-4 rounded-3xl border-2 bg-bg-grouped-2 p-2 pr-5 shadow-sm ${
-                        isCurrentPlan
-                          ? 'border-brand opacity-50'
-                          : selectedBilling === plan.interval && selectedTier === plan.tier
-                            ? 'border-theme-purple'
-                            : 'border-transparent'
-                      }`}>
-                      <Image
-                        contentFit="contain"
-                        className="h-20 w-20 rounded-2xl"
-                        source={planImages[plan.tier]?.[plan.interval]}
-                      />
-
-                      <View className="flex-1">
-                        <Text className="font-saira-semibold text-2xl text-text-1">
-                          {plan.tier.charAt(0)?.toUpperCase() + plan.tier.slice(1)} –{' '}
-                          {plan.interval.charAt(0)?.toUpperCase() + plan.interval.slice(1)}
-                        </Text>
-
-                        <Text className="font-saira text-xl text-text-1">
-                          {plan.displayPrice}/
-                          {plan.interval === 'monthly'
-                            ? 'month'
-                            : plan.interval === 'annual'
-                              ? 'year'
-                              : 'period'}
-                        </Text>
-
-                        {isCurrentPlan && (
-                          <Text className="font-saira text-sm text-theme-green">Current plan</Text>
-                        )}
-
-                        {isCore && plan.tier === 'pro' && (
-                          <Text className="font-saira text-sm text-theme-blue">
-                            Upgrade to Pro!
-                          </Text>
-                        )}
-
-                        {((isPro && plan.tier === 'core') ||
-                          (isPro &&
-                            currentInterval === 'annual' &&
-                            plan.interval === 'monthly')) && (
-                          <Text
-                            numberOfLines={1}
-                            ellipsizeMode="tail"
-                            className="font-saira text-sm text-theme-blue">
-                            Downgrades next billing period
-                          </Text>
-                        )}
-                      </View>
-
-                      {isCurrentPlan ? (
-                        <View
-                          style={{ borderRadius: 12 }}
-                          className="bg-theme-yellow-100 border border-brand">
-                          <View style={{ borderRadius: 10 }} className="bg-brand-light">
-                            <Text
-                              style={{ lineHeight: 20 }}
-                              className="px-2 pt-2 text-center font-saira-medium text-xl text-white">
-                              Current{'\n'}Plan
-                            </Text>
-                          </View>
-                        </View>
-                      ) : (
-                        plan.interval === 'annual' && (
-                          <View
-                            style={{ borderRadius: 12 }}
-                            className="border border-theme-purple bg-black">
-                            <View style={{ borderRadius: 10 }} className="bg-theme-purple/70">
-                              <Text
-                                style={{ lineHeight: 20 }}
-                                className="px-2 pt-2 text-center font-saira-medium text-xl text-white">
-                                {plan.tier === 'pro' ? proPercentageOff : corePercentageOff}%{'\n'}
-                                Off
-                              </Text>
-                            </View>
-                          </View>
-                        )
-                      )}
-
-                      {!isCurrentPlan && (
-                        <View
-                          className={`rounded-full border-2 p-1 ${
-                            selectedBilling === plan.interval && selectedTier === plan.tier
-                              ? 'border-theme-purple'
-                              : 'border-theme-gray-4'
-                          }`}>
-                          <IonIcons
-                            name="checkmark"
-                            size={24}
-                            color={
-                              selectedBilling === plan.interval && selectedTier === plan.tier
-                                ? themeColors.primaryText
-                                : 'transparent'
-                            }
-                          />
-                        </View>
-                      )}
-                    </Pressable>
-                  );
-                })
-            ) : isLoading ? (
-              Array.from({ length: 4 }, (_, idx) => (
-                <View
-                  key={idx}
-                  className="w-full animate-pulse flex-row items-center justify-center rounded-3xl bg-bg-1 p-4 pr-5 shadow-sm">
-                  <View className="h-20 w-20 rounded-2xl bg-theme-gray-3" />
-                  <View className="ml-4 flex-1 flex-row justify-center text-center">
-                    <Text className="items-center font-saira text-xl text-text-2">
-                      Loading subscriptions...
-                    </Text>
-                  </View>
-                </View>
+            {subscriptions.length > 0 ? (
+              availableTiers.map((tier) => (
+                <TierCard
+                  key={tier}
+                  tier={tier}
+                  plan={findPlan(tier, selectedBilling)}
+                  selected={selectedTier === tier}
+                  onPress={() => setSelectedTierState(tier)}
+                />
               ))
+            ) : offeringsLoading ? (
+              <View className="items-center rounded-3xl bg-bg-grouped-2 p-8">
+                <ActivityIndicator color={themeColors.primaryText} />
+                <Text className="mt-3 font-saira text-lg text-text-2">Loading plans...</Text>
+              </View>
             ) : (
-              <View className="w-full flex-row items-center justify-center rounded-3xl bg-bg-1 p-4 pr-5 shadow-sm">
-                <View className="items-center justify-center rounded-2xl bg-theme-red p-3">
-                  <IonIcons name="sad-outline" size={40} color={'#FFFFFF'} />
+              <View className="flex-row items-center gap-4 rounded-3xl bg-bg-grouped-2 p-4">
+                <View className="rounded-2xl bg-theme-red p-3">
+                  <IonIcons name="sad-outline" size={32} color="#FFFFFF" />
                 </View>
-                <View className="ml-4 flex-1 flex-row justify-center text-center">
-                  <Text className="items-center font-saira text-lg text-text-2">
-                    No subscription plans available at the moment. Please check back later.
-                  </Text>
-                </View>
+                <Text className="flex-1 font-saira text-lg text-text-2">
+                  No subscription plans are available right now. Please check back later.
+                </Text>
               </View>
             )}
           </View>
+        )}
 
-          {/* Trial toggle — only shown when user has no plan and a trial-eligible plan is selected */}
-          {!subscription && subscriptions && subscriptions.length > 0 && isTrialEligible && (
-            <View className="mt-6 w-full flex-row items-center justify-between px-6">
-              <Text className="font-saira-medium text-xl text-text-1">
-                Enable 14-day free trial
+        {/* ── Benefits ── */}
+        <View className="mt-6 px-4">
+          <View className="gap-4 rounded-3xl border border-theme-gray-5 bg-bg-grouped-2 p-5">
+            <Text className="font-saira-semibold text-xl text-text-1">{benefitsHeading}</Text>
+            {benefits.map((item) => (
+              <BenefitRow key={item.text} {...item} />
+            ))}
+          </View>
+        </View>
+
+        {/* ── Current plan management (paying users) ── */}
+        {currentTier && (
+          <View className="mt-6 px-4">
+            <View className="gap-3 rounded-3xl border border-theme-gray-5 bg-bg-grouped-2 p-5">
+              <Text className="font-saira-semibold text-xl text-text-1">Your subscription</Text>
+              <Text className="font-saira text-base text-text-2">
+                {currentPlanLabel}
+                {activeEntitlement?.expirationDate
+                  ? ` · ${activeEntitlement.willRenew ? 'renews' : 'ends'} ${new Date(
+                      activeEntitlement.expirationDate
+                    ).toLocaleDateString('en-GB', {
+                      day: 'numeric',
+                      month: 'short',
+                      year: 'numeric',
+                    })}`
+                  : ''}
               </Text>
-              <Switch
-                value={isTrialEnabled}
-                onValueChange={setIsTrialEnabled}
-                thumbColor={'white'}
-                trackColor={{ false: 'gray', true: '#4CAF50' }}
+              <CTAButton
+                type="default"
+                text={isManaging ? 'Opening...' : 'Manage Subscription'}
+                disabled={isManaging}
+                callbackFn={handleManage}
               />
             </View>
-          )}
-
-          <View className="mt-6 w-full px-4">
-            <CTAButton
-              type="yellow"
-              textColor="black"
-              text={
-                isLoading
-                  ? 'Processing...'
-                  : !selectedPlan
-                    ? 'Select a Plan'
-                    : isTrialEnabled && isTrialEligible
-                      ? 'Start Free Trial'
-                      : 'Upgrade Now!'
-              }
-              callbackFn={() => handleSubscribe(selectedPlan)}
-              disabled={!selectedPlan || isLoading}
-            />
           </View>
+        )}
 
-          <View className="flex-row items-center justify-between gap-3 px-6 py-8">
-            <Pressable
-              onPress={() => Linking.openURL('https://break-room.uk/privacy')}
-              className="flex-1 py-2 text-text-2 underline">
-              <Text className="text-left font-saira text-text-2 underline">Privacy Policy</Text>
+        {/* ── Screenshots ── */}
+        <View className="mt-8">
+          <Text className="mb-3 px-6 font-saira-semibold text-xl text-text-1">
+            See it in action
+          </Text>
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={{ paddingHorizontal: 16, gap: 14 }}>
+            {SCREENSHOTS.map((src, idx) => (
+              <Pressable key={idx} onPress={() => setFullscreenImage(src)}>
+                <View
+                  style={{ borderRadius: 20 }}
+                  className="overflow-hidden border border-theme-gray-5 bg-theme-gray-1 p-1">
+                  <Image resizeMode="contain" className="h-80 w-40 rounded-2xl" source={src} />
+                </View>
+              </Pressable>
+            ))}
+          </ScrollView>
+          <Pressable
+            className="mx-4 mt-4 flex-row items-center gap-3 rounded-2xl border border-theme-gray-5 bg-bg-grouped-2 p-4"
+            onPress={() => Linking.openURL('https://www.break-room.uk/features')}>
+            <IonIcons name="information-circle-outline" size={24} color={themeColors.primaryText} />
+            <Text className="flex-1 font-saira-medium text-base text-text-1">
+              See everything included on our website
+            </Text>
+            <IonIcons name="arrow-forward" size={18} color={themeColors.primaryText} />
+          </Pressable>
+        </View>
+
+        {/* ── Reviews ── */}
+        <View className="mt-8">
+          <Text className="mb-3 px-6 font-saira-semibold text-xl text-text-1">
+            Loved by players and captains
+          </Text>
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={{ paddingHorizontal: 16, gap: 14 }}>
+            {REVIEWS.map((item) => (
+              <ReviewCard key={item.id} item={item} />
+            ))}
+          </ScrollView>
+        </View>
+
+        {/* ── Footer ── */}
+        <View className="mt-8 gap-4 px-6">
+          {showPurchaseUI && (
+            <Text className="text-center font-saira text-xs text-text-3">
+              Subscriptions renew automatically unless cancelled at least 24 hours before the end of
+              the current period. Manage or cancel any time in your App Store / Google Play account
+              settings.
+            </Text>
+          )}
+          <View className="flex-row items-center justify-between">
+            <Pressable onPress={() => Linking.openURL('https://break-room.uk/privacy')}>
+              <Text className="font-saira text-text-2 underline">Privacy Policy</Text>
             </Pressable>
-
-            <Pressable
-              onPress={async () => {
-                try {
-                  await handleRestore();
-                } catch (err) {
-                  console.error('Error restoring purchases:', err);
-                }
-              }}
-              className="flex-1 py-2 text-text-2 underline">
-              <Text className="text-center font-saira text-text-2 underline">
-                Restore Purchases
-              </Text>
+            <Pressable onPress={handleRestore} disabled={isBusy}>
+              <Text className="font-saira text-text-2 underline">Restore Purchases</Text>
             </Pressable>
-
-            <Pressable
-              onPress={() => Linking.openURL('https://break-room.uk/terms')}
-              className="flex-1 py-2 text-text-2 underline">
-              <Text className="text-right font-saira text-text-2 underline">Terms of Use</Text>
+            <Pressable onPress={() => Linking.openURL('https://break-room.uk/terms')}>
+              <Text className="font-saira text-text-2 underline">Terms of Use</Text>
             </Pressable>
           </View>
         </View>
       </ScrollView>
-    </>
+
+      {/* ── Sticky purchase bar ── */}
+      {showPurchaseUI && (
+        <View
+          style={{ paddingBottom: Math.max(insets.bottom, 16) }}
+          className="gap-2 border-t border-theme-gray-5 bg-bg-grouped-1 px-4 pt-3">
+          {summary ? (
+            <Text className="text-center font-saira-medium text-base text-text-2">
+              {hasTrial ? `Free trial, then ${summary}` : summary}
+            </Text>
+          ) : null}
+          <CTAButton
+            type="yellow"
+            textColor="black"
+            text={ctaLabel}
+            lucideIcon={<Gem size={20} color="black" />}
+            callbackFn={handleSubscribe}
+            disabled={!selectedPlan || isBusy}
+          />
+        </View>
+      )}
+
+      <Modal visible={!!fullscreenImage} transparent onRequestClose={handleCloseModal}>
+        <Pressable
+          style={{
+            flex: 1,
+            backgroundColor: 'rgba(0,0,0,0.8)',
+            justifyContent: 'center',
+            alignItems: 'center',
+          }}
+          onPress={handleCloseModal}>
+          <Animated.Image
+            source={fullscreenImage}
+            style={{
+              width: '100%',
+              height: '100%',
+              resizeMode: 'contain',
+              transform: [{ scale: scaleAnim }],
+              opacity: opacityAnim,
+            }}
+          />
+        </Pressable>
+      </Modal>
+    </View>
   );
 };
 
 export default BasicPaywall;
-
-const styles = StyleSheet.create({});
