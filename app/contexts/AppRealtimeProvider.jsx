@@ -90,6 +90,12 @@ export default function AppRealtimeProvider({ children }) {
       );
 
       playerIds.forEach((id) => queryClient.invalidateQueries({ queryKey: ['PlayerStats', id] }));
+      playerIds.forEach((id) =>
+        queryClient.invalidateQueries({ queryKey: ['EntityStats', 'player', id] })
+      );
+      // Team stats are keyed by team, which the results payload doesn't carry --
+      // this only refetches team stats queries that are currently mounted.
+      queryClient.invalidateQueries({ queryKey: ['EntityStats', 'team'] });
       if (fixtureId) {
         queryClient.invalidateQueries({ queryKey: ['ResultsByFixture', fixtureId] });
         queryClient.invalidateQueries({ queryKey: ['fixture-details', fixtureId] });
@@ -138,6 +144,10 @@ export default function AppRealtimeProvider({ children }) {
       }
 
       if (fixtureId) queryClient.invalidateQueries({ queryKey: ['fixture-details', fixtureId] });
+      // Player stats only count approved fixtures, so approval changes the numbers.
+      if (payload.new?.approved !== payload.old?.approved) {
+        queryClient.invalidateQueries({ queryKey: ['EntityStats'] });
+      }
       if (
         oldMonth !== null &&
         newMonth !== null &&

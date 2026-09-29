@@ -10,7 +10,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import ChipSelector from '@components/ChipSelector';
 import CTAButton from '@components/CTAButton';
 import { useTheme } from '@contexts/ThemeProvider';
-import { EMPTY_STATS_FILTERS, countActiveFilters } from '@hooks/useFilteredEntityStats';
+import { EMPTY_STATS_FILTERS, countActiveFilters } from '@hooks/useEntityStats';
 
 const ALL = '__all';
 

@@ -1,48 +1,50 @@
 import { useMemo, useRef, useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
-import { usePlayerStats } from '@hooks/usePlayerStats';
-import { useTeamStats } from '@hooks/useTeamStats';
+import { useRouter } from 'expo-router';
 import DonutChart from './DonutChart';
 import { Zap, Undo2, ArrowUpDown } from 'lucide-react-native';
 import StatsFilterBar from './StatsFilterBar';
 import StatsFilterSheet, { FRAME_TYPE_OPTIONS, VENUE_OPTIONS } from './StatsFilterSheet';
+import { useRevenueCat } from '@contexts/RevenueCatProvider';
+import { useUpgradeSheet } from '@contexts/UpgradeSheetProvider';
 import {
   EMPTY_STATS_FILTERS,
   countActiveFilters,
-  useFilteredEntityStats,
-} from '@hooks/useFilteredEntityStats';
+  useEntityFilterOptions,
+  useEntityStats,
+} from '@hooks/useEntityStats';
 
 const EntityStats = ({ entityId, entityType }) => {
+  const router = useRouter();
+  const { isPro, isCore } = useRevenueCat();
+  const { openUpgradeSheet } = useUpgradeSheet();
+
+  // Everyone sees the basic (unfiltered) stats. The filters are visible to all
+  // but only Core and Pro members can apply them.
+  const canFilter = isPro || isCore;
+
   const [filters, setFilters] = useState(EMPTY_STATS_FILTERS);
   const [filtersOpened, setFiltersOpened] = useState(false);
   const sheetRef = useRef(null);
-  const hasFilters = countActiveFilters(filters) > 0;
 
-  const { data: playerData, error: playerError } = usePlayerStats(
-    entityType === 'player' ? entityId : null
-  );
-  const { data: teamData, error: teamError } = useTeamStats(
-    entityType === 'team' ? entityId : null
-  );
+  // A lapsed subscription falls straight back to the unfiltered view.
+  const activeFilters = canFilter ? filters : EMPTY_STATS_FILTERS;
+  const hasFilters = countActiveFilters(activeFilters) > 0;
 
-  // Filtered numbers come from a separate query. It also supplies the seasons
-  // and competitions to filter by, so it's only fetched once the sheet has been
-  // opened or a filter is active -- the default view is unchanged.
-  const filteredQuery = useFilteredEntityStats(entityType, entityId, filters, {
-    enabled: hasFilters || filtersOpened,
+  const statsQuery = useEntityStats(entityType, entityId, activeFilters);
+  const optionsQuery = useEntityFilterOptions(entityType, entityId, {
+    enabled: canFilter && filtersOpened,
   });
 
-  const unfilteredData = entityType === 'team' ? teamData : playerData;
-  const data = hasFilters ? filteredQuery.data : unfilteredData;
-  const error = entityType === 'team' ? teamError : playerError;
-  const isFilterLoading = hasFilters && filteredQuery.isFetching;
-  const seasonOptions = filteredQuery.data?.options?.seasons ?? [];
-  const competitionOptions = filteredQuery.data?.options?.competitions ?? [];
+  const data = statsQuery.data;
+  const isStatsLoading = statsQuery.isFetching;
+  const seasonOptions = optionsQuery.data?.seasons ?? [];
+  const competitionOptions = optionsQuery.data?.competitions ?? [];
 
   const activeChips = useMemo(() => {
     const nameOf = (list, id) => list.find((item) => item.id === id)?.name ?? 'Unknown';
     const chips = [];
-    filters.seasonIds.forEach((id) =>
+    activeFilters.seasonIds.forEach((id) =>
       chips.push({
         key: `season-${id}`,
         label: nameOf(seasonOptions, id),
@@ -50,7 +52,7 @@ const EntityStats = ({ entityId, entityType }) => {
           setFilters((f) => ({ ...f, seasonIds: f.seasonIds.filter((x) => x !== id) })),
       })
     );
-    filters.competitionIds.forEach((id) =>
+    activeFilters.competitionIds.forEach((id) =>
       chips.push({
         key: `competition-${id}`,
         label: nameOf(competitionOptions, id),
@@ -58,31 +60,35 @@ const EntityStats = ({ entityId, entityType }) => {
           setFilters((f) => ({ ...f, competitionIds: f.competitionIds.filter((x) => x !== id) })),
       })
     );
-    if (filters.frameType)
+    if (activeFilters.frameType)
       chips.push({
         key: 'frameType',
-        label: FRAME_TYPE_OPTIONS.find((o) => o.value === filters.frameType)?.label,
+        label: FRAME_TYPE_OPTIONS.find((o) => o.value === activeFilters.frameType)?.label,
         onRemove: () => setFilters((f) => ({ ...f, frameType: null })),
       });
-    if (filters.venue)
+    if (activeFilters.venue)
       chips.push({
         key: 'venue',
-        label: `${VENUE_OPTIONS.find((o) => o.value === filters.venue)?.label} venue`,
+        label: `${VENUE_OPTIONS.find((o) => o.value === activeFilters.venue)?.label} venue`,
         onRemove: () => setFilters((f) => ({ ...f, venue: null })),
       });
     return chips;
-  }, [filters, seasonOptions, competitionOptions]);
+  }, [activeFilters, seasonOptions, competitionOptions]);
 
   const openFilters = () => {
+    if (!canFilter) {
+      openUpgradeSheet({
+        title: 'Stat Filters',
+        planName: 'Core',
+        description:
+          'Filter your stats by season, competition, frame type and venue with a Core or Pro plan.',
+        onUpgrade: () => router.push('/(main)/home/paywall'),
+      });
+      return;
+    }
     setFiltersOpened(true);
     sheetRef.current?.present();
   };
-
-  if (error) {
-    console.error('Error fetching stats:', error);
-  } else {
-    console.log('Stats Data:', data);
-  }
 
   const StatRow = ({ label, value, color }) => (
     <View className="flex flex-row items-center gap-3">
@@ -168,10 +174,7 @@ const EntityStats = ({ entityId, entityType }) => {
   };
 
   const noMatches =
-    hasFilters &&
-    !isFilterLoading &&
-    !filteredQuery.isError &&
-    data?.totalStats?.frames_played === 0;
+    hasFilters && !isStatsLoading && !statsQuery.isError && data?.totalStats?.frames_played === 0;
 
   return (
     <View className="w-full gap-3 p-3 pb-24">
@@ -179,22 +182,23 @@ const EntityStats = ({ entityId, entityType }) => {
         activeChips={activeChips}
         onOpen={openFilters}
         onClearAll={() => setFilters(EMPTY_STATS_FILTERS)}
+        locked={!canFilter}
       />
       <StatsFilterSheet
         ref={sheetRef}
         seasons={seasonOptions}
         competitions={competitionOptions}
-        isLoadingOptions={filtersOpened && filteredQuery.isLoading}
-        optionsError={filteredQuery.isError && !filteredQuery.data}
+        isLoadingOptions={optionsQuery.isLoading}
+        optionsError={optionsQuery.isError}
         value={filters}
         onApply={setFilters}
       />
-      {hasFilters && filteredQuery.isError && (
+      {statsQuery.isError && (
         <Pressable
-          onPress={() => filteredQuery.refetch()}
+          onPress={() => statsQuery.refetch()}
           className="flex-row items-center justify-between rounded-2xl bg-theme-red/15 px-4 py-3">
           <Text className="flex-1 font-saira-medium text-base text-theme-red">
-            Couldn't apply these filters. Tap to retry.
+            Couldn't load these stats. Tap to retry.
           </Text>
         </Pressable>
       )}
@@ -203,7 +207,7 @@ const EntityStats = ({ entityId, entityType }) => {
           No frames match these filters.
         </Text>
       )}
-      <View className="gap-3" style={{ opacity: isFilterLoading ? 0.5 : 1 }}>
+      <View className="gap-3" style={{ opacity: isStatsLoading ? 0.5 : 1 }}>
         <StatSection title="Frames" stats={data?.totalStats} type="frames" />
         <View className="gap-3">
           <View className="flex-row items-center gap-8 rounded-3xl bg-bg-3 px-3 py-3">

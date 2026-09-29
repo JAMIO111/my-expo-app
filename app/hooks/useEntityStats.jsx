@@ -25,16 +25,12 @@ const winRate = (won, played, entityType) => {
   return Math.round((won / played) * 100);
 };
 
-// Stats restricted by season / competition / frame type / venue, plus the
-// seasons and competitions this entity has played in (for the filter options).
-// Backed by the get_entity_stats_filtered RPC. Empty filters mean "all", so the
-// same query also serves as the source of the filter options.
-export function useFilteredEntityStats(
-  entityType,
-  entityId,
-  filters = EMPTY_STATS_FILTERS,
-  { enabled = true } = {}
-) {
+// The one stats query for the entity (player / team) stats page. With no
+// filters it is the plain "everything" view (what free users get); Core and
+// Pro users pass filters. Everything shares the ['EntityStats', type, id, ...]
+// key prefix so a single invalidation (see AppRealtimeProvider) refreshes every
+// filter combination for that entity.
+export function useEntityStats(entityType, entityId, filters = EMPTY_STATS_FILTERS) {
   const seasonIds = [...(filters.seasonIds ?? [])].sort();
   const competitionIds = [...(filters.competitionIds ?? [])].sort();
   const frameType = filters.frameType ?? null;
@@ -42,7 +38,7 @@ export function useFilteredEntityStats(
 
   return useQuery({
     queryKey: [
-      'EntityStatsFiltered',
+      'EntityStats',
       entityType,
       entityId,
       { seasonIds, competitionIds, frameType, venue },
@@ -75,8 +71,28 @@ export function useFilteredEntityStats(
     placeholderData: keepPreviousData,
     staleTime: 5 * 60 * 1000,
     gcTime: 60 * 60 * 1000,
+    enabled: !!entityId,
+  });
+}
+
+// Seasons and competitions the entity has played in. Independent of the
+// applied filters, so it's fetched once and cached for a long time; only
+// enabled when someone can actually open the filter sheet.
+export function useEntityFilterOptions(entityType, entityId, { enabled = true } = {}) {
+  return useQuery({
+    queryKey: ['EntityFilterOptions', entityType, entityId],
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc('get_entity_filter_options', {
+        _entity_type: entityType,
+        _entity_id: entityId,
+      });
+      if (error) throw error;
+      return data ?? { seasons: [], competitions: [] };
+    },
+    staleTime: 30 * 60 * 1000,
+    gcTime: 60 * 60 * 1000,
     enabled: !!entityId && enabled,
   });
 }
 
-export default useFilteredEntityStats;
+export default useEntityStats;

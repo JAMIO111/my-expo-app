@@ -2,8 +2,9 @@
 --
 -- Same numbers as get_player_stats / get_team_stats, but restricted by any
 -- combination of season, competition, frame type and venue. Empty / null
--- filters mean "all". Also returns the seasons and competitions the entity has
--- actually played in (unfiltered) so the app can build its filter options.
+-- filters mean "all", so this is also the query for the unfiltered view.
+-- get_entity_filter_options (below) supplies the seasons / competitions the
+-- entity has played in, for building the filter choices.
 --
 --   _entity_type      'player' | 'team'
 --   _season_ids       Fixtures.season values to include
@@ -82,26 +83,6 @@ begin
         and _entity_id in (f.home_team, f.away_team)
       )
     )
-  ),
-
-  options as (
-    select
-      (
-        select coalesce(
-          json_agg(json_build_object('id', s.id, 'name', s.name) order by s.start_date desc nulls last),
-          '[]'::json
-        )
-        from public."Seasons" s
-        where s.id in (select season_id from base where side is not null)
-      ) as seasons,
-      (
-        select coalesce(
-          json_agg(json_build_object('id', c.id, 'name', c.name) order by c.name),
-          '[]'::json
-        )
-        from public."Competitions" c
-        where c.id in (select competition_id from base where side is not null)
-      ) as competitions
   ),
 
   filtered as (
@@ -226,10 +207,6 @@ begin
   )
 
   select json_build_object(
-    'options', json_build_object(
-      'seasons', (select seasons from options),
-      'competitions', (select competitions from options)
-    ),
     'totalStats', json_build_object(
       'frames_played', ft.frames_played,
       'frames_won', ft.frames_won,
@@ -254,5 +231,63 @@ begin
   cross join match_totals mt;
 
   return result;
+end;
+$function$;
+
+-- Seasons and competitions an entity has played in (unfiltered), used to build
+-- the filter choices. Kept separate from the stats query so it is fetched once
+-- and cached rather than recomputed for every filter combination.
+create or replace function public.get_entity_filter_options(
+  _entity_type text,
+  _entity_id uuid
+)
+returns json
+language plpgsql
+stable
+as $function$
+begin
+  if _entity_type not in ('player', 'team') then
+    raise exception 'Invalid entity type: %', _entity_type;
+  end if;
+
+  return (
+    with played as (
+      select distinct
+        f.season as season_id,
+        ci.competition_id
+      from public."Results" r
+      join public."Fixtures" f on f.id = r.fixture_id
+      left join public."CompetitionInstances" ci on ci.id = f.competition_instance_id
+      where (
+        (
+          _entity_type = 'player'
+          and f.approved = true
+          and _entity_id in (r.home_player_1, r.home_player_2, r.away_player_1, r.away_player_2)
+        )
+        or (
+          _entity_type = 'team'
+          and _entity_id in (f.home_team, f.away_team)
+        )
+      )
+    )
+    select json_build_object(
+      'seasons', (
+        select coalesce(
+          json_agg(json_build_object('id', s.id, 'name', s.name) order by s.start_date desc nulls last),
+          '[]'::json
+        )
+        from public."Seasons" s
+        where s.id in (select season_id from played)
+      ),
+      'competitions', (
+        select coalesce(
+          json_agg(json_build_object('id', c.id, 'name', c.name) order by c.name),
+          '[]'::json
+        )
+        from public."Competitions" c
+        where c.id in (select competition_id from played)
+      )
+    )
+  );
 end;
 $function$;

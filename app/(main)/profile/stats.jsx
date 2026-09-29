@@ -1,5 +1,4 @@
 import SafeViewWrapper from '@components/SafeViewWrapper';
-import ProGate from '@components/ProGate';
 import CustomHeader from '@components/CustomHeader';
 import { Stack } from 'expo-router';
 import { useUser } from '@contexts/UserProvider';
@@ -31,9 +30,7 @@ const StatsPage = () => {
         />
 
         <ScrollView style={{ flex: 1, marginTop: 56, backgroundColor: themeColors.bg1 }}>
-          <ProGate justifyContent="start" intensity={30}>
-            <EntityStats entityId={player?.id} entityType="player" />
-          </ProGate>
+          <EntityStats entityId={player?.id} entityType="player" />
         </ScrollView>
       </SafeViewWrapper>
     </>
