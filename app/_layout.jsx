@@ -25,6 +25,7 @@ import toastConfig from '@lib/toastConfig';
 import { useEffect, useRef } from 'react';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { KeyboardProvider } from 'react-native-keyboard-controller';
+import { BottomSheetModalProvider } from '@gorhom/bottom-sheet';
 import { UserProvider } from '@contexts/UserProvider';
 import { AdminProvider } from '@contexts/AdminContext';
 import AppRealtimeProvider from '@contexts/AppRealtimeProvider';
@@ -88,9 +89,11 @@ export default function RootLayout() {
                     <NotificationsPanelProvider>
                       <BadgeUnlockProvider>
                         <BadgeTrigger />
-                        <View className={`flex-1 bg-brand`}>
-                          <Slot />
-                        </View>
+                        <BottomSheetModalProvider>
+                          <View className={`flex-1 bg-brand`}>
+                            <Slot />
+                          </View>
+                        </BottomSheetModalProvider>
                         <Toast
                           config={toastConfig}
                           position="top"

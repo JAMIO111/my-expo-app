@@ -1,11 +1,15 @@
-import { Modal, Pressable, Text, View } from 'react-native';
+import { useCallback, useEffect, useRef } from 'react';
+import { Text, View } from 'react-native';
+import { BottomSheetBackdrop, BottomSheetModal, BottomSheetView } from '@gorhom/bottom-sheet';
 import { Gem } from 'lucide-react-native';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import CTAButton from '@components/CTAButton';
+import { useTheme } from '@contexts/ThemeProvider';
 
-// Bottom sheet that slides up to tell the user a feature is paid and offer the
-// upgrade. Tapping the dimmed backdrop, "Maybe later" or the system back
-// button dismisses it.
+// @gorhom/bottom-sheet modal that slides up to tell the user a feature is
+// paid and offer the upgrade. Needs BottomSheetModalProvider (set up in the
+// root layout). `visible` drives it; `onClose` fires however it gets
+// dismissed (backdrop tap, swipe down, "Maybe later", back button).
 const UpgradeSheet = ({
   visible,
   onClose,
@@ -13,20 +17,40 @@ const UpgradeSheet = ({
   title = 'Exclusive Feature',
   planName = 'Core',
   description,
-}) => (
-  <Modal
-    visible={visible}
-    transparent
-    animationType="slide"
-    statusBarTranslucent
-    navigationBarTranslucent
-    onRequestClose={onClose}>
-    <View className="flex-1 justify-end">
-      <Pressable className="absolute inset-0 bg-black/50" onPress={onClose} />
-      <View
-        style={{ borderTopLeftRadius: 28, borderTopRightRadius: 28 }}
-        className="gap-5 bg-bg-2 px-6 pb-10 pt-3">
-        <View className="h-1 w-12 self-center rounded-full bg-theme-gray-3" />
+}) => {
+  const { colors: themeColors } = useTheme();
+  const sheetRef = useRef(null);
+
+  useEffect(() => {
+    if (visible) sheetRef.current?.present();
+    else sheetRef.current?.dismiss();
+  }, [visible]);
+
+  const renderBackdrop = useCallback(
+    (props) => (
+      <BottomSheetBackdrop
+        {...props}
+        appearsOnIndex={0}
+        disappearsOnIndex={-1}
+        pressBehavior="close"
+      />
+    ),
+    []
+  );
+
+  return (
+    <BottomSheetModal
+      ref={sheetRef}
+      enablePanDownToClose
+      onDismiss={onClose}
+      backdropComponent={renderBackdrop}
+      backgroundStyle={{
+        backgroundColor: themeColors.bg2,
+        borderTopLeftRadius: 26,
+        borderTopRightRadius: 26,
+      }}
+      handleIndicatorStyle={{ backgroundColor: themeColors.themeGray3 }}>
+      <BottomSheetView className="gap-5 px-6 pb-10 pt-2">
         <View className="flex-row items-center gap-3">
           <Ionicons name="star" size={26} color="#FFD700" />
           <Text className="flex-1 font-saira-semibold text-2xl text-text-1">{title}</Text>
@@ -44,9 +68,9 @@ const UpgradeSheet = ({
           />
           <CTAButton type="default" text="Maybe later" callbackFn={onClose} />
         </View>
-      </View>
-    </View>
-  </Modal>
-);
+      </BottomSheetView>
+    </BottomSheetModal>
+  );
+};
 
 export default UpgradeSheet;
