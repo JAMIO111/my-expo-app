@@ -102,7 +102,9 @@ const ProGate = ({
 
   if (mode === 'click') {
     return (
-      <View style={styles.wrapper}>
+      // width: 100% -- parents like MenuContainer centre their children, which would
+      // otherwise shrink this wrapper (and the row inside it) to its content.
+      <View style={[styles.wrapper, { width: '100%' }]}>
         {/* Content looks normal but can't be interacted with */}
         <View pointerEvents="none">{children}</View>
         <Pressable
