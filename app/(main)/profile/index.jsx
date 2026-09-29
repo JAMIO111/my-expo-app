@@ -29,6 +29,7 @@ import usePlayerAwards from '@hooks/usePlayerAwards';
 import { useTheme } from '@contexts/ThemeProvider';
 import usePlayerRecentFrames from '@hooks/usePlayerRecentFrames';
 import { FramePreviewRow } from '@components/PlayerFrameList';
+import ProGate from '../../components/ProGate';
 
 const ProfilePage = () => {
   const { colors: themeColors } = useTheme();
@@ -112,7 +113,7 @@ const ProfilePage = () => {
                   <Ionicons name="earth" size={24} color="white" />
                   <Text className="text-center font-saira text-lg text-text-on-brand">Rank</Text>
                   <Text className="text-center font-saira-semibold text-2xl text-white">
-                    {isGlobalRankLoading ? '...' : globalRank?.rank ?? 'N/A'}
+                    {isGlobalRankLoading ? '...' : (globalRank?.rank ?? 'N/A')}
                   </Text>
                 </View>
               </View>
@@ -241,12 +242,14 @@ const ProfilePage = () => {
               ) : (
                 <Text className="text-center text-text-2">No frames played yet.</Text>
               )}
-              <CTAButton
-                text="View All Frames"
-                type="brand"
-                callbackFn={() => router.push('/profile/frames')}
-                lucideIcon={<ClipboardClock size={24} color="white" />}
-              />
+              <ProGate mode="click">
+                <CTAButton
+                  text="View All Frames"
+                  type="brand"
+                  callbackFn={() => router.push('/profile/frames')}
+                  lucideIcon={<ClipboardClock size={24} color="white" />}
+                />
+              </ProGate>
             </View>
           </View>
         </View>
