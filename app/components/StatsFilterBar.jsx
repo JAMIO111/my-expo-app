@@ -14,7 +14,7 @@ const StatsFilterBar = ({ activeChips, onOpen, onClearAll }) => {
         <Pressable
           onPress={onOpen}
           className={`flex-row items-center gap-2 rounded-full border px-4 py-2 ${
-            count > 0 ? 'border-brand bg-brand' : 'border-theme-gray-4 bg-bg-1'
+            count > 0 ? 'border-brand bg-brand' : 'border-theme-gray-4 bg-bg-3'
           }`}>
           <SlidersHorizontal size={16} color={count > 0 ? '#fff' : themeColors.icon} />
           <Text
@@ -22,8 +22,8 @@ const StatsFilterBar = ({ activeChips, onOpen, onClearAll }) => {
             Filters
           </Text>
           {count > 0 && (
-            <View className="h-5 min-w-5 items-center justify-center rounded-full bg-white px-1">
-              <Text className="font-saira-bold text-xs text-brand">{count}</Text>
+            <View className="h-6 min-w-6 items-center justify-center rounded-full bg-white px-1">
+              <Text className="font-saira-bold text-sm text-brand">{count}</Text>
             </View>
           )}
         </Pressable>
@@ -43,7 +43,7 @@ const StatsFilterBar = ({ activeChips, onOpen, onClearAll }) => {
             <Pressable
               key={chip.key}
               onPress={chip.onRemove}
-              className="flex-row items-center gap-1.5 rounded-full border border-theme-gray-4 bg-bg-1 py-1.5 pl-3 pr-2">
+              className="flex-row items-center gap-1.5 rounded-full border border-theme-gray-4 bg-bg-3 py-1.5 pl-3 pr-2">
               <Text className="font-saira-medium text-sm text-text-1">{chip.label}</Text>
               <X size={14} color={themeColors.icon} />
             </Pressable>

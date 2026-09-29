@@ -32,7 +32,7 @@ export default function ChipSelector({
             key={String(option.value)}
             onPress={() => handlePress(option.value)}
             style={{ flexGrow: 1, flexBasis: 'auto', flexShrink: 0 }}
-            className={`flex-row items-center justify-center rounded-full border px-4 py-1.5 ${
+            className={`flex-row items-center justify-center rounded-full border bg-bg-3 px-4 py-1.5 ${
               selected ? 'border-brand bg-brand' : 'border-theme-gray-4 bg-bg-1'
             }`}>
             {option.icon ? (
