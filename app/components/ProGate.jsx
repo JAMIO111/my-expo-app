@@ -5,8 +5,7 @@ import { useRouter } from 'expo-router';
 import CTAButton from '@components/CTAButton';
 import { useUpgradeSheet } from '@contexts/UpgradeSheetProvider';
 import { useRevenueCat } from '@contexts/RevenueCatProvider';
-import Ionicons from '@expo/vector-icons/Ionicons';
-import { Gem } from 'lucide-react-native';
+import { Gem, Star } from 'lucide-react-native';
 
 // mode:
 //   'blur'  – content is blurred with an upgrade card on top (default)
@@ -143,7 +142,7 @@ const ProGate = ({
               }}>
               <View style={styles.card}>
                 <View className="flex-row items-center gap-3 py-1">
-                  <Ionicons name="star" size={24} color="#FFD700" />
+                  <Star size={24} color="#FFD700" />
 
                   <Text style={styles.title}>{title}</Text>
                 </View>
