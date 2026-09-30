@@ -114,7 +114,10 @@ const index = () => {
           ),
         }}
       />
-      <SafeViewWrapper bottomColor="bg-brand" topColor="bg-brand">
+      <SafeViewWrapper
+        bottomColor="bg-brand"
+        topColor="bg-brand"
+        contentClassName="bg-bg-grouped-1">
         <ScrollView
           contentContainerStyle={{
             display: 'flex',
@@ -122,7 +125,7 @@ const index = () => {
             gap: 8,
             backgroundColor: themeColors.bgGrouped1,
           }}
-          className="mt-16 flex-1">
+          className="mt-16 flex-1 bg-bg-grouped-1">
           <View className="gap-2 bg-bg-grouped-2 p-4">
             <Heading text="Current Season" />
             <SeasonTicket
