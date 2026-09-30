@@ -25,6 +25,8 @@ import {
   AlarmClockCheck,
   UserStar,
   MailMinus,
+  CalendarCheck,
+  CalendarClock,
 } from 'lucide-react-native';
 import { useNotifications } from '@hooks/useNotifications';
 import { useUser } from '@contexts/UserProvider';
@@ -58,6 +60,13 @@ const TYPE_CONFIG = {
   result_approval_pending: { icon: ClipboardClock, color: '#e8850c' },
   result_amendment_pending: { icon: ClipboardClock, color: '#e8850c' },
   role_change: { icon: UserStar, color: '#000ac4' },
+  player_left: { icon: UserMinus, color: '#f52c2c' },
+  player_removed: { icon: UserMinus, color: '#f52c2c' },
+  player_joined_team: { icon: UserPlus, color: '#0c7f23' },
+  team_captain_promoted: { icon: UserStar, color: '#000ac4' },
+  team_vice_captain_promoted: { icon: UserStar, color: '#000ac4' },
+  season_started: { icon: CalendarCheck, color: '#0c7f23' },
+  fixture_rescheduled: { icon: CalendarClock, color: '#e8850c' },
 };
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -73,7 +82,7 @@ function timeAgo(timestamp) {
 // ─── Notification Row ─────────────────────────────────────────────────────────
 
 function NotificationRow({ item, onPress, onMarkAsRead, onMarkAsUnread }) {
-  const cfg = TYPE_CONFIG[item.type] ?? TYPE_CONFIG.system;
+  const cfg = TYPE_CONFIG[item.type] ?? TYPE_CONFIG[item.type?.toLowerCase()] ?? TYPE_CONFIG.system;
   const Icon = cfg.icon;
 
   return (
