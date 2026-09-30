@@ -28,7 +28,7 @@ const MembersAccordion = ({ divisionName, teams = [] }) => {
         <Pressable
           onPress={() => setExpandedTeam((prev) => (prev === team.id ? null : team.id))}
           key={team.id}
-          className="gap-2 rounded-2xl bg-bg-2 px-3 py-3">
+          className="gap-2 rounded-2xl bg-bg-grouped-3 px-3 py-3">
           <View className="flex-row items-center">
             <TeamLogo
               size={30}
@@ -52,7 +52,7 @@ const MembersAccordion = ({ divisionName, teams = [] }) => {
           </View>
           {expandedTeam === team.id && (
             <View className="gap-3">
-              <View className="mt-3 gap-2 rounded-xl bg-bg-1 p-3">
+              <View className="mt-3 gap-2 rounded-xl bg-bg-grouped-2 p-3">
                 {isLoading ? (
                   <Text className="font-tektur text-text-2">Loading players...</Text>
                 ) : !teamPlayers || teamPlayers?.length === 0 ? (

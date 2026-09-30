@@ -8,12 +8,14 @@ import Heading from './Heading';
 import CTAButton from './CTAButton';
 import EmptyStateCard from './EmptyStateCard';
 import { ChevronRight } from 'lucide-react-native';
+import { useTheme } from '@contexts/ThemeProvider';
 
 const DivisionsList = ({ districtId }) => {
   const hasNavigated = useRef(false);
   const router = useRouter();
   const { currentRole } = useUser();
   const { data: divisions, isLoading } = useDivisions(districtId);
+  const { colors: themeColors } = useTheme();
 
   // 🔥 Group + sort divisions
   const groupedDivisions = useMemo(() => {
@@ -56,11 +58,11 @@ const DivisionsList = ({ districtId }) => {
   }, [divisions]);
 
   return (
-    <View className="items-start justify-center gap-4 bg-bg-1 p-4 pb-6">
+    <View className="items-start justify-center gap-4 bg-bg-grouped-2 p-4 pb-6">
       <Heading text={`${currentRole?.district?.name} Divisions`} />
 
       {isLoading && (
-        <View className="w-full flex-row items-center justify-center gap-5 rounded-2xl bg-bg-2 p-8 shadow-sm">
+        <View className="w-full flex-row items-center justify-center gap-5 rounded-2xl bg-bg-grouped-3 p-8 shadow-sm">
           <ActivityIndicator size="small" color="gray" animating={isLoading} />
           <Text className="font-saira-medium text-text-2">Loading divisions...</Text>
         </View>
@@ -69,6 +71,7 @@ const DivisionsList = ({ districtId }) => {
       {!isLoading && groupedDivisions.length === 0 && (
         <View className="w-full gap-5">
           <EmptyStateCard
+            backgroundColor="bg-bg-grouped-3"
             title="Oops, No Divisions Found"
             message="There are currently no divisions for this district. Get started by creating your first division below."
           />
@@ -114,7 +117,7 @@ const DivisionsList = ({ districtId }) => {
                   });
                 }}
                 style={({ pressed }) => ({ opacity: pressed ? 0.8 : 1 })}>
-                <View className="relative overflow-hidden rounded-3xl border border-theme-gray-5 bg-bg-2 px-5 py-5">
+                <View className="relative overflow-hidden rounded-3xl border border-theme-gray-5 bg-bg-grouped-3 px-5 py-5">
                   {/* Oversized tier numeral watermark */}
                   {romanNumerals[division.tier] && (
                     <Image
@@ -156,7 +159,7 @@ const DivisionsList = ({ districtId }) => {
                       )}
                     </View>
 
-                    <ChevronRight size={20} color="#000" strokeWidth={2.5} />
+                    <ChevronRight size={20} color={themeColors.icon} strokeWidth={2.5} />
                   </View>
                 </View>
               </Pressable>

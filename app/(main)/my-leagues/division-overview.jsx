@@ -125,7 +125,7 @@ const DivisionOverview = () => {
       <SafeViewWrapper useBottomInset={false} bottomColor="bg-brand" topColor="bg-brand">
         <ScrollView
           contentContainerStyle={{ gap: 12, marginVertical: 58, paddingBottom: 32 }}
-          className="flex-1 bg-bg-2 p-3">
+          className="flex-1 bg-bg-grouped-1 p-3">
           <ExpandableView title="Division Details" show={showDetails} setShow={setShowDetails}>
             <View className="flex-col gap-2 p-2 pt-0">
               {divisionDetailsConfig.map(({ title, value, icon: Icon }) => (
@@ -172,7 +172,7 @@ const DivisionOverview = () => {
                 />
               </View>
             ) : !isCompetitionsLoading ? (
-              <View className="flex-row items-start justify-between gap-4 rounded-2xl bg-bg-2 p-4">
+              <View className="flex-row items-start justify-between gap-4 rounded-2xl bg-bg-grouped-3 p-4">
                 <Text className="flex-1 font-saira-semibold text-xl text-text-1">
                   {`${currentRole?.activeSeason?.name} ${currentSeasonComp?.name || 'Competition'}`}
                 </Text>
