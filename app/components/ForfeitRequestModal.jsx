@@ -46,14 +46,16 @@ const ForfeitRequestModal = ({ visible, onCancel, onConfirm, loading = false }) 
               <SlidingTabButton
                 option1="Home"
                 option2="Away"
-                onChange={setForfeitSide}
-                value={forfeitSide}
+                onChange={setTab}
+                value={tab}
               />
             </View>
 
             <CustomTextInput
               placeholder="e.g. Opponent didn't show up."
               multiline
+              value={reason}
+              onChangeText={setReason}
               title="Reason for Forfeit Request"
               titleColor="text-text-1"
               numberOfLines={2}
