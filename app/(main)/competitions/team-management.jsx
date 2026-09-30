@@ -1,4 +1,4 @@
-import { View, Text, Pressable } from 'react-native';
+import { View, Text, Pressable, Alert } from 'react-native';
 import { Stack } from 'expo-router';
 import { useUser } from '@contexts/UserProvider';
 import CustomHeader from '@components/CustomHeader';
@@ -85,11 +85,20 @@ const TeamManagement = () => {
                     )
                   }
                   onDecline={() =>
+                    Alert.alert(
+                      'Decline invite?',
+                      'A team only goes ahead if every player accepts, so declining cancels the team for everyone.',
+                      [
+                        { text: 'Keep invite', style: 'cancel' },
+                        {
+                          text: 'Decline and cancel team',
+                          style: 'destructive',
+                          onPress: () =>
                     declineInvite(
                       { inviteId: invite.id, playerId: player.id },
                       {
                         onSuccess: () => {
-                          Toast.show({ type: 'success', text1: 'Invite declined' });
+                          Toast.show({ type: 'success', text1: 'Team cancelled', text2: 'You declined the invite.' });
                         },
                         onError: (err) => {
                           const messages = {
@@ -102,6 +111,9 @@ const TeamManagement = () => {
                           });
                         },
                       }
+                    ),
+                        },
+                      ]
                     )
                   }
                 />

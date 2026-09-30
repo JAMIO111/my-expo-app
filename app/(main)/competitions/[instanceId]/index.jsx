@@ -239,6 +239,7 @@ const index = () => {
         REGISTRATION_CLOSED: 'Registration has closed for this competition.',
         COMPETITION_FULL: 'This competition is now full.',
         NOT_CAPTAIN: 'Only the team captain can join this competition.',
+        TEAM_NOT_ACTIVE: 'This team is inactive. Reactivate it in Manage Teams first.',
         ALREADY_PARTICIPATING: 'You are already participating in this competition.',
         TEAM_TOO_LARGE: 'Your team has too many players for this competition.',
         TEAM_TOO_SMALL: 'Your team does not have enough players for this competition.',

@@ -12,8 +12,8 @@ import Avatar from '@components/Avatar';
 import CTAButton from '@components/CTAButton';
 import { useCreateChildTeam } from '@hooks/useCreateChildTeam';
 import { useUpdateChildTeam } from '@hooks/useUpdateChildTeam';
-import { useLeaveChildTeam } from '@hooks/useLeaveChildTeam';
-import { CircleCheckBig, LogOut, Star, Wand } from 'lucide-react-native';
+import { useSetChildTeamActive } from '@hooks/useSetChildTeamActive';
+import { CircleCheckBig, Power, Star, Wand } from 'lucide-react-native';
 
 // ─── Selected player card ─────────────────────────────────────────────────────
 
@@ -126,7 +126,7 @@ function PlayerCard({ player, onRemove, canEdit, isCaptain, isCreate, onToggleCa
             </View>
           )}
           {/* Remove */}
-          {(canEdit || isCreate) && !isMe && (
+          {isCreate && !isMe && (
             <TouchableOpacity
               onPress={onRemove}
               hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
@@ -230,10 +230,10 @@ const ManageCompTeam = ({ type, team, closeModal }) => {
   const { data: teamPlayers } = useTeamPlayers(currentRole?.team?.id);
   const { mutate: createTeam, isPending: isPendingCreate } = useCreateChildTeam();
   const { mutate: updateTeam, isPending: isPendingUpdate } = useUpdateChildTeam();
-  const { mutate: leaveChildTeam, isPending: isLeaving } = useLeaveChildTeam();
+  const { mutate: setTeamActive, isPending: isSwitching } = useSetChildTeamActive();
   const [teamName, setTeamName] = useState(team?.display_name || '');
   const [selectedPlayerIds, setSelectedPlayerIds] = useState(
-    team?.players?.filter((p) => p.status !== 'left').map((p) => p.id) || []
+    team?.players?.filter((p) => p.status === 'active' || p.status === 'pending_player').map((p) => p.id) || []
   );
   const [captainId, setCaptainId] = useState(team?.captain || null);
 
@@ -242,7 +242,11 @@ const ManageCompTeam = ({ type, team, closeModal }) => {
 
   const initialPlayers = useMemo(() => {
     if (isCreate && player?.id) return [player.id];
-    if (team?.players) return team.players.filter((p) => p.status !== 'left').map((p) => p.id);
+    if (team?.players) {
+      return team.players
+        .filter((p) => p.status === 'active' || p.status === 'pending_player')
+        .map((p) => p.id);
+    }
     return [];
   }, [isCreate, player?.id, team]);
 
@@ -325,20 +329,16 @@ const ManageCompTeam = ({ type, team, closeModal }) => {
       },
       {
         onSuccess: (data) => {
-          Alert.alert('Team created!', `${teamName.trim()} is ready.`, [
-            { text: 'OK', onPress: () => closeModal() },
-          ]);
+          Alert.alert(
+            'Invites sent',
+            `${teamName.trim()} becomes active once every player accepts. If anyone declines, the team is cancelled. The players in a team cannot be changed afterwards.`,
+            [
+              { text: 'OK', onPress: () => closeModal() },
+            ]
+          );
         },
         onError: (err) => {
-          // RPC error codes map to friendly messages
-          const messages = {
-            DUPLICATE_NAME: 'A team with that name already exists.',
-            DUPLICATE_PLAYER_COMBINATION: 'This exact squad already exists.',
-            CREATOR_NOT_IN_TEAM: 'You must include yourself in the team.',
-            CAPTAIN_NOT_IN_TEAM: 'The captain must be in the player list.',
-            INSUFFICIENT_PLAYERS: 'At least 2 players are required.',
-          };
-          Alert.alert('Could not create team', messages[err.message] ?? err.message);
+          Alert.alert('Could not create team', err.message);
         },
       }
     );
@@ -386,45 +386,38 @@ const ManageCompTeam = ({ type, team, closeModal }) => {
     );
   };
 
-  const requestLeaveTeam = () => {
-    Alert.alert(
-      'Leave team',
-      'Are you sure you want to leave this team? You will lose access to it and its competitions.',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Leave',
-          style: 'destructive',
-          onPress: handleLeaveTeam,
-        },
-      ]
-    );
-  };
+  const teamIsActive = team?.status === 'active';
+  const teamIsInactive = team?.status === 'inactive';
+  const teamIsPending = team?.status === 'pending';
 
-  const handleLeaveTeam = () => {
-    if (player?.id === team?.captain) {
-      Alert.alert(
-        'You are the captain',
-        'You cannot leave the team while you are the captain. Please assign a new captain before leaving.',
-        [{ text: 'OK' }]
-      );
-      return;
-    }
-    leaveChildTeam(
-      { teamId: team.id, playerId: player.id },
+  const handleSwitchActive = (active) => {
+    setTeamActive(
+      { teamId: team.id, active },
       {
         onSuccess: () => {
           closeModal();
-          Alert.alert('Left team', `You have left ${team.display_name}.`);
+          Alert.alert(
+            active ? 'Team reactivated' : 'Team set to inactive',
+            active
+              ? `${team.display_name} can be entered into competitions again.`
+              : `${team.display_name} is now inactive. Its record and stats are kept.`
+          );
         },
-        onError: (err) => {
-          const messages = {
-            CAPTAIN_CANNOT_LEAVE: 'Assign a new captain before leaving.',
-            PLAYER_NOT_IN_TEAM: 'You are not an active member of this team.',
-          };
-          Alert.alert('Could not leave team', messages[err.message] ?? err.message);
-        },
+        onError: (err) => Alert.alert('Could not update team', err.message),
       }
+    );
+  };
+
+  const requestSwitchActive = (active) => {
+    Alert.alert(
+      active ? 'Reactivate team?' : 'Set team to inactive?',
+      active
+        ? 'The team will be able to enter competitions again.'
+        : 'An inactive team cannot enter new competitions. Its players, record and stats are kept and you can reactivate it later.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        { text: active ? 'Reactivate' : 'Set inactive', onPress: () => handleSwitchActive(active) },
+      ]
     );
   };
 
@@ -449,7 +442,18 @@ const ManageCompTeam = ({ type, team, closeModal }) => {
               clearButtonMode="while-editing"
             />
 
-            {/* Player picker */}
+            {!isCreate && (
+              <View className="rounded-xl bg-bg-2 p-3">
+                <Text className="font-saira text-sm text-text-2">
+                  {teamIsPending
+                    ? 'Waiting for every invited player to accept. If anyone declines, the team is cancelled.'
+                    : 'The players in a team are fixed once it is set up. You can rename the team or change the captain.'}
+                </Text>
+              </View>
+            )}
+
+            {/* Player picker (only while creating: the roster is locked afterwards) */}
+            {isCreate && (
             <CustomDropdown
               title="Add Players"
               titleColor="text-text-1"
@@ -477,6 +481,7 @@ const ManageCompTeam = ({ type, team, closeModal }) => {
                 if (captainId === id) setCaptainId(null);
               }}
             />
+            )}
           </>
         ) : (
           <>
@@ -569,14 +574,14 @@ const ManageCompTeam = ({ type, team, closeModal }) => {
               type="yellow"
             />
           )}
-          {!isCreate && (
+          {!isCreate && canEdit && (teamIsActive || teamIsInactive) && (
             <CTAButton
-              text="Leave Team"
-              callbackFn={requestLeaveTeam}
-              loading={isLeaving}
-              loadingText="Leaving..."
+              text={teamIsActive ? 'Set Team Inactive' : 'Reactivate Team'}
+              callbackFn={() => requestSwitchActive(teamIsInactive)}
+              loading={isSwitching}
+              loadingText="Updating..."
               type="tertiary"
-              icon={<LogOut size={24} color="#FFF" />}
+              icon={<Power size={24} color="#FFF" />}
             />
           )}
         </View>
