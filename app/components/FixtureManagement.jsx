@@ -13,6 +13,7 @@ import CustomDropdown from './CustomDropdown';
 import { useAddresses } from '@hooks/useAddresses';
 import { useUser } from '@contexts/UserProvider';
 import Toast from 'react-native-toast-message';
+import { handleFixtureError } from '@lib/fixtureActionErrors';
 import { supabase } from '@/lib/supabase';
 import { useQueryClient } from '@tanstack/react-query';
 import FloatingBottomSheet from '@components/FloatingBottomSheet';
@@ -283,10 +284,11 @@ const FixtureManagement = ({ fixtureId, closeModal }) => {
     } catch (error) {
       console.error('Error saving fixture:', error);
 
-      Toast.show({
-        type: 'error',
-        text1: 'Error Updating Fixture',
-        text2: error?.message || 'Something went wrong while updating the fixture.',
+      await handleFixtureError(error, {
+        fallbackTitle: 'Error Updating Fixture',
+        fallbackMessage: error?.message || 'Something went wrong while updating the fixture.',
+        queryClient,
+        fixtureId,
       });
     } finally {
       setIsSaving(false);
@@ -305,7 +307,7 @@ const FixtureManagement = ({ fixtureId, closeModal }) => {
       });
 
       if (error) throw error;
-      if (!data?.success) throw new Error(data?.detail || data?.error || 'Forfeit failed');
+      if (!data?.success) throw data ?? new Error('Forfeit failed');
 
       await Promise.all([
         queryClient.invalidateQueries(['fixture-details', fixtureId]),
@@ -329,10 +331,12 @@ const FixtureManagement = ({ fixtureId, closeModal }) => {
     } catch (error) {
       console.error('Error forfeiting fixture:', error);
 
-      Toast.show({
-        type: 'error',
-        text1: 'Error Forfeiting Fixture',
-        text2: error?.message || 'Something went wrong while forfeiting the fixture.',
+      await handleFixtureError(error, {
+        fallbackTitle: 'Error Forfeiting Fixture',
+        fallbackMessage:
+          error?.detail || error?.message || 'Something went wrong while forfeiting the fixture.',
+        queryClient,
+        fixtureId,
       });
     } finally {
       setIsForfeiting(false);

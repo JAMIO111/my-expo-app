@@ -13,6 +13,7 @@ import TeamLogo from '@components/TeamLogo';
 import Avatar from '@components/Avatar';
 import { supabase } from '@/lib/supabase';
 import Toast from 'react-native-toast-message';
+import { handleFixtureError } from '@lib/fixtureActionErrors';
 import { useUser } from '@contexts/UserProvider';
 import LoadingScreen from '@components/LoadingScreen';
 
@@ -22,6 +23,8 @@ const ApproveResults = () => {
   const [disputedFrames, setDisputedFrames] = useState([]);
   const [queryLoading, setQueryLoading] = useState(false);
   const { fixtureId } = useLocalSearchParams();
+  // Another captain / vice captain got there first: the screen is out of date, so leave it.
+  const leaveStaleScreen = () => router.back();
   const { data: results, isLoading } = useResultsByFixture(fixtureId);
   const { data: fixtureDetails, isLoading: fixtureLoading } = useFixtureDetails(fixtureId);
   console.log('fixtureDetails in ApproveResults:', fixtureDetails);
@@ -41,12 +44,14 @@ const ApproveResults = () => {
       });
       router.back();
     } catch (error) {
-      Toast.show({
-        type: 'error',
-        text1: 'Rejection Failed',
-        text2: 'An error occurred while rejecting the amendment. Please try again.',
-      });
       console.error('Error rejecting amendment:', error);
+      await handleFixtureError(error, {
+        fallbackTitle: 'Rejection Failed',
+        fallbackMessage: 'An error occurred while rejecting the amendment. Please try again.',
+        queryClient,
+        fixtureId,
+        onStale: leaveStaleScreen,
+      });
     } finally {
       setQueryLoading(false);
     }
@@ -65,7 +70,7 @@ const ApproveResults = () => {
       }
 
       if (!data?.success) {
-        throw new Error(data?.message || 'Approval failed');
+        throw data ?? new Error('Approval failed');
       }
 
       console.log('Results approved successfully'); // Show success toast or redirect
@@ -79,12 +84,14 @@ const ApproveResults = () => {
       });
       router.back();
     } catch (error) {
-      Toast.show({
-        type: 'error',
-        text1: 'Approval Failed',
-        text2: 'An error occurred while approving the results. Please try again.',
-      });
       console.error('Error approving results:', error);
+      await handleFixtureError(error, {
+        fallbackTitle: 'Approval Failed',
+        fallbackMessage: 'An error occurred while approving the results. Please try again.',
+        queryClient,
+        fixtureId,
+        onStale: leaveStaleScreen,
+      });
     } finally {
       setQueryLoading(false);
     }
@@ -100,19 +107,22 @@ const ApproveResults = () => {
       if (error) {
         throw error;
       }
-      await queryClient.invalidateQueries(['results', fixtureId]);
+      await queryClient.invalidateQueries({ queryKey: ['results', fixtureId] });
+      await queryClient.invalidateQueries({ queryKey: ['fixture-details', fixtureId] });
       Toast.show({
         type: 'success',
         text1: 'Results Disputed',
         text2: 'The selected frames have been disputed and the home team has been notified.',
       });
     } catch (error) {
-      Toast.show({
-        type: 'error',
-        text1: 'Dispute Failed',
-        text2: 'An error occurred while disputing the results. Please try again.',
-      });
       console.error('Error disputing results:', error);
+      await handleFixtureError(error, {
+        fallbackTitle: 'Dispute Failed',
+        fallbackMessage: 'An error occurred while disputing the results. Please try again.',
+        queryClient,
+        fixtureId,
+        onStale: leaveStaleScreen,
+      });
     } finally {
       setQueryLoading(false);
     }

@@ -9,6 +9,8 @@ import Avatar from '@components/Avatar';
 import CustomHeader from '@components/CustomHeader';
 import SafeViewWrapper from '@components/SafeViewWrapper';
 import Toast from 'react-native-toast-message';
+import { useQueryClient } from '@tanstack/react-query';
+import { handleFixtureError } from '@lib/fixtureActionErrors';
 import FloatingBottomSheet from '@components/FloatingBottomSheet';
 import { useFixtureDetails } from '@hooks/useFixtureDetails';
 import { useTeamPlayers } from '@hooks/useTeamPlayers';
@@ -63,7 +65,15 @@ const SubmitResultsScreen = () => {
   const { data: awayTeamPlayers, isLoading: isAwayTeamPlayersLoading } = useTeamPlayers(
     fixtureDetails?.awayTeam?.id
   );
-  const { saving, save } = useSaveMatchResults(fixtureId, existingResults);
+  const queryClient = useQueryClient();
+  // Another captain / vice captain got there first: the screen is out of date, so leave it.
+  const leaveStaleScreen = () => router.back();
+  const { saving, save } = useSaveMatchResults(
+    fixtureId,
+    existingResults,
+    fixtureDetails?.results_version,
+    leaveStaleScreen
+  );
   const [submitting, setSubmitting] = useState(false);
 
   const [frames, setFrames] = useState([]);
@@ -268,18 +278,7 @@ const SubmitResultsScreen = () => {
     }
     setSubmitting(true);
     const success = await save(frames, true);
-    if (!success) {
-      Toast.show({
-        type: 'error',
-        text1: 'Save Failed',
-        text2: 'Could not save changes before submitting.',
-      });
-      setSubmitting(false);
-      return;
-    } else {
-      Toast.show({ type: 'success', text1: 'Success', text2: 'Results submitted successfully.' });
-      router.back();
-    }
+    if (success) router.back();
     setSubmitting(false);
   };
 
@@ -350,7 +349,13 @@ const SubmitResultsScreen = () => {
       router.back();
     } catch (err) {
       console.error(err);
-      Toast.show({ type: 'error', text1: 'Error', text2: 'Failed to amend results.' });
+      await handleFixtureError(err, {
+        fallbackTitle: 'Amendment Failed',
+        fallbackMessage: 'Could not amend the results. Please try again.',
+        queryClient,
+        fixtureId,
+        onStale: leaveStaleScreen,
+      });
     } finally {
       setQueryLoading(false);
     }
@@ -368,10 +373,13 @@ const SubmitResultsScreen = () => {
       });
       router.back();
     } catch (error) {
-      Toast.show({
-        type: 'error',
-        text1: 'Error',
-        text2: 'Could not escalate fixture. Please try again.',
+      console.error('Error escalating fixture:', error);
+      await handleFixtureError(error, {
+        fallbackTitle: 'Escalation Failed',
+        fallbackMessage: 'Could not escalate the fixture. Please try again.',
+        queryClient,
+        fixtureId,
+        onStale: leaveStaleScreen,
       });
     } finally {
       setQueryLoading(false);
@@ -397,7 +405,7 @@ const SubmitResultsScreen = () => {
       });
 
       if (error) throw error;
-      if (!data?.success) throw new Error(data?.detail || data?.error || 'Forfeit failed');
+      if (!data?.success) throw data ?? new Error('Forfeit failed');
       Toast.show({
         type: 'success',
         text1: 'Forfeit Requested',
@@ -406,7 +414,13 @@ const SubmitResultsScreen = () => {
       router.back();
     } catch (err) {
       console.error(err);
-      Toast.show({ type: 'error', text1: 'Failed to request forfeit', text2: err.message });
+      await handleFixtureError(err, {
+        fallbackTitle: 'Failed to request forfeit',
+        fallbackMessage: err?.detail || err?.message || 'Please try again.',
+        queryClient,
+        fixtureId,
+        onStale: leaveStaleScreen,
+      });
     } finally {
       setIsForfeiting(false);
       setForfeitModalVisible(false);

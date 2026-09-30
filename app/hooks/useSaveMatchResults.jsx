@@ -1,11 +1,17 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import Toast from 'react-native-toast-message';
 import { useQueryClient } from '@tanstack/react-query';
+import { handleFixtureError } from '@lib/fixtureActionErrors';
 
-export function useSaveMatchResults(fixtureId, existingResults) {
+// `fixtureVersion` is Fixtures.results_version as loaded by the screen. Every save
+// returns the new version, which is kept here so consecutive saves from this screen
+// stay in step. If another captain / vice captain saved in between, the RPC rejects
+// with fixture_changed and `onStale` is called (e.g. to leave the screen).
+export function useSaveMatchResults(fixtureId, existingResults, fixtureVersion, onStale) {
   const [saving, setSaving] = useState(false);
   const queryClient = useQueryClient();
+  const versionRef = useRef(null);
 
   const save = async (frames, submit = false) => {
     setSaving(true);
@@ -45,23 +51,29 @@ export function useSaveMatchResults(fixtureId, existingResults) {
 
       console.log('Frames to save:', framesWithNumbers);
 
-      const { error } = await supabase.rpc('save_fixture_results', {
+      const { data: newVersion, error } = await supabase.rpc('save_fixture_results', {
         _frames: framesWithNumbers,
         _deleted_ids: deletedIds,
         _fixture_id: fixtureId,
         _submit: submit,
+        _expected_version: versionRef.current ?? fixtureVersion ?? null,
       });
 
       if (error) {
         console.error('Save RPC Error:', error.message);
-        Toast.show({
-          type: 'error',
-          text1: 'Submission Failed',
-          text2: error.message,
+        versionRef.current = null;
+        await handleFixtureError(error, {
+          fallbackTitle: submit ? 'Submission Failed' : 'Save Failed',
+          fallbackMessage: error.message,
+          queryClient,
+          fixtureId,
+          onStale,
         });
         return false;
       } else {
-        await queryClient.invalidateQueries(['results', fixtureId]);
+        if (typeof newVersion === 'number') versionRef.current = newVersion;
+        await queryClient.invalidateQueries({ queryKey: ['results', fixtureId] });
+        await queryClient.invalidateQueries({ queryKey: ['fixture-details', fixtureId] });
 
         Toast.show({
           type: 'success',
@@ -72,10 +84,9 @@ export function useSaveMatchResults(fixtureId, existingResults) {
         return true;
       }
     } catch (e) {
-      Toast.show({
-        type: 'error',
-        text1: 'Unexpected Error',
-        text2: e.message,
+      await handleFixtureError(e, {
+        fallbackTitle: 'Unexpected Error',
+        fallbackMessage: e.message,
       });
       return false;
     } finally {

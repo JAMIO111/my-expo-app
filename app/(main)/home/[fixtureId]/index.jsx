@@ -26,7 +26,7 @@ const index = () => {
 
   const playerValid =
     competitorType === 'team'
-      ? currentRole?.role === 'captain' &&
+      ? ['captain', 'vice_captain'].includes(currentRole?.role) &&
         currentRole?.team?.id === fixtureDetails?.homeCompetitor?.id
       : player?.id === fixtureDetails?.homeCompetitor?.id;
 
