@@ -245,9 +245,7 @@ const index = () => {
         onBackdropPress={closeSheet} // ✅ new — lets the parent own the close path
         footerComponent={(props) => (
           <BottomSheetFooter {...props}>
-            <View
-              style={{ paddingBottom: 140 }}
-              className="w-full rounded-t-3xl bg-bg-grouped-3 p-6">
+            <View style={{ paddingBottom: 140 }} className="w-full rounded-t-3xl bg-bg-3 p-6">
               <CTAButton
                 text="Switch Role"
                 type="brand"
@@ -263,8 +261,8 @@ const index = () => {
             paddingTop: 8,
             paddingBottom: 8,
             borderBottomWidth: 1,
-            borderBottomColor: '#ccc',
-            backgroundColor: themeColors.bgGrouped2,
+            borderBottomColor: themeColors.border,
+            backgroundColor: themeColors.bg2,
             zIndex: 10,
             flexDirection: 'row',
             alignItems: 'center',

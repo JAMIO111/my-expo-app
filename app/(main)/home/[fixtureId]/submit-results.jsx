@@ -243,7 +243,10 @@ const SubmitResultsScreen = () => {
   // enforces them regardless (players, frame limits, winners, start time).
   const getSubmitProblem = () => {
     if (frames.length === 0) {
-      return { title: 'No Frames', message: 'Add at least one frame before submitting the result.' };
+      return {
+        title: 'No Frames',
+        message: 'Add at least one frame before submitting the result.',
+      };
     }
     const incompleteIndex = frames.findIndex(
       (f) => !f.homePlayer1?.id || !f.awayPlayer1?.id || !f.winnerSide
@@ -296,7 +299,11 @@ const SubmitResultsScreen = () => {
         queryClient.invalidateQueries({ queryKey: ['EscalatedFixtures'] }),
         queryClient.invalidateQueries({ queryKey: ['FixturesAwaitingResults'] }),
       ]);
-      Toast.show({ type: 'success', text1: 'Forfeit Approved', text2: 'The forfeit has been approved.' });
+      Toast.show({
+        type: 'success',
+        text1: 'Forfeit Approved',
+        text2: 'The forfeit has been approved.',
+      });
       router.back();
     } catch (error) {
       console.error('Error approving forfeit:', error);
@@ -881,7 +888,7 @@ const SubmitResultsScreen = () => {
                       </Pressable>
                     </View>
                     {/* Bonus frame toggle */}
-                    <View className="mt-2 flex-row items-center justify-between gap-5 border-t border-theme-gray-4 bg-bg-1 pt-3">
+                    <View className="mt-2 flex-row items-center justify-between gap-5 border-t border-theme-gray-4 pl-2 pr-4 pt-3">
                       <View className="flex-1 items-start justify-center gap-1">
                         <Text className="font-saira-medium text-xl text-text-1">
                           {fixtureDetails?.competition?.special_match_name || 'Bonus Frame'}
@@ -1150,9 +1157,9 @@ const SubmitResultsScreen = () => {
                       type="default"
                       lucideIcon={
                         frameCountReached ? (
-                          <ShieldAlert size={22} color="#FFF" />
+                          <ShieldAlert size={22} color={themeColors.bg1} />
                         ) : (
-                          <Plus size={24} color="#FFF" />
+                          <Plus size={24} color={themeColors.bg1} />
                         )
                       }
                       disabled={submitting || saving}
