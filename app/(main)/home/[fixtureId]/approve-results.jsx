@@ -107,13 +107,15 @@ const ApproveResults = () => {
       if (error) {
         throw error;
       }
-      await queryClient.invalidateQueries({ queryKey: ['results', fixtureId] });
+      await queryClient.invalidateQueries({ queryKey: ['ResultsByFixture', fixtureId] });
       await queryClient.invalidateQueries({ queryKey: ['fixture-details', fixtureId] });
       Toast.show({
         type: 'success',
         text1: 'Results Disputed',
         text2: 'The selected frames have been disputed and the home team has been notified.',
       });
+      await queryClient.invalidateQueries({ queryKey: ['FixturesAwaitingResults'] });
+      router.back();
     } catch (error) {
       console.error('Error disputing results:', error);
       await handleFixtureError(error, {

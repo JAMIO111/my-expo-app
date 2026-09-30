@@ -20,7 +20,8 @@ export function useFixturesAwaitingResults({
           away_player:Players!Fixtures_away_player_fkey(id, first_name, surname, nickname, avatar_url),
           competition_instance:CompetitionInstances!Fixtures_competition_instance_id_fkey(id, name)`
         )
-        .eq('is_escalated', false);
+        .eq('is_escalated', false)
+        .eq('is_forfeited', false);
 
       // 🧠 Apply type-based filters
       switch (type) {

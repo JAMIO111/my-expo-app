@@ -92,12 +92,25 @@ const ALIASES = {
   fixture_not_forfeitable: 'fixture_forfeited',
 };
 
-// Accepts a supabase-js error, an RPC JSON result ({ code } / { error }) or an Error.
+// Accepts a supabase-js error, an RPC JSON result ({ success: false, code } / { error })
+// or an Error. Postgres errors carry our code in `details` (the SQLSTATE stays in
+// `code`); JSON results carry it in `code` / `error`.
+const CODE_SHAPE = /^[a-z][a-z_]*$/;
+
 export function getFixtureErrorCode(source) {
   if (!source) return null;
-  if (typeof source === 'string') return ALIASES[source.toLowerCase()] || source.toLowerCase();
+  if (typeof source === 'string') {
+    const code = source.toLowerCase();
+    return ALIASES[code] || code;
+  }
 
-  const raw = source.details || source.detail || source.code || source.error;
+  let raw;
+  if (source.success === false) {
+    raw = source.code || source.error;
+  } else {
+    const detail = typeof source.details === 'string' ? source.details : source.detail;
+    raw = typeof detail === 'string' && CODE_SHAPE.test(detail) ? detail : source.code;
+  }
   if (typeof raw === 'string' && raw) {
     const code = raw.toLowerCase();
     if (code === '42501') return 'not_authorised';
@@ -116,7 +129,7 @@ export async function refreshFixtureQueries(queryClient, fixtureId) {
   if (!queryClient) return;
   await Promise.all([
     queryClient.invalidateQueries({ queryKey: ['fixture-details', fixtureId] }),
-    queryClient.invalidateQueries({ queryKey: ['results', fixtureId] }),
+    queryClient.invalidateQueries({ queryKey: ['ResultsByFixture', fixtureId] }),
     queryClient.invalidateQueries({ queryKey: ['FixturesAwaitingResults'] }),
     queryClient.invalidateQueries({ queryKey: ['fixtures-grouped'] }),
   ]);

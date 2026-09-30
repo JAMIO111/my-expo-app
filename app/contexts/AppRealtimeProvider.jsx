@@ -104,7 +104,9 @@ export default function AppRealtimeProvider({ children }) {
       if (fixtureId) {
         try {
           const fixture = await queryClient.ensureQueryData({
-            queryKey: ['fixture-details', fixtureId],
+            // Own key: this partial row must not be cached under the full
+            // ['fixture-details', id] key that useFixtureDetails reads.
+            queryKey: ['fixture-competition-instance', fixtureId],
             queryFn: () =>
               supabase
                 .from('Fixtures')
@@ -144,6 +146,9 @@ export default function AppRealtimeProvider({ children }) {
       }
 
       if (fixtureId) queryClient.invalidateQueries({ queryKey: ['fixture-details', fixtureId] });
+      // Result state changes (submitted / disputed / amended / approved ...) move
+      // fixtures between the "pending" lists on the home screen.
+      queryClient.invalidateQueries({ queryKey: ['FixturesAwaitingResults'] });
       // Player stats only count approved fixtures, so approval changes the numbers.
       if (payload.new?.approved !== payload.old?.approved) {
         queryClient.invalidateQueries({ queryKey: ['EntityStats'] });

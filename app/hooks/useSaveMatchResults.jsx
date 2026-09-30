@@ -72,7 +72,7 @@ export function useSaveMatchResults(fixtureId, existingResults, fixtureVersion, 
         return false;
       } else {
         if (typeof newVersion === 'number') versionRef.current = newVersion;
-        await queryClient.invalidateQueries({ queryKey: ['results', fixtureId] });
+        await queryClient.invalidateQueries({ queryKey: ['ResultsByFixture', fixtureId] });
         await queryClient.invalidateQueries({ queryKey: ['fixture-details', fixtureId] });
 
         Toast.show({

@@ -217,6 +217,17 @@ const Home = () => {
     [teamFixturesAwaitingResults, playerFixturesAwaitingResults]
   );
 
+  // Team fixtures are handled by the team's captain / vice captain; individual
+  // fixtures by the players themselves, who are not leaders of anything.
+  const isTeamLeader =
+    currentRole?.team?.captain === player?.id || currentRole?.team?.vice_captain === player?.id;
+  const hasIndividualPending =
+    (playerResultsPendingApproval?.length ?? 0) +
+      (playerDisputedFixtures?.length ?? 0) +
+      (playerAmendedFixtures?.length ?? 0) +
+      (playerFixturesAwaitingResults?.length ?? 0) >
+    0;
+
   console.log('Team Fixtures Awaiting Results:', teamFixturesAwaitingResults);
   console.log('Player Fixtures Awaiting Results:', playerFixturesAwaitingResults);
   console.log('Upcoming Fixtures:', upcomingFixtures);
@@ -348,8 +359,7 @@ const Home = () => {
             </View>
             <View className="w-full bg-bg-2 pb-8">
               <Heading text="Pending Fixtures" className="ml-4" />
-              {(currentRole?.team?.captain === player?.id ||
-                currentRole?.team?.vice_captain === player?.id) && (
+              {(isTeamLeader || hasIndividualPending) && (
                 <View className="w-full gap-4 p-3">
                   {disputedFixtures && disputedFixtures.length > 0 && (
                     <View className="w-full gap-3">
