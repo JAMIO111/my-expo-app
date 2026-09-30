@@ -58,7 +58,12 @@ export default function TicketCarousel({
     [cardWidth, cardGap, tickets.length, MemoCard]
   );
 
-  const keyExtractor = useCallback((item, i) => String(item?.key ?? item?.id ?? i), []);
+  // Player invite/request rows have their player's id in `id`, so prefer the row's own id (and keep the
+// index as a tie-breaker so a repeated id can never produce a duplicate key).
+const keyExtractor = useCallback(
+    (item, i) => `${item?.key ?? item?.team_player_id ?? item?.id ?? 'ticket'}-${i}`,
+    []
+  );
 
   const listData = useMemo(() => tickets, [tickets]);
 
