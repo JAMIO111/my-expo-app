@@ -13,6 +13,7 @@ import LoadingScreen from '@components/LoadingScreen';
 import CTAButton from '@components/CTAButton';
 import { supabase } from '@lib/supabase';
 import { useQueryClient } from '@tanstack/react-query';
+import { assertRpcOk } from '@/lib/rpc';
 import {
   checkEligibility,
   formatCompetitionType,
@@ -274,27 +275,11 @@ const index = () => {
     try {
       setQueryLoading(true);
 
-      if (currentRole.type === 'admin') {
-        // league admins may edit participants directly (admin-only policy)
-        const { error } = await supabase
-          .from('CompetitionParticipants')
-          .update({
-            status: status === 'active' ? 'removed' : 'cancelled',
-            left_at: new Date().toISOString(),
-          })
-          .eq('competition_instance_id', instanceId)
-          .match(
-            isTeam ? { team_id: currentRole.team.id, status } : { player_id: player.id, status }
-          );
-        if (error) throw error;
-      } else {
-        const { data, error } = await supabase.rpc('withdraw_from_competition', {
-          p_instance_id: instanceId,
-          p_team_id: isTeam ? currentRole.team.id : null,
-        });
-        if (error) throw error;
-        if (data?.success === false) throw new Error(data.message || 'Could not withdraw');
-      }
+      const { data, error } = await supabase.rpc('withdraw_from_competition', {
+        p_instance_id: instanceId,
+        p_team_id: isTeam ? currentRole.team.id : null,
+      });
+      assertRpcOk(data, error);
 
       Toast.show({
         type: 'success',
@@ -326,38 +311,11 @@ const index = () => {
       if (!entity?.id) return;
       setQueryLoading(true);
 
-      if (action === 'accept') {
-        const { error } = await supabase
-          .from('CompetitionParticipants')
-          .update({
-            status: 'active',
-            joined_at: new Date().toISOString(),
-          })
-          .eq('id', entity.id);
-
-        if (error) throw error;
-      }
-
-      if (action === 'deny') {
-        const { error } = await supabase
-          .from('CompetitionParticipants')
-          .delete()
-          .eq('id', entity.id);
-
-        if (error) throw error;
-      }
-
-      if (action === 'remove') {
-        const { error } = await supabase
-          .from('CompetitionParticipants')
-          .update({
-            status: 'left',
-            left_at: new Date().toISOString(),
-          })
-          .eq('id', entity.id);
-
-        if (error) throw error;
-      }
+      const { data, error } = await supabase.rpc('manage_competition_participant', {
+        p_participant_id: entity.id,
+        p_action: action,
+      });
+      assertRpcOk(data, error);
 
       // refresh data
       await queryClient.invalidateQueries(['CompetitionInstanceDetails', instanceId]);
@@ -384,7 +342,7 @@ const index = () => {
       Toast.show({
         type: 'error',
         text1: 'Action Failed',
-        text2: 'An error occurred while processing this action. Please try again.',
+        text2: err?.message || 'An error occurred while processing this action. Please try again.',
       });
     } finally {
       setSheetConfig(null);
