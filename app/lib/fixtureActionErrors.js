@@ -89,6 +89,21 @@ const MESSAGES = {
   duplicate_player: ['Duplicate player', 'A player cannot appear twice in the same frame.', 'error'],
   not_escalated: ['Not escalated', 'This fixture has not been escalated to the league admin.', 'info'],
   invalid_days: ['Invalid number of days', 'Choose between 1 and 30 days.', 'error'],
+  invalid_code: ['Invalid code', 'The code must be exactly 6 digits.', 'error'],
+  code_taken: ['Code already in use', 'Please choose another code.', 'error'],
+  invalid_name: ['Invalid name', 'The league name must be at least 3 characters long.', 'error'],
+  district_name_taken: ['Name already exists', 'Please choose another league name.', 'error'],
+  league_not_found: ['Invalid league code', 'Please check the code and try again.', 'error'],
+  league_locked: [
+    'League is locked',
+    'This league is currently being set up by another admin. Please check back soon.',
+    'info',
+  ],
+  already_admin: ['Already an admin', 'That player is already an admin of this league.', 'info'],
+  already_invited: ['Already invited', 'That player already has a pending invite.', 'info'],
+  player_not_found: ['Player not found', 'That player could not be found.', 'error'],
+  invite_not_found: ['Invite not found', 'This invite no longer exists.', 'info'],
+  invite_closed: ['Invite closed', 'This invite has already been answered or withdrawn.', 'info'],
   network: ['Connection problem', 'Please check your internet connection and try again.', 'error'],
 };
 

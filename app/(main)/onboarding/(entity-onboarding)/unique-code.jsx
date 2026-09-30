@@ -50,53 +50,31 @@ const UniqueCode = () => {
         throw new Error('INVALID_CODE');
       }
 
-      const { data: leagueData, error: fetchError } = await supabase
-        .from('Districts')
-        .select('*')
-        .eq('code', code)
-        .single();
+      // One checked RPC: finds the league by its admin code and either locks a new league
+      // for this player to set up, or (for an active league) makes them an admin.
+      const { data: claim, error: claimError } = await supabase.rpc('claim_district_by_code', {
+        p_code: code,
+      });
 
-      if (fetchError || !leagueData) {
-        throw new Error('LEAGUE_NOT_FOUND');
+      if (claimError) {
+        const detail = claimError.details;
+        if (detail === 'invalid_code') throw new Error('INVALID_CODE');
+        if (detail === 'league_not_found') throw new Error('LEAGUE_NOT_FOUND');
+        if (detail === 'league_locked') throw new Error('LEAGUE_LOCKED');
+        throw new Error('ADMIN_FLOW_FAILED');
       }
 
-      // 🆕 NEW LEAGUE → lock it + navigate
-      if (leagueData.status === 'new') {
-        const { error: updateError } = await supabase
-          .from('Districts')
-          .update({
-            status: 'locked',
-            locked_by: player.id,
-            locked_at: new Date().toISOString(),
-            lock_expires_at: new Date(Date.now() + 10 * 60 * 1000).toISOString(), // 10 min lock
-          })
-          .eq('id', leagueData.id);
-
-        if (updateError) {
-          throw new Error('LOCK_FAILED');
-        }
-
+      // 🆕 NEW LEAGUE → locked for this player → set it up
+      if (claim.status === 'lock_acquired') {
         router.replace({
           pathname: '/(main)/onboarding/(entity-onboarding)/district-name',
-          params: { districtId: leagueData.id },
+          params: { districtId: claim.district_id },
         });
         return;
       }
 
-      // 🔒 LOCKED
-      if (leagueData.status === 'locked') {
-        throw new Error('LEAGUE_LOCKED');
-      }
-
-      // ✅ ACTIVE → request admin access
-      if (leagueData.status === 'active') {
-        const { data: newAdminRole, error } = await supabase.rpc('join_district_as_admin', {
-          p_player_id: player.id,
-          p_district_id: leagueData.id,
-        });
-
-        if (error) throw new Error('ADMIN_FLOW_FAILED');
-
+      // ✅ ACTIVE → this player is now an admin of the league
+      if (claim.status === 'joined') {
         queryClient.setQueryData(['authUserProfile'], (old) => ({
           ...old,
           playerProfile: {
@@ -105,13 +83,13 @@ const UniqueCode = () => {
           },
         }));
 
-        setCurrentRole({ role: 'admin', district: { id: leagueData.id, name: leagueData.name } });
+        setCurrentRole({ role: 'admin', district: { id: claim.district_id, name: claim.district_name } });
         queryClient.invalidateQueries(['authUserProfile']);
 
         Toast.show({
           type: 'success',
           text1: 'Admin Access Granted',
-          text2: `You are now an admin for ${leagueData.name}.`,
+          text2: `You are now an admin for ${claim.district_name}.`,
         });
         return;
       }

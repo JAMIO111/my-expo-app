@@ -7,6 +7,7 @@ import MenuContainer from '@components/MenuContainer';
 import SafeViewWrapper from '@components/SafeViewWrapper';
 import CustomHeader from '@components/CustomHeader';
 import { useUser } from '@contexts/UserProvider';
+import { useMyAdminInvites } from '@hooks/useDistrictAdminInvites';
 import NavBar from '@components/NavBar2';
 import { useState, useRef } from 'react';
 import Purchases from 'react-native-purchases';
@@ -30,6 +31,7 @@ const index = () => {
 
   const { session, user, player, roles, currentRole, setCurrentRole, isLoading, refetch } =
     useUser();
+  const { data: adminInvites } = useMyAdminInvites();
   const [tempRole, setTempRole] = useState(null);
 
   console.log('Bottom Sheet index:', bottomSheetRef.current);
@@ -180,6 +182,16 @@ const index = () => {
             }`}
           />
         </MenuContainer>
+        {adminInvites && adminInvites.length > 0 && (
+          <MenuContainer title="Invitations">
+            <SettingsItem
+              title="League Admin Invites"
+              icon="shieldCheck"
+              routerPath="/settings/DistrictAdminInvites"
+              text={`${adminInvites.length} pending`}
+            />
+          </MenuContainer>
+        )}
         {currentRole?.type === 'admin' && (
           <MenuContainer title="Admin Tools">
             <SettingsItem

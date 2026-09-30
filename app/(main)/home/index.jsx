@@ -475,22 +475,17 @@ const Home = () => {
                     onToggle={async () => {
                       setWindowLoading(true);
                       try {
-                        const { data, error } = await supabase
-                          .from('Districts')
-                          .update({
-                            transfer_window_open: !currentRole.district?.transfer_window_open,
-                            transfer_window_last_updated: new Date().toISOString(),
-                          })
-                          .eq('id', currentRole.district.id);
+                        const { error } = await supabase.rpc('update_district_settings', {
+                          p_district_id: currentRole.district.id,
+                          p_transfer_window_open: !currentRole.district?.transfer_window_open,
+                        });
+                        if (error) throw error;
                         // Invalidate related queries to ensure UI updates with latest data
                         queryClient.invalidateQueries(['authUserProfile']);
                         Toast.show({
                           type: 'success',
                           text1: 'Transfer window updated successfully',
                         });
-                        if (error) {
-                          throw error;
-                        }
                       } catch (err) {
                         Toast.show({
                           type: 'error',

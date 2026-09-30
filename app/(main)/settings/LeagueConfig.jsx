@@ -13,6 +13,7 @@ import { useUser } from '@contexts/UserProvider';
 import { supabase } from '@/lib/supabase';
 import Toast from 'react-native-toast-message';
 import { useAdminsByDistrict } from '@hooks/useAdminsByDistrict';
+import { handleFixtureError } from '@lib/fixtureActionErrors';
 
 const LeagueConfig = () => {
   const { currentRole, player, refetch } = useUser();
@@ -53,36 +54,52 @@ const LeagueConfig = () => {
       return;
     }
 
-    const { data, error } = await supabase
-      .from('Districts')
-      .update({ name: districtName.trim(), code: joinCode })
-      .eq('id', currentRole?.district?.id)
-      .select();
+    try {
+      const districtId = currentRole?.district?.id;
 
-    if (error) {
-      console.error('Error updating district:', error);
-      if (error.message === 'duplicate key value violates unique constraint "Districts_name_key"') {
-        Toast.show({
-          type: 'error',
-          text1: 'District name already exists.',
-          text2: 'Please choose another name.',
+      if (districtName !== currentRole?.district?.name) {
+        const { error } = await supabase.rpc('update_district_settings', {
+          p_district_id: districtId,
+          p_name: districtName.trim(),
         });
-      } else if (
-        error.message === 'duplicate key value violates unique constraint "Districts_code_key"'
-      ) {
-        Toast.show({
-          type: 'error',
-          text1: 'Join code already exists.',
-          text2: 'Please choose another code.',
-        });
-      } else {
-        Toast.show({ type: 'error', text1: 'Failed to save changes.' });
+        if (error) throw error;
       }
-      return;
-    }
 
-    await refetch();
-    Toast.show({ type: 'success', text1: 'Changes saved successfully' });
+      if (joinCode !== currentRole?.district?.code) {
+        const { error } = await supabase.rpc('set_district_join_code', {
+          p_district_id: districtId,
+          p_code: joinCode,
+        });
+        if (error) throw error;
+      }
+
+      await refetch();
+      Toast.show({ type: 'success', text1: 'Changes saved successfully' });
+    } catch (error) {
+      console.error('Error updating district:', error);
+      await handleFixtureError(error, {
+        fallbackTitle: 'Failed to save changes.',
+        fallbackMessage: 'Please try again.',
+      });
+    }
+  };
+
+  // Switch rows: one checked RPC updates only the setting that changed.
+  const updateSetting = async (changes) => {
+    try {
+      const { error } = await supabase.rpc('update_district_settings', {
+        p_district_id: currentRole?.district?.id,
+        ...changes,
+      });
+      if (error) throw error;
+      await refetch();
+    } catch (error) {
+      console.error('Error updating league setting:', error);
+      await handleFixtureError(error, {
+        fallbackTitle: 'Failed to save changes.',
+        fallbackMessage: 'Please try again.',
+      });
+    }
   };
 
   return (
@@ -121,37 +138,13 @@ const LeagueConfig = () => {
           />
           <SwitchSettingsItem
             defaultValue={currentRole?.district?.private}
-            setValue={async () => {
-              const newValue = !currentRole?.district?.private;
-
-              const { data, error } = await supabase
-                .from('Districts')
-                .update({ private: newValue })
-                .eq('id', currentRole?.district?.id)
-                .select();
-
-              if (error) throw error;
-
-              await refetch();
-            }}
+            setValue={() => updateSetting({ p_private: !currentRole?.district?.private })}
             icon={currentRole?.district?.private ? 'eyeOff' : 'eye'}
             title={currentRole?.district?.private ? 'Private League' : 'Public League'}
           />
           <SwitchSettingsItem
             defaultValue={currentRole?.district?.transfer_approval_required}
-            setValue={async () => {
-              const newValue = !currentRole?.district?.transfer_approval_required;
-
-              const { data, error } = await supabase
-                .from('Districts')
-                .update({ transfer_approval_required: newValue })
-                .eq('id', currentRole?.district?.id)
-                .select();
-
-              if (error) throw error;
-
-              await refetch();
-            }}
+            setValue={() => updateSetting({ p_transfer_approval_required: !currentRole?.district?.transfer_approval_required })}
             icon={currentRole?.district?.transfer_approval_required ? 'shieldCheck' : 'circleCheck'}
             title={
               currentRole?.district?.transfer_approval_required
@@ -161,19 +154,7 @@ const LeagueConfig = () => {
           />
           <SwitchSettingsItem
             defaultValue={currentRole?.district?.transfer_window_open}
-            setValue={async () => {
-              const newValue = !currentRole?.district?.transfer_window_open;
-
-              const { data, error } = await supabase
-                .from('Districts')
-                .update({ transfer_window_open: newValue })
-                .eq('id', currentRole?.district?.id)
-                .select();
-
-              if (error) throw error;
-
-              await refetch();
-            }}
+            setValue={() => updateSetting({ p_transfer_window_open: !currentRole?.district?.transfer_window_open })}
             icon={currentRole?.district?.transfer_window_open ? 'doorOpen' : 'doorClosed'}
             title={
               currentRole?.district?.transfer_window_open
@@ -232,6 +213,12 @@ const LeagueConfig = () => {
                 />
               );
             })}
+            <SettingsItem
+              title="Invite an Admin"
+              icon="userRoundPlus"
+              routerPath="/settings/InviteAdmin"
+              lastItem
+            />
           </MenuContainer>
         )}
         <Text className="text-center font-tektur text-sm text-text-2">

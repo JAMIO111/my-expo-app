@@ -87,16 +87,12 @@ const DivisionRewards = () => {
 
               console.log('Payload to be saved:', payload);
 
-              // Example Supabase insert/update
-              const { error: districtError } = await supabase
-                .from('Districts')
-                .update({
-                  name: districtName,
-                  private: privateDistrict,
-                  initiated_at: new Date(),
-                  active: true,
-                })
-                .eq('id', districtId);
+              // Name / privacy / activation of the league this player has locked for set-up.
+              const { error: districtError } = await supabase.rpc('update_district_onboarding', {
+                p_district_id: districtId,
+                p_name: districtName,
+                p_private: privateDistrict,
+              });
 
               if (districtError) throw districtError;
 
