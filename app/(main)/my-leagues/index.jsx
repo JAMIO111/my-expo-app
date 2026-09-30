@@ -1,4 +1,5 @@
-import { View } from 'react-native';
+import { Pressable, View, Text } from 'react-native';
+import { useState } from 'react';
 import { Cog } from 'lucide-react-native';
 import { Stack, useRouter } from 'expo-router';
 import { supabase } from '@lib/supabase';
@@ -20,9 +21,12 @@ import { useTheme } from '@contexts/ThemeProvider';
 const index = () => {
   const { colors: themeColors } = useTheme();
   const router = useRouter();
+  const [showInvites, setShowInvites] = useState(true);
   const { currentRole, refetch } = useUser();
   const { data: teamProfile, isLoading } = useTeamProfile(currentRole?.team?.id);
-  const { tickets: requestTickets, actionCount } = useAdminRequestTickets(currentRole?.district?.id);
+  const { tickets: requestTickets, actionCount } = useAdminRequestTickets(
+    currentRole?.district?.id
+  );
 
   console.log('Debug Team Profile:', teamProfile);
   console.log('Current Role in My Leagues:', currentRole);
@@ -128,15 +132,24 @@ const index = () => {
               onEnd={handleEndSeason}
             />
           </View>
-          <DivisionsList districtId={currentRole?.district?.id} />
           {requestTickets.length > 0 && (
-            <View className="w-full gap-3 bg-bg-2 pb-8 pt-2">
+            <View className={`w-full gap-3 bg-bg-2 ${showInvites ? 'pb-8' : 'pb-2'} pt-2`}>
               <View className="w-full flex-row items-center justify-between p-3 pr-6">
-                <Heading text="Requests & Invites" notificationCount={actionCount} />
+                <View className="flex flex-1 flex-row items-center justify-between">
+                  <Heading text="Requests & Invites" notificationCount={actionCount} />
+                  <Pressable className="px-4 py-2" onPress={() => setShowInvites((prev) => !prev)}>
+                    <Text className="font-tektur-medium text-lg text-theme-blue">
+                      {showInvites ? 'Hide' : 'Show'}
+                    </Text>
+                  </Pressable>
+                </View>
               </View>
-              <TicketCarousel tickets={requestTickets} CardComponent={AdminRequestTicket} />
+              {showInvites && (
+                <TicketCarousel tickets={requestTickets} CardComponent={AdminRequestTicket} />
+              )}
             </View>
           )}
+          <DivisionsList districtId={currentRole?.district?.id} />
         </ScrollView>
         <NavBar />
       </SafeViewWrapper>
