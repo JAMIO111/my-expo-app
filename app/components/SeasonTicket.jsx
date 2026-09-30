@@ -197,7 +197,7 @@ export default function SeasonTicketCard({ season, district, onStart, onEnd, sty
             }}>
             {/* Top notch */}
             <View
-              className="absolute z-10 bg-bg-1"
+              className="absolute z-10 bg-bg-grouped-2"
               style={{
                 width: notchSize,
                 height: notchSize,
@@ -209,7 +209,7 @@ export default function SeasonTicketCard({ season, district, onStart, onEnd, sty
 
             {/* Bottom notch */}
             <View
-              className="absolute z-10 bg-bg-1"
+              className="absolute z-10 bg-bg-grouped-2"
               style={{
                 width: notchSize,
                 height: notchSize,

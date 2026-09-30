@@ -356,12 +356,12 @@ const EditDivisionForm = ({ competition, division, participants, closeModal, con
   };
 
   return (
-    <View className="flex-1 gap-4 bg-bg-1">
+    <View className="flex-1 gap-4 bg-bg-grouped-1">
       <KeyboardAwareScrollView
         contentContainerStyle={{ gap: 8, paddingBottom: 140 }}
-        className="flex-1 gap-4 bg-bg-2">
+        className="flex-1 gap-4 bg-bg-grouped-1">
         {context === 'edit-division' && (
-          <View className="gap-4 bg-bg-1 p-5">
+          <View className="gap-4 bg-bg-grouped-2 p-5">
             <Heading text="Division Settings" />
 
             <CustomTextInput
@@ -443,7 +443,7 @@ const EditDivisionForm = ({ competition, division, participants, closeModal, con
               </View>
             </View>
 
-            <View className="flex-row items-center justify-between gap-5 rounded-xl bg-bg-1 px-1 py-3">
+            <View className="flex-row items-center justify-between gap-5 rounded-xl bg-bg-grouped-2 px-1 py-3">
               <View className="flex-1 items-start justify-center gap-1">
                 <Text className="font-saira-medium text-xl text-text-1">Mid-Season Transfers</Text>
                 <Text className="font-saira text-xs text-text-2">
@@ -459,7 +459,7 @@ const EditDivisionForm = ({ competition, division, participants, closeModal, con
                 thumbColor={midSeasonTransfers ? '#ffffff' : '#f4f3f4'}
               />
             </View>
-            <View className="flex-row items-center justify-between gap-5 rounded-xl bg-bg-1 px-1 py-3">
+            <View className="flex-row items-center justify-between gap-5 rounded-xl bg-bg-grouped-2 px-1 py-3">
               <View className="flex-1 items-start justify-center gap-1">
                 <Text className="font-saira-medium text-xl text-text-1">
                   Admin Approval Required
@@ -480,7 +480,7 @@ const EditDivisionForm = ({ competition, division, participants, closeModal, con
           </View>
         )}
 
-        <View className="gap-4 bg-bg-1 p-5">
+        <View className="gap-4 bg-bg-grouped-2 p-5">
           <Heading
             text={
               context === 'edit-division'
@@ -554,7 +554,7 @@ const EditDivisionForm = ({ competition, division, participants, closeModal, con
             This is the maximum number of frames playable in a fixture. Leave empty for open ended
             fixtures.
           </Text>
-          <View className="flex-row items-center justify-between gap-5 rounded-xl bg-bg-1 px-1 py-3">
+          <View className="flex-row items-center justify-between gap-5 rounded-xl px-1 py-3">
             <View className="flex-1 items-start justify-center gap-1">
               <Text className="font-saira-medium text-xl text-text-1">Draws Allowed</Text>
               <Text className="font-saira text-xs text-text-2">
@@ -632,7 +632,7 @@ const EditDivisionForm = ({ competition, division, participants, closeModal, con
               />
             </View>
           ) : null}
-          <View className="flex-row items-center justify-between gap-5 rounded-xl bg-bg-1 px-1 py-3">
+          <View className="flex-row items-center justify-between gap-5 rounded-xl px-1 py-3">
             <View className="flex-1 items-start justify-center gap-1">
               <Text className="font-saira-medium text-xl text-text-1">Enable Bonus Frame</Text>
               <Text className="font-saira text-xs text-text-2">
@@ -677,7 +677,7 @@ const EditDivisionForm = ({ competition, division, participants, closeModal, con
           )}
         </View>
 
-        <View className="gap-4 bg-bg-1 p-4 pb-8">
+        <View className="gap-4 bg-bg-grouped-2 p-4 pb-8">
           <Heading text="Competition Awards" />
           <View style={{ minHeight: 280 }} className="flex-row items-stretch justify-around gap-5">
             <Pressable

@@ -112,7 +112,7 @@ const index = () => {
           contentContainerStyle={{
             display: 'flex',
             flexGrow: 1,
-            gap: 6,
+            gap: 8,
             backgroundColor: themeColors.bgGrouped1,
           }}
           className="mt-16 flex-1">
