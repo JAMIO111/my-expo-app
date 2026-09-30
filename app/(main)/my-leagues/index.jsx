@@ -66,13 +66,13 @@ const index = () => {
 
     if (data?.success === false) {
       const list =
-        data.incomplete_competitions?.map((c) => `• ${c.name} (${c.status})`).join('\n') ||
+        data.incomplete_competitions?.map((c) => `• ${c.name} (${c.reason || c.status})`).join('\n') ||
         'No details available';
 
       Toast.show({
         type: 'info',
         text1: 'Season Not Ended',
-        text2: `The following competitions are still active:\n\n${list}\n\nPlease complete them all before ending the season.`,
+        text2: `These competitions still need attention:\n\n${list}\n\nFinish them before ending the season.`,
       });
 
       return;
@@ -81,8 +81,9 @@ const index = () => {
     Toast.show({
       type: 'success',
       text1: 'Season Ended',
-      text2: 'The season has been successfully ended.',
+      text2: `${data?.awards_issued ?? 0} awards issued, ${data?.promoted ?? 0} promoted, ${data?.relegated ?? 0} relegated.`,
     });
+    refetch();
   };
 
   return (
