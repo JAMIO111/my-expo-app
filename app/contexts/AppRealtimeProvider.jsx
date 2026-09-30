@@ -60,12 +60,25 @@ export default function AppRealtimeProvider({ children }) {
         refetch();
       }
 
+      const PENDING = [
+        'requested',
+        'invited',
+        'pending_both',
+        'pending_captain',
+        'pending_admin',
+        'pending_player',
+      ];
       const isRequestChange =
-        ['pending_both', 'pending_captain', 'pending_admin'].includes(payload.new?.status) ||
-        ['pending_both', 'pending_captain', 'pending_admin'].includes(payload.old?.status);
+        PENDING.includes(payload.new?.status) || PENDING.includes(payload.old?.status);
 
-      if (isRequestChange && teamId)
-        queryClient.invalidateQueries({ queryKey: ['TeamPlayerRequest', teamId] });
+      if (isRequestChange) {
+        // Captain / admin request lists, the roster's pending sections and every player's own
+        // invites & requests (the old key 'TeamPlayerRequest' matched nothing, so none of these
+        // refreshed live).
+        queryClient.invalidateQueries({ queryKey: ['TeamPlayerRequests'] });
+        queryClient.invalidateQueries({ queryKey: ['PlayerInvitesAndRequests'] });
+        queryClient.invalidateQueries({ queryKey: ['teams-recruiting'] });
+      }
       if (playerId) {
         queryClient.invalidateQueries({ queryKey: ['PlayerProfile', playerId] });
         queryClient.invalidateQueries({ queryKey: ['PlayerStats', playerId] });

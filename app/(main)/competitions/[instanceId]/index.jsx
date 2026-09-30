@@ -273,19 +273,27 @@ const index = () => {
     try {
       setQueryLoading(true);
 
-      const { error } = await supabase
-        .from('CompetitionParticipants')
-        .update({
-          status:
-            status === 'active' ? (currentRole.type === 'admin' ? 'removed' : 'left') : 'cancelled',
-          left_at: new Date().toISOString(),
-        })
-        .eq('competition_instance_id', instanceId)
-        .match(
-          isTeam ? { team_id: currentRole.team.id, status } : { player_id: player.id, status }
-        );
-
-      if (error) throw error;
+      if (currentRole.type === 'admin') {
+        // league admins may edit participants directly (admin-only policy)
+        const { error } = await supabase
+          .from('CompetitionParticipants')
+          .update({
+            status: status === 'active' ? 'removed' : 'cancelled',
+            left_at: new Date().toISOString(),
+          })
+          .eq('competition_instance_id', instanceId)
+          .match(
+            isTeam ? { team_id: currentRole.team.id, status } : { player_id: player.id, status }
+          );
+        if (error) throw error;
+      } else {
+        const { data, error } = await supabase.rpc('withdraw_from_competition', {
+          p_instance_id: instanceId,
+          p_team_id: isTeam ? currentRole.team.id : null,
+        });
+        if (error) throw error;
+        if (data?.success === false) throw new Error(data.message || 'Could not withdraw');
+      }
 
       Toast.show({
         type: 'success',

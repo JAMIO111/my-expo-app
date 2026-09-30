@@ -40,13 +40,14 @@ export default function AppleSignInButton() {
       // ✅ Apple only gives you fullName on the FIRST authorization ever.
       // If present, push it onto the Players row now — you won't get it again.
       if (credential.fullName?.givenName || credential.fullName?.familyName) {
-        const fullName = [credential.fullName.givenName, credential.fullName.familyName]
-          .filter(Boolean)
-          .join(' ');
+        // Players has first_name / surname (there is no "name" column, so the old update failed).
+        const nameUpdate = {};
+        if (credential.fullName.givenName) nameUpdate.first_name = credential.fullName.givenName;
+        if (credential.fullName.familyName) nameUpdate.surname = credential.fullName.familyName;
 
         const { error: profileError } = await supabase
           .from('Players')
-          .update({ name: fullName })
+          .update(nameUpdate)
           .eq('auth_id', data.user.id);
 
         if (profileError) {
