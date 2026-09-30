@@ -15,8 +15,10 @@ import AdminRequestTicket from '@components/AdminRequestTicket';
 import { useAdminRequestTickets } from '@hooks/useAdminRequestTickets';
 import SeasonTicket from '@components/SeasonTicket';
 import Heading from '@components/Heading';
+import { useTheme } from '@contexts/ThemeProvider';
 
 const index = () => {
+  const { colors: themeColors } = useTheme();
   const router = useRouter();
   const { currentRole, refetch } = useUser();
   const { data: teamProfile, isLoading } = useTeamProfile(currentRole?.team?.id);
@@ -69,8 +71,9 @@ const index = () => {
 
     if (data?.success === false) {
       const list =
-        data.incomplete_competitions?.map((c) => `• ${c.name} (${c.reason || c.status})`).join('\n') ||
-        'No details available';
+        data.incomplete_competitions
+          ?.map((c) => `• ${c.name} (${c.reason || c.status})`)
+          .join('\n') || 'No details available';
 
       Toast.show({
         type: 'info',
@@ -109,9 +112,14 @@ const index = () => {
       />
       <SafeViewWrapper bottomColor="bg-brand" topColor="bg-brand">
         <ScrollView
-          contentContainerStyle={{ display: 'flex', flexGrow: 1, gap: 6 }}
+          contentContainerStyle={{
+            display: 'flex',
+            flexGrow: 1,
+            gap: 8,
+            backgroundColor: themeColors.bgGrouped1,
+          }}
           className="mt-16 flex-1">
-          <View className="gap-2 bg-bg-1 p-4">
+          <View className="gap-2 bg-bg-grouped-2 p-4">
             <Heading text="Current Season" />
             <SeasonTicket
               season={currentRole?.activeSeason}
@@ -129,7 +137,6 @@ const index = () => {
               <TicketCarousel tickets={requestTickets} CardComponent={AdminRequestTicket} />
             </View>
           )}
-          <View className="bg-bg-1 p-4"></View>
         </ScrollView>
         <NavBar />
       </SafeViewWrapper>

@@ -259,7 +259,7 @@ const TeamJoinRequests = ({ districtId, teamId }) => {
 
   if (isLoadingTeamRequests || isLoadingDivisionRequests) {
     return (
-      <View className="flex-1 bg-bg-1 p-4">
+      <View className="flex-1 p-4">
         <View className="flex-row items-center justify-center gap-5 rounded-2xl bg-bg-2 p-8 shadow-sm">
           <ActivityIndicator size="small" color={themeColors.secondaryText} />
           <Text className="font-saira text-text-1">Loading Team Join Requests...</Text>
@@ -270,7 +270,7 @@ const TeamJoinRequests = ({ districtId, teamId }) => {
 
   if (teamError || divisionError) {
     return (
-      <View className="flex-1 bg-bg-1 p-4">
+      <View className="flex-1 p-4">
         <View className="flex-row items-center justify-center gap-5 rounded-2xl bg-bg-2 p-8 shadow-sm">
           <Ionicons name="warning" size={24} color="#E53E3E" />
           <Text className="text-center font-saira-medium text-theme-red">
@@ -292,7 +292,7 @@ const TeamJoinRequests = ({ districtId, teamId }) => {
         show={showView}
         setShow={setShowView}
         notificationCount={pendingCount}>
-        <View className="gap-3 bg-bg-1">
+        <View className="gap-3">
           {requests.map((req) => {
             const isProcessing = processingId === req.id;
             const { showActions, badges } = getRequestUI(req);
@@ -300,7 +300,7 @@ const TeamJoinRequests = ({ districtId, teamId }) => {
             return (
               <View
                 key={req.id}
-                className="flex-row items-center justify-between rounded-2xl bg-bg-2 px-3 py-3 shadow-sm">
+                className="flex-row items-center justify-between rounded-2xl bg-bg-grouped-3 px-3 py-3">
                 {/* LEFT */}
                 <View className="flex-1 flex-row items-center gap-3">
                   <View className="flex-1 gap-3">
@@ -331,7 +331,9 @@ const TeamJoinRequests = ({ districtId, teamId }) => {
                         </Text>
 
                         <Text className="mt-1 font-saira text-sm text-text-2">
-                          {`${req.is_invite ? 'Invited' : 'Requested'} - ${new Date(req.requested_at).toLocaleDateString('en-GB', {
+                          {`${req.is_invite ? 'Invited' : 'Requested'} - ${new Date(
+                            req.requested_at
+                          ).toLocaleDateString('en-GB', {
                             year: 'numeric',
                             month: 'long',
                             day: 'numeric',

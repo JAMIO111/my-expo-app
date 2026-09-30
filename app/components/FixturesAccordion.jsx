@@ -75,7 +75,7 @@ const FixturesAccordion = ({ competitionInstance }) => {
             <Text className="text-text-2">Loading fixtures...</Text>
           ) : (
             Object.entries(combinedGrouped || {}).map(([date, fixturesForDate]) => (
-              <View key={date} className="rounded-2xl bg-bg-2 ">
+              <View key={date} className="rounded-2xl bg-bg-grouped-3 ">
                 {/* Date header */}
                 <Pressable
                   onPress={() => toggleDate(date)}
@@ -118,7 +118,7 @@ const FixturesAccordion = ({ competitionInstance }) => {
                               setShowModal(true);
                             }}
                             style={{ borderRadius: 10 }}
-                            className="flex flex-1 flex-col items-center justify-between gap-2 bg-bg-1 p-2">
+                            className="flex flex-1 flex-col items-center justify-between gap-2 bg-bg-grouped-2 p-2">
                             <View className="flex flex-row items-center justify-between gap-2">
                               <View className="flex-1 flex-col items-center justify-between gap-2">
                                 <View className="flex-1 flex-row items-center justify-between gap-2">
