@@ -10,7 +10,9 @@ import { useTeamProfile } from '@hooks/useTeamProfile';
 import DivisionsList from '@components/DivisionsList';
 import { ScrollView } from 'react-native-gesture-handler';
 import Toast from 'react-native-toast-message';
-import TeamJoinRequests from '@components/TeamJoinRequests';
+import TicketCarousel from '@components/TicketCarousel';
+import AdminRequestTicket from '@components/AdminRequestTicket';
+import { useAdminRequestTickets } from '@hooks/useAdminRequestTickets';
 import SeasonTicket from '@components/SeasonTicket';
 import Heading from '@components/Heading';
 
@@ -18,6 +20,7 @@ const index = () => {
   const router = useRouter();
   const { currentRole, refetch } = useUser();
   const { data: teamProfile, isLoading } = useTeamProfile(currentRole?.team?.id);
+  const { tickets: requestTickets, actionCount } = useAdminRequestTickets(currentRole?.district?.id);
 
   console.log('Debug Team Profile:', teamProfile);
   console.log('Current Role in My Leagues:', currentRole);
@@ -118,7 +121,14 @@ const index = () => {
             />
           </View>
           <DivisionsList districtId={currentRole?.district?.id} />
-          <TeamJoinRequests districtId={currentRole?.district?.id} />
+          {requestTickets.length > 0 && (
+            <View className="w-full gap-3 bg-bg-2 pb-8 pt-2">
+              <View className="w-full flex-row items-center justify-between p-3 pr-6">
+                <Heading text="Requests & Invites" notificationCount={actionCount} />
+              </View>
+              <TicketCarousel tickets={requestTickets} CardComponent={AdminRequestTicket} />
+            </View>
+          )}
           <View className="bg-bg-1 p-4"></View>
         </ScrollView>
         <NavBar />

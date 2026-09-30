@@ -4,10 +4,10 @@ import Animated, { useAnimatedScrollHandler, useSharedValue } from 'react-native
 import TicketCard from './TicketCard';
 import { useTheme } from '@contexts/ThemeProvider';
 
-const MemoTicketCard = React.memo(TicketCard);
 
 export default function TicketCarousel({
   tickets,
+  CardComponent = TicketCard,
   sidePeek = 50,
   cardGap = 16,
   showLabel = true,
@@ -43,6 +43,8 @@ export default function TicketCarousel({
     },
   });
 
+  const MemoCard = useMemo(() => React.memo(CardComponent), [CardComponent]);
+
   const renderItem = useCallback(
     ({ item, index }) => (
       <View
@@ -50,13 +52,13 @@ export default function TicketCarousel({
           width: cardWidth,
           marginRight: index === tickets.length - 1 ? 0 : cardGap,
         }}>
-        <MemoTicketCard item={item} width={cardWidth} />
+        <MemoCard item={item} width={cardWidth} />
       </View>
     ),
-    [cardWidth, cardGap, tickets.length]
+    [cardWidth, cardGap, tickets.length, MemoCard]
   );
 
-  const keyExtractor = useCallback((_, i) => String(i), []);
+  const keyExtractor = useCallback((item, i) => String(item?.key ?? item?.id ?? i), []);
 
   const listData = useMemo(() => tickets, [tickets]);
 
