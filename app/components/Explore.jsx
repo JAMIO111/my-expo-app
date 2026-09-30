@@ -13,6 +13,7 @@ import { useUser } from '@contexts/UserProvider';
 import { supabase } from '@/lib/supabase';
 import { usePlayerInvitesAndRequests } from '@hooks/usePlayerInvitesAndRequests';
 import { useTeamPlayerActions } from '@hooks/useTeamPlayerActions';
+import { assertRpcOk } from '@lib/rpc';
 import Toast from 'react-native-toast-message';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
@@ -298,8 +299,10 @@ const ExploreComponent = () => {
       bottomButtonType: 'default',
       topButtonFn: async () => {
         try {
-          const { error } = await supabase.from('TeamPlayers').delete().eq('id', invite.id);
-          if (error) throw error;
+          const { data, error } = await supabase.rpc('decline_player_join_team_invite', {
+            p_team_player_id: invite.id,
+          });
+          assertRpcOk(data, error);
           queryClient.invalidateQueries(['PlayerInvitesAndRequests', { playerId: player.id }]);
           setModalVisible(false);
           Toast.show({ type: 'success', text1: 'Invite declined' });

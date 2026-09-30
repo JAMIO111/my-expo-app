@@ -20,17 +20,11 @@ const TeamCrest = () => {
     setIsSaving(true);
     // Save the changes to the database
     try {
-      const { error } = await supabase
-        .from('Teams')
-        .update({
-          crest: {
-            type,
-            color1,
-            color2,
-            thickness,
-          },
-        })
-        .eq('id', currentRole?.team?.id);
+      const { error } = await supabase.rpc('update_team_crest', {
+        p_team_id: currentRole?.team?.id,
+        p_crest: { type, color1, color2, thickness },
+      });
+      if (error) throw error;
 
       if (error) throw error;
 

@@ -2,6 +2,25 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 import Toast from 'react-native-toast-message';
 import { useUser } from '@contexts/UserProvider';
+import { assertRpcOk } from '@lib/rpc';
+
+const PENDING_REQUEST = ['requested', 'pending_captain', 'pending_admin', 'pending_both'];
+const PENDING_INVITE = ['invited', 'pending_player', 'pending_admin', 'pending_both'];
+
+// The RPCs act on a TeamPlayers row id; the UI only knows team + player.
+async function findTeamPlayerId(teamId, playerId, statuses) {
+  const { data, error } = await supabase
+    .from('TeamPlayers')
+    .select('id')
+    .eq('team_id', teamId)
+    .eq('player_id', playerId)
+    .in('status', statuses)
+    .limit(1)
+    .maybeSingle();
+  if (error) throw error;
+  if (!data) throw new Error('This request is no longer pending');
+  return data.id;
+}
 
 export function useTeamPlayerActions(teamId, callbacks = {}) {
   const queryClient = useQueryClient();
@@ -17,14 +36,11 @@ export function useTeamPlayerActions(teamId, callbacks = {}) {
   // 🚀 Remove player
   const removePlayer = useMutation({
     mutationFn: async ({ teamId, playerId }) => {
-      const { error } = await supabase
-        .from('TeamPlayers')
-        .update({ status: 'left', left_at: new Date() })
-        .eq('team_id', teamId)
-        .eq('player_id', playerId)
-        .eq('status', 'active');
-
-      if (error) throw error;
+      const { data, error } = await supabase.rpc('remove_team_player', {
+        p_team_id: teamId,
+        p_player_id: playerId,
+      });
+      assertRpcOk(data, error);
       return playerId;
     },
     onSuccess: handleCallbacks((playerId) => {
@@ -62,48 +78,11 @@ export function useTeamPlayerActions(teamId, callbacks = {}) {
 
   const acceptRequest = useMutation({
     mutationFn: async (playerId) => {
-      console.log('Accepting join request for player ID:', playerId);
-      console.log('Team ID:', teamId);
-      // Get district ID for the team
-      const { data: teamData, error: teamError } = await supabase
-        .from('Teams')
-        .select('division:Divisions(district)')
-        .eq('id', teamId)
-        .maybeSingle();
-      if (teamError) throw teamError;
-
-      const districtId = teamData?.division?.district;
-      if (!districtId) throw new Error('Team district not found');
-      console.log('District ID:', districtId);
-
-      // 2 Get active season for the team's district
-      const { data: seasonData, error: seasonError } = await supabase
-        .from('Seasons')
-        .select('id')
-        .eq('district', districtId)
-        .eq('is_active', true)
-        .maybeSingle();
-
-      if (seasonError) throw seasonError;
-
-      const activeSeasonId = seasonData?.id || null;
-      console.log('Active Season ID:', activeSeasonId);
-
-      // 3 Update TeamPlayers with status + active season
-      const { error } = await supabase
-        .from('TeamPlayers')
-        .update({
-          status: 'active',
-          joined_at: new Date(),
-          accepted_by: player.id,
-          season_id: activeSeasonId,
-        })
-        .eq('team_id', teamId)
-        .eq('player_id', playerId)
-        .eq('status', 'requested');
-
-      if (error) throw error;
-
+      const id = await findTeamPlayerId(teamId, playerId, PENDING_REQUEST);
+      const { data, error } = await supabase.rpc('accept_player_join_team_request', {
+        p_team_player_id: id,
+      });
+      assertRpcOk(data, error);
       return playerId;
     },
     onSuccess: handleCallbacks((playerId) => {
@@ -120,46 +99,10 @@ export function useTeamPlayerActions(teamId, callbacks = {}) {
 
   const acceptInvite = useMutation({
     mutationFn: async (invite) => {
-      console.log('Accepting join request for player ID:', invite?.player_id);
-      console.log('Team ID:', invite?.team_id);
-
-      // 1. Get district ID for the team
-      const { data: teamData, error: teamError } = await supabase
-        .from('Teams')
-        .select('division:Divisions(district)')
-        .eq('id', invite?.team_id)
-        .maybeSingle();
-      if (teamError) throw teamError;
-
-      const districtId = teamData?.division?.district;
-      if (!districtId) throw new Error('Team district not found');
-      console.log('District ID:', districtId);
-
-      // 2. Get active season for the team's district
-      const { data: seasonData, error: seasonError } = await supabase
-        .from('Seasons')
-        .select('id')
-        .eq('district', districtId)
-        .eq('is_active', true)
-        .maybeSingle();
-
-      if (seasonError) throw seasonError;
-
-      const activeSeasonId = seasonData?.id || null;
-      console.log('Active Season ID:', activeSeasonId);
-
-      // 3. Update TeamPlayers with status + active season
-      const { error } = await supabase
-        .from('TeamPlayers')
-        .update({
-          status: 'active',
-          joined_at: new Date(),
-          accepted_by: player.id, // current logged-in user
-          season_id: activeSeasonId,
-        })
-        .eq('id', invite.id);
-
-      if (error) throw error;
+      const { data, error } = await supabase.rpc('accept_player_join_team_invite', {
+        p_team_player_id: invite.id,
+      });
+      assertRpcOk(data, error);
 
       return invite; // return the full invite object
     },
@@ -182,14 +125,11 @@ export function useTeamPlayerActions(teamId, callbacks = {}) {
 
   const denyRequest = useMutation({
     mutationFn: async (playerId) => {
-      const { error } = await supabase
-        .from('TeamPlayers')
-        .delete()
-        .eq('team_id', teamId)
-        .eq('player_id', playerId)
-        .eq('status', 'requested');
-
-      if (error) throw error;
+      const id = await findTeamPlayerId(teamId, playerId, PENDING_REQUEST);
+      const { data, error } = await supabase.rpc('decline_player_join_team_request', {
+        p_team_player_id: id,
+      });
+      assertRpcOk(data, error);
       return playerId;
     },
     onSuccess: handleCallbacks((playerId) => {
@@ -206,14 +146,11 @@ export function useTeamPlayerActions(teamId, callbacks = {}) {
 
   const revokeInvite = useMutation({
     mutationFn: async (playerId) => {
-      const { error } = await supabase
-        .from('TeamPlayers')
-        .delete()
-        .eq('team_id', teamId)
-        .eq('player_id', playerId)
-        .eq('status', 'invited');
-
-      if (error) throw error;
+      const id = await findTeamPlayerId(teamId, playerId, PENDING_INVITE);
+      const { data, error } = await supabase.rpc('revoke_player_join_team_invite', {
+        p_team_player_id: id,
+      });
+      assertRpcOk(data, error);
       return playerId;
     },
     onSuccess: handleCallbacks((playerId) => {
@@ -229,9 +166,10 @@ export function useTeamPlayerActions(teamId, callbacks = {}) {
 
   const revokeRequest = useMutation({
     mutationFn: async (requestId) => {
-      const { error } = await supabase.from('TeamPlayers').delete().eq('id', requestId);
-
-      if (error) throw error;
+      const { data, error } = await supabase.rpc('revoke_player_join_team_request', {
+        p_team_player_id: requestId,
+      });
+      assertRpcOk(data, error);
       return requestId;
     },
     onSuccess: handleCallbacks((requestId) => {
@@ -252,8 +190,7 @@ export function useTeamPlayerActions(teamId, callbacks = {}) {
         _player_id: player.id,
       });
 
-      if (error) throw error;
-      if (!data?.success) throw new Error(data?.message || 'Failed to leave team');
+      assertRpcOk(data, error);
     },
     onSuccess: (data, variables) => {
       queryClient.invalidateQueries({ queryKey: ['TeamPlayers', variables.team.id] });
@@ -271,45 +208,17 @@ export function useTeamPlayerActions(teamId, callbacks = {}) {
     },
   });
 
-  /*const sendJoinRequest = useMutation({
-    mutationFn: async (teamId) => {
-      const { error } = await supabase.from('TeamPlayers').insert({
-        team_id: teamId,
-        player_id: player.id,
-        status: 'requested',
-        requested_at: new Date(),
-        requested_by: player.id,
-      });
-
-      if (error) throw error;
-      return teamId;
-    },
-    onSuccess: handleCallbacks((teamId) => {
-      queryClient.invalidateQueries({ queryKey: ['PlayerInvitesAndRequests', { teamId }] });
-      Toast.show({ type: 'success', text1: 'Join request sent' });
-      console.log('Join request sent for team:', teamId);
-    }, callbacks.sendJoinRequest?.onSuccess),
-    onError: handleCallbacks((error) => {
-      Toast.show({ type: 'error', text1: 'Failed to send join request' });
-      console.log('Failed to send join request:', error);
-    }, callbacks.sendJoinRequest?.onError),
-  });*/
-
   const sendJoinRequest = useMutation({
     mutationFn: async (teamId) => {
-      const { data, error } = await supabase.rpc('send_join_request', {
+      const { data, error } = await supabase.rpc('request_player_join_team', {
         p_team_id: teamId,
       });
-
-      if (error) throw error;
-      if (!data?.success) throw new Error(data?.error || 'Failed to send join request');
-
+      assertRpcOk(data, error);
       return { teamId, data };
     },
     onSuccess: handleCallbacks(({ teamId }) => {
       queryClient.invalidateQueries({ queryKey: ['PlayerInvitesAndRequests', { teamId }] });
       Toast.show({ type: 'success', text1: 'Join request sent' });
-      console.log('Join request sent for team:', teamId);
     }, callbacks.sendJoinRequest?.onSuccess),
     onError: handleCallbacks((error) => {
       Toast.show({ type: 'error', text1: 'Failed to send join request', text2: error.message });
@@ -319,16 +228,10 @@ export function useTeamPlayerActions(teamId, callbacks = {}) {
 
   const removeFromDivision = useMutation({
     mutationFn: async ({ teamId, divisionId }) => {
-      const { data, error } = await supabase
-        .from('Teams')
-        .update({ division: null })
-        .eq('id', teamId)
-        .select()
-        .single();
-
+      const { error } = await supabase.rpc('remove_team_from_division', { p_team_id: teamId });
       if (error) throw error;
 
-      return { team: data, divisionId };
+      return { teamId, divisionId };
     },
     onSuccess: handleCallbacks(({ divisionId }) => {
       queryClient.invalidateQueries({ queryKey: ['teams', divisionId] });

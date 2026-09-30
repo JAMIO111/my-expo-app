@@ -9,6 +9,7 @@ import FloatingBottomSheet from '@components/FloatingBottomSheet';
 import LoadingScreen from '@components/LoadingScreen';
 import CTAButton from '@components/CTAButton';
 import { supabase } from '@/lib/supabase';
+import { assertRpcOk } from '@lib/rpc';
 import Toast from 'react-native-toast-message';
 
 const PendingRequest = () => {
@@ -35,11 +36,10 @@ const PendingRequest = () => {
     if (!requestId) return;
 
     try {
-      const { error } = await supabase.from('TeamPlayers').delete().eq('id', requestId);
-
-      if (error) {
-        throw error;
-      }
+      const { data, error } = await supabase.rpc('revoke_player_join_team_request', {
+        p_team_player_id: requestId,
+      });
+      assertRpcOk(data, error);
 
       Toast.show({
         type: 'success',

@@ -93,10 +93,10 @@ const TeamCoverImage = () => {
       }
       // else: coverImageUrl stays null — explicit removal
 
-      const { error: updateError } = await supabase
-        .from('Teams')
-        .update({ cover_image_url: coverImageUrl })
-        .eq('id', currentRole?.team?.id);
+      const { error: updateError } = await supabase.rpc('update_team_cover_image', {
+        p_team_id: currentRole?.team?.id,
+        p_cover_image_url: coverImageUrl,
+      });
 
       if (updateError) {
         // DB update failed after a successful upload — remove the orphaned

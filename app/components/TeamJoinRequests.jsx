@@ -5,6 +5,7 @@ import { useJoinDivisionRequests } from '@hooks/useJoinDivisionRequests';
 import TeamLogo from '@components/TeamLogo';
 import Avatar from '@components/Avatar';
 import { supabase } from '@/lib/supabase';
+import { assertRpcOk } from '@lib/rpc';
 import Toast from 'react-native-toast-message';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import FloatingBottomSheet from '@components/FloatingBottomSheet';
@@ -247,14 +248,12 @@ const TeamJoinRequests = ({ districtId, teamId }) => {
 
       setProcessingId(requestId);
 
-      const { error } = await supabase.rpc('handle_player_join_team_request', {
-        p_request_id: requestId,
-        p_action: action,
-        p_admin_id: districtId ? player.id : null,
-        p_captain_id: teamId ? player.id : null,
-      });
-
-      if (error) throw error;
+      // The RPCs work out from the signed-in user whether they act as captain or admin.
+      const { data, error } = await supabase.rpc(
+        action === 'approve' ? 'accept_player_join_team_request' : 'decline_player_join_team_request',
+        { p_team_player_id: requestId }
+      );
+      assertRpcOk(data, error);
 
       queryClient.invalidateQueries(['TeamPlayers', teamId]);
 

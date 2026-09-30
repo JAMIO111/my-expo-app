@@ -5,6 +5,7 @@ import SettingsItem from '@components/SettingsItem';
 import MenuContainer from '@components/MenuContainer';
 import { useUser } from '@contexts/UserProvider';
 import { supabase } from '@/lib/supabase';
+import { assertRpcOk } from '@lib/rpc';
 import Toast from 'react-native-toast-message';
 import SafeViewWrapper from '@components/SafeViewWrapper';
 import CustomHeader from '@components/CustomHeader';
@@ -29,11 +30,11 @@ const Team = () => {
 
     try {
       setIsLeavingTeam(true);
-      const { error } = await supabase
-        .from('TeamPlayers')
-        .update({ left_at: new Date().toISOString(), status: 'left' })
-        .eq('player_id', player.id)
-        .eq('team_id', currentRole?.team?.id);
+      const { data, error } = await supabase.rpc('leave_team', {
+        _team_id: currentRole?.team?.id,
+        _player_id: player.id,
+      });
+      assertRpcOk(data, error);
 
       Toast.show({
         type: 'success',
