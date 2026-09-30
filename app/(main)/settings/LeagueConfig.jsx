@@ -182,6 +182,12 @@ const LeagueConfig = () => {
             }
             lastItem={true}
           />
+          <SettingsItem
+            title="Result Escalation"
+            icon="scale"
+            routerPath="/settings/ResultEscalation"
+            text={`${currentRole?.district?.result_escalation_days ?? 3} days`}
+          />
           <SettingsItem title="Manage Venues" routerPath="/settings/Addresses" icon="mapPinHouse" />
         </MenuContainer>
         {adminsLoading || !admins ? null : (

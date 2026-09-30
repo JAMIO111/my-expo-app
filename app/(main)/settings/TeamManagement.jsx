@@ -17,7 +17,7 @@ const Team = () => {
   const router = useRouter();
 
   const handleLeaveTeam = async () => {
-    if (currentRole?.team?.captain === player.id) {
+    if (currentRole?.role === 'captain') {
       Toast.show({
         type: 'error',
         text1: 'Captain cannot leave team',

@@ -114,7 +114,8 @@ const index = () => {
     currentRole?.type === 'admin' &&
     currentRole?.district?.id === competitionInstance?.competition?.district_id;
 
-  const isCaptain = currentRole?.team?.captain === player.id;
+  // TeamPlayers.role is the source of truth for team leaders (Teams.captain is deprecated).
+  const isCaptain = currentRole?.role === 'captain';
 
   const isTeam = competitionInstance?.competition?.competitor_type === 'team';
 
@@ -825,7 +826,7 @@ const index = () => {
                             </View>
 
                             {competitionInstance?.status !== 'completed' &&
-                              ((isMyTeam && currentRole.team?.captain === player.id) || isMe) &&
+                              ((isMyTeam && currentRole?.role === 'captain') || isMe) &&
                               !isAdmin && (
                                 <PressableScale
                                   onPress={() => {

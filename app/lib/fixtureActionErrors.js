@@ -67,6 +67,28 @@ const MESSAGES = {
     'A frame was changed or removed by someone else. Reopen the fixture to see the latest version.',
     'info',
   ],
+  no_frames: ['No frames', 'Add at least one frame before submitting the result.', 'info'],
+  missing_winner: ['Winner missing', 'Every frame needs a winner before the result can be submitted.', 'info'],
+  too_early: [
+    'Fixture has not started',
+    'Results can only be submitted once the fixture has started.',
+    'info',
+  ],
+  too_many_frames: ['Too many frames', 'This fixture has more frames than its best-of allows.', 'info'],
+  too_many_bonus_frames: ['Too many bonus frames', 'Only one bonus frame is allowed per fixture.', 'info'],
+  bonus_not_allowed: [
+    'No bonus frame',
+    'This competition does not have a bonus frame.',
+    'info',
+  ],
+  invalid_player: [
+    'Player not allowed',
+    'A frame includes a player who is not part of this fixture, or a lag / dish was credited to someone who was not in the frame.',
+    'error',
+  ],
+  duplicate_player: ['Duplicate player', 'A player cannot appear twice in the same frame.', 'error'],
+  not_escalated: ['Not escalated', 'This fixture has not been escalated to the league admin.', 'info'],
+  invalid_days: ['Invalid number of days', 'Choose between 1 and 30 days.', 'error'],
   network: ['Connection problem', 'Please check your internet connection and try again.', 'error'],
 };
 

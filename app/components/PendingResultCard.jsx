@@ -6,23 +6,54 @@ import { useRouter } from 'expo-router';
 import { Swords } from 'lucide-react-native';
 import { useTheme } from '@contexts/ThemeProvider';
 
-const PendingResultCard = ({ fixture }) => {
+const ESCALATION_REASONS = {
+  manual: 'Escalated by a captain',
+  no_result_submitted: 'No result submitted in time',
+  no_response_to_result: 'Result not approved or disputed in time',
+  no_amendment: 'Dispute not answered in time',
+  no_response_to_amendment: 'Amendment not answered in time',
+  forfeit_not_approved: 'Forfeit not approved in time',
+  forfeit_disputed: 'Forfeit disputed',
+};
+
+// mode: undefined = a captain's pending item; 'escalated' = an admin's escalated fixture.
+const PendingResultCard = ({ fixture, mode }) => {
   const { colors: themeColors } = useTheme();
   const router = useRouter();
   const { data: results, isLoading } = useResultsByFixture(fixture?.id);
-  const homeScore = results?.filter((result) => result.winner_side === 'home').length || 0;
-  const awayScore = results?.filter((result) => result.winner_side === 'away').length || 0;
+  const isForfeitPending = !!fixture?.is_forfeited && !fixture?.approved;
+  const isEscalatedView = mode === 'escalated';
+  const homeScore = isForfeitPending
+    ? (fixture?.home_score ?? 0)
+    : results?.filter((result) => result.winner_side === 'home').length || 0;
+  const awayScore = isForfeitPending
+    ? (fixture?.away_score ?? 0)
+    : results?.filter((result) => result.winner_side === 'away').length || 0;
   const homeWinner = homeScore > awayScore;
   const awayWinner = awayScore > homeScore;
+  const target = isEscalatedView
+    ? `/home/${fixture?.id}/submit-results`
+    : isForfeitPending
+      ? `home/${fixture?.id}/approve-results`
+      : fixture?.is_amended
+        ? `home/${fixture?.id}/approve-results`
+        : fixture?.is_disputed
+          ? `home/${fixture?.id}/submit-results`
+          : `home/${fixture?.id}/approve-results`;
+  const tag = isEscalatedView
+    ? { text: 'Escalated', style: 'border-theme-red bg-theme-red/20 text-theme-red' }
+    : isForfeitPending
+      ? { text: 'Forfeit Requested', style: 'border-theme-red bg-theme-red/20 text-theme-red' }
+      : fixture?.is_amended
+        ? { text: 'Amended Result', style: 'border-theme-orange bg-theme-orange/20 text-theme-orange' }
+        : fixture?.is_disputed
+          ? { text: 'Disputed Result', style: 'border-theme-red bg-theme-red/20 text-theme-red' }
+          : {
+              text: 'Approve Result',
+              style: 'border-theme-purple bg-theme-purple/20 text-theme-purple',
+            };
   return (
-    <Pressable
-      onPress={() =>
-        fixture?.is_amended
-          ? router.push(`home/${fixture?.id}/approve-results`)
-          : fixture?.is_disputed
-            ? router.push(`home/${fixture?.id}/submit-results`)
-            : router.push(`home/${fixture?.id}/approve-results`)
-      }>
+    <Pressable onPress={() => router.push(target)}>
       <View
         style={{ borderWidth: 0.5 }}
         className="relative items-center justify-between gap-5 rounded-2xl border border-theme-gray-4 bg-bg-3 px-4 py-4">
@@ -45,14 +76,15 @@ const PendingResultCard = ({ fixture }) => {
                 {fixture?.competition_instance?.name} Fixture
               </Text>
             </View>
+            {isEscalatedView && fixture?.escalation_reason ? (
+              <Text className="font-saira text-sm text-theme-red">
+                {ESCALATION_REASONS[fixture.escalation_reason] ?? 'Escalated'}
+              </Text>
+            ) : null}
           </View>
           <Text
-            className={`absolute right-0 top-0 w-fit rounded-xl border ${fixture?.is_amended ? 'border-theme-orange bg-theme-orange/20 text-theme-orange' : fixture?.is_disputed ? 'border-theme-red bg-theme-red/20 text-theme-red' : 'border-theme-purple bg-theme-purple/20 text-theme-purple'} px-3 py-1 text-center font-saira-medium text-black`}>
-            {fixture?.is_amended
-              ? 'Amended Result'
-              : fixture?.is_disputed
-                ? 'Disputed Result'
-                : 'Approve Result'}
+            className={`absolute right-0 top-0 w-fit rounded-xl border ${tag.style} px-3 py-1 text-center font-saira-medium text-black`}>
+            {tag.text}
           </Text>
         </View>
         <View className="flex-1 items-center justify-between gap-2">

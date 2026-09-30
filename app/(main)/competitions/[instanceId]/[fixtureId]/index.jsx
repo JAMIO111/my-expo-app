@@ -35,7 +35,10 @@ const index = () => {
         currentRole?.team?.id === fixtureDetails?.homeCompetitor?.id
       : player?.id === fixtureDetails?.homeCompetitor?.id;
 
-  const canSubmit = fixtureValid && playerValid;
+  const canResolve =
+    currentRole?.type === 'admin' && !!fixtureDetails?.is_escalated && !fixtureDetails?.approved;
+
+  const canSubmit = (fixtureValid && playerValid) || canResolve;
 
   const homeName =
     competitorType === 'team'

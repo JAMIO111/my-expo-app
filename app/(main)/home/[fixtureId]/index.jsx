@@ -37,7 +37,11 @@ const index = () => {
   console.log('Fixture Valid:', fixtureValid);
   console.log('Player Valid:', playerValid);
 
-  const canSubmit = fixtureValid && playerValid;
+  // A league admin can open an escalated fixture to edit the frames and approve it.
+  const canResolve =
+    currentRole?.type === 'admin' && !!fixtureDetails?.is_escalated && !fixtureDetails?.approved;
+
+  const canSubmit = (fixtureValid && playerValid) || canResolve;
 
   const homeName =
     competitorType === 'team'

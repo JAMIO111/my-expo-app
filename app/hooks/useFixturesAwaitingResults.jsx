@@ -4,7 +4,7 @@ import { supabase } from '@/lib/supabase';
 export function useFixturesAwaitingResults({
   competitorId,
   competitorType, // 'team' | 'player'
-  type, // 'amended' | 'disputed' | 'pendingApproval' | 'awaitingResults'
+  type, // 'amended' | 'disputed' | 'pendingApproval' | 'awaitingResults' | 'forfeitPending'
   enabled = true,
 }) {
   return useQuery({
@@ -20,13 +20,13 @@ export function useFixturesAwaitingResults({
           away_player:Players!Fixtures_away_player_fkey(id, first_name, surname, nickname, avatar_url),
           competition_instance:CompetitionInstances!Fixtures_competition_instance_id_fkey(id, name)`
         )
-        .eq('is_escalated', false)
-        .eq('is_forfeited', false);
+        .eq('is_escalated', false);
 
       // 🧠 Apply type-based filters
       switch (type) {
         case 'amended':
           query = query
+            .eq('is_forfeited', false)
             .eq('approved', false)
             .eq('is_complete', true)
             .eq('is_disputed', true)
@@ -35,6 +35,7 @@ export function useFixturesAwaitingResults({
 
         case 'disputed':
           query = query
+            .eq('is_forfeited', false)
             .eq('approved', false)
             .eq('is_complete', true)
             .eq('is_disputed', true)
@@ -43,6 +44,7 @@ export function useFixturesAwaitingResults({
 
         case 'pendingApproval':
           query = query
+            .eq('is_forfeited', false)
             .eq('approved', false)
             .eq('is_complete', true)
             .eq('is_disputed', false)
@@ -52,8 +54,14 @@ export function useFixturesAwaitingResults({
         case 'awaitingResults':
           query = query
             .lte('date_time', new Date().toISOString())
+            .eq('is_forfeited', false)
             .eq('approved', false)
             .eq('is_complete', false);
+          break;
+
+        case 'forfeitPending':
+          // A requested forfeit waiting for the other side (or an admin) to approve it.
+          query = query.eq('is_forfeited', true).eq('approved', false);
           break;
 
         default:
@@ -61,7 +69,15 @@ export function useFixturesAwaitingResults({
       }
 
       // 🎯 Competitor filtering (THIS is where yours was inconsistent)
-      if (competitorType === 'team') {
+      if (type === 'forfeitPending') {
+        if (competitorType === 'team') {
+          query = query.or(`home_team.eq.${competitorId},away_team.eq.${competitorId}`);
+        } else if (competitorType === 'player') {
+          query = query.or(`home_player.eq.${competitorId},away_player.eq.${competitorId}`);
+        } else {
+          throw new Error('Invalid competitorType');
+        }
+      } else if (competitorType === 'team') {
         if (type === 'pendingApproval' || type === 'amended') {
           query = query.eq('away_team', competitorId);
         } else {

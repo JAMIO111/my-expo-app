@@ -22,7 +22,7 @@ const TeamConfirm = () => {
   const [captainName, setCaptainName] = useState('');
 
   useEffect(() => {
-    if (!teamProfile?.captain || !team?.id) return;
+    if (!teamProfile || !team?.id) return;
 
     const fetchData = async () => {
       try {
@@ -33,11 +33,14 @@ const TeamConfirm = () => {
           .select('id')
           .eq('team_id', team.id);
 
-        const { data: captainData, error: captainError } = await supabase
-          .from('Players')
-          .select('first_name, surname')
-          .eq('id', teamProfile.captain)
-          .single();
+        // TeamPlayers.role is the source of truth for the captain.
+        const { data: captainRow, error: captainError } = await supabase
+          .from('TeamPlayers')
+          .select('player:Players(first_name, surname)')
+          .eq('team_id', team.id)
+          .eq('role', 'captain')
+          .eq('status', 'active')
+          .maybeSingle();
 
         if (playersError || captainError) {
           console.error({ playersError, captainError });
@@ -45,7 +48,9 @@ const TeamConfirm = () => {
         }
 
         setPlayerCount(playersData.length);
-        setCaptainName(`${captainData.first_name} ${captainData.surname}`);
+        setCaptainName(
+          captainRow?.player ? `${captainRow.player.first_name} ${captainRow.player.surname}` : ''
+        );
       } finally {
         setLoading(false);
       }

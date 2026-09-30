@@ -23,6 +23,7 @@ import { useStandings } from '@hooks/useStandings';
 import PendingResultCard from '@components/PendingResultCard';
 import AwaitingResultCard from '@components/AwaitingResultCard';
 import { useFixturesAwaitingResults } from '@hooks/useFixturesAwaitingResults';
+import { useEscalatedFixtures } from '@hooks/useEscalatedFixtures';
 import { supabase } from '@/lib/supabase';
 import BrandHeader from '@components/BrandHeader';
 import HomeScreenCardLarge from '@components/HomeScreenCardLarge';
@@ -217,15 +218,55 @@ const Home = () => {
     [teamFixturesAwaitingResults, playerFixturesAwaitingResults]
   );
 
+  // Forfeits requested by one side, waiting for the other side to approve them.
+  const {
+    data: teamForfeitPending,
+    refetch: teamForfeitPendingRefetch,
+  } = useFixturesAwaitingResults({
+    competitorId: currentRole?.team?.id,
+    competitorType: 'team',
+    type: 'forfeitPending',
+    enabled: !!currentRole?.team?.id && currentRole?.role !== 'player',
+  });
+  const {
+    data: playerForfeitPending,
+    refetch: playerForfeitPendingRefetch,
+  } = useFixturesAwaitingResults({
+    competitorId: player?.id,
+    competitorType: 'player',
+    type: 'forfeitPending',
+    enabled: !!player?.id,
+  });
+  const forfeitPending = useMemo(
+    () =>
+      [...(teamForfeitPending || []), ...(playerForfeitPending || [])].sort(
+        (a, b) => new Date(b.date_time) - new Date(a.date_time)
+      ),
+    [teamForfeitPending, playerForfeitPending]
+  );
+
+  // Fixtures escalated to the league admin.
+  const { data: escalatedFixtures, refetch: escalatedFixturesRefetch } = useEscalatedFixtures(
+    currentRole?.district?.id,
+    currentRole?.type === 'admin'
+  );
+
   // Team fixtures are handled by the team's captain / vice captain; individual
   // fixtures by the players themselves, who are not leaders of anything.
-  const isTeamLeader =
-    currentRole?.team?.captain === player?.id || currentRole?.team?.vice_captain === player?.id;
+  const isTeamLeader = ['captain', 'vice_captain'].includes(currentRole?.role);
   const hasIndividualPending =
-    (playerResultsPendingApproval?.length ?? 0) +
+    (playerForfeitPending?.length ?? 0) +
+      (playerResultsPendingApproval?.length ?? 0) +
       (playerDisputedFixtures?.length ?? 0) +
       (playerAmendedFixtures?.length ?? 0) +
       (playerFixturesAwaitingResults?.length ?? 0) >
+    0;
+
+  const hasPendingResults =
+    (disputedFixtures?.length ?? 0) +
+      (amendedFixtures?.length ?? 0) +
+      (resultsPendingApproval?.length ?? 0) +
+      forfeitPending.length >
     0;
 
   console.log('Team Fixtures Awaiting Results:', teamFixturesAwaitingResults);
@@ -245,6 +286,9 @@ const Home = () => {
       playerDisputedFixturesRefetch(),
       teamAmendedFixturesRefetch(),
       playerAmendedFixturesRefetch(),
+      teamForfeitPendingRefetch(),
+      playerForfeitPendingRefetch(),
+      escalatedFixturesRefetch(),
     ]).finally(() => setRefreshing(false));
   }, [
     standingsRefetch,
@@ -256,6 +300,9 @@ const Home = () => {
     playerDisputedFixturesRefetch,
     teamAmendedFixturesRefetch,
     playerAmendedFixturesRefetch,
+    teamForfeitPendingRefetch,
+    playerForfeitPendingRefetch,
+    escalatedFixturesRefetch,
   ]);
 
   const isLoading =
@@ -359,17 +406,24 @@ const Home = () => {
             </View>
             <View className="w-full bg-bg-2 pb-8">
               <Heading text="Pending Fixtures" className="ml-4" />
+              {currentRole?.type === 'admin' && escalatedFixtures && escalatedFixtures.length > 0 && (
+                <View className="w-full gap-3 p-3">
+                  <Heading text="Escalated Fixtures" />
+                  {escalatedFixtures.map((fixture) => (
+                    <PendingResultCard key={fixture.id} fixture={fixture} mode="escalated" />
+                  ))}
+                </View>
+              )}
               {(isTeamLeader || hasIndividualPending) && (
                 <View className="w-full gap-4 p-3">
-                  {disputedFixtures && disputedFixtures.length > 0 && (
+                  {hasPendingResults && (
                     <View className="w-full gap-3">
                       <Heading text="Pending Match Results" />
-                      {disputedFixtures.map((fixture) => (
-                        <PendingResultCard
-                          key={fixture.id}
-                          fixture={fixture}
-                          refetch={teamResultsPendingApprovalRefetch}
-                        />
+                      {forfeitPending.map((fixture) => (
+                        <PendingResultCard key={fixture.id} fixture={fixture} />
+                      ))}
+                      {disputedFixtures?.map((fixture) => (
+                        <PendingResultCard key={fixture.id} fixture={fixture} />
                       ))}
                       {amendedFixtures &&
                         amendedFixtures.length > 0 &&

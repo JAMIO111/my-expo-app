@@ -41,7 +41,11 @@ export function useTeamPlayerActions(teamId, callbacks = {}) {
   // 🚀 Promote player to captain
   const promoteToCaptain = useMutation({
     mutationFn: async (playerId) => {
-      const { error } = await supabase.from('Teams').update({ captain: playerId }).eq('id', teamId);
+      // TeamPlayers.role is the source of truth; the RPC also notifies the team.
+      const { error } = await supabase.rpc('transfer_captaincy', {
+        p_team_id: teamId,
+        p_new_captain_id: playerId,
+      });
       if (error) throw error;
       return playerId;
     },

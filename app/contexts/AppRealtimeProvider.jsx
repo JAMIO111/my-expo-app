@@ -149,6 +149,7 @@ export default function AppRealtimeProvider({ children }) {
       // Result state changes (submitted / disputed / amended / approved ...) move
       // fixtures between the "pending" lists on the home screen.
       queryClient.invalidateQueries({ queryKey: ['FixturesAwaitingResults'] });
+      queryClient.invalidateQueries({ queryKey: ['EscalatedFixtures'] });
       // Player stats only count approved fixtures, so approval changes the numbers.
       if (payload.new?.approved !== payload.old?.approved) {
         queryClient.invalidateQueries({ queryKey: ['EntityStats'] });

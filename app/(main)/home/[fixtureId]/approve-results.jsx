@@ -29,6 +29,49 @@ const ApproveResults = () => {
   const { data: fixtureDetails, isLoading: fixtureLoading } = useFixtureDetails(fixtureId);
   console.log('fixtureDetails in ApproveResults:', fixtureDetails);
 
+  // A forfeit that one side requested and the other side (or an admin) still has to approve.
+  const isForfeit = !!fixtureDetails?.is_forfeited && !fixtureDetails?.approved;
+  const iRequestedForfeit = isForfeit && fixtureDetails?.forfeit_requested_by === player?.id;
+  const forfeiter =
+    fixtureDetails?.winner_side === 'home'
+      ? fixtureDetails?.awayCompetitor
+      : fixtureDetails?.winner_side === 'away'
+        ? fixtureDetails?.homeCompetitor
+        : null;
+  const forfeiterName = forfeiter?.display_name ?? 'One side';
+  const homeScore = isForfeit
+    ? (fixtureDetails?.home_score ?? 0)
+    : (results ?? []).filter((result) => result.winner_side === 'home').length;
+  const awayScore = isForfeit
+    ? (fixtureDetails?.away_score ?? 0)
+    : (results ?? []).filter((result) => result.winner_side === 'away').length;
+
+  const handleDisputeForfeit = async () => {
+    setQueryLoading(true);
+    try {
+      const { error } = await supabase.rpc('escalate_fixture', { p_fixture_id: fixtureId });
+      if (error) throw error;
+      await queryClient.invalidateQueries({ queryKey: ['FixturesAwaitingResults'] });
+      Toast.show({
+        type: 'success',
+        text1: 'Forfeit Disputed',
+        text2: 'The forfeit has been escalated to the league admin.',
+      });
+      router.back();
+    } catch (error) {
+      console.error('Error disputing forfeit:', error);
+      await handleFixtureError(error, {
+        fallbackTitle: 'Dispute Failed',
+        fallbackMessage: 'Could not dispute the forfeit. Please try again.',
+        queryClient,
+        fixtureId,
+        onStale: leaveStaleScreen,
+      });
+    } finally {
+      setQueryLoading(false);
+    }
+  };
+
   const handleRejectAmendment = async () => {
     setQueryLoading(true);
     try {
@@ -173,7 +216,7 @@ const ApproveResults = () => {
                   : `${fixtureDetails?.homePlayer?.first_name} ${fixtureDetails?.homePlayer?.surname}`}
               </Text>
               <Text className="pt-3 text-center font-saira-bold text-3xl text-text-1">
-                {results.filter((result) => result.winner_side === 'home').length}
+                {homeScore}
               </Text>
             </View>
             <View className="flex-row items-center justify-start gap-2">
@@ -202,10 +245,21 @@ const ApproveResults = () => {
                   : `${fixtureDetails?.awayPlayer?.first_name} ${fixtureDetails?.awayPlayer?.surname}`}
               </Text>
               <Text className="pt-3 text-center font-saira-bold text-3xl text-text-1">
-                {results.filter((result) => result.winner_side === 'away').length}
+                {awayScore}
               </Text>
             </View>
           </View>
+          {isForfeit && (
+            <View className="mx-4 mt-4 gap-1 rounded-2xl border border-theme-red bg-theme-red/10 p-4">
+              <Text className="font-saira-semibold text-lg text-theme-red">Forfeit requested</Text>
+              <Text className="font-saira text-base text-text-1">
+                {`${forfeiterName} has requested to forfeit this fixture. The other side is awarded the win (${homeScore}-${awayScore}).`}
+              </Text>
+              {fixtureDetails?.forfeit_reason ? (
+                <Text className="font-saira text-base text-text-2">{`Reason: ${fixtureDetails.forfeit_reason}`}</Text>
+              ) : null}
+            </View>
+          )}
           <ScrollView className="flex-1">
             <ConfirmFramesList
               results={results}
@@ -216,7 +270,31 @@ const ApproveResults = () => {
             />
           </ScrollView>
           <View className="gap-3 p-4 pb-0">
-            {disputedFrames.length > 0 && (
+            {isForfeit && (
+              <>
+                {iRequestedForfeit ? (
+                  <Text className="text-center font-saira text-lg text-text-2">
+                    Waiting for the other side to approve your forfeit request.
+                  </Text>
+                ) : (
+                  <>
+                    <CTAButton
+                      loading={queryLoading}
+                      type="success"
+                      text="Approve Forfeit"
+                      callbackFn={handleApproveResults}
+                    />
+                    <CTAButton
+                      loading={queryLoading}
+                      type="error"
+                      text="Dispute Forfeit and Escalate"
+                      callbackFn={handleDisputeForfeit}
+                    />
+                  </>
+                )}
+              </>
+            )}
+            {!isForfeit && disputedFrames.length > 0 && (
               <CTAButton
                 loading={queryLoading}
                 type="error"
@@ -224,7 +302,7 @@ const ApproveResults = () => {
                 callbackFn={handleDisputeResults}
               />
             )}
-            {disputedFrames.length === 0 && (
+            {!isForfeit && disputedFrames.length === 0 && (
               <>
                 <CTAButton
                   loading={queryLoading}

@@ -40,6 +40,7 @@ import {
 } from 'lucide-react-native';
 import PlayerStatSelector from '@components/PlayerStatSelector';
 import { useTheme } from '@contexts/ThemeProvider';
+import { useUser } from '@contexts/UserProvider';
 
 const SubmitResultsScreen = () => {
   const [confirmDeleteModalVisible, setConfirmDeleteModalVisible] = useState(false);
@@ -68,7 +69,11 @@ const SubmitResultsScreen = () => {
   const queryClient = useQueryClient();
   // Another captain / vice captain got there first: the screen is out of date, so leave it.
   const leaveStaleScreen = () => router.back();
-  const { saving, save } = useSaveMatchResults(
+  const { currentRole } = useUser();
+  // A league admin opening an escalated fixture edits the frames and approves in one step.
+  const adminMode =
+    currentRole?.type === 'admin' && !!fixtureDetails?.is_escalated && !fixtureDetails?.approved;
+  const { saving, save, resolve } = useSaveMatchResults(
     fixtureId,
     existingResults,
     fixtureDetails?.results_version,
@@ -82,7 +87,7 @@ const SubmitResultsScreen = () => {
 
   const isHome = editingPlayer?.startsWith('home');
   const players = isHome ? homeTeamPlayers : awayTeamPlayers;
-  const amendMode = fixtureDetails?.is_disputed;
+  const amendMode = fixtureDetails?.is_disputed && !adminMode;
   const drawsAllowed = fixtureDetails?.competition?.draws_allowed;
 
   const bestOf = fixtureDetails?.competition?.best_of;
@@ -234,6 +239,79 @@ const SubmitResultsScreen = () => {
     return 'th';
   }
 
+  // Mirrors the server rules so problems are caught before the round trip. The server
+  // enforces them regardless (players, frame limits, winners, start time).
+  const getSubmitProblem = () => {
+    if (frames.length === 0) {
+      return { title: 'No Frames', message: 'Add at least one frame before submitting the result.' };
+    }
+    const incompleteIndex = frames.findIndex(
+      (f) => !f.homePlayer1?.id || !f.awayPlayer1?.id || !f.winnerSide
+    );
+    if (incompleteIndex !== -1) {
+      return {
+        title: 'Frame Incomplete',
+        message: `Frame ${incompleteIndex + 1} needs both players and a winner.`,
+      };
+    }
+    if (
+      !adminMode &&
+      fixtureDetails?.date_time &&
+      new Date(fixtureDetails.date_time).getTime() > Date.now()
+    ) {
+      return {
+        title: 'Fixture Has Not Started',
+        message: 'Results can only be submitted once the fixture has started.',
+      };
+    }
+    return null;
+  };
+
+  const handleResolve = async ({ rejectForfeit = false } = {}) => {
+    const problem = getSubmitProblem();
+    if (problem) {
+      Toast.show({ type: 'info', text1: problem.title, text2: problem.message });
+      setConfirmSubmitModalVisible(false);
+      return false;
+    }
+    setSubmitting(true);
+    const success = await resolve(frames, { rejectForfeit });
+    setSubmitting(false);
+    setConfirmSubmitModalVisible(false);
+    if (success) router.back();
+    return success;
+  };
+
+  const handleApproveForfeit = async () => {
+    setSubmitting(true);
+    try {
+      const { data, error } = await supabase.rpc('approve_fixture_results', {
+        p_fixture_id: fixtureId,
+        p_approved_by: null,
+      });
+      if (error) throw error;
+      if (!data?.success) throw data ?? new Error('Approval failed');
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ['fixture-details', fixtureId] }),
+        queryClient.invalidateQueries({ queryKey: ['EscalatedFixtures'] }),
+        queryClient.invalidateQueries({ queryKey: ['FixturesAwaitingResults'] }),
+      ]);
+      Toast.show({ type: 'success', text1: 'Forfeit Approved', text2: 'The forfeit has been approved.' });
+      router.back();
+    } catch (error) {
+      console.error('Error approving forfeit:', error);
+      await handleFixtureError(error, {
+        fallbackTitle: 'Approval Failed',
+        fallbackMessage: 'Could not approve the forfeit. Please try again.',
+        queryClient,
+        fixtureId,
+        onStale: leaveStaleScreen,
+      });
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
   const handleSave = async () => {
     console.log('Saving results...', frames);
     const normalFrameCount = frames.filter((f) => !f.bonusFrame).length;
@@ -250,6 +328,12 @@ const SubmitResultsScreen = () => {
   };
 
   const handleSubmit = async () => {
+    const problem = getSubmitProblem();
+    if (problem) {
+      Toast.show({ type: 'info', text1: problem.title, text2: problem.message });
+      setConfirmSubmitModalVisible(false);
+      return false;
+    }
     if (!drawsAllowed && homeScore === awayScore) {
       Toast.show({
         type: 'info',
@@ -835,15 +919,23 @@ const SubmitResultsScreen = () => {
           />
           <FloatingBottomSheet
             visible={confirmSubmitModalVisible}
-            title="Submit Results?"
-            message={`Are you sure you want to submit the final results? Once submitted, you won't be able to make any changes unless the opponent disputes the result.`}
+            title={adminMode ? 'Save and Approve?' : 'Submit Results?'}
+            message={
+              adminMode
+                ? 'This saves the frames as shown and approves the result straight away. Player stats are updated and the result cannot be changed afterwards.'
+                : `Are you sure you want to submit the final results? Once submitted, you won't be able to make any changes unless the opponent disputes the result.`
+            }
             onCancel={handleCancel}
             topButtonText="Cancel"
-            bottomButtonText="Submit"
+            bottomButtonText={adminMode ? 'Approve' : 'Submit'}
             topButtonType="default"
             bottomButtonType="success"
             topButtonFn={handleCancel}
-            bottomButtonFn={handleSubmit}
+            bottomButtonFn={
+              adminMode
+                ? () => handleResolve({ rejectForfeit: !!fixtureDetails?.is_forfeited })
+                : handleSubmit
+            }
           />
 
           {/* ── Collapsed summary view ───────────────────────────────── */}
@@ -1067,7 +1159,30 @@ const SubmitResultsScreen = () => {
                       callbackFn={addFrame}
                     />
                   )}
-                  {!amendMode && frames.length > 0 && (
+                  {adminMode && fixtureDetails?.is_forfeited && (
+                    <CTAButton
+                      text={submitting ? 'Approving...' : 'Approve Forfeit'}
+                      type="success"
+                      disabled={saving || submitting}
+                      loading={submitting}
+                      callbackFn={handleApproveForfeit}
+                    />
+                  )}
+                  {adminMode && frames.length > 0 && (
+                    <CTAButton
+                      text={
+                        fixtureDetails?.is_forfeited
+                          ? 'Reject Forfeit and Approve Result'
+                          : 'Save and Approve Result'
+                      }
+                      type={fixtureDetails?.is_forfeited ? 'error' : 'success'}
+                      lucideIcon={<Send size={24} color="#FFF" />}
+                      callbackFn={() => setConfirmSubmitModalVisible(true)}
+                      disabled={saving || submitting}
+                      loading={submitting || saving}
+                    />
+                  )}
+                  {!amendMode && !adminMode && frames.length > 0 && (
                     <View className="gap-3">
                       <CTAButton
                         text={saving ? 'Saving Updates...' : 'Save Updates'}
@@ -1087,9 +1202,9 @@ const SubmitResultsScreen = () => {
                       />
                     </View>
                   )}
-                  {!amendMode && (
+                  {!amendMode && !(adminMode && fixtureDetails?.is_forfeited) && (
                     <CTAButton
-                      text={'Request Forfeit'}
+                      text={adminMode ? 'Forfeit Fixture' : 'Request Forfeit'}
                       type="error"
                       lucideIcon={<Flag size={20} color="#FFF" />}
                       disabled={submitting || saving}
