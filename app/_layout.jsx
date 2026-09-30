@@ -1,11 +1,14 @@
 import '../global.css';
+import { initMonitoring, wrapRoot, captureError, setMonitoringUser } from '@lib/monitoring';
+
+initMonitoring();
 // Side-effect import: starts capturing deep links immediately, before any
 // navigation happens -- see app/lib/lastDeepLink.js for why this can't just
 // live inside the screen (reset-password) that needs it.
 import '@lib/lastDeepLink';
 import { Slot } from 'expo-router';
-import { View } from 'react-native';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { View, Text, Pressable } from 'react-native';
+import { QueryClient, QueryClientProvider, QueryCache, MutationCache } from '@tanstack/react-query';
 import { useFonts } from 'expo-font';
 import {
   Saira_400Regular,
@@ -26,7 +29,7 @@ import { useEffect, useRef } from 'react';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { KeyboardProvider } from 'react-native-keyboard-controller';
 import { BottomSheetModalProvider } from '@gorhom/bottom-sheet';
-import { UserProvider } from '@contexts/UserProvider';
+import { UserProvider, useUser } from '@contexts/UserProvider';
 import { AdminProvider } from '@contexts/AdminContext';
 import AppRealtimeProvider from '@contexts/AppRealtimeProvider';
 import RevenueCatProvider from '@contexts/RevenueCatProvider';
@@ -37,7 +40,7 @@ import { UpgradeSheetProvider } from '@contexts/UpgradeSheetProvider';
 import { useUnseenBadgesTrigger } from '@hooks/useUnseenBadgesTrigger';
 import mobileAds from 'react-native-google-mobile-ads';
 
-export default function RootLayout() {
+function RootLayout() {
   const [fontsLoaded] = useFonts({
     Saira_400Regular,
     Saira_500Medium,
@@ -65,6 +68,13 @@ export default function RootLayout() {
   const queryClientRef = useRef();
   if (!queryClientRef.current) {
     queryClientRef.current = new QueryClient({
+      // Unexpected failures of any query or mutation are reported (expected refusals are filtered out).
+      queryCache: new QueryCache({
+        onError: (error, query) => captureError(error, `query:${String(query.queryKey?.[0])}`),
+      }),
+      mutationCache: new MutationCache({
+        onError: (error) => captureError(error, 'mutation'),
+      }),
       defaultOptions: {
         queries: {
           refetchOnWindowFocus: false,
@@ -90,6 +100,7 @@ export default function RootLayout() {
                     <NotificationsPanelProvider>
                       <BadgeUnlockProvider>
                         <BadgeTrigger />
+                        <MonitoringUser />
                         <BottomSheetModalProvider>
                           <UpgradeSheetProvider>
                             <View className={`flex-1 bg-brand`}>
@@ -120,4 +131,35 @@ export default function RootLayout() {
 function BadgeTrigger() {
   useUnseenBadgesTrigger();
   return null;
+}
+
+function MonitoringUser() {
+  const { player, currentRole } = useUser();
+  useEffect(() => {
+    setMonitoringUser(player?.id, currentRole?.type);
+  }, [player?.id, currentRole?.type]);
+  return null;
+}
+
+export default wrapRoot(RootLayout);
+
+// Shown instead of a blank screen if a screen crashes while rendering.
+export function ErrorBoundary({ error, retry }) {
+  useEffect(() => {
+    captureError(error, 'render');
+  }, [error]);
+
+  return (
+    <View className="flex-1 items-center justify-center gap-4 bg-brand p-8">
+      <Text className="text-center font-delagothic text-3xl text-text-on-brand">
+        Something went wrong
+      </Text>
+      <Text className="text-center font-saira text-lg text-text-on-brand-2">
+        The problem has been reported. Please try again.
+      </Text>
+      <Pressable onPress={retry} className="rounded-xl bg-white px-8 py-3">
+        <Text className="font-saira-semibold text-lg text-black">Try again</Text>
+      </Pressable>
+    </View>
+  );
 }
