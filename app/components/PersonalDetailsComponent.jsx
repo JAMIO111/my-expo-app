@@ -17,6 +17,7 @@ import CustomHeader from '@components/CustomHeader'; // Adjust the import path a
 import Toast from 'react-native-toast-message';
 import ImageUploader from '@components/ImageUploader';
 import useCompressAndUploadImage from '@hooks/useCompressAndUploadImage';
+import { getSocialAvatar, downloadSocialAvatar } from '@lib/socialAvatar';
 
 const PersonalDetailsComponent = () => {
   const queryClient = useQueryClient();
@@ -36,6 +37,23 @@ const PersonalDetailsComponent = () => {
   const themeColors = colorScheme === 'dark' ? colors.dark : colors.light;
 
   const { uploadToSupabase, uploading } = useCompressAndUploadImage();
+  const social = getSocialAvatar(user);
+  const [importingSocial, setImportingSocial] = useState(false);
+
+  // Switch (back) to the photo from the account the player signed in with
+  const switchToSocialPhoto = async () => {
+    if (!social || importingSocial || uploading) return;
+    setImportingSocial(true);
+    try {
+      const local = await downloadSocialAvatar(social.url);
+      await handleSaveProfile(local);
+      await refetch();
+    } catch (error) {
+      Alert.alert('Could not use your photo', error.message || 'Please try again.');
+    } finally {
+      setImportingSocial(false);
+    }
+  };
 
   const handleSaveProfile = async (selectedUri) => {
     const previousImage = imageUri;
@@ -313,6 +331,13 @@ const PersonalDetailsComponent = () => {
               Change Avatar
             </Text>
           </Pressable>
+          {social ? (
+            <Pressable onPress={switchToSocialPhoto} disabled={importingSocial || uploading}>
+              <Text className="mt-3 font-saira text-lg text-brand-light underline">
+                {importingSocial ? 'Importing...' : `Use my ${social.label} photo`}
+              </Text>
+            </Pressable>
+          ) : null}
         </View>
         <MenuContainer>
           <EditableSettingsItem

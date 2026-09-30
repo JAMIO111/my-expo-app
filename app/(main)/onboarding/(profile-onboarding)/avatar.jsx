@@ -9,13 +9,14 @@ import useCompressAndUploadImage from '@hooks/useCompressAndUploadImage';
 import ImageUploader from '@components/ImageUploader';
 import { useRouter } from 'expo-router';
 import { useUser } from '@contexts/UserProvider';
+import { getSocialAvatar, downloadSocialAvatar } from '@lib/socialAvatar';
 
 const PROJECT_URL = 'https://ionhcfjampzewimsgsmr.supabase.co'; // Replace with your actual Supabase project URL
 
 const Avatar = () => {
   const { user } = useUser();
-  const isGoogleUser = user?.app_metadata?.provider === 'google';
-  const [useGooglePhoto, setUseGooglePhoto] = useState(isGoogleUser);
+  const social = getSocialAvatar(user);
+  const [useSocialPhoto, setUseSocialPhoto] = useState(!!social);
   const { colorScheme } = useColorScheme();
   const [imageUri, setImageUri] = useState(null);
   const [saving, setSaving] = useState(false);
@@ -42,9 +43,14 @@ const Avatar = () => {
       setSaving(true);
       let avatarUrl = null;
 
-      if (useGooglePhoto && isGoogleUser) {
-        // Use Google profile photo
-        avatarUrl = user?.user_metadata?.avatar_url || user?.user_metadata?.picture || null;
+      if (useSocialPhoto && social) {
+        // Keep our own copy of the social photo: provider links can expire
+        try {
+          const local = await downloadSocialAvatar(social.url);
+          avatarUrl = await uploadToSupabase(local, folderPath, 'avatars');
+        } catch (e) {
+          avatarUrl = social.url;
+        }
       } else if (imageUri) {
         // Upload first, then tidy up: a failed upload must not cost the player a photo they had
         avatarUrl = await uploadToSupabase(imageUri, folderPath, 'avatars');
@@ -110,11 +116,11 @@ const Avatar = () => {
           </Text>
         </View>
         <View className="w-full flex-1 items-center justify-around p-5">
-          {isGoogleUser && useGooglePhoto ? (
+          {social && useSocialPhoto ? (
             <View className="overflow-hidden rounded-2xl bg-bg-grouped-2 p-1">
               <Image
                 style={{ height: 248, width: 248 }}
-                source={{ uri: user?.user_metadata?.avatar_url }}
+                source={{ uri: social?.url }}
                 className="rounded-2xl"
                 resizeMode="cover"
               />
@@ -128,12 +134,12 @@ const Avatar = () => {
             />
           )}
           <View className="mt-5 w-full gap-5">
-            {isGoogleUser && (
+            {social && (
               <CTAButton
                 type="white"
                 textColor="black"
-                text={useGooglePhoto ? 'Use Custom Photo' : 'Use Google Photo'}
-                callbackFn={() => setUseGooglePhoto(!useGooglePhoto)}
+                text={useSocialPhoto ? 'Use Custom Photo' : `Use ${social.label} Photo`}
+                callbackFn={() => setUseSocialPhoto(!useSocialPhoto)}
                 disabled={uploading || saving}
               />
             )}
