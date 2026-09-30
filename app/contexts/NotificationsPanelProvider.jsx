@@ -27,6 +27,12 @@ import {
   MailMinus,
   CalendarCheck,
   CalendarClock,
+  ClipboardCheck,
+  CircleCheckBig,
+  ShieldAlert,
+  Scale,
+  Flag,
+  ClipboardPen,
 } from 'lucide-react-native';
 import { useNotifications } from '@hooks/useNotifications';
 import { useUser } from '@contexts/UserProvider';
@@ -67,6 +73,13 @@ const TYPE_CONFIG = {
   team_vice_captain_promoted: { icon: UserStar, color: '#000ac4' },
   season_started: { icon: CalendarCheck, color: '#0c7f23' },
   fixture_rescheduled: { icon: CalendarClock, color: '#e8850c' },
+  result_submitted: { icon: ClipboardCheck, color: '#e8850c' },
+  result_disputed: { icon: ShieldAlert, color: '#f52c2c' },
+  result_amended: { icon: ClipboardPen, color: '#e8850c' },
+  result_escalated: { icon: Scale, color: '#f52c2c' },
+  result_approved: { icon: CircleCheckBig, color: '#0c7f23' },
+  fixture_forfeited: { icon: Flag, color: '#f52c2c' },
+  result_submission_reminder: { icon: ClipboardClock, color: '#e8850c' },
 };
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
