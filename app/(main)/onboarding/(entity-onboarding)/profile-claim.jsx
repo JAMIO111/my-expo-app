@@ -31,33 +31,7 @@ const ProfileClaim = () => {
   const captainApproval = !!teamProfile?.private;
 
   const [isRPCLoading, setIsRPCLoading] = useState(false);
-  const [playersData, setPlayersData] = useState([]);
-  const [playersLoading, setPlayersLoading] = useState(true);
-  const [selectedPlayer, setSelectedPlayer] = useState(null);
-
-  useEffect(() => {
-    if (!teamProfile?.id) return;
-
-    const fetchPlayers = async () => {
-      setPlayersLoading(true);
-
-      const { data, error } = await supabase
-        .from('TeamPlayers')
-        .select('*, Players!TeamPlayers_player_id_fkey(*)')
-        .eq('team_id', teamProfile.id);
-
-      if (!error) {
-        setPlayersData(data.filter((row) => !row.Players?.claimed) || []);
-      }
-
-      setPlayersLoading(false);
-    };
-
-    fetchPlayers();
-  }, [teamProfile?.id]);
-
-  const isLoading = teamLoading || playersLoading;
-  const noUnclaimedPlayers = !isLoading && playersData.length === 0;
+  const isLoading = teamLoading;
 
   const handleJoinAsNew = async () => {
     if (isLoading || isRPCLoading) return; // 🚫 prevents double taps
@@ -101,6 +75,7 @@ const ProfileClaim = () => {
                 : `You are now a member of ${teamProfile?.name || 'the team'}`,
       });
       await queryClient.invalidateQueries({ queryKey: ['PlayerInvitesAndRequests'] });
+      await queryClient.invalidateQueries({ queryKey: ['authUserProfile'] });
       if (needsAdmin || needsCaptain) {
         navigation.reset({
           index: 0,
@@ -118,6 +93,8 @@ const ProfileClaim = () => {
         message = 'You are already in this team.';
       } else if (err?.message === 'ALREADY_IN_DISTRICT') {
         message = 'You are already on another team in this league.';
+      } else if (err?.message === 'TEAM_NOT_FOUND') {
+        message = 'This team is not accepting players right now.';
       } else if (err?.message === 'RPC_FAILED') {
         message = 'Could not complete request.';
       }
@@ -130,13 +107,6 @@ const ProfileClaim = () => {
     } finally {
       setIsRPCLoading(false);
     }
-  };
-
-  const handleClaimProfile = async () => {
-    if (!selectedPlayer) return;
-
-    // TODO: claim logic here
-    console.log('Claiming player:', selectedPlayer.id);
   };
 
   return (
@@ -159,103 +129,58 @@ const ProfileClaim = () => {
                 Join {teamProfile?.name || 'Unnamed Team'}?
               </Text>
 
-              {noUnclaimedPlayers ? (
-                <View className="flex-1 justify-between">
-                  <Text className="mb-6 px-5 font-saira text-2xl text-text-on-brand">
-                    Proceed to join the team as a new player.
-                  </Text>
-                  <ScrollView className="p-5">
-                    <View style={{ borderRadius: 25 }} className="bg-bg-2 p-3">
-                      <View className="items-stretch rounded-3xl bg-bg-1 p-5 shadow-sm">
-                        <Text className="text-center font-saira-medium text-2xl text-text-1">
-                          Your join request will be sent to the team captain
-                          {adminApproval ? ' and league admin' : ''} for approval.
-                        </Text>
-                        <View className="mx-auto rounded-full bg-bg-grouped-2">
-                          <MaterialCommunityIcons
-                            name="email-fast-outline"
-                            color="#0B6623"
-                            size={140}
-                          />
-                        </View>
-
-                        <CTAButton
-                          type="yellow"
-                          text="Send Join Request"
-                          callbackFn={handleJoinAsNew}
+              <View className="flex-1 justify-between">
+                <Text className="mb-6 px-5 font-saira text-2xl text-text-on-brand">
+                  {captainApproval || adminApproval
+                    ? 'Send a request to join this team.'
+                    : 'Join the team straight away.'}
+                </Text>
+                <ScrollView className="p-5">
+                  <View style={{ borderRadius: 25 }} className="bg-bg-2 p-3">
+                    <View className="items-stretch rounded-3xl bg-bg-1 p-5 shadow-sm">
+                      <Text className="text-center font-saira-medium text-2xl text-text-1">
+                        {captainApproval || adminApproval
+                          ? `Your join request will be sent to ${
+                              captainApproval ? 'the team captain' : ''
+                            }${captainApproval && adminApproval ? ' and ' : ''}${
+                              adminApproval ? 'the league admin' : ''
+                            } for approval.`
+                          : 'No approval is needed for this team.'}
+                      </Text>
+                      <View className="mx-auto rounded-full bg-bg-grouped-2">
+                        <MaterialCommunityIcons
+                          name="email-fast-outline"
+                          color="#0B6623"
+                          size={140}
                         />
                       </View>
+
+                      <CTAButton
+                        type="yellow"
+                        text={
+                          isRPCLoading
+                            ? 'Sending...'
+                            : captainApproval || adminApproval
+                              ? 'Send Join Request'
+                              : 'Join Team'
+                        }
+                        disabled={isRPCLoading}
+                        callbackFn={handleJoinAsNew}
+                      />
                     </View>
-                  </ScrollView>
-                  <View className="gap-5 rounded-t-3xl bg-brand-dark px-5 py-6">
-                    <CTAButton
-                      type="error"
-                      text="Join a different team"
-                      callbackFn={() => router.back()}
-                    />
                   </View>
+                </ScrollView>
+                <View className="gap-5 rounded-t-3xl bg-brand-dark px-5 py-6">
+                  <CTAButton
+                    type="error"
+                    text="Join a different team"
+                    callbackFn={() => router.back()}
+                  />
                 </View>
-              ) : (
-                <View className="flex-1 px-5">
-                  <Text className="mb-6 font-saira text-xl text-text-on-brand">
-                    If you see your name below, claim your profile. Otherwise, join as a new player.
-                  </Text>
-                  <ScrollView className="flex-1" contentContainerStyle={{ paddingBottom: 20 }}>
-                    {playersData.map((row) => {
-                      const player = row.Players;
-                      const selected = selectedPlayer?.id === player.id;
-
-                      return (
-                        <Pressable
-                          key={row.id}
-                          onPress={() => setSelectedPlayer(selected ? null : player)}
-                          className="mb-4 flex-row items-center gap-4 rounded-2xl bg-bg-grouped-2 p-4">
-                          <Avatar player={player} size={48} borderRadius={6} />
-
-                          <View className="flex-1">
-                            <Text className="font-saira-medium text-xl text-text-1">
-                              {player.first_name} {player.surname}
-                            </Text>
-                            <Text className="font-saira text-lg text-text-2">
-                              {player.nickname || 'No nickname'}
-                            </Text>
-                          </View>
-
-                          {selected ? (
-                            <Ionicons name="checkmark-circle" size={40} color="#10B981" />
-                          ) : (
-                            <Ionicons name="chevron-forward-outline" size={26} color="#9CA3AF" />
-                          )}
-                        </Pressable>
-                      );
-                    })}
-                  </ScrollView>
-                </View>
-              )}
+              </View>
             </View>
           )}
 
-          {!isLoading && !noUnclaimedPlayers && (
-            <View className="gap-5 rounded-t-3xl bg-brand-dark px-5 pb-3 pt-6">
-              <CTAButton
-                type="error"
-                text="Join a different team"
-                callbackFn={() => router.back()}
-              />
-
-              <CTAButton
-                type="yellow"
-                text={
-                  selectedPlayer
-                    ? 'Claim Profile'
-                    : captainApproval || adminApproval
-                      ? 'Request to Join'
-                      : 'Join as New Player'
-                }
-                callbackFn={selectedPlayer ? handleClaimProfile : handleJoinAsNew}
-              />
-            </View>
-          )}
         </View>
       </SafeViewWrapper>
     </>

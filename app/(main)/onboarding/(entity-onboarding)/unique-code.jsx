@@ -12,20 +12,15 @@ import { useQueryClient } from '@tanstack/react-query';
 
 const UniqueCode = () => {
   const queryClient = useQueryClient();
-  const { player, currentRole, setCurrentRole, roles } = useUser();
+  const { player } = useUser();
   const router = useRouter();
   const params = useLocalSearchParams();
   const isNewTeam = params.isNewTeam === 'true'; // Convert string to boolean
   const isNewLeague = params.isNewLeague === 'true'; // Convert string to boolean
   const [selectionIndex, setSelectionIndex] = useState(Array(6).fill({ start: 0, end: 0 }));
-  const [newAdminId, setNewAdminId] = useState(null);
 
   const [digits, setDigits] = useState(['', '', '', '', '', '']);
   const [isLoading, setIsLoading] = useState(false);
-
-  console.log('Player in UniqueCode:', player);
-  console.log('Current Role in UniqueCode:', currentRole);
-  console.log('All Roles in UniqueCode:', roles);
 
   // Create refs for each input
   const inputsRef = useRef([]);
@@ -35,10 +30,6 @@ const UniqueCode = () => {
       inputsRef.current[0].focus();
     }
   }, []);
-
-  useEffect(() => {
-    setCurrentRole(roles.find((r) => r.id === newAdminId));
-  }, [roles, newAdminId]);
 
   const handleCreateLeague = async () => {
     setIsLoading(true);
@@ -73,24 +64,15 @@ const UniqueCode = () => {
         return;
       }
 
-      // ✅ ACTIVE → this player is now an admin of the league
+      // ✅ ACTIVE → this player is now an admin of the league. The server has moved them on, so just
+      // refresh their profile and the layout takes them to their new role.
       if (claim.status === 'joined') {
-        queryClient.setQueryData(['authUserProfile'], (old) => ({
-          ...old,
-          playerProfile: {
-            ...old.playerProfile,
-            onboarding: 9,
-          },
-        }));
-
-        setCurrentRole({ role: 'admin', district: { id: claim.district_id, name: claim.district_name } });
-        queryClient.invalidateQueries(['authUserProfile']);
-
         Toast.show({
           type: 'success',
           text1: 'Admin Access Granted',
           text2: `You are now an admin for ${claim.district_name}.`,
         });
+        await queryClient.invalidateQueries({ queryKey: ['authUserProfile'] });
         return;
       }
     } catch (err) {
@@ -152,7 +134,6 @@ const UniqueCode = () => {
   };
 
   const handleCreateTeam = async () => {
-    setIsLoading(true);
     const code = digits.join('');
     if (code.length !== 6) {
       Toast.show({
@@ -160,47 +141,32 @@ const UniqueCode = () => {
         text1: 'Invalid Code',
         text2: 'Please enter a valid 6-digit code.',
       });
-      setIsLoading(false);
-      inputsRef.current[0].focus();
+      inputsRef.current[0]?.focus();
       return;
-    } else {
-      const { data: LeagueData, error } = await supabase
-        .from('Districts')
-        .select(
-          `*,
-          Divisions:Divisions!Divisions_district_fkey (
-          id,
-          name,  
-          group_id,
-          group_name,  
-          tier,
-          competitor_type,
-          max_competitors,
-          admin_approval_required
-          )`
-        )
-        .eq('code', code)
-        .single();
+    }
 
-      if (error) {
-        console.log('Error fetching league data:', error);
-        Toast.show({
-          type: 'error',
-          text1: 'League could not be found',
-          text2: 'Please check the code and try again.',
-        });
-      } else if (LeagueData) {
-        router.push({
-          pathname: '/(main)/onboarding/(entity-onboarding)/team-name',
-          params: { league: JSON.stringify(LeagueData) },
-        });
-      }
+    setIsLoading(true);
+    try {
+      // The league's team sign-up code (not its admin code), checked on the server.
+      const { data: LeagueData, error } = await supabase.rpc('find_league_by_code', { p_code: code });
+      if (error) throw error;
+
+      router.push({
+        pathname: '/(main)/onboarding/(entity-onboarding)/team-name',
+        params: { league: JSON.stringify(LeagueData) },
+      });
+    } catch (err) {
+      Toast.show({
+        type: 'error',
+        text1: 'League could not be found',
+        text2: 'Please check the code and try again.',
+      });
+    } finally {
       setIsLoading(false);
     }
   };
 
   const handleJoinTeam = async () => {
-    setIsLoading(true);
     const code = digits.join('');
     if (code.length !== 6) {
       Toast.show({
@@ -208,28 +174,26 @@ const UniqueCode = () => {
         text1: 'Invalid Code',
         text2: 'Please enter a valid 6-digit code.',
       });
-      setIsLoading(false);
-      inputsRef.current[0].focus();
+      inputsRef.current[0]?.focus();
       return;
-    } else {
-      const { data: TeamData, error } = await supabase
-        .from('Teams')
-        .select('*')
-        .eq('code', code)
-        .single();
+    }
 
-      if (error) {
-        Toast.show({
-          type: 'error',
-          text1: 'Team could not be found',
-          text2: 'Please check the code and try again.',
-        });
-      } else if (TeamData) {
-        router.push({
-          pathname: '/(main)/onboarding/(entity-onboarding)/team-confirm',
-          params: { team: JSON.stringify(TeamData) },
-        });
-      }
+    setIsLoading(true);
+    try {
+      const { data: TeamData, error } = await supabase.rpc('find_team_by_code', { p_code: code });
+      if (error) throw error;
+
+      router.push({
+        pathname: '/(main)/onboarding/(entity-onboarding)/team-confirm',
+        params: { team: JSON.stringify(TeamData) },
+      });
+    } catch (err) {
+      Toast.show({
+        type: 'error',
+        text1: 'Team could not be found',
+        text2: 'Please check the code and try again.',
+      });
+    } finally {
       setIsLoading(false);
     }
   };

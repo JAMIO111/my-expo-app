@@ -59,7 +59,7 @@ const TeamAddress = () => {
       return;
     }
 
-    if (isNaN(tables) || tables.trim() === '' || Number(tables.trim()) < 1) {
+    if (isNaN(tables) || tables.trim() === '' || !Number.isInteger(Number(tables.trim())) || Number(tables.trim()) < 1) {
       Toast.show({
         type: 'error',
         text1: 'Invalid number of tables',

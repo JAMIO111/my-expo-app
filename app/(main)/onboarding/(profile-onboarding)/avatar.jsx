@@ -18,6 +18,7 @@ const Avatar = () => {
   const [useGooglePhoto, setUseGooglePhoto] = useState(isGoogleUser);
   const { colorScheme } = useColorScheme();
   const [imageUri, setImageUri] = useState(null);
+  const [saving, setSaving] = useState(false);
   const router = useRouter();
 
   const params = useLocalSearchParams();
@@ -25,6 +26,7 @@ const Avatar = () => {
   const { uploadToSupabase, uploading } = useCompressAndUploadImage();
 
   const handleSaveProfile = async () => {
+    if (saving || uploading) return;
     const {
       data: { user },
     } = await supabase.auth.getUser();
@@ -34,71 +36,57 @@ const Avatar = () => {
       return;
     }
 
-    let avatarUrl = null;
     const folderPath = `${user.id}/`;
 
     try {
+      setSaving(true);
+      let avatarUrl = null;
+
       if (useGooglePhoto && isGoogleUser) {
         // Use Google profile photo
-        avatarUrl = user?.user_metadata?.avatar_url || user?.user_metadata?.picture;
+        avatarUrl = user?.user_metadata?.avatar_url || user?.user_metadata?.picture || null;
       } else if (imageUri) {
-        // Delete old files
-        const { data: existingFiles, error: listError } = await supabase.storage
+        // Upload first, then tidy up: a failed upload must not cost the player a photo they had
+        avatarUrl = await uploadToSupabase(imageUri, folderPath, 'avatars');
+
+        const { data: existingFiles } = await supabase.storage
           .from('avatars')
           .list(folderPath, { limit: 100 });
-
-        if (listError) throw new Error(`Failed to list old avatars: ${listError.message}`);
-
-        if (existingFiles?.length) {
-          const filePaths = existingFiles.map((f) => `${folderPath}${f.name}`);
-          const { error: deleteError } = await supabase.storage.from('avatars').remove(filePaths);
-          if (deleteError) throw new Error(`Failed to delete old avatars: ${deleteError.message}`);
+        const stale = (existingFiles || []).filter((f) => !avatarUrl?.includes(f.name));
+        if (stale.length) {
+          await supabase.storage.from('avatars').remove(stale.map((f) => `${folderPath}${f.name}`));
         }
-
-        // Upload new one via hook
-        avatarUrl = await uploadToSupabase(imageUri, folderPath, 'avatars');
       }
 
-      const { error } = await supabase
-        .from('Players')
-        .update({
-          first_name: params.firstName,
-          surname: params.surname,
-          nickname: params.nickname,
-          gender: params.gender,
-          dob: params.dob
-            ? (() => {
-                const d = new Date(params.dob);
-                const y = d.getFullYear();
-                const m = (d.getMonth() + 1).toString().padStart(2, '0');
-                const day = d.getDate().toString().padStart(2, '0');
-                return `${y}-${m}-${day}`;
-              })()
-            : null,
+      const dob = params.dob ? new Date(params.dob) : null;
+      const dobString = dob
+        ? `${dob.getFullYear()}-${String(dob.getMonth() + 1).padStart(2, '0')}-${String(dob.getDate()).padStart(2, '0')}`
+        : null;
 
-          avatar_url: avatarUrl,
-          onboarding: 1,
-          claimed: true,
-          claimed_at: new Date().toISOString(),
-        })
-        .eq('auth_id', user.id);
+      // One checked call: validates the details and moves the player on to the next step.
+      const { error } = await supabase.rpc('complete_profile_onboarding', {
+        p_first_name: params.firstName,
+        p_surname: params.surname,
+        p_nickname: params.nickname,
+        p_gender: params.gender,
+        p_dob: dobString,
+        p_avatar_url: avatarUrl,
+      });
+      if (error) throw error;
 
-      if (error) {
-        Alert.alert('Update Failed', error.message);
-      } else {
-        router.replace('/(main)/onboarding/(entity-onboarding)/admin-or-player');
-        Toast.show({
-          type: 'success',
-          text1: 'Profile Updated',
-          text2: 'Your profile has been successfully updated.',
-          props: {
-            colorScheme: colorScheme,
-          },
-        });
-      }
+      router.replace('/(main)/onboarding/(entity-onboarding)/admin-or-player');
+      Toast.show({
+        type: 'success',
+        text1: 'Profile Updated',
+        text2: 'Your profile has been successfully updated.',
+        props: {
+          colorScheme: colorScheme,
+        },
+      });
     } catch (err) {
-      Alert.alert('Error', err.message);
+      Alert.alert('Could not save your profile', err.message || 'Please try again.');
     } finally {
+      setSaving(false);
     }
   };
 
@@ -146,15 +134,15 @@ const Avatar = () => {
                 textColor="black"
                 text={useGooglePhoto ? 'Use Custom Photo' : 'Use Google Photo'}
                 callbackFn={() => setUseGooglePhoto(!useGooglePhoto)}
-                disabled={uploading}
+                disabled={uploading || saving}
               />
             )}
             <CTAButton
               type="yellow"
               textColor="black"
-              text="Save Profile"
+              text={saving || uploading ? 'Saving...' : 'Save Profile'}
               callbackFn={handleSaveProfile}
-              disabled={uploading}
+              disabled={uploading || saving}
             />
           </View>
         </View>

@@ -161,9 +161,12 @@ export default function CreateDivisions() {
   // --- LOGIC ---
   const handleAddGroup = () => {
     if (!gName) return Alert.alert('Error', 'Enter a group name');
+    if (groups.some((g) => g.name.trim().toLowerCase() === gName.trim().toLowerCase())) {
+      return Alert.alert('Error', 'A group with that name already exists');
+    }
     const newGroup = {
-      id: groups.length + 1,
-      name: gName,
+      id: groups.reduce((max, g) => Math.max(max, g.id), 0) + 1,
+      name: gName.trim(),
       type: compType,
     };
     setGroups([...groups, newGroup]);
@@ -185,7 +188,18 @@ export default function CreateDivisions() {
 
   const handleSaveDivision = () => {
     if (!selectedGroupId) return Alert.alert('Missing Info', 'Select a group for the division');
-    if (!dName) return Alert.alert('Missing Info', 'Enter a division name');
+    if (!dName.trim()) return Alert.alert('Missing Info', 'Enter a division name');
+    if (
+      divisions.some(
+        (d) =>
+          d.tempId !== editingDivisionId && d.name.trim().toLowerCase() === dName.trim().toLowerCase()
+      )
+    ) {
+      return Alert.alert('Duplicate Name', 'Every division in the league needs its own name.');
+    }
+    if (maxComps !== null && maxComps !== '' && Number(maxComps) < 2) {
+      return Alert.alert('Invalid Limit', 'A division needs room for at least 2 entrants.');
+    }
 
     setDivisions((prev) => {
       let updated;
@@ -196,11 +210,11 @@ export default function CreateDivisions() {
           d.tempId === editingDivisionId
             ? {
                 ...d,
-                name: dName,
+                name: dName.trim(),
                 tier: Number(tier),
                 promotionSpots: Number(tier) === 1 ? 0 : Number(promo),
                 relegationSpots: Number(releg),
-                maxCompetitors: maxComps !== null ? Number(maxComps) : null,
+                maxCompetitors: maxComps !== null && maxComps !== '' ? Number(maxComps) : null,
               }
             : d
         );
@@ -211,11 +225,11 @@ export default function CreateDivisions() {
           groupId: selectedGroupId,
           groupName: groups.find((g) => g.id === selectedGroupId)?.name || '',
           competitorType: groups.find((g) => g.id === selectedGroupId)?.type || 'team',
-          name: dName,
+          name: dName.trim(),
           tier: Number(tier),
           promotionSpots: Number(tier) === 1 ? 0 : Number(promo),
           relegationSpots: Number(releg),
-          maxCompetitors: maxComps !== null ? Number(maxComps) : null,
+          maxCompetitors: maxComps !== null && maxComps !== '' ? Number(maxComps) : null,
         };
         updated = [...prev, newDiv];
       }
@@ -282,7 +296,7 @@ export default function CreateDivisions() {
     if (selectedGroupId === null) return;
 
     const groupDivisions = divisions
-      .filter((d) => d.groupId === selectedGroupId && d.id !== id)
+      .filter((d) => d.groupId === selectedGroupId && d.tempId !== id)
       .map((d) => d.tier);
 
     const next = groupDivisions.length > 0 ? Math.max(...groupDivisions) + 1 : 1;
@@ -290,6 +304,14 @@ export default function CreateDivisions() {
   };
 
   const handleSave = () => {
+    if (divisions.length === 0) {
+      Alert.alert(
+        'Add a Division',
+        'Your league needs at least one division before teams can join it.'
+      );
+      return;
+    }
+
     const payload = divisions.map(({ tempId, ...rest }) => rest);
 
     const warnings = [];

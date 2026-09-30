@@ -20,6 +20,7 @@ const LeagueConfig = () => {
   const { currentRole, player, refetch } = useUser();
   const [districtName, setDistrictName] = useState(currentRole?.district?.name || '');
   const [joinCode, setJoinCode] = useState(currentRole?.district?.code || '');
+  const [teamCode, setTeamCode] = useState(currentRole?.district?.team_signup_code || '');
 
   const { data: admins, isLoading: adminsLoading } = useAdminsByDistrict(currentRole?.district?.id);
 
@@ -29,6 +30,7 @@ const LeagueConfig = () => {
     if (currentRole) {
       setDistrictName(currentRole?.district?.name || '');
       setJoinCode(currentRole?.district?.code || '');
+      setTeamCode(currentRole?.district?.team_signup_code || '');
     }
   }, [currentRole]);
 
@@ -38,7 +40,9 @@ const LeagueConfig = () => {
   };
 
   const hasChanges =
-    districtName !== currentRole?.district?.name || joinCode !== currentRole?.district?.code;
+    districtName !== currentRole?.district?.name ||
+    joinCode !== currentRole?.district?.code ||
+    teamCode !== (currentRole?.district?.team_signup_code || '');
 
   const handleSave = async () => {
     if (!hasChanges) return;
@@ -47,6 +51,16 @@ const LeagueConfig = () => {
 
     if (!regex.test(joinCode)) {
       Toast.show({ type: 'info', text1: 'Join code must be exactly 6 numerical digits.' });
+      return;
+    }
+
+    if (!regex.test(teamCode)) {
+      Toast.show({ type: 'info', text1: 'Team sign-up code must be exactly 6 numerical digits.' });
+      return;
+    }
+
+    if (teamCode === joinCode) {
+      Toast.show({ type: 'info', text1: 'The admin code and team sign-up code must be different.' });
       return;
     }
 
@@ -70,6 +84,14 @@ const LeagueConfig = () => {
         const { error } = await supabase.rpc('set_district_join_code', {
           p_district_id: districtId,
           p_code: joinCode,
+        });
+        if (error) throw error;
+      }
+
+      if (teamCode !== (currentRole?.district?.team_signup_code || '')) {
+        const { error } = await supabase.rpc('set_team_signup_code', {
+          p_district_id: districtId,
+          p_code: teamCode,
         });
         if (error) throw error;
       }
@@ -132,10 +154,17 @@ const LeagueConfig = () => {
           />
           <EditableSettingsItem
             iconBGColor="gray"
-            title="Join Code"
+            title="Admin Access Code"
             icon="rectangleEllipsis"
             value={joinCode}
             onChangeText={handleEditCode}
+          />
+          <EditableSettingsItem
+            iconBGColor="gray"
+            title="Team Sign-up Code"
+            icon="rectangleEllipsis"
+            value={teamCode}
+            onChangeText={(text) => text.length <= 6 && setTeamCode(text)}
           />
           <SwitchSettingsItem
             defaultValue={currentRole?.district?.private}

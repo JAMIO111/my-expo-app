@@ -61,9 +61,17 @@ const Nickname = () => {
                     });
                     return;
                   }
+                  if (nickname.trim().length > 30) {
+                    Toast.show({
+                      type: 'info',
+                      text1: 'Display Name Too Long',
+                      text2: 'Please keep it to 30 characters or fewer.',
+                    });
+                    return;
+                  }
                   router.push({
                     pathname: '/(main)/onboarding/(profile-onboarding)/dob',
-                    params: { ...params, nickname },
+                    params: { ...params, nickname: nickname.trim() },
                   });
                 }}
               />

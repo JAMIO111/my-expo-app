@@ -18,6 +18,12 @@ const Dob = () => {
   const params = useLocalSearchParams();
   console.log('dob', dob);
 
+  const maxDob = (() => {
+    const d = new Date();
+    d.setFullYear(d.getFullYear() - 13);
+    return d;
+  })();
+
   const openSheet = () => {
     bottomSheetRef.current?.expand();
   };
@@ -127,9 +133,9 @@ const Dob = () => {
           <BottomSheetView style={{ paddingBottom: 240, paddingTop: 80, paddingHorizontal: 32 }}>
             {/* Your selectable items */}
             <DateTimePicker
-              value={dob ? new Date(dob) : new Date(2000, 0, 1)}
+              value={dob ? new Date(dob) : new Date(Math.min(new Date(2000, 0, 1), maxDob))}
               minimumDate={new Date(1900, 0, 1)}
-              maximumDate={new Date()}
+              maximumDate={maxDob}
               mode="date"
               display={Platform.OS === 'ios' ? 'spinner' : 'default'}
               onChange={(event, date) => {

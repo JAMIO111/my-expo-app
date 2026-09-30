@@ -24,7 +24,7 @@ const Name = () => {
   );
 
   const [surname, setSurname] = useState(
-    isGoogleUser ? (nameParts.length > 1 ? nameParts[nameParts.length - 1] : '') : ''
+    isGoogleUser ? nameParts.slice(1).join(' ') : ''
   );
   const router = useRouter();
   const inputRef2 = useRef(null);
@@ -98,7 +98,7 @@ const Name = () => {
                   }
                   router.push({
                     pathname: '/(main)/onboarding/(profile-onboarding)/nickname',
-                    params: { firstName, surname },
+                    params: { firstName: firstName.trim(), surname: surname.trim() },
                   });
                 }}
               />

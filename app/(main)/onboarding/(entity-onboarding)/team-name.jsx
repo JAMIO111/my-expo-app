@@ -56,7 +56,7 @@ const TeamName = () => {
         return;
       }
 
-      const teams = data.Divisions.flatMap((d) => d.Teams);
+      const teams = data.Divisions.flatMap((d) => d.Teams).filter((t) => t.status !== 'cancelled');
       setTeams(teams);
     };
 
@@ -68,18 +68,18 @@ const TeamName = () => {
     const abbr = teamAbbreviation.trim().toUpperCase();
     const displayName = teamDisplayName.trim();
 
-    if (!name) {
+    if (name.length < 3 || name.length > 60) {
       Toast.show({
         type: 'error',
-        text1: 'Team name cannot be blank',
+        text1: 'Team name must be 3 to 60 characters',
       });
       return;
     }
 
-    if (!displayName) {
+    if (displayName.length < 2 || displayName.length > 40) {
       Toast.show({
         type: 'error',
-        text1: 'Display name cannot be blank',
+        text1: 'Display name must be 2 to 40 characters',
       });
       return;
     }
@@ -92,15 +92,15 @@ const TeamName = () => {
       return;
     }
 
-    if (abbr.length !== 3) {
+    if (!/^[A-Z0-9]{3}$/.test(abbr)) {
       Toast.show({
         type: 'error',
-        text1: 'Team abbreviation must be 3 characters long.',
+        text1: 'Team abbreviation must be 3 letters or numbers.',
       });
       return;
     }
 
-    const nameExists = teams.some((t) => t.name.toLowerCase() === name.toLowerCase());
+    const nameExists = teams.some((t) => t.name?.toLowerCase() === name.toLowerCase());
 
     if (nameExists) {
       Toast.show({
@@ -112,7 +112,7 @@ const TeamName = () => {
     }
 
     const displayNameExists = teams.some(
-      (t) => t.display_name.toLowerCase() === displayName.toLowerCase()
+      (t) => t.display_name?.toLowerCase() === displayName.toLowerCase()
     );
 
     if (displayNameExists) {

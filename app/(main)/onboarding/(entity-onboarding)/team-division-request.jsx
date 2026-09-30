@@ -11,59 +11,81 @@ import { ScrollView } from 'react-native-gesture-handler';
 import { supabase } from '@/lib/supabase';
 import Toast from 'react-native-toast-message';
 import { useUser } from '@contexts/UserProvider';
+import { useQueryClient } from '@tanstack/react-query';
 import useCompressAndUploadImage from '@hooks/useCompressAndUploadImage';
 
 const TeamDivisionRequest = () => {
   const { player } = useUser();
   const router = useRouter();
+  const queryClient = useQueryClient();
   const params = useLocalSearchParams();
   const league = JSON.parse(params.league || '{}');
   const teamDetails = JSON.parse(params.teamDetails || '{}');
-  const teams = JSON.parse(params.teams || '[]');
-  const [selectedDivision, setSelectedDivision] = useState(null);
+    const [selectedDivision, setSelectedDivision] = useState(null);
   const { uploadToSupabase, uploading } = useCompressAndUploadImage();
   const [loading, setLoading] = useState(false);
 
   console.log('league in TeamDivisionRequest:', league);
   console.log('teamDetails in TeamDivisionRequest:', teamDetails);
-  console.log('teams in TeamDivisionRequest:', teams);
+
+  const ERROR_MESSAGES = {
+    TEAM_NAME_TAKEN: 'Another team already uses that team name. Go back and choose a different one.',
+    TEAM_DISPLAY_NAME_TAKEN:
+      'Another team already uses that display name. Go back and choose a different one.',
+    TEAM_ABBREVIATION_TAKEN:
+      'Another team already uses that abbreviation. Go back and choose a different one.',
+    DIVISION_FULL: 'That division is full. Please choose another.',
+    DIVISION_REQUIRED: 'Please choose a division to join.',
+    DIVISION_NOT_FOUND: 'That division is no longer available. Please choose another.',
+    LEAGUE_NOT_FOUND: 'This league is not available right now.',
+    ALREADY_PENDING: 'You already have a team waiting for approval.',
+    ALREADY_IN_DISTRICT: 'You are already on a team in this league.',
+    INVALID_TEAM_DETAILS: 'Please check your team details and try again.',
+    INVALID_ADDRESS: 'Please check your venue details and try again.',
+  };
 
   const handleContinue = async () => {
+    if (loading || uploading) return;
+    if (!selectedDivision) {
+      Toast.show({
+        type: 'info',
+        text1: 'Choose a Division',
+        text2: 'Pick the division your team wants to join.',
+      });
+      return;
+    }
     setLoading(true);
-    const folderPath = `${teamDetails.name}/`;
-
-    let imageURL = null;
 
     try {
+      let imageURL = null;
       if (teamDetails.photoUri) {
-        imageURL = await uploadToSupabase(teamDetails.photoUri, folderPath, 'team-cover-images');
+        imageURL = await uploadToSupabase(
+          teamDetails.photoUri,
+          `${player.id}/`,
+          'team-cover-images'
+        );
       }
 
+      const address = teamDetails.address || {};
       const { data: newTeamDetails, error } = await supabase.rpc('create_team_with_address', {
         payload: {
-          _venue_name: teamDetails.venue_name,
-          _line1: teamDetails.address.line_1,
-          _line2: teamDetails.address.line_2 ?? null,
-          _city: teamDetails.address.city,
-          _county: teamDetails.address.county ?? null,
-          _post_code: teamDetails.address.postcode,
-          _tables: teamDetails.tables,
+          _venue_name: address.venue_name || null,
+          _line1: address.line_1,
+          _line2: address.line_2 || null,
+          _city: address.city,
+          _county: address.county || null,
+          _post_code: address.postcode,
+          _tables: address.tables,
           _name: teamDetails.name,
           _display_name: teamDetails.display_name,
           _abbreviation: teamDetails.abbreviation,
           _crest: teamDetails.crest,
-          _division: selectedDivision ?? null,
+          _division: selectedDivision,
           _district: league.id,
           _is_private: teamDetails.is_private,
-          _captain: player.id,
           _cover_image_url: imageURL ?? null,
         },
       });
-
-      if (error) throw error;
-      if (!newTeamDetails) {
-        throw new Error('No team returned from create_team_with_address');
-      }
 
       if (error) throw error;
       if (!newTeamDetails) {
@@ -76,20 +98,18 @@ const TeamDivisionRequest = () => {
         text2: 'Your request to join the league has been sent. Please wait for approval.',
       });
 
-      router.push({
-        pathname: '/(main)/onboarding/(entity-onboarding)/team-pending-approval',
-        params: {
-          league: JSON.stringify(league),
-          teamDetails: JSON.stringify(newTeamDetails),
-        },
-      });
+      // The server has moved the player on to the waiting screen.
+      await queryClient.invalidateQueries({ queryKey: ['authUserProfile'] });
+      router.replace('/(main)/onboarding/(entity-onboarding)/pending-request');
     } catch (err) {
       console.error('Team creation failed:', err);
 
       Toast.show({
         type: 'error',
         text1: 'Team creation failed',
-        text2: 'An error occurred while creating your team. Please try again.',
+        text2:
+          ERROR_MESSAGES[err?.message] ||
+          'An error occurred while creating your team. Please try again.',
       });
     } finally {
       setLoading(false);
@@ -97,14 +117,11 @@ const TeamDivisionRequest = () => {
   };
 
   const getRemainingSpaces = (division) => {
-    if (!division?.max_teams) return null;
-
-    const activeTeamsInDivision = teams.filter(
-      (team) => team.division === division.id && team.status === 'active'
-    ).length;
-
-    return Math.max(division?.max_teams - activeTeamsInDivision, 0);
+    if (!division?.max_competitors) return null;
+    return Math.max(division.max_competitors - (division.member_count || 0), 0);
   };
+
+  const selectedDivisionRow = league.Divisions?.find((d) => d.id === selectedDivision);
 
   const groupedDivisions = league.Divisions?.reduce((acc, division) => {
     const groupId = division.group_id || 'ungrouped';
@@ -135,7 +152,7 @@ const TeamDivisionRequest = () => {
             <Text
               style={{ lineHeight: 40 }}
               className={`p-4 font-delagothic text-3xl font-bold text-text-on-brand`}>
-              Request to join a division in your league.
+              Choose a division for your team.
             </Text>
             <Text className="px-4 font-saira-medium text-sm text-text-on-brand-2">
               A request to join a division will be sent to the league admin for approval. Once
@@ -146,8 +163,8 @@ const TeamDivisionRequest = () => {
               {!league.Divisions?.length ? (
                 <View className="mx-3 mt-6 rounded-2xl bg-bg-2 p-2">
                   <Text className="text-md p-3 px-5 font-saira-medium text-text-2">
-                    Your league doesn't have any divisions yet. You can still request to join the
-                    league and the admin can assign you to a division later.
+                    This league doesn't have any divisions for teams yet, so it can't take new teams
+                    right now. Please check back with your league official.
                   </Text>
                 </View>
               ) : (
@@ -167,6 +184,7 @@ const TeamDivisionRequest = () => {
                         .map((division) => (
                           <Pressable
                             key={division.id}
+                            disabled={getRemainingSpaces(division) === 0}
                             onPress={() =>
                               selectedDivision === division.id
                                 ? setSelectedDivision(null)
@@ -196,7 +214,7 @@ const TeamDivisionRequest = () => {
                                       ? 'text-theme-red'
                                       : 'text-text-2'
                                   }`}>
-                                  {!division?.max_teams
+                                  {!division?.max_competitors
                                     ? 'No team limit'
                                     : `${getRemainingSpaces(division)} spaces remaining`}
                                 </Text>
@@ -233,20 +251,19 @@ const TeamDivisionRequest = () => {
 
             <View className="gap-5 rounded-t-3xl bg-brand-dark px-5 py-6">
               <CTAButton
-                disabled={loading || uploading}
+                disabled={loading || uploading || !selectedDivision}
                 type="yellow"
                 text={
-                  !selectedDivision
-                    ? 'Request to join league'
-                    : getRemainingSpaces(selectedDivision) === 0
-                      ? 'Request to join league'
-                      : 'Request to join division'
+                  loading || uploading
+                    ? 'Creating team...'
+                    : selectedDivisionRow
+                      ? `Request to join ${selectedDivisionRow.name}`
+                      : 'Choose a division'
                 }
                 callbackFn={handleContinue}
               />
               <Text className="font-saira-medium text-sm text-text-on-brand-2">
-                If your league doesn't have any divisions yet, don't worry - you can still request
-                to join the league and the admin can assign you to a division later.
+                The league admin will review your request before your team joins the division.
               </Text>
             </View>
           </View>

@@ -29,11 +29,11 @@ export default function DistrictName() {
   };
 
   const handleSubmit = async () => {
-    if (!districtName.trim()) {
+    if (districtName.trim().length < 3 || districtName.trim().length > 60) {
       Toast.show({
         type: 'error',
         text1: 'Invalid Name',
-        text2: 'District name cannot be empty.',
+        text2: 'The league name must be between 3 and 60 characters.',
       });
       return;
     }

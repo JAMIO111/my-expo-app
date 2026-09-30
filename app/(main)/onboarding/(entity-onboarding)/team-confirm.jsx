@@ -31,7 +31,8 @@ const TeamConfirm = () => {
         const { data: playersData, error: playersError } = await supabase
           .from('TeamPlayers')
           .select('id')
-          .eq('team_id', team.id);
+          .eq('team_id', team.id)
+          .eq('status', 'active');
 
         // TeamPlayers.role is the source of truth for the captain.
         const { data: captainRow, error: captainError } = await supabase
