@@ -5,6 +5,7 @@ import { useTheme } from '@contexts/ThemeProvider';
 import Avatar from './Avatar';
 import TeamLogo from './TeamLogo';
 import {
+  Crown,
   User,
   Users,
   Bell,
@@ -99,6 +100,7 @@ export const iconMap = {
   mapPin: MapPin,
   rectangleEllipsis: RectangleEllipsis,
   userPen: UserPen,
+  crown: Crown,
   doorOpen: DoorOpen,
   doorClosed: DoorClosed,
   circleCheck: CircleCheck,

@@ -26,11 +26,11 @@ const index = () => {
     try {
       const { data, error } = await supabase.rpc('start_new_season', {
         p_district_id: currentRole?.district?.id,
-        p_name: '2029/30',
+        p_name: null, // the server activates a draft season or names the next one
       });
       if (error) throw error;
       if (data.success === false) {
-        const rpcError = new Error(data.message || 'Failed to remove player from the team.');
+        const rpcError = new Error(data.message || 'Failed to start the season.');
         rpcError.title = data.title;
         rpcError.code = data.code;
         throw rpcError;
@@ -39,7 +39,7 @@ const index = () => {
       Toast.show({
         type: 'success',
         text1: 'Season Started',
-        text2: 'A new season has been created.',
+        text2: 'The season is now active.',
       });
     } catch (error) {
       Toast.show({

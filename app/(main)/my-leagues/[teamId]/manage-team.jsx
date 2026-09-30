@@ -18,6 +18,8 @@ import { useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 import BottomSheetModal from '@components/BottomSheetModal';
 import { useDivisions } from '@hooks/useDivisions';
+import { useTeamPlayers } from '@hooks/useTeamPlayers';
+import { assertRpcOk } from '@lib/rpc';
 import CTAButton from '@components/CTAButton';
 
 const ManageTeam = () => {
@@ -37,6 +39,41 @@ const ManageTeam = () => {
   const [teamJoinCode, setTeamJoinCode] = useState(teamProfile?.code);
   const [tempDivision, setTempDivision] = useState(null);
   const { data: divisions } = useDivisions(currentRole?.district?.id);
+  const { data: teamPlayers } = useTeamPlayers(teamId);
+  const [showCaptainModal, setShowCaptainModal] = useState(false);
+  const [tempCaptain, setTempCaptain] = useState(null);
+  const [settingCaptain, setSettingCaptain] = useState(false);
+
+  const currentCaptainId = teamPlayers?.find((p) => p.role === 'captain')?.player_id;
+
+  const handleSetCaptain = async () => {
+    if (!tempCaptain || settingCaptain) return;
+    try {
+      setSettingCaptain(true);
+      const { data, error } = await supabase.rpc('transfer_captaincy', {
+        p_team_id: teamId,
+        p_new_captain_id: tempCaptain.player_id,
+      });
+      assertRpcOk(data, error);
+      await queryClient.invalidateQueries({ queryKey: ['TeamPlayers', teamId] });
+      await queryClient.invalidateQueries({ queryKey: ['TeamProfile', teamId] });
+      Toast.show({
+        type: 'success',
+        text1: 'Captain Updated',
+        text2: `${tempCaptain.first_name} ${tempCaptain.surname} is now the team captain.`,
+      });
+      setShowCaptainModal(false);
+      setTempCaptain(null);
+    } catch (err) {
+      Toast.show({
+        type: 'error',
+        text1: 'Could not change captain',
+        text2: err?.message || 'Please try again.',
+      });
+    } finally {
+      setSettingCaptain(false);
+    }
+  };
 
   const transferableDivisions = divisions?.filter(
     (d) => d.id !== teamProfile?.division?.id && d.group_id === teamProfile?.division?.group_id
@@ -285,6 +322,14 @@ const ManageTeam = () => {
                 callbackFn={() => setShowModal(true)}
               />
               <SettingsItem
+                title="Set Team Captain"
+                icon="crown"
+                callbackFn={() => {
+                  setTempCaptain(null);
+                  setShowCaptainModal(true);
+                }}
+              />
+              <SettingsItem
                 title="Remove Team from Division"
                 icon="logout"
                 iconColor="#ff0000"
@@ -334,6 +379,46 @@ const ManageTeam = () => {
         bottomButtonFn={confirmConfig?.bottomButtonFn}
         onCancel={() => setModalVisible(false)}
       />
+      <BottomSheetModal
+        showModal={showCaptainModal}
+        setShowModal={setShowCaptainModal}
+        title="Set Team Captain">
+        <View className="flex-1 p-4 pb-16">
+          <View className="flex-1">
+            {(teamPlayers || [])
+              .filter((p) => p.player_id !== currentCaptainId)
+              .map((p) => (
+                <Pressable
+                  className="mb-3 flex-row items-center justify-between rounded-3xl bg-bg-2 p-4"
+                  key={p.player_id}
+                  onPress={() => setTempCaptain(p)}>
+                  <View>
+                    <Text
+                      className={`font-tektur-medium text-2xl ${
+                        tempCaptain?.player_id === p.player_id ? 'text-text-1' : 'text-text-2'
+                      }`}>
+                      {p.first_name} {p.surname}
+                    </Text>
+                    <Text className="font-tektur text-xl text-text-2">
+                      {p.role === 'vice_captain' ? 'Vice captain' : 'Player'}
+                    </Text>
+                  </View>
+                  {tempCaptain?.player_id === p.player_id ? (
+                    <CircleCheck size={40} strokeWidth={1.5} />
+                  ) : (
+                    <Circle size={40} strokeWidth={1.5} />
+                  )}
+                </Pressable>
+              ))}
+          </View>
+          <CTAButton
+            text={settingCaptain ? 'Saving...' : 'Set Captain'}
+            type="yellow"
+            disabled={!tempCaptain || settingCaptain}
+            onPress={handleSetCaptain}
+          />
+        </View>
+      </BottomSheetModal>
       <BottomSheetModal showModal={showModal} setShowModal={setShowModal} title="Transfer Division">
         <View className="flex-1 p-4 pb-16">
           <View className="flex-1">
