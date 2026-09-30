@@ -9,7 +9,7 @@ import Toast from 'react-native-toast-message';
 import { useRouter } from 'expo-router';
 import { useUser } from '@contexts/UserProvider';
 import { Ticket, X, Check, Scissors, Clock } from 'lucide-react-native';
-import TeamCrest from '../(main)/settings/TeamCrest';
+import { assertRpcOk } from '@lib/rpc';
 
 export default function TicketCard({ item, style }) {
   const router = useRouter();
@@ -27,7 +27,6 @@ export default function TicketCard({ item, style }) {
   if (!fontsLoaded) return null;
 
   const handleAcceptTeamInvite = async () => {
-    setLoading(true);
     const confirm = await new Promise((resolve) => {
       Alert.alert(
         'Accept Invite?',
@@ -40,17 +39,13 @@ export default function TicketCard({ item, style }) {
       );
     });
     if (!confirm) return;
+    setLoading(true);
     try {
       const { data, error } = await supabase.rpc('accept_player_join_team_invite', {
         p_team_player_id: item?.team_player_id,
       });
-      if (error) throw error;
-      if (data?.success === false) {
-        const rpcError = new Error(data.message || 'Failed to revoke your request.');
-        rpcError.title = data.title;
-        rpcError.code = data.code;
-        throw rpcError;
-      }
+      assertRpcOk(data, error);
+      const joined = data?.teamPlayer?.status === 'active';
       await queryClient.invalidateQueries(['PlayerProfile', player?.id]);
       await queryClient.invalidateQueries(['TeamPlayers', currentRole?.team?.id]);
       await queryClient.invalidateQueries([
@@ -60,13 +55,15 @@ export default function TicketCard({ item, style }) {
       await refetch();
       Toast.show({
         type: 'success',
-        text1: 'Join request accepted successfully.',
-        text2: `${item?.first_name} ${item?.surname} has been added to the team.`,
+        text1: joined ? 'Invite accepted' : 'Invite accepted — awaiting approval',
+        text2: joined
+          ? `You have joined ${item?.team?.display_name}.`
+          : 'A league admin still needs to approve your move before you join the team.',
       });
     } catch (error) {
       Toast.show({
         type: 'error',
-        text1: 'Failed to accept invite',
+        text1: error.title || 'Failed to accept invite',
         text2: error.message || 'An error occurred while accepting the player invite.',
       });
     } finally {
@@ -91,13 +88,7 @@ export default function TicketCard({ item, style }) {
       const { data, error } = await supabase.rpc('decline_player_join_team_invite', {
         p_team_player_id: item?.team_player_id,
       });
-      if (error) throw error;
-      if (data?.success === false) {
-        const rpcError = new Error(data.message || 'Failed to decline the invite.');
-        rpcError.title = data.title;
-        rpcError.code = data.code;
-        throw rpcError;
-      }
+      assertRpcOk(data, error);
       await queryClient.invalidateQueries(['PlayerProfile', player?.id]);
       await queryClient.invalidateQueries([
         'PlayerInvitesAndRequests',
@@ -106,14 +97,14 @@ export default function TicketCard({ item, style }) {
       await refetch();
       Toast.show({
         type: 'success',
-        text1: 'Invite declined successfully.',
-        text2: `${playerProfile?.first_name} ${playerProfile?.surname} has been removed from the team.`,
+        text1: 'Invite declined',
+        text2: `You declined the invite to join ${item?.team?.display_name}.`,
       });
     } catch (error) {
       console.error(error);
       Toast.show({
         type: 'error',
-        text1: 'Failed to decline invite',
+        text1: error.title || 'Failed to decline invite',
         text2: error.message || 'An error occurred while declining the player invite.',
       });
     }
@@ -136,13 +127,7 @@ export default function TicketCard({ item, style }) {
       const { data, error } = await supabase.rpc('revoke_player_join_team_request', {
         p_team_player_id: item?.team_player_id,
       });
-      if (error) throw error;
-      if (data?.success === false) {
-        const rpcError = new Error(data.message || 'Failed to revoke your request.');
-        rpcError.title = data.title;
-        rpcError.code = data.code;
-        throw rpcError;
-      }
+      assertRpcOk(data, error);
       await queryClient.invalidateQueries([
         'PlayerInvitesAndRequests',
         { teamId: currentRole?.team?.id, playerId: player?.id },
@@ -190,11 +175,11 @@ export default function TicketCard({ item, style }) {
       eyebrow = 'Team Invitation';
       eyebrowSub = `Received from ${item?.invited_by?.first_name} ${item?.invited_by?.surname}`;
       title = `You have been invited to join ${item?.team?.display_name}`;
-      subtitle = `Pending approval from ${status === 'pending_player' ? 'you' : status === 'pending_admin' ? 'the league admin' : status === 'pending_both' ? 'yourself and the league admin' : 'someone'}.  `;
+      subtitle = `Pending approval from ${status === 'pending_player' || status === 'invited' ? 'you' : status === 'pending_admin' ? 'the league admin' : status === 'pending_both' ? 'yourself and the league admin' : 'someone'}.  `;
       leftButtonLabel = 'Decline Invite';
       rightButtonLabel = 'Accept Invite';
       buttonLabel = status === 'pending_admin' ? 'Awaiting Admin' : 'Handle Invite';
-      buttonDisabled = status !== 'pending_player' && status !== 'pending_both';
+      buttonDisabled = !['invited', 'pending_player', 'pending_both'].includes(status);
       handleLeftButtonPress = handleDeclineTeamInvite;
       handleRightButtonPress = handleAcceptTeamInvite;
       footerLabel = 'Invite issued on ' + new Date(item?.invited_at).toLocaleDateString();
@@ -205,7 +190,7 @@ export default function TicketCard({ item, style }) {
       eyebrow = 'Team Join Request';
       eyebrowSub = `Sent by ${item?.requested_by_player?.first_name} ${item?.requested_by_player?.surname}`;
       title = `You made a request to join ${item?.team?.display_name}`;
-      subtitle = `Pending approval from ${status === 'pending_captain' ? 'the team captain' : status === 'pending_admin' ? 'the league admin' : status === 'pending_both' ? 'the team captain and league admin' : 'someone'}.  `;
+      subtitle = `Pending approval from ${status === 'pending_captain' || status === 'requested' ? 'the team captain' : status === 'pending_admin' ? 'the league admin' : status === 'pending_both' ? 'the team captain and league admin' : 'someone'}.  `;
       buttonLabel = 'Handle Request';
       leftButtonLabel = 'Revoke Request';
       rightButtonLabel = null;

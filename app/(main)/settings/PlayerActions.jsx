@@ -13,6 +13,7 @@ import { useState } from 'react';
 import Toast from 'react-native-toast-message';
 import { useQueryClient } from '@tanstack/react-query';
 import { useTheme } from '@contexts/ThemeProvider';
+import { assertRpcOk } from '@lib/rpc';
 
 const PlayerId = () => {
   const { colors: themeColors } = useTheme();
@@ -44,16 +45,19 @@ const PlayerId = () => {
 
   const showRemoveFromTeamButton = status === 'active' && currentRole?.role === 'captain' && !isMe;
 
+  const isLeader = currentRole?.role === 'captain' || currentRole?.role === 'vice_captain';
+
   const showhandleJoinRequestButton =
-    (status === 'pending_both' || status === 'pending_captain') &&
+    ['requested', 'pending_both', 'pending_captain'].includes(status) &&
     relevantTeam?.requested_at &&
-    currentRole?.role === 'captain' &&
+    !relevantTeam?.invited_by &&
+    isLeader &&
     !isMe;
 
   const showRevokeInviteButton =
-    (status === 'pending_both' || status === 'pending_player' || status === 'pending_admin') &&
+    ['invited', 'pending_both', 'pending_player', 'pending_admin'].includes(status) &&
     relevantTeam?.invited_by &&
-    currentRole?.role === 'captain' &&
+    isLeader &&
     !isMe;
 
   const showActionsSection =
@@ -206,9 +210,11 @@ const PlayerId = () => {
     });
     if (!confirm) return;
     try {
-      await supabase.rpc('accept_player_join_team_request', {
+      const { data, error } = await supabase.rpc('accept_player_join_team_request', {
         p_team_player_id: relevantTeam?.team_player_id,
       });
+      assertRpcOk(data, error);
+      const joined = data?.teamPlayer?.status === 'active';
       await queryClient.invalidateQueries(['PlayerProfile', playerId]);
       await queryClient.invalidateQueries(['TeamPlayers', currentRole?.team?.id]);
       await queryClient.invalidateQueries([
@@ -218,15 +224,17 @@ const PlayerId = () => {
       await refetch();
       Toast.show({
         type: 'success',
-        text1: 'Join request accepted successfully.',
-        text2: `${playerProfile?.first_name} ${playerProfile?.surname} has been added to the team.`,
+        text1: joined ? 'Join request accepted.' : 'Your approval is recorded.',
+        text2: joined
+          ? `${playerProfile?.first_name} ${playerProfile?.surname} has been added to the team.`
+          : `${playerProfile?.first_name} ${playerProfile?.surname} still needs a league admin to approve the move.`,
       });
       router.back();
     } catch (error) {
       console.error(error);
       Toast.show({
         type: 'error',
-        text1: 'Failed to accept join request',
+        text1: error.title || 'Failed to accept join request',
         text2: error.message || 'An error occurred while accepting the player join request.',
       });
     }
@@ -246,9 +254,10 @@ const PlayerId = () => {
     });
     if (!confirm) return;
     try {
-      await supabase.rpc('decline_player_join_team_request', {
+      const { data, error } = await supabase.rpc('decline_player_join_team_request', {
         p_team_player_id: relevantTeam?.team_player_id,
       });
+      assertRpcOk(data, error);
       await queryClient.invalidateQueries(['PlayerProfile', playerId]);
       await queryClient.invalidateQueries(['TeamPlayers', currentRole?.team?.id]);
       await queryClient.invalidateQueries([
@@ -286,9 +295,10 @@ const PlayerId = () => {
     });
     if (!confirm) return;
     try {
-      await supabase.rpc('revoke_player_join_team_invite', {
+      const { data, error } = await supabase.rpc('revoke_player_join_team_invite', {
         p_team_player_id: relevantTeam?.team_player_id,
       });
+      assertRpcOk(data, error);
       await queryClient.invalidateQueries(['PlayerProfile', playerId]);
       await queryClient.invalidateQueries(['TeamPlayers', currentRole?.team?.id]);
       await queryClient.invalidateQueries([

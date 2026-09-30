@@ -47,15 +47,15 @@ const AbbreviationEditor = () => {
   const handleSave = async () => {
     setIsSaving(true);
     try {
-      const { error } = await supabase.rpc('log_and_update_changes', {
-        table_name: 'Teams',
-        target_id: currentRole?.team?.id,
-        updates: { abbreviation: abbreviation.toUpperCase() },
-        user_id: player?.auth_id,
+      const { data, error } = await supabase.rpc('update_team_details', {
+        p_team_id: currentRole?.team?.id,
+        p_abbreviation: abbreviation.toUpperCase(),
       });
 
-      if (error) {
-        console.error('Update failed:', error.message);
+      if (error || data?.success === false) {
+        const message = error?.message || data?.message || 'Could not update the abbreviation.';
+        console.error('Update failed:', message);
+        Toast.show({ type: 'error', text1: 'Update failed', text2: message });
       } else {
         console.log('Update and log successful');
 

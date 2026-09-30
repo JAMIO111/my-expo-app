@@ -33,7 +33,7 @@ import TicketCarousel from './TicketCarousel';
 
 // ─── Recruiting team card ─────────────────────────────────────────────────────
 
-function RecruitingTeamCard({ team, sendJoinRequest }) {
+function RecruitingTeamCard({ team, sendJoinRequest, disabled }) {
   return (
     <View className="w-full flex-row items-center gap-4 rounded-2xl border border-theme-gray-5 bg-bg-1 p-4">
       <View className="bg-brand/20 h-12 w-12 items-center justify-center rounded-xl">
@@ -45,10 +45,21 @@ function RecruitingTeamCard({ team, sendJoinRequest }) {
           {team.division_name ? `${team.division_name} · ` : ''}
           {team.member_count} player{team.member_count !== 1 ? 's' : ''}
         </Text>
+        <Text className="font-tektur text-xs text-text-2">
+          {team.requires_team_approval || team.requires_admin_approval
+            ? `Needs ${[
+                team.requires_team_approval ? 'captain' : null,
+                team.requires_admin_approval ? 'admin' : null,
+              ]
+                .filter(Boolean)
+                .join(' + ')} approval`
+            : 'Join instantly'}
+        </Text>
       </View>
       <Pressable
         onPress={() => sendJoinRequest(team)}
-        style={({ pressed }) => ({ opacity: pressed ? 0.7 : 1 })}
+        disabled={disabled}
+        style={({ pressed }) => ({ opacity: disabled ? 0.4 : pressed ? 0.7 : 1 })}
         className="flex-row items-center rounded-xl bg-brand p-3">
         <Send color="white" size={20} />
         <Text className="font-tektur-medium text-sm text-white"></Text>
@@ -176,6 +187,7 @@ function ExploreTab({
   setSearchQuery,
   handleJoinRequest,
   handleJoinRequestDirect,
+  transferWindowOpen,
 }) {
   return (
     <>
@@ -188,6 +200,17 @@ function ExploreTab({
         <ScrollView
           className="flex-1 bg-bg-grouped-1"
           contentContainerStyle={{ padding: 16, paddingBottom: 100, gap: 12 }}>
+          {!transferWindowOpen && (
+            <View className="rounded-2xl border border-theme-orange/50 bg-theme-orange/10 p-4">
+              <Text className="font-saira-semibold text-base text-theme-orange">
+                The transfer window is closed
+              </Text>
+              <Text className="font-saira text-sm text-text-2">
+                You can browse teams, but join requests are switched off until a league admin opens
+                the window again.
+              </Text>
+            </View>
+          )}
           <Heading
             text="Teams Actively Recruiting"
             icon={<Megaphone size={16} color="#D4AF37" />}
@@ -208,7 +231,12 @@ function ExploreTab({
             />
           ) : (
             recruitingTeams.map((team) => (
-              <RecruitingTeamCard key={team.id} team={team} sendJoinRequest={handleJoinRequest} />
+              <RecruitingTeamCard
+                key={team.id}
+                team={team}
+                sendJoinRequest={handleJoinRequest}
+                disabled={!transferWindowOpen}
+              />
             ))
           )}
         </ScrollView>
@@ -222,7 +250,7 @@ function ExploreTab({
 const ExploreComponent = () => {
   const queryClient = useQueryClient();
   const { player, roles, currentRole, refetch } = useUser();
-  const { acceptInvite } = useTeamPlayerActions(currentRole?.team?.id, {});
+  const { leaveTeam } = useTeamPlayerActions(currentRole?.team?.id, {});
   const { data: playerInvitesAndRequests } = usePlayerInvitesAndRequests({ playerId: player.id });
   const { data: recruitingTeams, isLoading: isRecruitingLoading } = useTeamsRecruiting(
     currentRole?.district?.id
@@ -273,53 +301,6 @@ const ExploreComponent = () => {
     setModalVisible(true);
   };
 
-  const handleAccept = (invite) => {
-    openConfirm({
-      title: 'Accept Invite?',
-      message: `Do you want to accept the invite and join ${invite.team.display_name}?`,
-      topButtonText: 'Join Team',
-      bottomButtonText: 'Go Back',
-      topButtonType: 'success',
-      bottomButtonType: 'default',
-      topButtonFn: async () => {
-        await acceptInvite.mutateAsync(invite);
-        setModalVisible(false);
-      },
-      bottomButtonFn: () => setModalVisible(false),
-    });
-  };
-
-  const handleDecline = (invite) => {
-    openConfirm({
-      title: 'Decline Invite?',
-      message: `Are you sure you want to decline the invite from ${invite.team.display_name}?`,
-      topButtonText: 'Decline Invite',
-      bottomButtonText: 'Cancel',
-      topButtonType: 'error',
-      bottomButtonType: 'default',
-      topButtonFn: async () => {
-        try {
-          const { data, error } = await supabase.rpc('decline_player_join_team_invite', {
-            p_team_player_id: invite.id,
-          });
-          assertRpcOk(data, error);
-          queryClient.invalidateQueries(['PlayerInvitesAndRequests', { playerId: player.id }]);
-          setModalVisible(false);
-          Toast.show({ type: 'success', text1: 'Invite declined' });
-        } catch (err) {
-          console.error('[Explore] Failed to decline invite:', err);
-          setModalVisible(false);
-          Toast.show({
-            type: 'error',
-            text1: 'Failed to decline invite',
-            text2: err.message,
-          });
-        }
-      },
-      bottomButtonFn: () => setModalVisible(false),
-    });
-  };
-
   const handleLeaveTeam = (role) => {
     openConfirm({
       title: 'Leave Team?',
@@ -336,43 +317,37 @@ const ExploreComponent = () => {
     });
   };
 
-  const handleRevoke = (request) => {
-    openConfirm({
-      title: 'Revoke Request?',
-      message: `Are you sure you want to revoke the request to join ${request.team.display_name}?`,
-      topButtonText: 'Revoke Request',
-      bottomButtonText: 'Cancel',
-      topButtonType: 'error',
-      bottomButtonType: 'default',
-      topButtonFn: () => {
-        revokeRequest.mutate(request.id);
-        setModalVisible(false);
-      },
-      bottomButtonFn: () => setModalVisible(false),
-    });
-  };
+  const transferWindowOpen = currentRole?.district?.transfer_window_open !== false;
 
   const requestPlayerJoinTeam = async (team) => {
     try {
       const { data, error } = await supabase.rpc('request_player_join_team', {
         p_team_id: team?.id,
       });
-      if (error) throw error;
-      if (data.success === false) {
-        const rpcError = new Error(data.message || 'Failed to remove player from the team.');
-        rpcError.title = data.title;
-        rpcError.code = data.code;
-        throw rpcError;
-      }
-      await queryClient.invalidateQueries(['PlayerProfile', player?.id]);
-      await queryClient.invalidateQueries(['PlayerInvitesAndRequests', { playerId: player?.id }]);
+      assertRpcOk(data, error);
+      await queryClient.invalidateQueries({ queryKey: ['PlayerProfile', player?.id] });
+      await queryClient.invalidateQueries({
+        queryKey: ['PlayerInvitesAndRequests', { playerId: player?.id }],
+      });
+      await queryClient.invalidateQueries({ queryKey: ['TeamPlayers', team?.id] });
       await refetch();
+
+      const joined = data?.status === 'active';
+      const waitingOn = [];
+      if (data?.status === 'pending_captain' || data?.status === 'pending_both') {
+        waitingOn.push('the team captain');
+      }
+      if (data?.status === 'pending_admin' || data?.status === 'pending_both') {
+        waitingOn.push('a league admin');
+      }
       Toast.show({
         type: 'success',
-        text1: 'Join request sent successfully.',
-        text2: `Your request to join ${team?.display_name} has been sent successfully.`,
+        text1: joined ? `You joined ${team?.display_name}` : 'Join request sent',
+        text2: joined
+          ? 'No approval was needed, you are now on the team.'
+          : `Your request to join ${team?.display_name} is waiting for approval from ${waitingOn.join(' and ')}.`,
       });
-      setActiveTab('requests');
+      setActiveTab(joined ? 'my-teams' : 'invites');
     } catch (error) {
       Toast.show({
         type: 'error',
@@ -437,6 +412,7 @@ const ExploreComponent = () => {
               setSearchQuery={setSearchQuery}
               handleJoinRequest={handleJoinRequest}
               handleJoinRequestDirect={requestPlayerJoinTeam}
+              transferWindowOpen={transferWindowOpen}
             />
           )}
         </View>

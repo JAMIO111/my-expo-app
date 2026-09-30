@@ -26,13 +26,14 @@ const ProfileClaim = () => {
   const { data: teamProfile, isLoading: teamLoading } = useTeamProfile(team?.id);
   console.log('Onboarding Profile Claim - teamProfile:', teamProfile);
 
+  // Display hints only: the server decides which approvals actually apply.
+  const adminApproval = !!teamProfile?.division?.admin_approval_required;
+  const captainApproval = !!teamProfile?.private;
+
   const [isRPCLoading, setIsRPCLoading] = useState(false);
   const [playersData, setPlayersData] = useState([]);
   const [playersLoading, setPlayersLoading] = useState(true);
   const [selectedPlayer, setSelectedPlayer] = useState(null);
-
-  const adminApproval = teamProfile?.division?.admin_approval_required || true;
-  const captainApproval = teamProfile?.private || true;
 
   useEffect(() => {
     if (!teamProfile?.id) return;
@@ -73,31 +74,34 @@ const ProfileClaim = () => {
     try {
       setIsRPCLoading(true);
 
-      const { error } = await supabase.rpc('request_join_team_onboarding', {
+      // The server works out which approvals this team and league need.
+      const { data, error } = await supabase.rpc('request_join_team_onboarding', {
         p_team_id: teamProfile.id,
         p_player_id: player.id,
-        p_captain_approval: captainApproval,
-        p_admin_approval: adminApproval,
       });
 
       if (error) {
         throw new Error(error.message || 'RPC_FAILED');
       }
 
+      const status = data?.status;
+      const needsCaptain = status === 'pending_captain' || status === 'pending_both';
+      const needsAdmin = status === 'pending_admin' || status === 'pending_both';
+
       Toast.show({
         type: 'success',
-        text1: captainApproval || adminApproval ? 'Join Request Sent' : 'Joined Team Successfully',
+        text1: needsCaptain || needsAdmin ? 'Join Request Sent' : 'Joined Team Successfully',
         text2:
-          captainApproval && adminApproval
+          needsCaptain && needsAdmin
             ? 'The captain and admin will review your request.'
-            : captainApproval && !adminApproval
+            : needsCaptain
               ? 'The captain will review your request.'
-              : !captainApproval && adminApproval
+              : needsAdmin
                 ? 'The admin will review your request.'
                 : `You are now a member of ${teamProfile?.name || 'the team'}`,
       });
-      await queryClient.invalidateQueries(['playerInvitesAndRequests', player.id]);
-      if (adminApproval || captainApproval) {
+      await queryClient.invalidateQueries({ queryKey: ['PlayerInvitesAndRequests'] });
+      if (needsAdmin || needsCaptain) {
         navigation.reset({
           index: 0,
           routes: [{ name: 'pending-request' }],
@@ -112,6 +116,8 @@ const ProfileClaim = () => {
 
       if (err?.message === 'ALREADY_IN_TEAM') {
         message = 'You are already in this team.';
+      } else if (err?.message === 'ALREADY_IN_DISTRICT') {
+        message = 'You are already on another team in this league.';
       } else if (err?.message === 'RPC_FAILED') {
         message = 'Could not complete request.';
       }
