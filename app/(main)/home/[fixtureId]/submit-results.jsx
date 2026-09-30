@@ -359,12 +359,7 @@ const SubmitResultsScreen = () => {
   const handleEscalate = async () => {
     setQueryLoading(true);
     try {
-      const { error } = await supabase
-        .from('Fixtures')
-        .update({ is_escalated: true, updated_at: new Date().toISOString() })
-        .eq('id', fixtureId)
-        .eq('approved', false)
-        .eq('is_disputed', true);
+      const { error } = await supabase.rpc('escalate_fixture', { p_fixture_id: fixtureId });
       if (error) throw error;
       Toast.show({
         type: 'success',
