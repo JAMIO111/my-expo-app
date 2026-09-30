@@ -1,10 +1,25 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { View, ScrollView, Dimensions, Text } from 'react-native';
 import UpcomingFixtureCard from './UpcomingFixtureCard';
 import { UpcomingFixtureSkeleton } from './Skeletons';
 import { CalendarClock } from 'lucide-react-native';
 
-const HorizontalScrollUpcomingFixtures = ({ fixtures, isLoading }) => {
+// Fixtures stay on the strip for the whole day they are played (so a match that is live or
+// just finished is still visible), and drop off from the next day.
+const startOfToday = () => {
+  const d = new Date();
+  d.setHours(0, 0, 0, 0);
+  return d;
+};
+
+const HorizontalScrollUpcomingFixtures = ({ fixtures: allFixtures, isLoading }) => {
+  const fixtures = useMemo(() => {
+    const cutoff = startOfToday().getTime();
+    return (allFixtures ?? []).filter((f) => {
+      const t = new Date(f.date_time ?? f.date).getTime();
+      return Number.isFinite(t) && t >= cutoff;
+    });
+  }, [allFixtures]);
   const screenWidth = Dimensions.get('window').width;
   const [cardWidth, setCardWidth] = useState(screenWidth * 0.65);
   const gap = 8;
