@@ -1,3 +1,4 @@
+import { tieBreakSummary } from '@components/TieBreakEditor';
 import KeyboardAwareScrollView from '@components/KeyboardAwareScrollView';
 import { StyleSheet, Text } from 'react-native';
 import { Stack } from 'expo-router';
@@ -168,6 +169,12 @@ const LeagueConfig = () => {
             icon="scale"
             routerPath="/settings/ResultEscalation"
             text={`${currentRole?.district?.result_escalation_days ?? 3} days`}
+          />
+          <SettingsItem
+            title="Tie-break Rules"
+            icon="scale"
+            routerPath="/settings/TieBreakRules"
+            text={tieBreakSummary(currentRole?.district?.tie_break_rules)}
           />
           <SettingsItem title="Manage Venues" routerPath="/settings/Addresses" icon="mapPinHouse" />
         </MenuContainer>

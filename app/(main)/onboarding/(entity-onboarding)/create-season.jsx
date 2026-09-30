@@ -12,6 +12,7 @@ import CustomDatePicker from '@components/CustomDatePicker';
 import CustomMultiSelect from '@components/CustomMultiSelect';
 import { useUser } from '@contexts/UserProvider';
 import { useQueryClient } from '@tanstack/react-query';
+import TieBreakEditor, { DEFAULT_TIE_BREAKS } from '@components/TieBreakEditor';
 
 export default function SeasonName() {
   const router = useRouter();
@@ -21,6 +22,7 @@ export default function SeasonName() {
   const [startDate, setStartDate] = useState(new Date().toISOString().split('T')[0]); // Default to today's date
   const [seasonStatus, setSeasonStatus] = useState(['draft']);
   const [loading, setLoading] = useState(false);
+  const [tieBreakRules, setTieBreakRules] = useState(DEFAULT_TIE_BREAKS);
 
   const { districtId, districtName, privateDistrict, divisions } = useLocalSearchParams();
 
@@ -75,6 +77,7 @@ export default function SeasonName() {
         _season_status: seasonStatus[0], // since it's single select, take the first value
         _divisions: JSON.parse(divisions || '[]'),
         _admin_id: player?.id,
+        _tie_break_rules: tieBreakRules,
       });
 
       if (error) throw error;
@@ -146,6 +149,18 @@ export default function SeasonName() {
             selectedValues={seasonStatus}
             onValueChange={setSeasonStatus}
           />
+          <View className="gap-2">
+            <Text className="px-2 font-saira-semibold text-xl text-text-on-brand">
+              Tie-break rules
+            </Text>
+            <Text
+              style={{ lineHeight: 22 }}
+              className="px-2 font-saira-medium text-lg text-text-on-brand-2">
+              When teams are level on points, these are applied in order until the tie is broken. You
+              can change them later in league settings.
+            </Text>
+            <TieBreakEditor rules={tieBreakRules} onChange={setTieBreakRules} onBrand />
+          </View>
         </KeyboardAwareScrollView>
         <View className="px-2 py-8">
           <CTAButton
