@@ -12,6 +12,9 @@ import { format, parseISO } from 'date-fns';
 const AnimatedSectionList = Animated.createAnimatedComponent(SectionList);
 
 const RADIUS = 24;
+// Each row/header is its own cell, so fractional layout positions can leave hairline gaps between them
+// where the page shows through. Cells paint SEAM px into the next one (same colour) to close them.
+const SEAM = 1;
 const GAP = 16; // space between day cards
 const FADE_DISTANCE = 30; // px over which a pinned header fades before the next day takes over
 
@@ -101,6 +104,7 @@ export default function StickyDateList({
         return (
           <FadeRow
             fade={last}
+            overlap={!last}
             info={layout[section.date]}
             scrollY={scrollY}
             onLayout={(e) => measure(`i-${keyExtractor(item)}`, e.nativeEvent.layout.height)}>
@@ -113,7 +117,7 @@ export default function StickyDateList({
                       borderBottomRightRadius: RADIUS,
                       paddingBottom: 4,
                     }
-                  : undefined
+                  : { paddingBottom: SEAM }
               }>
               {renderItem(item, index, section.data.length)}
             </View>
@@ -124,10 +128,12 @@ export default function StickyDateList({
   );
 }
 
-function FadeRow({ fade, info, scrollY, onLayout, children }) {
+function FadeRow({ fade, overlap, info, scrollY, onLayout, children }) {
   const fadeStyle = useDayFade(fade ? info : null, scrollY);
   return (
-    <Animated.View onLayout={onLayout} style={fade ? fadeStyle : undefined}>
+    <Animated.View
+      onLayout={onLayout}
+      style={[overlap ? { marginBottom: -SEAM } : null, fade ? fadeStyle : null]}>
       {children}
     </Animated.View>
   );
@@ -156,7 +162,10 @@ function DayHeader({ date, spaced, info, scrollY, onMeasure, backgroundClassName
       onLayout={(e) => onMeasure(`h-${date}`, e.nativeEvent.layout.height)}>
       <Animated.View
         className="bg-bg-grouped-2 px-4 pb-1 pt-3"
-        style={[{ borderTopLeftRadius: RADIUS, borderTopRightRadius: RADIUS }, fadeStyle]}>
+        style={[
+          { borderTopLeftRadius: RADIUS, borderTopRightRadius: RADIUS, paddingBottom: 4 + SEAM, marginBottom: -SEAM },
+          fadeStyle,
+        ]}>
         <Text className="font-saira-semibold text-2xl text-text-1">
           {format(parseISO(date), 'EEE, d MMMM')}
         </Text>
