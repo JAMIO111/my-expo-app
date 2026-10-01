@@ -274,7 +274,7 @@ const FixturesList = () => {
         )}
 
         {/* Fixture List */}
-        <View className="overflow-hidden rounded-t-3xl">
+        <View className="flex-1 overflow-hidden rounded-t-3xl">
           <StickyDateList
             grouped={grouped}
             renderItem={(f, index, count) => {
