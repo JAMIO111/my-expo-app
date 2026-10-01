@@ -18,17 +18,16 @@ const GAP = 16; // space between day cards
 // Cells are separate views, so fractional layout positions can leave hairline gaps between them where
 // the page shows through. Cells paint SEAM px into the next one (same colour) to close those gaps.
 const SEAM = 1;
-const PIN_RAMP = 10; // px of scroll over which a header turns from flush-with-its-rows into a pill
 
 // Matches grouped by date as rounded cards, with each day's date header pinned to the top while that
 // day's matches scroll underneath. Headers are pinned natively (no scroll lag). A card is drawn from
 // three pieces so the header can stick on its own: a header, side-bordered rows, and a rounded-bottom
 // last row.
 //
-// While pinned, the header rounds its bottom corners too (and page-coloured corner pieces hide the rows
-// behind the curves), so it reads as a pill. The gap between cards lives at the top of each header,
-// so when the next header pushes a pinned one away, the pinned pill ends exactly where its own card
-// does - with the same rounded bottom corners - instead of overhanging into the gap.
+// Only at the very end of a day, as the next day's header pushes the pinned one away, does the header
+// round its bottom corners (with page-coloured corner pieces hiding the rows behind the curves) and
+// slide up an extra GAP, so it finishes exactly where its own card does - a pill matching the card's
+// rounded bottom - instead of overhanging into the gap between cards.
 //
 // Put it inside a rounded `overflow-hidden` wrapper to round the list's top edge.
 // `backgroundColor` should match the page behind the list (defaults to the theme's brand-dark).
@@ -63,6 +62,7 @@ export default function StickyDateList({
     }
   }, []);
 
+  // Where each header sits in the list, and where the next one does (null for the last day).
   const starts = useMemo(() => {
     const out = {};
     let offset = 0;
@@ -71,8 +71,9 @@ export default function StickyDateList({
       offset += heights.current[`h-${section.date}`] ?? 0;
       section.data.forEach((item, idx) => {
         const h = heights.current[`i-${keyExtractor(item)}`] ?? 0;
-        // rows overlap the next cell by SEAM (negative margin), which onLayout doesn't include
-        offset += idx === section.data.length - 1 ? h : h - SEAM;
+        // rows overlap the next cell by SEAM (negative margin) and the last carries the GAP below its
+        // card; neither is included in onLayout heights
+        offset += idx === section.data.length - 1 ? h + GAP : h - SEAM;
       });
     });
     return out;
@@ -95,8 +96,8 @@ export default function StickyDateList({
       renderSectionHeader={({ section }) => (
         <DayHeader
           date={section.date}
-          spaced={sections.indexOf(section) > 0}
-          start={starts[section.date]}
+          next={starts[sections[sections.indexOf(section) + 1]?.date] ?? null}
+          headerH={heights.current[`h-${section.date}`] ?? 0}
           scrollY={scrollY}
           pageColor={pageColor}
           onMeasure={measure}
@@ -110,7 +111,7 @@ export default function StickyDateList({
             style={{
               // overlap into the neighbouring cells (the header above, the next row below)
               marginTop: index === 0 ? -SEAM : 0,
-              marginBottom: last ? 0 : -SEAM,
+              marginBottom: last ? GAP : -SEAM,
             }}>
             <View
               className="border-x border-theme-gray-5 bg-bg-grouped-2 px-2"
@@ -133,37 +134,48 @@ export default function StickyDateList({
   );
 }
 
-function DayHeader({ date, spaced, start, scrollY, pageColor, onMeasure }) {
-  // 0 while the header sits at its own place in the list, 1 once it is pinned over rows
-  const pinStyle = useAnimatedStyle(() => {
-    const pinned = interpolate(scrollY.value - start, [0, PIN_RAMP], [0, 1], Extrapolation.CLAMP);
+function DayHeader({ date, next, headerH, scrollY, pageColor, onMeasure }) {
+  // How far the header is being pushed up by the next one (0 until it starts), and how much of the
+  // day's rows are still showing under it: both only matter at the very end of the day.
+  const radiusStyle = useAnimatedStyle(() => {
+    if (next === null || headerH === 0) return {};
+    const remaining = next - (scrollY.value + headerH);
+    const rowsBelow = remaining - GAP;
+    const radius = interpolate(rowsBelow, [0, RADIUS], [RADIUS, 0], Extrapolation.CLAMP);
     return {
-      borderBottomLeftRadius: pinned * RADIUS,
-      borderBottomRightRadius: pinned * RADIUS,
+      borderBottomLeftRadius: radius,
+      borderBottomRightRadius: radius,
     };
-  }, [start]);
+  }, [next, headerH]);
+
+  const shiftStyle = useAnimatedStyle(() => {
+    if (next === null || headerH === 0) return {};
+    const remaining = next - (scrollY.value + headerH);
+    return {
+      transform: [{ translateY: -interpolate(remaining, [0, -GAP], [0, GAP], Extrapolation.CLAMP) }],
+    };
+  }, [next, headerH]);
 
   const maskStyle = useAnimatedStyle(() => {
+    if (next === null || headerH === 0) return { opacity: 0 };
+    const remaining = next - (scrollY.value + headerH);
     return {
-      opacity: interpolate(scrollY.value - start, [0, PIN_RAMP], [0, 1], Extrapolation.CLAMP),
+      opacity: interpolate(remaining - GAP, [0, RADIUS], [1, 0], Extrapolation.CLAMP),
     };
-  }, [start]);
+  }, [next, headerH]);
 
   return (
-    <View
-      // the page-coloured gap above a card; it also hides rows scrolling under a pinned header
-      style={{ paddingTop: spaced ? GAP : 0, backgroundColor: pageColor }}
-      onLayout={(e) => onMeasure(`h-${date}`, e.nativeEvent.layout.height)}>
-      <View>
+    <View onLayout={(e) => onMeasure(`h-${date}`, e.nativeEvent.layout.height)}>
+      <Animated.View style={shiftStyle}>
         <Animated.View
           className="border-x border-t border-theme-gray-5 bg-bg-grouped-2 px-4 pb-1 pt-3"
-          style={[{ borderTopLeftRadius: RADIUS, borderTopRightRadius: RADIUS }, pinStyle]}>
+          style={[{ borderTopLeftRadius: RADIUS, borderTopRightRadius: RADIUS }, radiusStyle]}>
           <Text className="font-saira-semibold text-2xl text-text-1">
             {format(parseISO(date), 'EEE, d MMMM')}
           </Text>
         </Animated.View>
-        {/* fill the square corners outside the header's rounded corners, so rows scrolling underneath
-            a pinned header can't show through them */}
+        {/* fill the square corners outside the header's rounded top, so rows scrolling underneath a
+            pinned header can't show through them */}
         <CornerMask color={pageColor} />
         <CornerMask color={pageColor} right />
         <Animated.View
@@ -175,7 +187,7 @@ function DayHeader({ date, spaced, start, scrollY, pageColor, onMeasure }) {
           <CornerMask color={pageColor} bottom />
           <CornerMask color={pageColor} bottom right />
         </Animated.View>
-      </View>
+      </Animated.View>
     </View>
   );
 }
