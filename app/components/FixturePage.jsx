@@ -22,6 +22,7 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import { useTheme } from '@contexts/ThemeProvider';
 import SponsorshipCard from './SponsorshipCard';
 import useCompetitionSponsor from '@hooks/useCompetitionSponsor';
+import Heading from './Heading';
 
 const FixturePage = ({ fixtureDetails, isLoading, context }) => {
   const router = useRouter();
@@ -306,18 +307,19 @@ const FixturePage = ({ fixtureDetails, isLoading, context }) => {
               sponsorInstance={sponsorInstance}
               competitionName={fixtureDetails?.competition?.name}
             />
+
+            <SlidingTabButton
+              option1="Stats"
+              option2={frames && frames.length > 0 ? 'Frames' : 'Squads'}
+              onChange={handleViewChange}
+              value={view}
+              backgroundColor="bg-bg-2"
+              tabColor="bg-bg-3"
+            />
           </View>
         </View>
       )}
       <View className="bg-bg-grouped-1 pb-16">
-        <View className="p-3">
-          <SlidingTabButton
-            option1="Stats"
-            option2={frames && frames.length > 0 ? 'Frames' : 'Squads'}
-            onChange={handleViewChange}
-            value={view}
-          />
-        </View>
         {view === 'right' ? (
           frames && frames.length > 0 ? (
             <View className="p-3">
@@ -348,8 +350,9 @@ const FixturePage = ({ fixtureDetails, isLoading, context }) => {
             </View>
           )
         ) : (
-          <View className="h-full gap-3 p-3">
+          <View className="h-full gap-8 p-3 pt-5">
             <View>
+              <Heading text="Recent Form" />
               <FormWidget
                 homeCompetitorId={fixtureDetails?.homeCompetitor?.id}
                 awayCompetitorId={fixtureDetails?.awayCompetitor?.id}
@@ -359,25 +362,23 @@ const FixturePage = ({ fixtureDetails, isLoading, context }) => {
               />
             </View>
             {fixtureDetails?.competition?.competition_type?.competition_type === 'league' && (
-              <>
-                <Text className="mt-2 px-2 font-tektur-medium text-2xl text-text-1">
-                  Current Season
-                </Text>
+              <View>
+                <Heading text="Current Season" />
                 <SeasonStats
                   fixtureDetails={fixtureDetails}
                   homeTeam={fixtureDetails?.homeCompetitor}
                   awayTeam={fixtureDetails?.awayCompetitor}
                 />
-              </>
+              </View>
             )}
-            <Text className="mt-2 px-2 font-tektur-medium text-2xl text-text-1">
-              Head to Head - All Time
-            </Text>
-            <HeadToHead
-              homeCompetitor={fixtureDetails?.homeCompetitor}
-              awayCompetitor={fixtureDetails?.awayCompetitor}
-              competitorType={competitorType}
-            />
+            <View>
+              <Heading text="Head to Head - All Time" />
+              <HeadToHead
+                homeCompetitor={fixtureDetails?.homeCompetitor}
+                awayCompetitor={fixtureDetails?.awayCompetitor}
+                competitorType={competitorType}
+              />
+            </View>
           </View>
         )}
       </View>
