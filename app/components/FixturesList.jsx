@@ -35,7 +35,8 @@ const FixturesList = () => {
 
   const bottomSheetRef = useRef(null);
 
-  // Everyone can open the filters and play with them; only Core and Pro members can apply them.
+  // Everyone can open the filters and play with them; only Core and Pro members can apply the district
+  // and season filters. Competition is free for everyone.
   const { isPro, isCore } = useRevenueCat();
   const { openUpgradeSheet } = useUpgradeSheet();
   const canFilter = isPro || isCore;
@@ -150,13 +151,14 @@ const FixturesList = () => {
   };
 
   const handleSave = () => {
-    // Free users can browse the options but not apply them: the sheet stays open behind the prompt.
-    if (!canFilter) {
+    // Free users can browse district and season but not apply them: the sheet stays open behind the
+    // prompt. Choosing a competition is open to everyone.
+    if (!canFilter && activeFilter !== 'competition') {
       openUpgradeSheet({
         title: 'Filters',
         planName: 'Core',
         description:
-          'Filter by district, season and competition with a Core or Pro plan. Everyone can still see their own league.',
+          'Switch district and season with a Core or Pro plan. Everyone can still change competition within their own season.',
         onUpgrade: () => {
           closeSheet();
           router.push('/(main)/home/paywall');
