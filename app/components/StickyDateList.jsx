@@ -147,17 +147,17 @@ function DayHeader({ date, spaced, info, scrollY, onMeasure, backgroundClassName
   }, [end, headerH]);
 
   return (
-    <Animated.View
+    <View
       className={backgroundClassName}
-      style={[{ paddingTop: spaced ? GAP : 0 }, fadeStyle]}
+      style={{ paddingTop: spaced ? GAP : 0 }}
       onLayout={(e) => onMeasure(`h-${date}`, e.nativeEvent.layout.height)}>
       <Animated.View
         className="border-x border-t border-theme-gray-5 bg-bg-grouped-2 px-4 pb-1 pt-3"
-        style={[{ borderTopLeftRadius: RADIUS, borderTopRightRadius: RADIUS }, style]}>
+        style={[{ borderTopLeftRadius: RADIUS, borderTopRightRadius: RADIUS }, style, fadeStyle]}>
         <Text className="font-saira-semibold text-2xl text-text-1">
           {format(parseISO(date), 'EEE, d MMMM')}
         </Text>
       </Animated.View>
-    </Animated.View>
+    </View>
   );
 }
