@@ -427,7 +427,7 @@ export default function CreateDivisions() {
           <Text style={{ lineHeight: 42 }} className="font-delagothic text-4xl text-text-on-brand">
             Structure your league
           </Text>
-          <Text className="mt-3 font-saira text-lg leading-6 text-text-on-brand-2">
+          <Text className="mt-3 font-tektur text-lg leading-6 text-text-on-brand-2">
             Groups are ladders of divisions linked by promotion and relegation, for example Monday
             Teams or Thursday Singles. You're defining the structure here, not creating competitions.
           </Text>
