@@ -13,7 +13,7 @@ const AnimatedSectionList = Animated.createAnimatedComponent(SectionList);
 
 const RADIUS = 24;
 const GAP = 16; // space between day cards
-const FADE_DISTANCE = 56; // px over which a pinned header fades before the next day takes over
+const FADE_DISTANCE = 28; // px over which a pinned header fades before the next day takes over
 
 // Matches grouped by date, as rounded cards whose date header stays pinned to the top while that day's
 // matches scroll underneath (like the Weather app), fading out just before the next day's header takes
@@ -127,22 +127,29 @@ function DayHeader({ date, spaced, info, scrollY, onMeasure, backgroundClassName
   const end = info ? info.end : null;
   const headerH = info ? info.headerH : 0;
 
-  const style = useAnimatedStyle(() => {
+  const fadeStyle = useAnimatedStyle(() => {
     if (end === null) return { opacity: 1 };
+    const remaining = end - (scrollY.value + headerH);
+    return {
+      opacity: interpolate(remaining, [0, FADE_DISTANCE], [0, 1], Extrapolation.CLAMP),
+    };
+  }, [end, headerH]);
+
+  const style = useAnimatedStyle(() => {
+    if (end === null) return {};
     // how far the day's last row still extends below the pinned header
     const remaining = end - (scrollY.value + headerH);
     const radius = interpolate(remaining, [0, RADIUS], [RADIUS, 0], Extrapolation.CLAMP);
     return {
-      opacity: interpolate(remaining, [0, FADE_DISTANCE], [0, 1], Extrapolation.CLAMP),
       borderBottomLeftRadius: radius,
       borderBottomRightRadius: radius,
     };
   }, [end, headerH]);
 
   return (
-    <View
+    <Animated.View
       className={backgroundClassName}
-      style={{ paddingTop: spaced ? GAP : 0 }}
+      style={[{ paddingTop: spaced ? GAP : 0 }, fadeStyle]}
       onLayout={(e) => onMeasure(`h-${date}`, e.nativeEvent.layout.height)}>
       <Animated.View
         className="border-x border-t border-theme-gray-5 bg-bg-grouped-2 px-4 pb-1 pt-3"
@@ -151,6 +158,6 @@ function DayHeader({ date, spaced, info, scrollY, onMeasure, backgroundClassName
           {format(parseISO(date), 'EEE, d MMMM')}
         </Text>
       </Animated.View>
-    </View>
+    </Animated.View>
   );
 }
