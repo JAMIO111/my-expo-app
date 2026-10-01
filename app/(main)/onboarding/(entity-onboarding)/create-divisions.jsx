@@ -6,9 +6,8 @@ import CustomTextInput from '@components/CustomTextInput';
 import BottomSheetWrapper from '@/components/BottomSheetWrapper';
 import { BottomSheetFooter, BottomSheetScrollView, BottomSheetView } from '@gorhom/bottom-sheet';
 import Ionicons from '@expo/vector-icons/Ionicons';
-import { PanGestureHandler } from 'react-native-gesture-handler';
+import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import Animated, {
-  useAnimatedGestureHandler,
   useAnimatedStyle,
   useSharedValue,
   runOnJS,
@@ -35,31 +34,32 @@ const SwipeableCard = ({ item, onDelete, children }) => {
     translateX.value = withSpring(0);
   };
 
-  const gestureHandler = useAnimatedGestureHandler({
-    onStart: (_, context) => {
-      context.startX = translateX.value;
-    },
-    onActive: (event, context) => {
-      const newTranslateX = context.startX + event.translationX;
-      // Only allow left swipe (negative values) and limit the swipe distance
-      translateX.value = Math.min(0, Math.max(newTranslateX, -250));
-    },
-    onEnd: (event) => {
-      const shouldShowDialog = translateX.value < DELETE_THRESHOLD;
+  // A plain JS closure, so no function has to be passed across threads
+  const requestDelete = () => onDelete(item.tempId, resetPosition);
+  const startX = useSharedValue(0);
 
-      if (shouldShowDialog) {
-        // Show confirmation dialog instead of immediately deleting
-        translateX.value = withSpring(-80); // Snap to show delete button
-        runOnJS(onDelete)(item.tempId, resetPosition);
+  // Reanimated 4 removed useAnimatedGestureHandler: this is the gesture-handler 2 equivalent.
+  const pan = Gesture.Pan()
+    .activeOffsetX([-12, 12])
+    .failOffsetY([-12, 12])
+    .onStart(() => {
+      startX.value = translateX.value;
+    })
+    .onUpdate((event) => {
+      // Only allow a left swipe, and limit the distance
+      translateX.value = Math.min(0, Math.max(startX.value + event.translationX, -250));
+    })
+    .onEnd(() => {
+      if (translateX.value < DELETE_THRESHOLD) {
+        // Ask for confirmation, leaving the delete button showing
+        translateX.value = withSpring(-80);
+        runOnJS(requestDelete)();
       } else if (translateX.value < REVEAL_THRESHOLD) {
-        // Snap to show delete button
         translateX.value = withSpring(-80);
       } else {
-        // Snap back to original position
         translateX.value = withSpring(0);
       }
-    },
-  });
+    });
 
   const cardStyle = useAnimatedStyle(() => {
     return {
@@ -89,8 +89,7 @@ const SwipeableCard = ({ item, onDelete, children }) => {
   });
 
   const handleDeletePress = () => {
-    // Show confirmation dialog and pass reset function
-    runOnJS(onDelete)(item.tempId, resetPosition);
+    requestDelete();
   };
 
   return (
@@ -109,11 +108,11 @@ const SwipeableCard = ({ item, onDelete, children }) => {
         </Animated.View>
 
         {/* Swipeable card */}
-        <PanGestureHandler onGestureEvent={gestureHandler}>
+        <GestureDetector gesture={pan}>
           <Animated.View style={cardStyle} className="z-10">
             {children}
           </Animated.View>
-        </PanGestureHandler>
+        </GestureDetector>
       </View>
     </Animated.View>
   );
@@ -132,11 +131,11 @@ export default function CreateDivisions() {
   const [divisions, setDivisions] = useState([]);
   const [sheetMode, setSheetMode] = useState('GROUP'); // 'GROUP' or 'DIVISION'
 
-  // Group Form
+  // Group form
   const [gName, setGName] = useState('');
   const [compType, setCompType] = useState('team'); // 'individual' or 'team'
 
-  // Division Form
+  // Division form
   const [dName, setDName] = useState('');
   const [tier, setTier] = useState('1');
   const [promo, setPromo] = useState('0');
@@ -145,166 +144,203 @@ export default function CreateDivisions() {
   const [selectedGroupId, setSelectedGroupId] = useState(null);
   const [editingDivisionId, setEditingDivisionId] = useState(null);
 
-  const closeSheet = () => {
-    editingDivisionId ? setEditingDivisionId(null) : null;
-    setGName('');
-    setDName('');
-    setTier('1');
-    setPromo('0');
-    setReleg('0');
-    setMaxComps(null);
-    bottomSheetRef.current?.close();
+  // --- HELPERS ---
+  const divisionsOf = (gid, list = divisions) =>
+    list.filter((d) => d.groupId === gid).sort((a, b) => a.tier - b.tier);
+
+  // Keeps a group's ladder consistent: tiers 1..n, the top division promotes nobody, the bottom one
+  // relegates nobody, and what one division relegates is what the one below promotes.
+  // `editedId` is the division the user just changed, so its numbers win over its neighbours'.
+  const normalizeGroup = (list, gid, editedId = null) => {
+    const ladder = divisionsOf(gid, list).map((d, i) => ({ ...d, tier: i + 1 }));
+    ladder.forEach((d, i) => {
+      if (i === 0) d.promotionSpots = 0;
+      if (i === ladder.length - 1) d.relegationSpots = 0;
+    });
+    for (let i = 0; i < ladder.length - 1; i++) {
+      if (ladder[i + 1].tempId === editedId) ladder[i].relegationSpots = ladder[i + 1].promotionSpots;
+      else ladder[i + 1].promotionSpots = ladder[i].relegationSpots;
+    }
+    return [...list.filter((d) => d.groupId !== gid), ...ladder];
   };
 
-  useEffect(() => {
-    if (selectedGroupId) {
-      setTier(nextTier.toString());
+  const groupType = (gid) => groups.find((g) => g.id === gid)?.type || 'team';
+
+  // Where a new division would sit in the chosen group, and what to pre-fill for it
+  const pointNewDivisionAt = (gid) => {
+    setSelectedGroupId(gid);
+    const ladder = divisionsOf(gid);
+    setTier(String(ladder.length + 1));
+    setPromo(ladder.length ? String(ladder[ladder.length - 1].relegationSpots ?? 0) : '0');
+    setReleg('0');
+  };
+
+  const resetForms = () => {
+    setEditingDivisionId(null);
+    setGName('');
+    setCompType('team');
+    setDName('');
+    setMaxComps(null);
+    setReleg('0');
+    setPromo('0');
+  };
+
+  const closeSheet = () => {
+    bottomSheetRef.current?.close();
+    resetForms();
+  };
+
+  const openGroupSheet = () => {
+    resetForms();
+    setSheetMode('GROUP');
+    bottomSheetRef.current?.expand();
+  };
+
+  const openDivisionSheet = () => {
+    resetForms();
+    // one group: no need to ask which; several: keep the last used one if it still exists
+    const gid = groups.some((g) => g.id === selectedGroupId)
+      ? selectedGroupId
+      : groups.length === 1
+        ? groups[0].id
+        : null;
+    if (gid) pointNewDivisionAt(gid);
+    else {
+      setSelectedGroupId(null);
+      setTier('1');
     }
-  }, [selectedGroupId, nextTier]);
+    setSheetMode('DIVISION');
+    bottomSheetRef.current?.expand();
+  };
+
+  // Top of the ladder: nobody to be promoted to. Bottom: nobody to be relegated to.
+  const ladderSize = divisionsOf(selectedGroupId).length;
+  const tierNumber = Number(tier) || 1;
+  const isTopTier = !!selectedGroupId && tierNumber === 1;
+  const isBottomTier = !!selectedGroupId && (editingDivisionId ? tierNumber === ladderSize : true);
 
   // --- LOGIC ---
   const handleAddGroup = () => {
-    if (!gName) return Alert.alert('Error', 'Enter a group name');
-    if (groups.some((g) => g.name.trim().toLowerCase() === gName.trim().toLowerCase())) {
-      return Alert.alert('Error', 'A group with that name already exists');
+    const name = gName.trim();
+    if (!name) return Alert.alert('Missing info', 'Enter a group name');
+    if (name.length > 40) return Alert.alert('Name too long', 'Keep the group name to 40 characters.');
+    if (groups.some((g) => g.name.trim().toLowerCase() === name.toLowerCase())) {
+      return Alert.alert('Already exists', 'A group with that name already exists');
     }
     const newGroup = {
       id: groups.reduce((max, g) => Math.max(max, g.id), 0) + 1,
-      name: gName.trim(),
+      name,
       type: compType,
     };
     setGroups([...groups, newGroup]);
-    setGName('');
+    setSelectedGroupId(newGroup.id); // the next division you add goes in the group you just made
     closeSheet();
   };
 
   const handleDeleteGroup = (id) => {
-    setGroups((prev) => prev.filter((g) => g.id !== id));
-    setDivisions((prev) => prev.filter((d) => d.groupId !== id));
+    const count = divisions.filter((d) => d.groupId === id).length;
+    const remove = () => {
+      setGroups((prev) => prev.filter((g) => g.id !== id));
+      setDivisions((prev) => prev.filter((d) => d.groupId !== id));
+      if (selectedGroupId === id) setSelectedGroupId(null);
+    };
+    if (count === 0) return remove();
+    Alert.alert('Delete group?', `This also deletes its ${count} division${count === 1 ? '' : 's'}.`, [
+      { text: 'Cancel', style: 'cancel' },
+      { text: 'Delete', style: 'destructive', onPress: remove },
+    ]);
   };
 
-  const isTopTier = useMemo(() => {
-    const groupDivisions = divisions.filter((d) => d.groupId === selectedGroupId);
-    if (groupDivisions.length === 0) return false;
-    const minTier = Math.min(...groupDivisions.map((d) => d.tier));
-    return Number(tier) === minTier;
-  }, [tier, selectedGroupId, divisions]);
-
   const handleSaveDivision = () => {
-    if (!selectedGroupId) return Alert.alert('Missing Info', 'Select a group for the division');
-    if (!dName.trim()) return Alert.alert('Missing Info', 'Enter a division name');
+    const name = dName.trim();
+    const promotions = isTopTier ? 0 : Number(promo) || 0;
+    const relegations = isBottomTier ? 0 : Number(releg) || 0;
+    const max = maxComps !== null && maxComps !== '' ? Number(maxComps) : null;
+
+    if (!selectedGroupId) return Alert.alert('Missing info', 'Choose a group for the division');
+    if (!name) return Alert.alert('Missing info', 'Enter a division name');
+    if (name.length > 60) return Alert.alert('Name too long', 'Keep the division name to 60 characters.');
     if (
       divisions.some(
-        (d) =>
-          d.tempId !== editingDivisionId && d.name.trim().toLowerCase() === dName.trim().toLowerCase()
+        (d) => d.tempId !== editingDivisionId && d.name.trim().toLowerCase() === name.toLowerCase()
       )
     ) {
-      return Alert.alert('Duplicate Name', 'Every division in the league needs its own name.');
+      return Alert.alert('Duplicate name', 'Every division in the league needs its own name.');
     }
-    if (maxComps !== null && maxComps !== '' && Number(maxComps) < 2) {
-      return Alert.alert('Invalid Limit', 'A division needs room for at least 2 entrants.');
+    if (max !== null && max < 2) {
+      return Alert.alert('Invalid limit', 'A division needs room for at least 2 entrants.');
+    }
+    if (max !== null && promotions + relegations > max) {
+      return Alert.alert(
+        'Too many movements',
+        `Promotions (${promotions}) plus relegations (${relegations}) can't be more than the division's ${max} places.`
+      );
     }
 
     setDivisions((prev) => {
       let updated;
+      let savedId;
 
       if (editingDivisionId) {
-        // Editing existing division
+        savedId = editingDivisionId;
         updated = prev.map((d) =>
           d.tempId === editingDivisionId
-            ? {
-                ...d,
-                name: dName.trim(),
-                tier: Number(tier),
-                promotionSpots: Number(tier) === 1 ? 0 : Number(promo),
-                relegationSpots: Number(releg),
-                maxCompetitors: maxComps !== null && maxComps !== '' ? Number(maxComps) : null,
-              }
+            ? { ...d, name, promotionSpots: promotions, relegationSpots: relegations, maxCompetitors: max }
             : d
         );
       } else {
-        // Adding new division
-        const newDiv = {
-          tempId: Date.now().toString(),
-          groupId: selectedGroupId,
-          groupName: groups.find((g) => g.id === selectedGroupId)?.name || '',
-          competitorType: groups.find((g) => g.id === selectedGroupId)?.type || 'team',
-          name: dName.trim(),
-          tier: Number(tier),
-          promotionSpots: Number(tier) === 1 ? 0 : Number(promo),
-          relegationSpots: Number(releg),
-          maxCompetitors: maxComps !== null && maxComps !== '' ? Number(maxComps) : null,
-        };
-        updated = [...prev, newDiv];
+        savedId = Date.now().toString();
+        updated = [
+          ...prev,
+          {
+            tempId: savedId,
+            groupId: selectedGroupId,
+            groupName: groups.find((g) => g.id === selectedGroupId)?.name || '',
+            competitorType: groupType(selectedGroupId),
+            name,
+            tier: divisionsOf(selectedGroupId, prev).length + 1, // new divisions join at the bottom
+            promotionSpots: promotions,
+            relegationSpots: 0,
+            maxCompetitors: max,
+          },
+        ];
       }
-
-      // Reorder tiers for the group to avoid duplicates/gaps
-      const groupDivs = updated
-        .filter((d) => d.groupId === selectedGroupId)
-        .sort((a, b) => a.tier - b.tier)
-        .map((d, index) => ({ ...d, tier: index + 1 })); // ✅ create new objects
-
-      // Merge back with divisions from other groups
-      const otherDivs = updated.filter((d) => d.groupId !== selectedGroupId);
-      return [...otherDivs, ...groupDivs];
+      return normalizeGroup(updated, selectedGroupId, savedId);
     });
 
-    // Reset form
-    setEditingDivisionId(null);
-    setDName('');
-    setTier(nextTier.toString());
-    setPromo('0');
-    setReleg('0');
-    setMaxComps(null);
+    // keep the group selected so several divisions can be added in a row
+    const gid = selectedGroupId;
     closeSheet();
+    setSelectedGroupId(gid);
   };
 
   const handleEditDivision = (div) => {
     setEditingDivisionId(div.tempId);
     setSelectedGroupId(div.groupId);
     setDName(div.name);
-    setTier(div.tier.toString());
-    setPromo(div.promotionSpots.toString());
-    setReleg(div.relegationSpots.toString());
-    setMaxComps(div.maxCompetitors !== null ? div.maxCompetitors.toString() : null);
+    setTier(String(div.tier));
+    setPromo(String(div.promotionSpots ?? 0));
+    setReleg(String(div.relegationSpots ?? 0));
+    setMaxComps(div.maxCompetitors !== null && div.maxCompetitors !== undefined ? String(div.maxCompetitors) : null);
     setSheetMode('DIVISION');
     bottomSheetRef.current?.expand();
   };
 
-  const handleDeleteDivision = (id) => {
-    setDivisions((prev) => {
-      // Remove the division
-      const updated = prev.filter((d) => d.tempId !== id);
-
-      // Find the group of the deleted division
-      const deletedGroupId = prev.find((d) => d.tempId === id)?.groupId;
-
-      if (!deletedGroupId) return updated;
-
-      // Reorder tiers only for that group
-      const groupDivs = updated
-        .filter((d) => d.groupId === deletedGroupId)
-        .sort((a, b) => a.tier - b.tier)
-        .map((d, index) => ({
-          ...d,
-          tier: index + 1, // assign sequential tiers
-        }));
-
-      // Merge back with divisions from other groups
-      const otherDivs = updated.filter((d) => d.groupId !== deletedGroupId);
-
-      return [...otherDivs, ...groupDivs];
-    });
-
-    // Optional: update nextTier for the selected group
-    if (selectedGroupId === null) return;
-
-    const groupDivisions = divisions
-      .filter((d) => d.groupId === selectedGroupId && d.tempId !== id)
-      .map((d) => d.tier);
-
-    const next = groupDivisions.length > 0 ? Math.max(...groupDivisions) + 1 : 1;
-    setTier(next.toString());
+  const handleDeleteDivision = (id, resetPosition) => {
+    const div = divisions.find((d) => d.tempId === id);
+    Alert.alert('Delete division?', div ? `Remove ${div.name} from the league structure?` : '', [
+      { text: 'Cancel', style: 'cancel', onPress: () => resetPosition?.() },
+      {
+        text: 'Delete',
+        style: 'destructive',
+        onPress: () =>
+          setDivisions((prev) => {
+            const gid = prev.find((d) => d.tempId === id)?.groupId;
+            const rest = prev.filter((d) => d.tempId !== id);
+            return gid ? normalizeGroup(rest, gid) : rest;
+          }),
+      },
+    ]);
   };
 
   const handleSave = () => {
@@ -384,29 +420,6 @@ export default function CreateDivisions() {
     });
   };
 
-  const nextTier = useMemo(() => {
-    const groupDivisions = divisions.filter((d) => d.groupId === selectedGroupId);
-    if (groupDivisions.length === 0) return 1;
-    const maxTier = Math.max(...groupDivisions.map((d) => d.tier));
-    return maxTier + 1;
-  }, [selectedGroupId, divisions]);
-
-  const updateNextTier = (groupId) => {
-    if (!groupId) return setTier('1');
-
-    const groupDivisions = divisions.filter((d) => d.groupId === groupId).map((d) => d.tier);
-
-    if (groupDivisions.length === 0) {
-      setTier('1');
-    } else {
-      const maxTier = Math.max(...groupDivisions);
-      setTier((maxTier + 1).toString());
-    }
-  };
-
-  console.log('Groups:', groups);
-  console.log('Divisions:', divisions);
-
   return (
     <>
       <View className="flex-1 bg-brand">
@@ -427,10 +440,7 @@ export default function CreateDivisions() {
               text="New group"
               type="yellow"
               icon={<Ionicons name="duplicate-outline" size={20} color={themeColors.text} />}
-              callbackFn={() => {
-                setSheetMode('GROUP');
-                bottomSheetRef.current?.expand();
-              }}
+              callbackFn={openGroupSheet}
               borderRadius={14}
             />
           </View>
@@ -440,11 +450,7 @@ export default function CreateDivisions() {
                 text="Add division"
                 type="white"
                 icon={<Ionicons name="add" size={20} color={themeColors.text} />}
-                callbackFn={() => {
-                  setSheetMode('DIVISION');
-                  updateNextTier(selectedGroupId);
-                  bottomSheetRef.current?.expand();
-                }}
+                callbackFn={openDivisionSheet}
                 borderRadius={14}
               />
             </View>
@@ -471,9 +477,7 @@ export default function CreateDivisions() {
                   {group.name} <Text className="text-sm text-text-on-brand-2">({group.type})</Text>
                 </Text>
                 <Pressable
-                  onPress={() => {
-                    handleDeleteGroup(group.id);
-                  }}
+                  onPress={() => handleDeleteGroup(group.id)}
                   className="flex-row items-center gap-2 rounded-lg bg-theme-red px-1 py-0.5">
                   <Ionicons name="trash-outline" size={16} color="#FFFFFF" />
                   <Text className="font-saira text-white">Delete Group</Text>
@@ -525,6 +529,10 @@ export default function CreateDivisions() {
           initialIndex={-1}
           snapPoints={['88%']}
           marginTop={60}
+          keyboardBehavior="fillParent"
+          onChange={(index) => {
+            if (index === -1) resetForms(); // also when swiped down
+          }}
           backgroundColor={themeColors.brandDark}
           indicatorColor="themeGray3"
           footerComponent={(props) => (
@@ -616,7 +624,8 @@ export default function CreateDivisions() {
                       return (
                         <Pressable
                           key={g.id}
-                          onPress={() => setSelectedGroupId(g.id)}
+                          onPress={() => (editingDivisionId ? null : pointNewDivisionAt(g.id))}
+                          disabled={!!editingDivisionId}
                           className={`rounded-full border-2 px-5 py-2 ${
                             active ? 'border-white bg-white' : 'border-white/20 bg-white/10'
                           }`}>
@@ -639,37 +648,49 @@ export default function CreateDivisions() {
                   autoCapitalize="words"
                 />
 
-                <View className="flex-row gap-3">
-                  <View className="flex-1">
-                    <OnboardingInput
-                      label="Tier"
-                      icon="medal-outline"
-                      value={tier}
-                      editable={false}
-                    />
+                {!selectedGroupId ? (
+                  <Text className="px-1 font-saira text-sm text-amber-200">
+                    Choose a group first. The tier and promotion numbers depend on it.
+                  </Text>
+                ) : (
+                  <View className="gap-2">
+                    <View className="flex-row gap-3">
+                      <View className="flex-1">
+                        <OnboardingInput label="Tier" icon="medal-outline" value={tier} editable={false} />
+                      </View>
+                      <View className="flex-1">
+                        <OnboardingInput
+                          label="Promoted"
+                          icon="caret-up-outline"
+                          value={isTopTier ? '0' : promo}
+                          onChangeText={(t) => setPromo(t.replace(/[^0-9]/g, ''))}
+                          keyboardType="number-pad"
+                          editable={!isTopTier}
+                          maxLength={2}
+                        />
+                      </View>
+                      <View className="flex-1">
+                        <OnboardingInput
+                          label="Relegated"
+                          icon="caret-down-outline"
+                          value={isBottomTier ? '0' : releg}
+                          onChangeText={(t) => setReleg(t.replace(/[^0-9]/g, ''))}
+                          keyboardType="number-pad"
+                          editable={!isBottomTier}
+                          maxLength={2}
+                        />
+                      </View>
+                    </View>
+                    <Text className="px-1 font-saira text-sm leading-5 text-text-on-brand-2">
+                      {isTopTier
+                        ? 'Top of the ladder: nobody can be promoted further.'
+                        : `Promoted places are filled by the division above (${divisionsOf(selectedGroupId)[tierNumber - 2]?.name || 'above'}) relegating the same number.`}
+                      {isBottomTier
+                        ? ' This is the bottom division, so nobody is relegated. Add a division below it to set relegations.'
+                        : ''}
+                    </Text>
                   </View>
-                  <View className="flex-1">
-                    <OnboardingInput
-                      label="Promoted"
-                      icon="caret-up-outline"
-                      value={isTopTier ? '0' : promo}
-                      onChangeText={(t) => setPromo(t.replace(/[^0-9]/g, ''))}
-                      keyboardType="number-pad"
-                      editable={!isTopTier}
-                      maxLength={2}
-                    />
-                  </View>
-                  <View className="flex-1">
-                    <OnboardingInput
-                      label="Relegated"
-                      icon="caret-down-outline"
-                      value={releg}
-                      onChangeText={(t) => setReleg(t.replace(/[^0-9]/g, ''))}
-                      keyboardType="number-pad"
-                      maxLength={2}
-                    />
-                  </View>
-                </View>
+                )}
 
                 <OnboardingInput
                   label="Max entrants (optional)"
@@ -678,12 +699,9 @@ export default function CreateDivisions() {
                   value={maxComps ?? ''}
                   onChangeText={(t) => setMaxComps(t.replace(/[^0-9]/g, '') || null)}
                   keyboardType="number-pad"
-                  editable={!isTopTier}
                   maxLength={3}
                   hint={`Limits how many ${
-                    groups.find((g) => g.id === selectedGroupId)?.type === 'individual'
-                      ? 'players'
-                      : 'teams'
+                    groupType(selectedGroupId) === 'individual' ? 'players' : 'teams'
                   } can join this division. Leave blank for unlimited.`}
                 />
               </View>
