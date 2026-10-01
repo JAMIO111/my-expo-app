@@ -1,9 +1,10 @@
-import KeyboardAwareScrollView from '@components/KeyboardAwareScrollView';
-import { StyleSheet, Text, View, TextInput } from 'react-native';
-import { useRouter } from 'expo-router';
-import { useState, useRef, useEffect } from 'react';
-import { Stack, useLocalSearchParams } from 'expo-router';
-import CTAButton from '@components/CTAButton';
+import { Text, View } from 'react-native';
+import { useRouter, useLocalSearchParams } from 'expo-router';
+import { useState, useRef } from 'react';
+import Animated, { FadeInDown } from 'react-native-reanimated';
+import Ionicons from '@expo/vector-icons/Ionicons';
+import OnboardingScreen from '@components/onboarding/OnboardingScreen';
+import CodeInput from '@components/onboarding/CodeInput';
 import { supabase } from '@/lib/supabase';
 import Toast from 'react-native-toast-message';
 import { useUser } from '@contexts/UserProvider';
@@ -18,26 +19,30 @@ const UniqueCode = () => {
   const isNewTeam = params.isNewTeam === 'true'; // Convert string to boolean
   const isNewLeague = params.isNewLeague === 'true'; // Convert string to boolean
   useOnboardingStep(1, isNewTeam ? 6 : isNewLeague ? 4 : 3);
-  const [selectionIndex, setSelectionIndex] = useState(Array(6).fill({ start: 0, end: 0 }));
-
-  const [digits, setDigits] = useState(['', '', '', '', '', '']);
+  const [code, setCode] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [hasError, setHasError] = useState(false);
+  const codeRef = useRef(null);
 
-  // Create refs for each input
-  const inputsRef = useRef([]);
+  const fail = () => {
+    setHasError(true);
+    codeRef.current?.shake();
+    setTimeout(() => {
+      setHasError(false);
+      setCode('');
+      codeRef.current?.focus();
+    }, 700);
+  };
 
-  useEffect(() => {
-    if (inputsRef.current[0]) {
-      inputsRef.current[0].focus();
-    }
-  }, []);
+  const onChangeCode = (value) => {
+    setHasError(false);
+    setCode(value);
+  };
 
   const handleCreateLeague = async () => {
     setIsLoading(true);
 
     try {
-      const code = digits.join('');
-
       if (code.length !== 6) {
         throw new Error('INVALID_CODE');
       }
@@ -91,7 +96,7 @@ const UniqueCode = () => {
             text1: 'Invalid Code',
             text2: 'Please enter a valid 6-digit code.',
           };
-          inputsRef.current[0]?.focus();
+          codeRef.current?.focus();
           break;
 
         case 'LEAGUE_NOT_FOUND':
@@ -129,20 +134,20 @@ const UniqueCode = () => {
       }
 
       Toast.show(message);
+      fail();
     } finally {
       setIsLoading(false);
     }
   };
 
   const handleCreateTeam = async () => {
-    const code = digits.join('');
     if (code.length !== 6) {
       Toast.show({
         type: 'error',
         text1: 'Invalid Code',
         text2: 'Please enter a valid 6-digit code.',
       });
-      inputsRef.current[0]?.focus();
+      codeRef.current?.focus();
       return;
     }
 
@@ -162,20 +167,20 @@ const UniqueCode = () => {
         text1: 'League could not be found',
         text2: 'Please check the code and try again.',
       });
+      fail();
     } finally {
       setIsLoading(false);
     }
   };
 
   const handleJoinTeam = async () => {
-    const code = digits.join('');
     if (code.length !== 6) {
       Toast.show({
         type: 'error',
         text1: 'Invalid Code',
         text2: 'Please enter a valid 6-digit code.',
       });
-      inputsRef.current[0]?.focus();
+      codeRef.current?.focus();
       return;
     }
 
@@ -194,124 +199,68 @@ const UniqueCode = () => {
         text1: 'Team could not be found',
         text2: 'Please check the code and try again.',
       });
+      fail();
     } finally {
       setIsLoading(false);
     }
   };
 
+  const copy = isNewLeague
+    ? {
+        title: 'Enter your access code',
+        subtitle: 'The app administrator should have given you a 6-digit code.',
+        cta: 'Get started',
+        help: 'No code yet? Ask the app administrator.',
+      }
+    : isNewTeam
+      ? {
+          title: 'Enter your league code',
+          subtitle: "Your league official has a 6-digit code that finds your league.",
+          cta: 'Find league',
+          help: 'No code? Ask your league official for the team sign-up code.',
+        }
+      : {
+          title: 'Enter your team code',
+          subtitle: 'Your team captain has a 6-digit code that finds your team.',
+          cta: 'Find team',
+          help: 'No code? Ask your team captain, it is shown on their team page.',
+        };
+
+  const submit = isNewLeague ? handleCreateLeague : isNewTeam ? handleCreateTeam : handleJoinTeam;
+  const complete = code.length === 6;
+
   return (
-    <>
-<View className="flex-1 gap-3 bg-brand">
-        <View className="p-5">
+    <OnboardingScreen
+      title={copy.title}
+      subtitle={copy.subtitle}
+      ctaText={isLoading ? 'Checking…' : copy.cta}
+      onCta={submit}
+      ctaDisabled={!complete || isLoading}
+      ctaLoading={isLoading}>
+      <View className="gap-8 pt-2">
+        <Animated.View entering={FadeInDown.duration(380)}>
+          <CodeInput
+            ref={codeRef}
+            value={code}
+            onChange={onChangeCode}
+            disabled={isLoading}
+            error={hasError}
+          />
           <Text
-            style={{ lineHeight: 50 }}
-            className="my-4 font-delagothic text-5xl font-bold text-text-on-brand">
-            {isNewLeague
-              ? 'Enter Access Code'
-              : isNewTeam
-                ? 'Enter League Code'
-                : 'Enter Team Code'}
+            className={`mt-4 text-center font-saira text-base ${hasError ? 'text-red-300' : 'text-text-on-brand-2'}`}>
+            {hasError ? "That code didn't work" : `${code.length} of 6 digits`}
           </Text>
-          <Text className="font-saira text-2xl text-text-on-brand-2">
-            {isNewLeague
-              ? 'The app administrator should have provided you with your unique 6 digit code.'
-              : isNewTeam
-                ? 'Your league official should have provided you with your unique 6 digit code.'
-                : 'Your team captain should have provided you with your unique 6 digit code.'}
-          </Text>
-        </View>
+        </Animated.View>
 
-        <View
-          style={{ borderTopRightRadius: 32, borderTopLeftRadius: 32 }}
-          className="flex-1 bg-brand-dark p-6 shadow shadow-brand-light">
-          <KeyboardAwareScrollView style={{ flex: 1 }} contentContainerStyle={{ gap: 20 }}>
-            <View className="flex-row justify-between">
-              {digits.map((digit, i) => (
-                <View key={i} style={{ flex: 1, marginHorizontal: 4 }}>
-                  <TextInput
-                    ref={(el) => (inputsRef.current[i] = el)}
-                    value={digit}
-                    onChangeText={(text) => {
-                      // Update digit
-                      if (/^\d?$/.test(text)) {
-                        const newDigits = [...digits];
-                        newDigits[i] = text;
-                        setDigits(newDigits);
-
-                        // Move focus forward if typed
-                        if (text && i < inputsRef.current.length - 1) {
-                          inputsRef.current[i + 1].focus();
-                        }
-
-                        // Update selection to end
-                        const newSelection = [...selectionIndex];
-                        newSelection[i] = { start: text.length, end: text.length };
-                        setSelectionIndex(newSelection);
-                      }
-                    }}
-                    keyboardType="number-pad"
-                    maxLength={1}
-                    className="border-border-color bg-white font-saira-semibold text-4xl text-black focus:border-theme-blue"
-                    style={styles.input}
-                    textAlign="center"
-                    selection={selectionIndex[i]}
-                    onFocus={() => {
-                      // Only move cursor to end if input has content
-                      if (digits[i]) {
-                        const newSelection = [...selectionIndex];
-                        newSelection[i] = { start: digits[i].length, end: digits[i].length };
-                        setSelectionIndex(newSelection);
-                      }
-                    }}
-                    returnKeyType={i === digits.length - 1 ? 'done' : 'next'}
-                    onKeyPress={({ nativeEvent }) => {
-                      if (nativeEvent.key === 'Backspace') {
-                        if (!digits[i] && i > 0) {
-                          // Move focus to previous box if current is empty
-                          inputsRef.current[i - 1].focus();
-                        } else {
-                          // Clear current box (already handled by onChangeText)
-                        }
-                      }
-                    }}
-                  />
-                </View>
-              ))}
-            </View>
-
-            <View className="mt-5">
-              <CTAButton
-                type="yellow"
-                disabled={isLoading}
-                text={
-                  isLoading
-                    ? 'Fetching Details...'
-                    : isNewLeague
-                      ? 'Get Started'
-                      : isNewTeam
-                        ? 'Find League'
-                        : 'Find Team'
-                }
-                callbackFn={
-                  isNewLeague ? handleCreateLeague : isNewTeam ? handleCreateTeam : handleJoinTeam
-                }
-              />
-            </View>
-          </KeyboardAwareScrollView>
-        </View>
+        <Animated.View
+          entering={FadeInDown.delay(120).duration(380)}
+          className="flex-row items-center gap-3 rounded-2xl bg-white/10 p-4">
+          <Ionicons name="help-circle-outline" size={22} color="#FFFFFFAA" />
+          <Text className="flex-1 font-saira text-base text-text-on-brand-2">{copy.help}</Text>
+        </Animated.View>
       </View>
-    </>
+    </OnboardingScreen>
   );
 };
 
 export default UniqueCode;
-
-const styles = StyleSheet.create({
-  input: {
-    lineHeight: 48,
-    height: 60,
-    borderWidth: 1,
-    borderRadius: 14,
-    paddingHorizontal: 16,
-  },
-});
