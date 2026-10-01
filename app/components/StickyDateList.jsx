@@ -139,26 +139,30 @@ export default function StickyDateList({
 }
 
 function DayHeader({ date, end, headerH, scrollY, onHeaderMeasure, backgroundClassName }) {
+  // the card's shape: corners round off into a pill as the day's rows run out
   const cardStyle = useAnimatedStyle(() => {
-    if (end === null) return { opacity: 1 };
+    if (end === null) return {};
     // how far this day's rows still extend below the pinned header (negative once they've run out)
     const remaining = end - GAP - (scrollY.value + headerH);
     const radius = interpolate(remaining, [0, RADIUS], [RADIUS, 0], Extrapolation.CLAMP);
-    // the next card's top edge sweeping up over the header: 1 until it touches, 0 once it fully covers
-    const uncovered = interpolate(end - scrollY.value, [0, headerH], [0, 1], Extrapolation.CLAMP);
+    return { borderBottomLeftRadius: radius, borderBottomRightRadius: radius };
+  }, [end, headerH]);
+
+  // fades the card AND its backing together, so no straight-edged dark block is left behind once the
+  // card is gone: 1 until the next card's top edge touches the header, 0 once it fully covers it
+  const fadeStyle = useAnimatedStyle(() => {
+    if (end === null) return { opacity: 1 };
     return {
-      opacity: uncovered,
-      borderBottomLeftRadius: radius,
-      borderBottomRightRadius: radius,
+      opacity: interpolate(end - scrollY.value, [0, headerH], [0, 1], Extrapolation.CLAMP),
     };
   }, [end, headerH]);
 
   return (
     // zero height: never pushed off by the next header, content overflows downwards
     <View style={{ height: 0 }}>
-      <View
+      <Animated.View
         className={backgroundClassName}
-        style={{ position: 'absolute', top: 0, left: 0, right: 0 }}
+        style={[{ position: 'absolute', top: 0, left: 0, right: 0 }, fadeStyle]}
         onLayout={(e) => onHeaderMeasure(e.nativeEvent.layout.height)}>
         <Animated.View
           className="bg-bg-grouped-2 px-4 pt-3"
@@ -174,7 +178,7 @@ function DayHeader({ date, end, headerH, scrollY, onHeaderMeasure, backgroundCla
             {format(parseISO(date), 'EEE, d MMMM')}
           </Text>
         </Animated.View>
-      </View>
+      </Animated.View>
     </View>
   );
 }
