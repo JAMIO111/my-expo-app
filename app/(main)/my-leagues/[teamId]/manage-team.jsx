@@ -38,6 +38,9 @@ const ManageTeam = () => {
   const [teamDisplayName, setTeamDisplayName] = useState(teamProfile?.display_name);
   const [teamJoinCode, setTeamJoinCode] = useState(teamProfile?.code);
   const [tempDivision, setTempDivision] = useState(null);
+  // null = not checked yet / unchanged, true = free, false = already used by another team
+  const [codeFree, setCodeFree] = useState(null);
+  const [checkingCode, setCheckingCode] = useState(false);
   const { data: divisions } = useDivisions(currentRole?.district?.id);
   const { data: teamPlayers } = useTeamPlayers(teamId);
   const [showCaptainModal, setShowCaptainModal] = useState(false);
@@ -102,6 +105,30 @@ const ManageTeam = () => {
   useEffect(() => {
     setTempDivision(null);
   }, [showModal]);
+
+  // Check the join code as it is typed, so a clash shows up before saving
+  useEffect(() => {
+    if (!teamProfile?.id || teamJoinCode === teamProfile?.code || teamJoinCode?.length !== 6) {
+      setCodeFree(null);
+      setCheckingCode(false);
+      return;
+    }
+    let cancelled = false;
+    setCheckingCode(true);
+    const timer = setTimeout(async () => {
+      const { data, error } = await supabase.rpc('team_code_available', {
+        p_team_id: teamProfile.id,
+        p_code: teamJoinCode,
+      });
+      if (cancelled) return;
+      setCheckingCode(false);
+      setCodeFree(error ? null : !!data);
+    }, 350);
+    return () => {
+      cancelled = true;
+      clearTimeout(timer);
+    };
+  }, [teamJoinCode, teamProfile?.id, teamProfile?.code]);
 
   const openConfirm = ({
     title,
@@ -203,6 +230,14 @@ const ManageTeam = () => {
       });
       return;
     }
+    if (codeFree === false) {
+      Toast.show({
+        type: 'error',
+        text1: 'Join code already in use',
+        text2: 'Another team already uses that code. Choose a different one.',
+      });
+      return;
+    }
     if (hasChanges) {
       try {
         setSaving(true);
@@ -221,6 +256,7 @@ const ManageTeam = () => {
 
         // Business-logic failure returned by the function itself
         if (!data?.success) {
+          if (data?.code === 'code_taken') setCodeFree(false);
           Toast.show({
             type: 'error',
             text1: data?.message || 'Failed to save changes',
@@ -237,9 +273,12 @@ const ManageTeam = () => {
       } catch (err) {
         // Unexpected error: network drop, JSON parse issue, etc.
         console.error('saveChanges unexpected error:', err);
+        // A unique-constraint hit (two admins saving the same code at once) is still just "code taken"
+        const clash = err?.code === '23505' && /code/i.test(`${err?.message} ${err?.details}`);
+        if (clash) setCodeFree(false);
         Toast.show({
           type: 'error',
-          text1: 'Something went wrong. Please try again.',
+          text1: clash ? 'Join code already in use' : 'Something went wrong. Please try again.',
         });
       } finally {
         setSaving(false);
@@ -257,7 +296,7 @@ const ManageTeam = () => {
               header: () => (
                 <SafeViewWrapper useBottomInset={false}>
                   <CustomHeader
-                    rightIcon={saving ? Loader : hasChanges ? CircleCheckBig : null}
+                    rightIcon={saving ? Loader : hasChanges && codeFree !== false ? CircleCheckBig : null}
                     onRightPress={saving ? null : saveChanges}
                     showBack={true}
                     title={teamProfile ? teamProfile.name : 'Team Name'}
@@ -301,6 +340,25 @@ const ManageTeam = () => {
                 editable={!saving}
               />
             </MenuContainer>
+
+            {teamJoinCode !== teamProfile?.code && teamJoinCode?.length === 6 ? (
+              <Text
+                className={`mb-4 px-2 font-saira-medium text-base ${
+                  codeFree === false
+                    ? 'text-theme-red'
+                    : codeFree === true
+                      ? 'text-theme-green'
+                      : 'text-text-2'
+                }`}>
+                {checkingCode
+                  ? 'Checking join code…'
+                  : codeFree === false
+                    ? 'That join code is already used by another team.'
+                    : codeFree === true
+                      ? 'That join code is available.'
+                      : ''}
+              </Text>
+            ) : null}
 
             <MenuContainer title="Team Image">
               <SettingsItem
