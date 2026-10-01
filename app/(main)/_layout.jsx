@@ -3,13 +3,14 @@ import { Stack, useRouter, useSegments } from 'expo-router';
 import { useEffect, useRef } from 'react';
 import { useUser } from '@contexts/UserProvider';
 import LoadingScreen from '../components/LoadingScreen';
+import ProfileLoadFailed from '../components/ProfileLoadFailed';
 import { useRevenueCat } from '@contexts/RevenueCatProvider';
 
 const _layout = () => {
   const { isPro, isCore } = useRevenueCat();
   const router = useRouter();
   const segments = useSegments();
-  const { user, player, loading, roles, setCurrentRole, currentRole } = useUser();
+  const { user, player, loading, roles, setCurrentRole, currentRole, refetch } = useUser();
 
   console.log('AppLayout (main)');
   console.log('User:', user);
@@ -82,6 +83,11 @@ const _layout = () => {
   if (loading) {
     console.log('Loading user data...');
     return <LoadingScreen />;
+  }
+
+  // Signed in but no profile came back: never leave a blank screen.
+  if (user && !player) {
+    return <ProfileLoadFailed onRetry={refetch} />;
   }
 
   // A real Stack (not just <Slot />) so home/profile/teams/settings/etc. are

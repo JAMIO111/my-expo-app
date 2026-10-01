@@ -10,13 +10,28 @@ export const fetchAuthUserProfile = async () => {
     throw new Error('User not authenticated');
   }
 
-  const { data, error } = await supabase.rpc('get_user_context', {
+  let { data, error } = await supabase.rpc('get_user_context', {
     _auth_id: user.id,
   });
 
   if (error) {
     console.error('RPC Error:', error);
     throw error;
+  }
+
+  // Signed in but no player record (older account, restore, manual delete): create it, then load again
+  // so the person goes through onboarding instead of staring at a blank screen.
+  if (!data?.playerProfile) {
+    const { data: ensured, error: ensureError } = await supabase.rpc('ensure_my_player');
+    if (ensureError) {
+      console.error('ensure_my_player error:', ensureError);
+      throw ensureError;
+    }
+    if (ensured?.created) {
+      const retry = await supabase.rpc('get_user_context', { _auth_id: user.id });
+      if (retry.error) throw retry.error;
+      data = retry.data;
+    }
   }
 
   // Ensure safe defaults so your UI doesn’t explode on undefined
