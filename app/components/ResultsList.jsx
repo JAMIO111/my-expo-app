@@ -19,7 +19,6 @@ import { getActiveSeason } from '@lib/helperFunctions';
 import Avatar from './Avatar';
 import LoadingScreen from './LoadingScreen';
 import { useTheme } from '@contexts/ThemeProvider';
-import StickyDateList from '@components/StickyDateList';
 
 const ResultsList = () => {
   const router = useRouter();
@@ -322,9 +321,20 @@ const ResultsList = () => {
         )}
 
         {/* Results List */}
-        <StickyDateList
-          grouped={grouped}
-          renderItem={(f, index, count) => {
+        <FlatList
+          showsVerticalScrollIndicator={false}
+          data={grouped}
+          keyExtractor={([date]) => date}
+          contentContainerStyle={{ paddingBottom: 30 }}
+          renderItem={({ item: [date, results], index }) => (
+            <View
+              className="mb-4 rounded-3xl border border-theme-gray-5 bg-bg-grouped-2 p-2"
+              key={date}>
+              <Text className="mb-2 p-2 font-saira-semibold text-2xl text-text-1">
+                {format(parseISO(date), 'EEE, d MMMM')}
+              </Text>
+
+              {results.map((f, index) => {
                 const competitorType = f.home_competitor.type; // 'team' or 'player'
                 const isLive = new Date() >= new Date(f.date_time);
                 const homeScore = f.is_forfeited
@@ -387,12 +397,14 @@ const ResultsList = () => {
                         {awayScore}
                       </Text>
                     </View>
-                    {index !== count - 1 && (
+                    {index !== results.length - 1 && (
                       <View className="mt-2 h-[1px] w-[95%] bg-theme-gray-5" />
                     )}
                   </Pressable>
                 );
-          }}
+              })}
+            </View>
+          )}
         />
       </View>
 

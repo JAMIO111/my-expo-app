@@ -21,7 +21,6 @@ import LivePulseCard from '@components/LivePulseCard';
 import Avatar from '@components/Avatar';
 import LoadingScreen from '@components/LoadingScreen';
 import { useTheme } from '@contexts/ThemeProvider';
-import StickyDateList from '@components/StickyDateList';
 
 const FixturesList = () => {
   const router = useRouter();
@@ -274,9 +273,20 @@ const FixturesList = () => {
         )}
 
         {/* Fixture List */}
-        <StickyDateList
-          grouped={grouped}
-          renderItem={(f, index, count) => {
+        <FlatList
+          showsVerticalScrollIndicator={false}
+          data={grouped}
+          keyExtractor={([date]) => date}
+          contentContainerStyle={{ paddingBottom: 30 }}
+          renderItem={({ item: [date, fixtures], index }) => (
+            <View
+              className="mb-4 rounded-3xl border border-theme-gray-5 bg-bg-grouped-2 p-2"
+              key={date}>
+              <Text className="mb-2 p-2 font-saira-semibold text-2xl text-text-1">
+                {format(parseISO(date), 'EEE, d MMMM')}
+              </Text>
+
+              {fixtures.map((f, index) => {
                 const homeScore = f.frames.filter((frame) => frame.winner_side === 'home').length;
                 const awayScore = f.frames.filter((frame) => frame.winner_side === 'away').length;
                 const isLive = new Date() >= new Date(f.date_time);
@@ -349,12 +359,14 @@ const FixturesList = () => {
                         {f.away_competitor.display_name}
                       </Text>
                     </View>
-                    {index !== count - 1 && (
+                    {index !== fixtures.length - 1 && (
                       <View className="mt-2 h-[1px] w-[80%] bg-theme-gray-5" />
                     )}
                   </Pressable>
                 );
-          }}
+              })}
+            </View>
+          )}
         />
       </View>
 
