@@ -1,4 +1,5 @@
-import { View, Text } from 'react-native';
+import { useCallback, useMemo, useRef, useState } from 'react';
+import { View, Text, SectionList } from 'react-native';
 import Animated, {
   useAnimatedScrollHandler,
   useAnimatedStyle,
@@ -8,16 +9,18 @@ import Animated, {
 } from 'react-native-reanimated';
 import { format, parseISO } from 'date-fns';
 
+const AnimatedSectionList = Animated.createAnimatedComponent(SectionList);
+
 const RADIUS = 24;
 const GAP = 16; // space between day cards
-const FADE_DISTANCE = 30; // px over which a day's card fades as its last edge reaches the pinned header
+const FADE_DISTANCE = 30; // px over which a pinned header fades before the next day takes over
 
-// Matches grouped by date, as rounded cards (like the Weather app). Each day is ONE clipped container
-// (overflow hidden + constant corner radius) holding its header and rows; the header is pinned by
-// translating it down inside the container as the list scrolls, so the container's clip shapes it
-// perfectly as the card runs out. The whole card fades as its bottom reaches the pinned header.
+// Matches grouped by date, as rounded cards whose date header stays pinned to the top while that day's
+// matches scroll underneath (like the Weather app), fading out just before the next day's header takes
+// its place. Each card is drawn from three pieces so the header can stick on its own: a rounded-top
+// header, side-bordered rows, and a rounded-bottom last row.
 //
-// `backgroundClassName` should match the page behind the list: it fills the corners around the pinned
+// `backgroundClassName` should match the page behind the list: it fills the corners around a pinned
 // header so rows scrolling underneath can't show through them.
 export default function StickyDateList({
   grouped,
@@ -27,6 +30,11 @@ export default function StickyDateList({
   ListEmptyComponent = null,
   backgroundClassName = 'bg-brand-dark',
 }) {
+  const sections = useMemo(
+    () => (grouped || []).map(([date, data]) => ({ date, data })),
+    [grouped]
+  );
+
   const scrollY = useSharedValue(0);
   const scrollHandler = useAnimatedScrollHandler({
     onScroll: (event) => {
@@ -34,81 +42,125 @@ export default function StickyDateList({
     },
   });
 
-  const days = grouped || [];
-  const empty =
-    typeof ListEmptyComponent === 'function' ? <ListEmptyComponent /> : ListEmptyComponent;
+  // Measured heights of every cell (headers and rows), so each day's end position is known and its header
+  // can fade as that end approaches.
+  const heights = useRef({});
+  const [version, setVersion] = useState(0);
+  const measure = useCallback((key, height) => {
+    if (heights.current[key] !== height) {
+      heights.current[key] = height;
+      setVersion((v) => v + 1);
+    }
+  }, []);
+
+  // For each date: the header's height, and the content offset where that day's last row ends.
+  const layout = useMemo(() => {
+    const out = {};
+    let offset = 0;
+    for (const section of sections) {
+      const headerH = heights.current[`h-${section.date}`];
+      let complete = headerH !== undefined;
+      offset += headerH ?? 0;
+      for (const item of section.data) {
+        const h = heights.current[`i-${keyExtractor(item)}`];
+        if (h === undefined) complete = false;
+        offset += h ?? 0;
+      }
+      out[section.date] = complete ? { headerH, end: offset } : null;
+    }
+    return out;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sections, version]);
 
   return (
-    <Animated.ScrollView
+    <AnimatedSectionList
+      sections={sections}
+      keyExtractor={keyExtractor}
+      stickySectionHeadersEnabled
+      extraData={layout}
       showsVerticalScrollIndicator={false}
       onScroll={scrollHandler}
-      scrollEventThrottle={1}
-      contentContainerStyle={contentContainerStyle ?? { paddingBottom: 30 }}>
-      {days.length === 0
-        ? empty
-        : days.map(([date, items]) => (
-            <DayCard
-              key={date}
-              date={date}
-              scrollY={scrollY}
-              backgroundClassName={backgroundClassName}>
-              {items.map((item, index) => (
-                <View
-                  key={keyExtractor(item)}
-                  className="bg-bg-grouped-2 px-2"
-                  style={index === items.length - 1 ? { paddingBottom: 4 } : undefined}>
-                  {renderItem(item, index, items.length)}
-                </View>
-              ))}
-            </DayCard>
-          ))}
-    </Animated.ScrollView>
+      scrollEventThrottle={16}
+      // lists here are one month long: keep every row mounted so heights are known up front
+      initialNumToRender={60}
+      windowSize={21}
+      contentContainerStyle={contentContainerStyle ?? { paddingBottom: 30 }}
+      ListEmptyComponent={ListEmptyComponent}
+      renderSectionHeader={({ section }) => (
+        <DayHeader
+          date={section.date}
+          spaced={sections.indexOf(section) > 0}
+          info={layout[section.date]}
+          scrollY={scrollY}
+          onMeasure={measure}
+          backgroundClassName={backgroundClassName}
+        />
+      )}
+      renderItem={({ item, index, section }) => {
+        const last = index === section.data.length - 1;
+        return (
+          <FadeRow
+            fade={last}
+            info={layout[section.date]}
+            scrollY={scrollY}
+            onLayout={(e) => measure(`i-${keyExtractor(item)}`, e.nativeEvent.layout.height)}>
+            <View
+              className="bg-bg-grouped-2 px-2"
+              style={
+                last
+                  ? {
+                      borderBottomLeftRadius: RADIUS,
+                      borderBottomRightRadius: RADIUS,
+                      paddingBottom: 4,
+                    }
+                  : undefined
+              }>
+              {renderItem(item, index, section.data.length)}
+            </View>
+          </FadeRow>
+        );
+      }}
+    />
   );
 }
 
-function DayCard({ date, scrollY, backgroundClassName, children }) {
-  const top = useSharedValue(0);
-  const height = useSharedValue(0);
-  const headerH = useSharedValue(0);
-
-  const cardStyle = useAnimatedStyle(() => {
-    // how far the card still extends below the pinned header
-    const remaining = top.value + height.value - (scrollY.value + headerH.value);
-    if (remaining >= FADE_DISTANCE) return { opacity: 1 };
-    return {
-      opacity: interpolate(remaining, [0, FADE_DISTANCE], [0, 1], Extrapolation.CLAMP),
-    };
-  });
-
-  // pin the header to the top of the screen, but never let it leave the card
-  const headerStyle = useAnimatedStyle(() => {
-    const max = Math.max(height.value - headerH.value, 0);
-    const y = Math.min(Math.max(scrollY.value - top.value, 0), max);
-    return { transform: [{ translateY: y }] };
-  });
-
+function FadeRow({ fade, info, scrollY, onLayout, children }) {
+  const fadeStyle = useDayFade(fade ? info : null, scrollY);
   return (
-    <Animated.View
-      onLayout={(e) => {
-        top.value = e.nativeEvent.layout.y;
-        height.value = e.nativeEvent.layout.height;
-      }}
-      style={[{ borderRadius: RADIUS, overflow: 'hidden', marginBottom: GAP }, cardStyle]}>
-      <Animated.View
-        className={backgroundClassName}
-        onLayout={(e) => {
-          headerH.value = e.nativeEvent.layout.height;
-        }}
-        style={[{ zIndex: 1 }, headerStyle]}>
-        <View
-          className="bg-bg-grouped-2 px-4 pb-1 pt-3"
-          style={{ borderTopLeftRadius: RADIUS, borderTopRightRadius: RADIUS }}>
-          <Text className="font-saira-semibold text-2xl text-text-1">
-            {format(parseISO(date), 'EEE, d MMMM')}
-          </Text>
-        </View>
-      </Animated.View>
+    <Animated.View onLayout={onLayout} style={fade ? fadeStyle : undefined}>
       {children}
     </Animated.View>
+  );
+}
+
+// Opacity for a day's pinned header and its last row, so the whole card fades out together as the next
+// day's card is about to cover it.
+function useDayFade(info, scrollY) {
+  const end = info ? info.end : null;
+  const headerH = info ? info.headerH : 0;
+  return useAnimatedStyle(() => {
+    if (end === null) return { opacity: 1 };
+    const remaining = end - (scrollY.value + headerH);
+    return {
+      opacity: interpolate(remaining, [RADIUS, RADIUS + FADE_DISTANCE], [0, 1], Extrapolation.CLAMP),
+    };
+  }, [end, headerH]);
+}
+
+function DayHeader({ date, spaced, info, scrollY, onMeasure, backgroundClassName }) {
+  const fadeStyle = useDayFade(info, scrollY);
+  return (
+    <View
+      className={backgroundClassName}
+      style={{ paddingTop: spaced ? GAP : 0 }}
+      onLayout={(e) => onMeasure(`h-${date}`, e.nativeEvent.layout.height)}>
+      <Animated.View
+        className="bg-bg-grouped-2 px-4 pb-1 pt-3"
+        style={[{ borderTopLeftRadius: RADIUS, borderTopRightRadius: RADIUS }, fadeStyle]}>
+        <Text className="font-saira-semibold text-2xl text-text-1">
+          {format(parseISO(date), 'EEE, d MMMM')}
+        </Text>
+      </Animated.View>
+    </View>
   );
 }
