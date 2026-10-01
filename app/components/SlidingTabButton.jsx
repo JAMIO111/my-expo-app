@@ -54,7 +54,12 @@ export default function SlidingTabButton({
     if (onChange) onChange(side);
   };
 
-  const swipeGesture = Gesture.Pan().onEnd((event) => {
+  // Only treat a mostly-horizontal drag as a swipe, so taps on the tabs and vertical scrolling of a
+  // parent list are never swallowed by this gesture.
+  const swipeGesture = Gesture.Pan()
+    .activeOffsetX([-15, 15])
+    .failOffsetY([-12, 12])
+    .onEnd((event) => {
     const SWIPE_THRESHOLD = containerWidth / 6;
 
     if (event.translationX > SWIPE_THRESHOLD) {
