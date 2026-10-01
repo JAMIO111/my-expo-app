@@ -105,11 +105,10 @@ export default function StickyDateList({
             scrollY={scrollY}
             onLayout={(e) => measure(`i-${keyExtractor(item)}`, e.nativeEvent.layout.height)}>
             <View
-              className="border-x border-theme-gray-5 bg-bg-grouped-2 px-2"
+              className="bg-bg-grouped-2 px-2"
               style={
                 last
                   ? {
-                      borderBottomWidth: 1,
                       borderBottomLeftRadius: RADIUS,
                       borderBottomRightRadius: RADIUS,
                       paddingBottom: 4,
@@ -157,8 +156,14 @@ function DayHeader({ date, spaced, info, scrollY, onMeasure, backgroundClassName
       style={{ paddingTop: spaced ? GAP : 0 }}
       onLayout={(e) => onMeasure(`h-${date}`, e.nativeEvent.layout.height)}>
       <Animated.View
-        className="border-x border-t border-theme-gray-5 bg-bg-grouped-2 px-4 pb-1 pt-3"
-        style={[{ borderTopLeftRadius: RADIUS, borderTopRightRadius: RADIUS }, fadeStyle]}>
+        className="bg-bg-grouped-2 px-4 pb-1 pt-3"
+        style={[
+          {
+            borderTopLeftRadius: RADIUS,
+            borderTopRightRadius: RADIUS,
+          },
+          fadeStyle,
+        ]}>
         <Text className="font-saira-semibold text-2xl text-text-1">
           {format(parseISO(date), 'EEE, d MMMM')}
         </Text>
