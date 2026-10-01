@@ -7,7 +7,8 @@ import CustomTextInput from '@components/CustomTextInput';
 import { useRouter } from 'expo-router';
 import { supabase } from '@/lib/supabase';
 import Toast from 'react-native-toast-message';
-import CustomDatePicker from '@components/CustomDatePicker';
+import DateTimePicker from '@react-native-community/datetimepicker';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import CustomMultiSelect from '@components/CustomMultiSelect';
 import { useUser } from '@contexts/UserProvider';
 import { useQueryClient } from '@tanstack/react-query';
@@ -127,13 +128,35 @@ export default function SeasonName() {
           autoCapitalize="words"
           returnKeyType="done"
         />
-        <CustomDatePicker
-          title="Season start date"
-          value={startDate}
-          onChange={setStartDate}
-          leftIconName="calendar-outline"
-          iconColor="purple"
-        />
+        <View>
+          <Text className="mb-2 pl-1 font-saira-semibold text-xs uppercase tracking-[2px] text-text-on-brand-2">
+            Season start date
+          </Text>
+          <View className="h-16 flex-row items-center justify-between rounded-2xl border-2 border-white/15 bg-white/10 px-4">
+            <View className="flex-row items-center gap-3">
+              <Ionicons name="calendar-outline" size={22} color="#FFFFFFAA" />
+              <Text className="font-saira text-xl text-white">
+                {new Date(startDate).toLocaleDateString('en-GB', {
+                  weekday: 'short',
+                  day: 'numeric',
+                  month: 'short',
+                  year: 'numeric',
+                })}
+              </Text>
+            </View>
+            <DateTimePicker
+              value={new Date(startDate)}
+              mode="date"
+              display="compact"
+              themeVariant="dark"
+              minimumDate={new Date(2000, 0, 1)}
+              maximumDate={new Date(2100, 11, 31)}
+              onChange={(event, d) => {
+                if (d) setStartDate(d.toISOString().split('T')[0]);
+              }}
+            />
+          </View>
+        </View>
 
         <View className="gap-3">
           <Text className="pl-1 font-saira-semibold text-xs uppercase tracking-[2px] text-text-on-brand-2">

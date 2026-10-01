@@ -15,7 +15,9 @@ import Animated, {
   withSpring,
   interpolate,
 } from 'react-native-reanimated';
-import CustomMultiSelect from '@components/CustomMultiSelect';
+import OnboardingInput from '@components/onboarding/OnboardingInput';
+import ChoiceCard from '@components/onboarding/ChoiceCard';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '@contexts/ThemeProvider';
 import { useOnboardingStep } from '@contexts/OnboardingStepContext';
 
@@ -123,6 +125,7 @@ export default function CreateDivisions() {
   const { districtId, districtName, privateDistrict } = useLocalSearchParams();
   const bottomSheetRef = useRef(null);
   const { colors: themeColors } = useTheme();
+  const insets = useSafeAreaInsets();
 
   // --- STATE ---
   const [groups, setGroups] = useState([]); // [{id: 1, name: 'Main', type: 'team'}]
@@ -520,179 +523,169 @@ export default function CreateDivisions() {
         <BottomSheetWrapper
           ref={bottomSheetRef}
           initialIndex={-1}
-          snapPoints={['90%']}
+          snapPoints={['88%']}
+          marginTop={60}
+          backgroundColor={themeColors.brandDark}
+          indicatorColor="themeGray3"
           footerComponent={(props) => (
             <BottomSheetFooter {...props}>
               <View
-                style={{ paddingBottom: 140 }}
-                className="w-full rounded-t-3xl bg-bg-grouped-3 p-6">
+                style={{ paddingBottom: insets.bottom + 12 }}
+                className="w-full gap-3 border-t border-white/10 bg-brand-dark px-6 pt-4">
                 <CTAButton
                   text={
                     sheetMode === 'GROUP'
-                      ? 'Create Group'
+                      ? 'Create group'
                       : editingDivisionId
-                        ? 'Save Changes'
-                        : 'Add Division'
+                        ? 'Save changes'
+                        : 'Add division'
                   }
-                  type="brand"
+                  type="yellow"
                   callbackFn={sheetMode === 'GROUP' ? handleAddGroup : handleSaveDivision}
                 />
               </View>
             </BottomSheetFooter>
           )}>
-          {/* Fixed Header */}
-          <BottomSheetView
-            style={{
-              paddingHorizontal: 32,
-              paddingTop: 8,
-              paddingBottom: 8,
-              borderBottomWidth: 1,
-              borderBottomColor: '#ccc',
-              backgroundColor: themeColors.bgGrouped2,
-              zIndex: 10,
-              flexDirection: 'row',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-            }}>
-            <Text style={{ lineHeight: 40 }} className="font-saira-medium text-3xl text-text-1">
-              {sheetMode === 'GROUP' ? 'Create New Group' : 'Add New Division'}
+          <View className="flex-row items-center justify-between px-6 pb-4 pt-2">
+            <Text style={{ lineHeight: 36 }} className="font-delagothic text-3xl text-text-on-brand">
+              {sheetMode === 'GROUP'
+                ? 'New group'
+                : editingDivisionId
+                  ? 'Edit division'
+                  : 'New division'}
             </Text>
-            <Pressable className="p-2" onPress={closeSheet}>
-              <Ionicons name="close" size={24} color={themeColors.primaryText} />
+            <Pressable
+              hitSlop={10}
+              onPress={closeSheet}
+              className="h-10 w-10 items-center justify-center rounded-full bg-white/10">
+              <Ionicons name="close" size={22} color="white" />
             </Pressable>
-          </BottomSheetView>
+          </View>
 
           <BottomSheetScrollView
-            contentContainerStyle={{
-              paddingBottom: 600,
-              paddingTop: 80,
-              paddingHorizontal: 24,
-            }}>
+            keyboardShouldPersistTaps="handled"
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={{ paddingBottom: 260, paddingTop: 8, paddingHorizontal: 24 }}>
             {sheetMode === 'GROUP' ? (
-              <View className="flex-1 gap-4">
-                <CustomTextInput
-                  title="Group Name"
-                  titleColor="text-text-1"
-                  value={gName}
-                  leftIconName="grid-outline"
-                  iconColor="#6B46C1" //purple
-                  onChangeText={setGName}
+              <View className="gap-6">
+                <OnboardingInput
+                  label="Group name"
+                  icon="grid-outline"
                   placeholder="e.g. Thursday Night"
+                  value={gName}
+                  onChangeText={setGName}
                   autoCapitalize="words"
+                  returnKeyType="done"
+                  onSubmitEditing={handleAddGroup}
                 />
-                <View className="flex gap-2">
-                  <Text className="mt-2 pl-2 font-saira-medium text-xl text-text-1">
-                    Competitor Type
+                <View className="gap-3">
+                  <Text className="pl-1 font-saira-semibold text-xs uppercase tracking-[2px] text-text-on-brand-2">
+                    Who competes in it?
                   </Text>
-                  <View className="flex-row gap-2">
-                    {['individual', 'team'].map((t) => (
-                      <Pressable
-                        key={t}
-                        onPress={() => setCompType(t)}
-                        className={`flex-1 items-center rounded-xl p-3 ${compType === t ? 'bg-theme-purple' : 'bg-gray-200'}`}>
-                        <Text
-                          className={`font-saira-medium text-lg ${compType === t ? 'text-white' : 'text-black'}`}>
-                          {t.slice(0, 1).toUpperCase() + t.slice(1)}
-                        </Text>
-                      </Pressable>
-                    ))}
-                  </View>
-                  <Text className="px-1 pt-2 text-sm text-text-2">
-                    Individual groups are for solo competitors, while team groups are for groups of
-                    2 or more. Please ensure this is correct as it will dictate who can join certain
-                    competitions and how they are displayed in the app.
+                  <ChoiceCard
+                    icon="people"
+                    iconColor="#10B981"
+                    title="Teams"
+                    subtitle="Groups of two or more players"
+                    selected={compType === 'team'}
+                    onPress={() => setCompType('team')}
+                  />
+                  <ChoiceCard
+                    icon="person"
+                    iconColor="#3B82F6"
+                    title="Individuals"
+                    subtitle="Solo competitors"
+                    selected={compType === 'individual'}
+                    onPress={() => setCompType('individual')}
+                  />
+                  <Text className="px-1 font-saira text-sm leading-5 text-text-on-brand-2">
+                    This decides who can join competitions in the group and how they appear in the
+                    app, so check it's right.
                   </Text>
                 </View>
               </View>
             ) : (
-              <View className="flex-1 gap-2">
-                <CustomMultiSelect
-                  options={groups.map((g) => ({ label: g.name, value: g.id }))}
-                  selectedValues={selectedGroupId ? [selectedGroupId] : []}
-                  onValueChange={(vals) => setSelectedGroupId(vals[0])}
-                  title="Group"
-                  placeholder="Select a group for this division"
-                  leftIconName="grid-outline"
-                  iconColor="purple"
-                  titleColor="text-text-1"
-                  multiSelect={false}
-                />
-                <CustomTextInput
+              <View className="gap-6">
+                <View className="gap-3">
+                  <Text className="pl-1 font-saira-semibold text-xs uppercase tracking-[2px] text-text-on-brand-2">
+                    Group
+                  </Text>
+                  <View className="flex-row flex-wrap gap-3">
+                    {groups.map((g) => {
+                      const active = selectedGroupId === g.id;
+                      return (
+                        <Pressable
+                          key={g.id}
+                          onPress={() => setSelectedGroupId(g.id)}
+                          className={`rounded-full border-2 px-5 py-2 ${
+                            active ? 'border-white bg-white' : 'border-white/20 bg-white/10'
+                          }`}>
+                          <Text
+                            className={`font-saira-medium text-lg ${active ? 'text-black' : 'text-text-on-brand'}`}>
+                            {g.name}
+                          </Text>
+                        </Pressable>
+                      );
+                    })}
+                  </View>
+                </View>
+
+                <OnboardingInput
+                  label="Division name"
+                  icon="trophy-outline"
+                  placeholder="e.g. Super League"
                   value={dName}
                   onChangeText={setDName}
-                  title="Division Name"
-                  placeholder="e.g. Super League"
-                  className="mb-4 h-12 rounded-lg border border-gray-300 bg-white px-3 font-saira text-xl"
-                  leftIconName="trophy-outline"
-                  iconColor="purple"
                   autoCapitalize="words"
-                  titleColor="text-text-1"
                 />
-                <View className="mt-4 flex-row gap-3">
+
+                <View className="flex-row gap-3">
                   <View className="flex-1">
-                    <CustomTextInput
+                    <OnboardingInput
+                      label="Tier"
+                      icon="medal-outline"
                       value={tier}
-                      onChangeText={setTier}
-                      keyboardType="numeric"
                       editable={false}
-                      className="mb-4 h-12 rounded-lg border border-gray-300 bg-white px-3 pb-2 text-xl"
-                      title="Tier"
-                      placeholder="e.g. 1"
-                      leftIconName="medal-outline"
-                      iconColor="#D7AF31"
-                      titleColor="text-text-1"
-                      clearButtonMode="never"
                     />
                   </View>
                   <View className="flex-1">
-                    <CustomTextInput
-                      title="Promotions"
+                    <OnboardingInput
+                      label="Promoted"
+                      icon="caret-up-outline"
                       value={isTopTier ? '0' : promo}
-                      onChangeText={setPromo}
-                      keyboardType="numeric"
-                      titleColor="text-text-1"
-                      placeholder="e.g. 3"
-                      leftIconName="caret-up-outline"
-                      iconColor="#34C757"
+                      onChangeText={(t) => setPromo(t.replace(/[^0-9]/g, ''))}
+                      keyboardType="number-pad"
                       editable={!isTopTier}
-                      clearButtonMode="never"
+                      maxLength={2}
                     />
                   </View>
                   <View className="flex-1">
-                    <CustomTextInput
+                    <OnboardingInput
+                      label="Relegated"
+                      icon="caret-down-outline"
                       value={releg}
-                      onChangeText={setReleg}
-                      title="Relegations"
-                      placeholder="e.g. 3"
-                      iconColor="#FF3B30"
-                      leftIconName="caret-down-outline"
-                      titleColor="text-text-1"
-                      keyboardType="numeric"
-                      clearButtonMode="never"
+                      onChangeText={(t) => setReleg(t.replace(/[^0-9]/g, ''))}
+                      keyboardType="number-pad"
+                      maxLength={2}
                     />
                   </View>
                 </View>
-                <View className="mt-4">
-                  <CustomTextInput
-                    title={`Max Competitors (optional)`}
-                    value={maxComps}
-                    onChangeText={setMaxComps}
-                    keyboardType="numeric"
-                    titleColor="text-text-1"
-                    placeholder="e.g. 20"
-                    leftIconName="people-outline"
-                    iconColor="purple"
-                    editable={!isTopTier}
-                    clearButtonMode="never"
-                  />
-                  <Text className="px-1 pt-2 text-sm text-text-2">
-                    This limits the number of{' '}
-                    {groups.find((g) => g.id === selectedGroupId)?.type === 'individual'
+
+                <OnboardingInput
+                  label="Max entrants (optional)"
+                  icon="people-outline"
+                  placeholder="No limit"
+                  value={maxComps ?? ''}
+                  onChangeText={(t) => setMaxComps(t.replace(/[^0-9]/g, '') || null)}
+                  keyboardType="number-pad"
+                  editable={!isTopTier}
+                  maxLength={3}
+                  hint={`Limits how many ${
+                    groups.find((g) => g.id === selectedGroupId)?.type === 'individual'
                       ? 'players'
-                      : 'teams'}{' '}
-                    that can be in this division. Leave blank for unlimited.
-                  </Text>
-                </View>
+                      : 'teams'
+                  } can join this division. Leave blank for unlimited.`}
+                />
               </View>
             )}
           </BottomSheetScrollView>
