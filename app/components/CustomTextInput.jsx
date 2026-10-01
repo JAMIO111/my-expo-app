@@ -29,6 +29,7 @@ const CustomTextInput = forwardRef((props, ref) => {
     textContentType = 'none',
     onBlur,
     disabled = false,
+    backgroundColor = 'bg-bg-grouped-3',
   } = props;
 
   // Inside a @gorhom/bottom-sheet the sheet has to know which input is focused
@@ -60,8 +61,8 @@ const CustomTextInput = forwardRef((props, ref) => {
       <Text className={`pb-1 pl-2 font-saira-medium text-xl ${titleColor}`}>{title}</Text>
       <View
         style={{ height: multiline ? 30 * numberOfLines : 56 }}
-        className={`${disabled ? 'opacity-50' : ''} h-14 flex-row ${multiline ? 'items-start' : 'items-center'} rounded-xl border border-theme-gray-3 bg-input-background pr-3`}>
-        <View className="h-full justify-center rounded-l-xl border-r border-theme-gray-3 bg-bg-grouped-1 pl-3 pr-4">
+        className={`${disabled ? 'opacity-50' : ''} h-14 flex-row ${multiline ? 'items-start' : 'items-center'} rounded-2xl border border-theme-gray-3 ${backgroundColor} pr-3`}>
+        <View className="h-full justify-center pl-3 pr-4 focus-within:border-2">
           <Ionicons name={leftIconName} size={leftIconSize} color={iconColor} />
         </View>
         <Input
@@ -69,7 +70,7 @@ const CustomTextInput = forwardRef((props, ref) => {
           keyboardType={keyboardType}
           style={{ lineHeight: 30 }}
           clearButtonMode={clearButtonMode}
-          className="flex-1 py-1 pl-3 font-saira text-xl text-text-1"
+          className="flex-1 py-1 pb-2 pl-3 font-saira text-xl text-text-1"
           placeholder={placeholder}
           placeholderTextColor="#9CA3AF"
           value={value}
