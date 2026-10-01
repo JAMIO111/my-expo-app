@@ -23,6 +23,8 @@ import { isInLiveWindow } from '@lib/liveWindow';
 import Avatar from '@components/Avatar';
 import LoadingScreen from '@components/LoadingScreen';
 import { useTheme } from '@contexts/ThemeProvider';
+import { useRevenueCat } from '@contexts/RevenueCatProvider';
+import { useUpgradeSheet } from '@contexts/UpgradeSheetProvider';
 
 const FixturesList = () => {
   const router = useRouter();
@@ -32,6 +34,11 @@ const FixturesList = () => {
   const { colors: themeColors } = useTheme();
 
   const bottomSheetRef = useRef(null);
+
+  // Everyone can open the filters and play with them; only Core and Pro members can apply them.
+  const { isPro, isCore } = useRevenueCat();
+  const { openUpgradeSheet } = useUpgradeSheet();
+  const canFilter = isPro || isCore;
 
   const defaultDistrict = currentRole?.district || null;
   const defaultSeason = currentRole?.activeSeason || null;
@@ -132,13 +139,42 @@ const FixturesList = () => {
     bottomSheetRef.current?.close();
   };
 
+  // Always start the sheet from what is currently applied, not whatever was picked last time and
+  // never saved.
+  const openFilter = (filter) => {
+    setTempDistrict(district);
+    setTempSeason(season);
+    setTempCompetitionInstance(competitionInstance);
+    setActiveFilter(filter);
+    openSheet();
+  };
+
   const handleSave = () => {
+    // Free users can browse the options but not apply them: the sheet stays open behind the prompt.
+    if (!canFilter) {
+      openUpgradeSheet({
+        title: 'Filters',
+        planName: 'Core',
+        description:
+          'Filter by district, season and competition with a Core or Pro plan. Everyone can still see their own league.',
+        onUpgrade: () => {
+          closeSheet();
+          router.push('/(main)/home/paywall');
+        },
+      });
+      return;
+    }
+
     switch (activeFilter) {
       case 'district':
         setDistrict(tempDistrict);
         break;
       case 'season':
         setSeason(tempSeason);
+        // jump to the month the newly chosen season starts in
+        if (tempSeason?.id !== season?.id && tempSeason?.start_date) {
+          setSelectedMonth(startOfMonth(parseISO(tempSeason.start_date)));
+        }
         break;
       case 'competition':
         setCompetitionInstance(tempCompetitionInstance);
@@ -203,26 +239,17 @@ const FixturesList = () => {
           <View className="flex-row gap-3">
             <DropdownFilterButton
               text={district?.name || 'Select District'}
-              callbackFn={() => {
-                setActiveFilter('district');
-                openSheet();
-              }}
+              callbackFn={() => openFilter('district')}
             />
             <DropdownFilterButton
               text={season?.name || 'Select Season'}
-              callbackFn={() => {
-                setActiveFilter('season');
-                openSheet();
-              }}
+              callbackFn={() => openFilter('season')}
             />
           </View>
           <View className="flex-row gap-3">
             <DropdownFilterButton
               text={competitionInstance?.name || 'Select Competition'}
-              callbackFn={() => {
-                setActiveFilter('competition');
-                openSheet();
-              }}
+              callbackFn={() => openFilter('competition')}
             />
           </View>
         </View>
