@@ -2,12 +2,17 @@ import { forwardRef, useState } from 'react';
 import { View, Text, TextInput, Pressable } from 'react-native';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 import Ionicons from '@expo/vector-icons/Ionicons';
+import { BottomSheetTextInput, useBottomSheetInternal } from '@gorhom/bottom-sheet';
 
 // Large, high-contrast text field for the dark onboarding sheet. Highlights when focused, has a clear
 // button, and passes returnKeyType / onSubmitEditing through so the keyboard's own key can move on.
 const OnboardingInput = forwardRef(
   ({ label, icon, value, onChangeText, delay = 0, hint, ...rest }, ref) => {
     const [focused, setFocused] = useState(false);
+    // inside a @gorhom bottom sheet the sheet must know which input is focused to lift above the keyboard
+    const inSheet = !!useBottomSheetInternal(true);
+    const Input = inSheet ? BottomSheetTextInput : TextInput;
+    const locked = rest.editable === false;
 
     return (
       <Animated.View entering={FadeInDown.delay(delay).duration(380)}>
@@ -16,12 +21,16 @@ const OnboardingInput = forwardRef(
         </Text>
         <View
           className={`h-16 flex-row items-center rounded-2xl border-2 px-4 ${
-            focused ? 'border-white bg-white/15' : 'border-white/15 bg-white/10'
+            locked
+              ? 'border-white/10 bg-white/5 opacity-60'
+              : focused
+                ? 'border-white bg-white/15'
+                : 'border-white/15 bg-white/10'
           }`}>
           {icon ? (
             <Ionicons name={icon} size={22} color={focused ? '#FFFFFF' : '#FFFFFF99'} />
           ) : null}
-          <TextInput
+          <Input
             ref={ref}
             value={value}
             onChangeText={onChangeText}
@@ -33,7 +42,7 @@ const OnboardingInput = forwardRef(
             style={{ lineHeight: 28 }}
             {...rest}
           />
-          {value ? (
+          {value && !locked ? (
             <Pressable hitSlop={10} onPress={() => onChangeText?.('')}>
               <Ionicons name="close-circle" size={20} color="#FFFFFF77" />
             </Pressable>
