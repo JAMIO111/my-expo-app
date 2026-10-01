@@ -19,6 +19,7 @@ import { useCompetitionInstances } from '@hooks/useCompetitionInstances';
 import { useSeasons } from '@hooks/useSeasons';
 import { getActiveSeason } from '@lib/helperFunctions';
 import LivePulseCard from '@components/LivePulseCard';
+import { isInLiveWindow } from '@lib/liveWindow';
 import Avatar from '@components/Avatar';
 import LoadingScreen from '@components/LoadingScreen';
 import { useTheme } from '@contexts/ThemeProvider';
@@ -304,11 +305,11 @@ const FixturesList = () => {
                       <Text className="mb-1 items-center justify-center gap-2 rounded-lg bg-theme-gray-5 px-1 text-center font-saira-medium text-text-1 shadow-sm">
                         Pending Confirmation
                       </Text>
-                    ) : (
+                    ) : isInLiveWindow(f.date_time) ? (
                       <View>
                         <LivePulseCard />
                       </View>
-                    )
+                    ) : null
                   ) : null}
                   <View className="flex-row items-center justify-center gap-2 rounded-lg">
                     <Text className="flex-1 text-right font-saira-semibold text-lg text-text-1">

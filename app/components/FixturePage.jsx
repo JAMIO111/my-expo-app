@@ -13,6 +13,7 @@ import FramesList from '@components/FramesList';
 import HeadToHead from '@components/HeadToHead';
 import SeasonStats from '@components/SeasonStats';
 import LivePulseCard from '@components/LivePulseCard';
+import { isInLiveWindow } from '@lib/liveWindow';
 import { useTeamPlayers } from '@hooks/useTeamPlayers';
 import Avatar from '@components/Avatar';
 import LoadingScreen from '@components/LoadingScreen';
@@ -296,7 +297,7 @@ const FixturePage = ({ fixtureDetails, isLoading, context }) => {
                           {`${days}d ${hours}h ${minutes}m ${seconds}s`}
                         </Text>
                       </View>
-                    ) : fixtureDetails?.date_time ? (
+                    ) : isInLiveWindow(fixtureDetails?.date_time) ? (
                       <LivePulseCard fontSize={18} dotSize={10} backgroundColor="bg-bg-3" />
                     ) : null}
                   </View>
