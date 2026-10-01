@@ -1,18 +1,28 @@
 import { BannerAd, BannerAdSize, TestIds } from 'react-native-google-mobile-ads';
 import { Platform } from 'react-native';
+import Constants from 'expo-constants';
 import { useRevenueCat } from '@contexts/RevenueCatProvider';
+
+const extra = Constants.expoConfig?.extra || {};
+
+// Only production builds may serve real ads. Development and preview builds always use Google's test
+// ad unit, so tapping an ad while testing can never count as invalid traffic on the AdMob account.
+const useRealAds = !__DEV__ && extra.APP_ENV === 'production';
 
 export default function AdBanner() {
   const { isPro } = useRevenueCat();
 
   if (isPro) return null;
 
-  const adUnitId = __DEV__
-    ? TestIds.BANNER
-    : Platform.select({
-        ios: 'your-real-ios-ad-unit-id',
-        android: 'your-real-android-ad-unit-id',
-      });
+  const adUnitId = useRealAds
+    ? Platform.select({
+        ios: extra.ADMOB_IOS_BANNER_ID,
+        android: extra.ADMOB_ANDROID_BANNER_ID,
+      })
+    : TestIds.BANNER;
+
+  // production build without a configured ad unit: show nothing rather than a broken ad
+  if (!adUnitId) return null;
 
   return (
     <BannerAd
@@ -21,8 +31,7 @@ export default function AdBanner() {
       requestOptions={{
         requestNonPersonalizedAdsOnly: true,
       }}
-      onAdLoaded={() => console.log('Banner ad loaded')}
-      onAdFailedToLoad={(error) => console.error('Banner ad failed to load:', error)}
+      onAdFailedToLoad={(error) => console.warn('Banner ad failed to load:', error?.message)}
     />
   );
 }

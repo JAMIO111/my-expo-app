@@ -96,6 +96,8 @@ export default ({ config }) => {
       SUPABASE_URL: process.env.SUPABASE_URL,
       SUPABASE_KEY: process.env.SUPABASE_KEY,
       SENTRY_DSN: process.env.SENTRY_DSN,
+      ADMOB_IOS_BANNER_ID: process.env.ADMOB_IOS_BANNER_ID,
+      ADMOB_ANDROID_BANNER_ID: process.env.ADMOB_ANDROID_BANNER_ID,
       APP_ENV: env,
       eas: {
         projectId: '3e7c3732-0ff2-449b-a27e-89d2cb14ada2',
