@@ -136,7 +136,7 @@ const index = () => {
             />
           </View>
           {requestTickets.length > 0 && (
-            <View className={`w-full gap-3 bg-bg-2 ${showInvites ? 'pb-8' : 'pb-2'} pt-2`}>
+            <View className={`w-full gap-3 bg-bg-grouped-2 ${showInvites ? 'pb-8' : 'pb-2'} pt-2`}>
               <View className="w-full flex-row items-center justify-between p-3 pr-6">
                 <View className="flex flex-1 flex-row items-center justify-between">
                   <Heading text="Requests & Invites" notificationCount={actionCount} />
