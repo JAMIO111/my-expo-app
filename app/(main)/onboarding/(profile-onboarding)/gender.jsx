@@ -9,6 +9,7 @@ import OnboardingScreen from '@components/onboarding/OnboardingScreen';
 const OPTIONS = [
   { value: 'male', label: 'Male', icon: 'male', color: '#3B82F6' },
   { value: 'female', label: 'Female', icon: 'female', color: '#EC4899' },
+  { value: 'none', label: 'Prefer not to say', icon: 'remove', color: '#6B7280' },
 ];
 
 const Gender = () => {
@@ -59,6 +60,16 @@ const Gender = () => {
             </Animated.View>
           );
         })}
+        {gender === 'none' ? (
+          <Animated.View
+            entering={FadeInDown.duration(300)}
+            className="flex-row items-start gap-3 rounded-2xl border border-amber-400/40 bg-amber-400/10 p-4">
+            <Ionicons name="warning-outline" size={20} color="#FBBF24" />
+            <Text className="flex-1 font-saira text-base leading-5 text-amber-200">
+              This may affect your ability to join certain competitions.
+            </Text>
+          </Animated.View>
+        ) : null}
         <Text className="px-1 pt-2 font-saira text-sm text-text-on-brand-2">
           You can only change this a couple of times after signing up.
         </Text>

@@ -75,7 +75,7 @@ const Avatar = () => {
         p_first_name: params.firstName,
         p_surname: params.surname,
         p_nickname: params.nickname,
-        p_gender: params.gender,
+        p_gender: params.gender === 'none' ? null : params.gender, // 'none' = prefer not to say
         p_dob: dobString,
         p_avatar_url: avatarUrl,
       });
