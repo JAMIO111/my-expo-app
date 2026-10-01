@@ -1,15 +1,24 @@
 // app/forgot-password.tsx
+import KeyboardAwareScrollView from '@components/KeyboardAwareScrollView';
 import { useState } from 'react';
 import { View, Text, TextInput, Alert } from 'react-native';
 import { supabase } from '@/lib/supabase';
 import CTAButton from '@components/CTAButton';
+import * as Linking from 'expo-linking';
 
 const ForgotPassword = () => {
   const [email, setEmail] = useState('');
 
   const handleReset = async () => {
+    // The app's registered scheme is "breakroom" (app.config.js), not
+    // "Break-Room" -- a hardcoded string here meant the reset link in the
+    // email could never actually open the app. Linking.createURL builds it
+    // from the real scheme, same as the OAuth redirect elsewhere. The path
+    // has to match the actual route -- this file lives at
+    // app/auth/reset-password.jsx, so the route is /auth/reset-password,
+    // not /reset-password.
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: 'Break-Room://reset-password',
+      redirectTo: Linking.createURL('auth/reset-password'),
     });
 
     if (error) {
@@ -20,7 +29,14 @@ const ForgotPassword = () => {
   };
 
   return (
-    <View className="flex-1 items-center justify-center gap-12 p-6">
+    <KeyboardAwareScrollView
+      contentContainerStyle={{
+        flexGrow: 1,
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: 48,
+        padding: 24,
+      }}>
       <View className="w-full gap-2">
         <Text className="w-full text-left font-delagothic text-5xl font-bold text-text-1">
           Forgotten Password
@@ -45,7 +61,7 @@ const ForgotPassword = () => {
           <CTAButton text="Send Reset Link" callbackFn={handleReset} />
         </View>
       </View>
-    </View>
+    </KeyboardAwareScrollView>
   );
 };
 

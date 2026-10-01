@@ -2,11 +2,12 @@ import React, { useCallback, useMemo, useRef, useState } from 'react';
 import { View, Text, useWindowDimensions } from 'react-native';
 import Animated, { useAnimatedScrollHandler, useSharedValue } from 'react-native-reanimated';
 import TicketCard from './TicketCard';
+import { useTheme } from '@contexts/ThemeProvider';
 
-const MemoTicketCard = React.memo(TicketCard);
 
 export default function TicketCarousel({
   tickets,
+  CardComponent = TicketCard,
   sidePeek = 50,
   cardGap = 16,
   showLabel = true,
@@ -15,6 +16,7 @@ export default function TicketCarousel({
   const { width: screenWidth } = useWindowDimensions();
   const cardWidth = screenWidth - sidePeek * 2;
   const snapInterval = cardWidth + cardGap;
+  const { colors: themeColors } = useTheme();
 
   const [activeIndex, setActiveIndex] = useState(0);
   const lastIndexRef = useRef(0);
@@ -41,6 +43,8 @@ export default function TicketCarousel({
     },
   });
 
+  const MemoCard = useMemo(() => React.memo(CardComponent), [CardComponent]);
+
   const renderItem = useCallback(
     ({ item, index }) => (
       <View
@@ -48,13 +52,18 @@ export default function TicketCarousel({
           width: cardWidth,
           marginRight: index === tickets.length - 1 ? 0 : cardGap,
         }}>
-        <MemoTicketCard item={item} width={cardWidth} />
+        <MemoCard item={item} width={cardWidth} />
       </View>
     ),
-    [cardWidth, cardGap, tickets.length]
+    [cardWidth, cardGap, tickets.length, MemoCard]
   );
 
-  const keyExtractor = useCallback((_, i) => String(i), []);
+  // Player invite/request rows have their player's id in `id`, so prefer the row's own id (and keep the
+// index as a tie-breaker so a repeated id can never produce a duplicate key).
+const keyExtractor = useCallback(
+    (item, i) => `${item?.key ?? item?.team_player_id ?? item?.id ?? 'ticket'}-${i}`,
+    []
+  );
 
   const listData = useMemo(() => tickets, [tickets]);
 
@@ -88,7 +97,8 @@ export default function TicketCarousel({
                   style={{
                     width: i === activeIndex ? 22 : 8,
                     height: 8,
-                    backgroundColor: i === activeIndex ? '#0b3910' : '#0b391066',
+                    backgroundColor:
+                      i === activeIndex ? themeColors.brandLight : themeColors.brandNormal,
                   }}
                 />
               ))}

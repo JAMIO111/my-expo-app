@@ -1,4 +1,5 @@
-import { ScrollView, View, Text } from 'react-native';
+import KeyboardAwareScrollView from '@components/KeyboardAwareScrollView';
+import { View, Text } from 'react-native';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { CircleCheckBig } from 'lucide-react-native';
@@ -142,7 +143,7 @@ const ManageAddress = () => {
     if (!addressId) return;
     setIsDeleting(true);
     try {
-      const { data, error } = await supabase.from('Addresses').delete().eq('id', addressId);
+      const { error } = await supabase.rpc('delete_address', { p_address_id: addressId });
       if (error) throw error;
       roleState === 'player' && (await refetch()); // Refresh user data if player
       roleState === 'admin' &&
@@ -161,10 +162,10 @@ const ManageAddress = () => {
     if (!addressId || !currentRole?.team?.id) return;
     setIsLinking(true);
     try {
-      const { data, error } = await supabase
-        .from('Teams')
-        .update({ address: addressId })
-        .eq('id', currentRole?.team?.id);
+      const { error } = await supabase.rpc('set_team_address', {
+        p_team_id: currentRole?.team?.id,
+        p_address_id: addressId,
+      });
       if (error) throw error;
       await refetch();
       await queryClient.invalidateQueries(['AddressDetails', addressId]);
@@ -184,10 +185,10 @@ const ManageAddress = () => {
     if (!addressId) return;
     setIsUnlinking(true);
     try {
-      const { data, error } = await supabase
-        .from('Teams')
-        .update({ address: null })
-        .eq('id', currentRole?.team?.id);
+      const { error } = await supabase.rpc('set_team_address', {
+        p_team_id: currentRole?.team?.id,
+        p_address_id: null,
+      });
       if (error) throw error;
       await refetch();
       await queryClient.invalidateQueries(['AddressDetails', addressId]);
@@ -239,7 +240,7 @@ const ManageAddress = () => {
         }}
       />
 
-      <ScrollView
+      <KeyboardAwareScrollView
         contentContainerStyle={{ alignItems: 'center', justifyContent: 'center' }}
         className="mt-16 flex-1 bg-bg-grouped-1 p-5">
         {addressLoading ? (
@@ -364,7 +365,7 @@ const ManageAddress = () => {
             )}
           </>
         )}
-      </ScrollView>
+      </KeyboardAwareScrollView>
     </SafeViewWrapper>
   );
 };

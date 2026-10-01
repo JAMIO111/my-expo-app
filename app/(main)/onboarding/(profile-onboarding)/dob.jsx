@@ -1,152 +1,98 @@
-import { Pressable, StyleSheet, Text, View, useColorScheme, Platform, Alert } from 'react-native';
-import { useState, useRef } from 'react';
-import CTAButton from '@components/CTAButton';
-import { useRouter, useLocalSearchParams, Stack } from 'expo-router';
-import StepPillGroup from '@components/StepPillGroup';
-import Ionicons from 'react-native-vector-icons/Ionicons';
-import BottomSheetWrapper from '@components/BottomSheetWrapper';
-import { BottomSheetFooter, BottomSheetView } from '@gorhom/bottom-sheet';
-import colors from '@lib/colors';
+import { useMemo, useState } from 'react';
+import { View, Text, Pressable, Platform } from 'react-native';
+import { useRouter, useLocalSearchParams } from 'expo-router';
 import DateTimePicker from '@react-native-community/datetimepicker';
-import Toast from 'react-native-toast-message';
+import Animated, { FadeInDown } from 'react-native-reanimated';
+import Ionicons from '@expo/vector-icons/Ionicons';
+import { useOnboardingStep } from '@contexts/OnboardingStepContext';
+import OnboardingScreen from '@components/onboarding/OnboardingScreen';
+
+const ageOn = (dob) => {
+  const now = new Date();
+  let age = now.getFullYear() - dob.getFullYear();
+  const m = now.getMonth() - dob.getMonth();
+  if (m < 0 || (m === 0 && now.getDate() < dob.getDate())) age -= 1;
+  return age;
+};
 
 const Dob = () => {
-  const [dob, setDob] = useState(null);
+  useOnboardingStep(3, 5);
   const router = useRouter();
-  const colorScheme = useColorScheme();
-  const themeColors = colors[colorScheme];
-  const bottomSheetRef = useRef(null);
   const params = useLocalSearchParams();
-  console.log('dob', dob);
 
-  const openSheet = () => {
-    bottomSheetRef.current?.expand();
+  const maxDob = useMemo(() => {
+    const d = new Date();
+    d.setFullYear(d.getFullYear() - 13); // must be at least 13
+    return d;
+  }, []);
+  const startDate = useMemo(() => new Date(Math.min(new Date(1995, 0, 1).getTime(), maxDob.getTime())), [maxDob]);
+
+  const [dob, setDob] = useState(null);
+  const [showAndroid, setShowAndroid] = useState(false);
+
+  const onChange = (event, date) => {
+    if (Platform.OS === 'android') setShowAndroid(false);
+    if (event?.type === 'dismissed' || !date) return;
+    setDob(date);
   };
 
-  const closeSheet = () => {
-    console.log('Closing sheet...'); // Add this
-    bottomSheetRef.current?.close();
-  };
-
-  const handleSave = () => {
-    closeSheet();
+  const next = () => {
+    if (!dob) return;
+    router.push({
+      pathname: '/(main)/onboarding/(profile-onboarding)/gender',
+      params: { ...params, dob: dob.toISOString() },
+    });
   };
 
   return (
-    <>
-      <Stack.Screen
-        options={{
-          title: 'Step 3 of 5',
-          headerBackTitle: 'Nickname',
-        }}
-      />
-      <View className="flex-1 gap-3 bg-brand">
-        <StepPillGroup steps={5} currentStep={3} />
-        <View className="p-4">
-          <Text className="mb-4 font-delagothic text-5xl font-bold text-text-on-brand">{`When were you born ${params.firstName}?`}</Text>
-          <Text className=" font-saira text-2xl text-text-on-brand-2">
-            So that we'll never forget your birthday.
+    <OnboardingScreen
+      title={`When were you born${params.firstName ? `, ${params.firstName}` : ''}?`}
+      subtitle="We use this for age-restricted competitions. You must be 13 or over."
+      onCta={next}
+      ctaDisabled={!dob}>
+      <Animated.View entering={FadeInDown.duration(380)} className="gap-5">
+        <Pressable
+          onPress={() => Platform.OS === 'android' && setShowAndroid(true)}
+          className="items-center rounded-3xl border-2 border-white/15 bg-white/10 px-6 py-8">
+          <Ionicons name="calendar-outline" size={30} color="#FFFFFFAA" />
+          <Text
+            className={`mt-3 text-center font-saira-semibold text-3xl ${dob ? 'text-text-on-brand' : 'text-text-on-brand-2'}`}>
+            {dob
+              ? dob.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })
+              : Platform.OS === 'ios'
+                ? 'Scroll to choose'
+                : 'Tap to choose'}
           </Text>
-        </View>
-        <View className="w-full flex-1 rounded-t-3xl bg-brand-dark p-6">
-          <View>
-            <Text className={`pb-1 pl-2 font-saira-medium text-lg text-text-on-brand`}>
-              Date of Birth
-            </Text>
-            <Pressable
-              onPress={openSheet}
-              className="h-14 flex-row items-center rounded-xl border border-theme-gray-3 bg-input-background pr-3">
-              <View className="h-full justify-center rounded-l-xl border-r border-theme-gray-3 bg-bg-grouped-1 pl-3 pr-4">
-                <Ionicons name="calendar" size={24} color="green" />
-              </View>
-              <View>
-                <Text
-                  className={`pl-5 font-saira-medium text-lg ${dob ? 'text-text-1' : 'text-text-3'}`}>
-                  {dob ? dob.toLocaleDateString() : 'Select your date of birth'}
-                </Text>
-              </View>
-            </Pressable>
-          </View>
-          <View className="mt-8">
-            <CTAButton
-              type="yellow"
-              textColor="black"
-              text="Continue"
-              callbackFn={() => {
-                if (!dob) {
-                  Toast.show({
-                    type: 'info',
-                    text1: 'Date of Birth Required',
-                    text2: 'Please select your date of birth.',
-                  });
-                  return;
-                }
-                router.push({
-                  pathname: '/(main)/onboarding/(profile-onboarding)/gender',
-                  params: { ...params, dob },
-                });
-              }}
-            />
-          </View>
-        </View>
-        <BottomSheetWrapper
-          ref={bottomSheetRef}
-          initialIndex={-1}
-          snapPoints={['10%']}
-          footerComponent={(props) => (
-            <BottomSheetFooter {...props}>
-              <View
-                style={{ paddingBottom: 140 }}
-                className="w-full rounded-t-3xl bg-bg-grouped-3 p-6">
-                <CTAButton text="Save" type="brand" callbackFn={handleSave} />
-              </View>
-            </BottomSheetFooter>
-          )}>
-          {/* Fixed Header */}
-          <BottomSheetView
-            style={{
-              paddingHorizontal: 32,
-              paddingTop: 8,
-              paddingBottom: 8,
-              borderBottomWidth: 1,
-              borderBottomColor: '#ccc',
-              backgroundColor: themeColors.bgGrouped2,
-              zIndex: 10,
-              flexDirection: 'row',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-            }}>
-            <Text style={{ lineHeight: 40 }} className="font-saira-medium text-3xl text-text-1">
-              Select Date of Birth
-            </Text>
-            <Pressable className="p-2" onPress={closeSheet}>
-              <Ionicons name="close" size={24} color={themeColors.primaryText} />
-            </Pressable>
-          </BottomSheetView>
+          {dob ? (
+            <Text className="mt-2 font-saira text-lg text-text-on-brand-2">{ageOn(dob)} years old</Text>
+          ) : null}
+        </Pressable>
 
-          {/* Scrollable content with top padding to avoid overlap */}
-          <BottomSheetView style={{ paddingBottom: 240, paddingTop: 80, paddingHorizontal: 32 }}>
-            {/* Your selectable items */}
-            <DateTimePicker
-              value={dob ? new Date(dob) : new Date(2000, 0, 1)}
-              minimumDate={new Date(1900, 0, 1)}
-              maximumDate={new Date()}
-              mode="date"
-              display={Platform.OS === 'ios' ? 'spinner' : 'default'}
-              onChange={(event, date) => {
-                if (event.type === 'set' && date) {
-                  setDob(date);
-                }
-              }}
-              style={{ width: '100%' }}
-            />
-          </BottomSheetView>
-        </BottomSheetWrapper>
-      </View>
-    </>
+        {Platform.OS === 'ios' ? (
+          <DateTimePicker
+            value={dob ?? startDate}
+            mode="date"
+            display="spinner"
+            themeVariant="dark"
+            textColor="#FFFFFF"
+            minimumDate={new Date(1900, 0, 1)}
+            maximumDate={maxDob}
+            onChange={onChange}
+            style={{ width: '100%' }}
+          />
+        ) : showAndroid ? (
+          <DateTimePicker
+            value={dob ?? startDate}
+            mode="date"
+            display="default"
+            minimumDate={new Date(1900, 0, 1)}
+            maximumDate={maxDob}
+            onChange={onChange}
+          />
+        ) : null}
+      </Animated.View>
+    </OnboardingScreen>
   );
 };
 
 export default Dob;
-
-const styles = StyleSheet.create({});

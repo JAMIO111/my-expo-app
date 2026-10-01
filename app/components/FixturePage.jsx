@@ -1,13 +1,4 @@
-import {
-  StyleSheet,
-  ScrollView,
-  Text,
-  View,
-  Pressable,
-  useColorScheme,
-  Linking,
-  Platform,
-} from 'react-native';
+import { StyleSheet, ScrollView, Text, View, Pressable, Linking, Platform } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
 import { useState, useRef } from 'react';
 import TeamLogo from '@components/TeamLogo';
@@ -15,7 +6,6 @@ import useKickoffCountdown from '@hooks/Countdown';
 import SlidingTabButton from '@components/SlidingTabButton';
 import { useRouter } from 'expo-router';
 import PlayersList from '@components/PlayersList';
-import colors from '@lib/colors';
 import { getContrastColor } from '@lib/helperFunctions';
 import FormWidget from '@components/FormWidget';
 import { FixtureDetailsSkeleton } from '@components/Skeletons';
@@ -23,17 +13,21 @@ import FramesList from '@components/FramesList';
 import HeadToHead from '@components/HeadToHead';
 import SeasonStats from '@components/SeasonStats';
 import LivePulseCard from '@components/LivePulseCard';
+import { isInLiveWindow } from '@lib/liveWindow';
 import { useTeamPlayers } from '@hooks/useTeamPlayers';
 import Avatar from '@components/Avatar';
 import LoadingScreen from '@components/LoadingScreen';
 import { useResultsByFixture } from '@hooks/useResultsByFixture';
 import SevenSegmentScoreboard from './SevenSegmentScoreboard';
 import Ionicons from '@expo/vector-icons/Ionicons';
+import { useTheme } from '@contexts/ThemeProvider';
+import SponsorshipCard from './SponsorshipCard';
+import useCompetitionSponsor from '@hooks/useCompetitionSponsor';
+import Heading from './Heading';
 
 const FixturePage = ({ fixtureDetails, isLoading, context }) => {
   const router = useRouter();
-  const colorScheme = useColorScheme();
-  const themeColors = colors[colorScheme];
+  const { colors: themeColors } = useTheme();
   const { fixtureId } = useLocalSearchParams();
   const { days, hours, minutes, seconds, isPast, isOverdue } = useKickoffCountdown(
     fixtureDetails?.date_time
@@ -51,6 +45,8 @@ const FixturePage = ({ fixtureDetails, isLoading, context }) => {
   } = useTeamPlayers(team === 'left' ? fixtureDetails?.homeTeam?.id : fixtureDetails?.awayTeam?.id);
 
   console.log('FixturePage fixtureDetails:', fixtureDetails);
+  const { data: sponsorInstance } = useCompetitionSponsor(fixtureDetails?.competition_instance_id);
+  console.log('FixturePage sponsorInstance:', sponsorInstance);
 
   const competitorType = fixtureDetails?.homeCompetitor?.type;
 
@@ -118,53 +114,60 @@ const FixturePage = ({ fixtureDetails, isLoading, context }) => {
         <View className="bg-bg-grouped-1">
           <View
             style={{ borderBottomLeftRadius: 24, borderBottomRightRadius: 24 }}
-            className="bg-brand p-3 pb-4">
-            <View className="overflow-hidden rounded-3xl bg-bg-2">
-              <View className=" flex-row items-center justify-between gap-2 bg-bg-1 px-4 py-2">
-                <Text className="text-left font-saira-medium text-text-1">
-                  {`${fixtureDetails?.competition?.season?.name} ${fixtureDetails?.competition?.name}${
-                    fixtureDetails?.competition?.competition_type?.competition_type !== 'league'
-                      ? ` - ${stage?.stage_type?.charAt(0)?.toUpperCase() + stage?.stage_type?.slice(1)}`
-                      : ''
-                  }`}
-                </Text>
-                <Text className="text-right font-saira-medium text-text-1">
-                  {stage?.name} Match
-                </Text>
-              </View>
-              <View className="pb-4">
-                <View className="gap-3">
-                  <View className="flex-row  items-center justify-between border-y border-theme-gray-4">
-                    <Pressable
-                      onPress={() => handleTeamPress(fixtureDetails?.homeCompetitor?.id)}
-                      style={{
-                        backgroundColor: fixtureDetails?.homeCompetitor?.crest?.color1 || '#FFD700',
-                      }}
-                      className="flex flex-1 flex-row items-center justify-center py-0.5">
-                      <Text
-                        numberOfLines={1}
-                        style={{ color: homeTextColor }}
-                        className={`font-tektur-semibold flex-1 py-1 pl-2 pr-4 text-center text-3xl`}>
-                        {competitorType === 'team'
-                          ? fixtureDetails?.homeCompetitor?.abbreviation
-                          : `${fixtureDetails?.homeCompetitor?.nickname?.toUpperCase() || fixtureDetails?.homeCompetitor?.surname?.toUpperCase()}`}
+            className="gap-3 bg-brand p-3 pb-4">
+            <View className="overflow-hidden rounded-3xl bg-bg-2 p-1">
+              <View>
+                <View className="gap-5">
+                  <View className="overflow-hidden rounded-[18px]">
+                    <View className="flex-row items-center justify-between">
+                      <Pressable
+                        onPress={() => handleTeamPress(fixtureDetails?.homeCompetitor?.id)}
+                        style={{
+                          backgroundColor:
+                            fixtureDetails?.homeCompetitor?.crest?.color1 || '#FFD700',
+                        }}
+                        className="flex flex-1 flex-row items-center justify-center py-0.5">
+                        <Text
+                          numberOfLines={1}
+                          style={{ color: homeTextColor }}
+                          className={`flex-1 py-1 pl-2 pr-4 text-center font-tektur-semibold text-3xl`}>
+                          {competitorType === 'team'
+                            ? fixtureDetails?.homeCompetitor?.abbreviation
+                            : `${fixtureDetails?.homeCompetitor?.nickname?.toUpperCase() || fixtureDetails?.homeCompetitor?.surname?.toUpperCase()}`}
+                        </Text>
+                      </Pressable>
+                      <Pressable
+                        onPress={() => handleTeamPress(fixtureDetails?.awayCompetitor?.id)}
+                        style={{
+                          backgroundColor:
+                            fixtureDetails?.awayCompetitor?.crest?.color1 || '#FF2211',
+                        }}
+                        className="flex flex-1 flex-row items-center justify-center py-0.5">
+                        <Text
+                          numberOfLines={1}
+                          style={{ color: competitorType === 'team' ? awayTextColor : '#fff' }}
+                          className={`flex-1 py-1 pl-2 pr-4 text-center font-tektur-semibold text-3xl`}>
+                          {competitorType === 'team'
+                            ? fixtureDetails?.awayCompetitor?.abbreviation
+                            : `${fixtureDetails?.awayCompetitor?.nickname?.toUpperCase() || fixtureDetails?.awayCompetitor?.surname?.toUpperCase()}`}
+                        </Text>
+                      </Pressable>
+                    </View>
+                    <View
+                      style={{ borderTopWidth: 0.5 }}
+                      className="flex-row items-center justify-between gap-2 border-t border-theme-gray-5 bg-bg-1 px-4 py-2">
+                      <Text className="text-left font-saira-medium text-text-1">
+                        {`${fixtureDetails?.competition?.season?.name} ${fixtureDetails?.competition?.name}${
+                          fixtureDetails?.competition?.competition_type?.competition_type !==
+                          'league'
+                            ? ` - ${stage?.stage_type?.charAt(0)?.toUpperCase() + stage?.stage_type?.slice(1)}`
+                            : ''
+                        }`}
                       </Text>
-                    </Pressable>
-                    <Pressable
-                      onPress={() => handleTeamPress(fixtureDetails?.awayCompetitor?.id)}
-                      style={{
-                        backgroundColor: fixtureDetails?.awayCompetitor?.crest?.color1 || '#FF2211',
-                      }}
-                      className="flex flex-1 flex-row items-center justify-center py-0.5">
-                      <Text
-                        numberOfLines={1}
-                        style={{ color: competitorType === 'team' ? awayTextColor : '#fff' }}
-                        className={`font-tektur-semibold flex-1 py-1 pl-2 pr-4 text-center text-3xl`}>
-                        {competitorType === 'team'
-                          ? fixtureDetails?.awayCompetitor?.abbreviation
-                          : `${fixtureDetails?.awayCompetitor?.nickname?.toUpperCase() || fixtureDetails?.awayCompetitor?.surname?.toUpperCase()}`}
+                      <Text className="text-right font-saira-medium text-text-1">
+                        {stage?.name} Match
                       </Text>
-                    </Pressable>
+                    </View>
                   </View>
                   <View className="w-full flex-row items-center justify-evenly">
                     <Pressable onPress={() => handleTeamPress(fixtureDetails?.homeCompetitor?.id)}>
@@ -209,47 +212,49 @@ const FixturePage = ({ fixtureDetails, isLoading, context }) => {
                     <Text
                       adjustsFontSizeToFit
                       numberOfLines={1}
-                      className="font-tektur-medium flex-1 text-right text-lg text-text-1">
+                      className="flex-1 text-right font-tektur-medium text-lg text-text-1">
                       {fixtureDetails?.homeCompetitor?.display_name}
                     </Text>
-                    <Text className="font-tektur w-6 text-text-2"> vs </Text>
+                    <Text className="w-6 font-tektur text-text-2"> vs </Text>
                     <Text
                       adjustsFontSizeToFit
                       numberOfLines={1}
-                      className="font-tektur-medium flex-1 text-left text-lg
+                      className="flex-1 text-left font-tektur-medium text-lg
                        text-text-1">
                       {fixtureDetails?.awayCompetitor?.display_name}
                     </Text>
                   </View>
                 </View>
 
-                <View className="mt-2 gap-5 border-t border-theme-gray-4 px-4 pt-4">
+                <View style={{ borderRadius: 18 }} className="mt-2 gap-5 bg-bg-2 p-4">
                   {/* Address row */}
                   <Pressable
                     onPress={address ? openNativeMaps : null}
                     className="flex-row items-center gap-3">
-                    <View className="items-center justify-center rounded-xl bg-bg-1 p-2 shadow-sm">
+                    <View className="items-center justify-center rounded-xl bg-bg-3 p-2 shadow-sm">
                       <Ionicons
                         name={address ? 'location-outline' : 'location-outline'}
                         size={24}
-                        color="#888"
+                        color={themeColors.icon}
                       />
                     </View>
                     <View className="flex-1">
                       <Text className="font-saira text-sm text-text-2">Venue</Text>
                       <Text
                         numberOfLines={2}
-                        className={`font-saira-medium text-base ${address ? 'text-text-1' : 'text-text-2'}`}>
+                        className={`font-saira-medium text-base ${address ? 'text-text-1 underline' : 'text-text-2'}`}>
                         {address || 'No address available'}
                       </Text>
                     </View>
-                    {address && <Ionicons name="chevron-forward-outline" size={20} color="#888" />}
+                    {address && (
+                      <Ionicons name="chevron-forward-outline" size={20} color={themeColors.icon} />
+                    )}
                   </Pressable>
 
                   {/* Date row */}
                   <View className="flex-row items-center gap-3">
-                    <View className="items-center justify-center rounded-xl bg-bg-1 p-2 shadow-sm">
-                      <Ionicons name="calendar-outline" size={24} color="#888" />
+                    <View className="items-center justify-center rounded-xl bg-bg-3 p-2 shadow-sm">
+                      <Ionicons name="calendar-outline" size={24} color={themeColors.icon} />
                     </View>
                     <View className="flex-1">
                       <Text className="font-saira text-sm text-text-2">
@@ -276,37 +281,46 @@ const FixturePage = ({ fixtureDetails, isLoading, context }) => {
                     </View>
                     {approved ? (
                       <View className="flex-row items-center justify-center gap-2 rounded-xl bg-bg-3 px-2 py-1 shadow-sm">
-                        <Ionicons name="checkmark-circle-outline" size={20} color="#888" />
+                        <Ionicons
+                          name="checkmark-circle-outline"
+                          size={20}
+                          color={themeColors.secondaryText}
+                        />
                         <Text style={{ fontSize: 16 }} className="font-saira-medium text-text-1">
                           Final Score
                         </Text>
                       </View>
                     ) : fixtureDetails?.date_time && !isPast ? (
                       <View className="flex-row items-center justify-center gap-2 rounded-xl bg-bg-3 px-2 py-1 shadow-sm">
-                        <Ionicons name="time-outline" size={20} color="#888" />
+                        <Ionicons name="time-outline" size={20} color={themeColors.secondaryText} />
                         <Text style={{ fontSize: 16 }} className="font-saira-medium text-text-1">
                           {`${days}d ${hours}h ${minutes}m ${seconds}s`}
                         </Text>
                       </View>
-                    ) : fixtureDetails?.date_time ? (
-                      <LivePulseCard fontSize={18} dotSize={10} />
+                    ) : isInLiveWindow(fixtureDetails?.date_time) ? (
+                      <LivePulseCard fontSize={18} dotSize={10} backgroundColor="bg-bg-3" />
                     ) : null}
                   </View>
                 </View>
               </View>
             </View>
+            <SponsorshipCard
+              sponsorInstance={sponsorInstance}
+              competitionName={fixtureDetails?.competition?.name}
+            />
+
+            <SlidingTabButton
+              option1="Stats"
+              option2={frames && frames.length > 0 ? 'Frames' : 'Squads'}
+              onChange={handleViewChange}
+              value={view}
+              backgroundColor="bg-bg-2"
+              tabColor="bg-bg-3"
+            />
           </View>
         </View>
       )}
       <View className="bg-bg-grouped-1 pb-16">
-        <View className="p-3">
-          <SlidingTabButton
-            option1="Stats"
-            option2={frames && frames.length > 0 ? 'Frames' : 'Squads'}
-            onChange={handleViewChange}
-            value={view}
-          />
-        </View>
         {view === 'right' ? (
           frames && frames.length > 0 ? (
             <View className="p-3">
@@ -337,8 +351,9 @@ const FixturePage = ({ fixtureDetails, isLoading, context }) => {
             </View>
           )
         ) : (
-          <View className="h-full gap-3 p-3">
+          <View className="h-full gap-8 p-3 pt-5">
             <View>
+              <Heading text="Recent Form" />
               <FormWidget
                 homeCompetitorId={fixtureDetails?.homeCompetitor?.id}
                 awayCompetitorId={fixtureDetails?.awayCompetitor?.id}
@@ -348,23 +363,23 @@ const FixturePage = ({ fixtureDetails, isLoading, context }) => {
               />
             </View>
             {fixtureDetails?.competition?.competition_type?.competition_type === 'league' && (
-              <>
-                <Text className="mt-2 font-saira-medium text-2xl text-text-1">Current Season</Text>
+              <View>
+                <Heading text="Current Season" />
                 <SeasonStats
                   fixtureDetails={fixtureDetails}
                   homeTeam={fixtureDetails?.homeCompetitor}
                   awayTeam={fixtureDetails?.awayCompetitor}
                 />
-              </>
+              </View>
             )}
-            <Text className="mt-2 pl-2 font-saira-medium text-2xl text-text-1">
-              Head to Head - All Time
-            </Text>
-            <HeadToHead
-              homeCompetitor={fixtureDetails?.homeCompetitor}
-              awayCompetitor={fixtureDetails?.awayCompetitor}
-              competitorType={competitorType}
-            />
+            <View>
+              <Heading text="Head to Head - All Time" />
+              <HeadToHead
+                homeCompetitor={fixtureDetails?.homeCompetitor}
+                awayCompetitor={fixtureDetails?.awayCompetitor}
+                competitorType={competitorType}
+              />
+            </View>
           </View>
         )}
       </View>

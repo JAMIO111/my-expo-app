@@ -2,7 +2,6 @@ import { useState, useEffect, useRef, useMemo } from 'react';
 import { View, Text, Pressable, Switch, StyleSheet } from 'react-native';
 import { supabase } from '@/lib/supabase';
 import { Stack, useRouter, useLocalSearchParams } from 'expo-router';
-import colors from '@lib/colors';
 import { Ionicons } from '@expo/vector-icons';
 import CTAButton from '@components/CTAButton';
 import TeamLogo from '@components/TeamLogo';
@@ -10,9 +9,10 @@ import Avatar from '@components/Avatar';
 import CustomHeader from '@components/CustomHeader';
 import SafeViewWrapper from '@components/SafeViewWrapper';
 import Toast from 'react-native-toast-message';
+import { useQueryClient } from '@tanstack/react-query';
+import { handleFixtureError } from '@lib/fixtureActionErrors';
 import FloatingBottomSheet from '@components/FloatingBottomSheet';
 import { useFixtureDetails } from '@hooks/useFixtureDetails';
-import { useColorScheme } from 'react-native';
 import { useTeamPlayers } from '@hooks/useTeamPlayers';
 import { useResultsByFixture } from '@hooks/useResultsByFixture';
 import { useSaveMatchResults } from '@hooks/useSaveMatchResults';
@@ -39,32 +39,46 @@ import {
   ClipboardCheck,
 } from 'lucide-react-native';
 import PlayerStatSelector from '@components/PlayerStatSelector';
+import { useTheme } from '@contexts/ThemeProvider';
+import { useUser } from '@contexts/UserProvider';
 
 const SubmitResultsScreen = () => {
   const [confirmDeleteModalVisible, setConfirmDeleteModalVisible] = useState(false);
   const [confirmSubmitModalVisible, setConfirmSubmitModalVisible] = useState(false);
   const [forfeitModalVisible, setForfeitModalVisible] = useState(false);
+  const [isForfeiting, setIsForfeiting] = useState(false);
   const [frameToDelete, setFrameToDelete] = useState(null);
   const [editingPlayer, setEditingPlayer] = useState(null);
   const [selectedPlayer, setSelectedPlayer] = useState(null);
   const [queryLoading, setQueryLoading] = useState(false);
   const router = useRouter();
-  const colorScheme = useColorScheme();
-  const themeColors = colors[colorScheme];
+  const { colors: themeColors, scheme: colorScheme } = useTheme();
   const bottomSheetRef = useRef(null);
   const { fixtureId } = useLocalSearchParams();
   const { data: existingResults, isLoading: isExistingResultsLoading } =
     useResultsByFixture(fixtureId);
   const { data: fixtureDetails, isLoading: isFixtureDetailsLoading } = useFixtureDetails(fixtureId);
   console.log('Fixture details:', fixtureDetails);
-  const trophyColor = colorScheme === 'dark' ? '#FFD700' : '#FFD700';
+  const trophyColor = '#FFD700';
   const { data: homeTeamPlayers, isLoading: isHomeTeamPlayersLoading } = useTeamPlayers(
     fixtureDetails?.homeTeam?.id
   );
   const { data: awayTeamPlayers, isLoading: isAwayTeamPlayersLoading } = useTeamPlayers(
     fixtureDetails?.awayTeam?.id
   );
-  const { saving, save } = useSaveMatchResults(fixtureId, existingResults);
+  const queryClient = useQueryClient();
+  // Another captain / vice captain got there first: the screen is out of date, so leave it.
+  const leaveStaleScreen = () => router.back();
+  const { currentRole } = useUser();
+  // A league admin opening an escalated fixture edits the frames and approves in one step.
+  const adminMode =
+    currentRole?.type === 'admin' && !!fixtureDetails?.is_escalated && !fixtureDetails?.approved;
+  const { saving, save, resolve } = useSaveMatchResults(
+    fixtureId,
+    existingResults,
+    fixtureDetails?.results_version,
+    leaveStaleScreen
+  );
   const [submitting, setSubmitting] = useState(false);
 
   const [frames, setFrames] = useState([]);
@@ -73,7 +87,7 @@ const SubmitResultsScreen = () => {
 
   const isHome = editingPlayer?.startsWith('home');
   const players = isHome ? homeTeamPlayers : awayTeamPlayers;
-  const amendMode = fixtureDetails?.is_disputed;
+  const amendMode = fixtureDetails?.is_disputed && !adminMode;
   const drawsAllowed = fixtureDetails?.competition?.draws_allowed;
 
   const bestOf = fixtureDetails?.competition?.best_of;
@@ -225,6 +239,86 @@ const SubmitResultsScreen = () => {
     return 'th';
   }
 
+  // Mirrors the server rules so problems are caught before the round trip. The server
+  // enforces them regardless (players, frame limits, winners, start time).
+  const getSubmitProblem = () => {
+    if (frames.length === 0) {
+      return {
+        title: 'No Frames',
+        message: 'Add at least one frame before submitting the result.',
+      };
+    }
+    const incompleteIndex = frames.findIndex(
+      (f) => !f.homePlayer1?.id || !f.awayPlayer1?.id || !f.winnerSide
+    );
+    if (incompleteIndex !== -1) {
+      return {
+        title: 'Frame Incomplete',
+        message: `Frame ${incompleteIndex + 1} needs both players and a winner.`,
+      };
+    }
+    if (
+      !adminMode &&
+      fixtureDetails?.date_time &&
+      new Date(fixtureDetails.date_time).getTime() > Date.now()
+    ) {
+      return {
+        title: 'Fixture Has Not Started',
+        message: 'Results can only be submitted once the fixture has started.',
+      };
+    }
+    return null;
+  };
+
+  const handleResolve = async ({ rejectForfeit = false } = {}) => {
+    const problem = getSubmitProblem();
+    if (problem) {
+      Toast.show({ type: 'info', text1: problem.title, text2: problem.message });
+      setConfirmSubmitModalVisible(false);
+      return false;
+    }
+    setSubmitting(true);
+    const success = await resolve(frames, { rejectForfeit });
+    setSubmitting(false);
+    setConfirmSubmitModalVisible(false);
+    if (success) router.back();
+    return success;
+  };
+
+  const handleApproveForfeit = async () => {
+    setSubmitting(true);
+    try {
+      const { data, error } = await supabase.rpc('approve_fixture_results', {
+        p_fixture_id: fixtureId,
+        p_approved_by: null,
+      });
+      if (error) throw error;
+      if (!data?.success) throw data ?? new Error('Approval failed');
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ['fixture-details', fixtureId] }),
+        queryClient.invalidateQueries({ queryKey: ['EscalatedFixtures'] }),
+        queryClient.invalidateQueries({ queryKey: ['FixturesAwaitingResults'] }),
+      ]);
+      Toast.show({
+        type: 'success',
+        text1: 'Forfeit Approved',
+        text2: 'The forfeit has been approved.',
+      });
+      router.back();
+    } catch (error) {
+      console.error('Error approving forfeit:', error);
+      await handleFixtureError(error, {
+        fallbackTitle: 'Approval Failed',
+        fallbackMessage: 'Could not approve the forfeit. Please try again.',
+        queryClient,
+        fixtureId,
+        onStale: leaveStaleScreen,
+      });
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
   const handleSave = async () => {
     console.log('Saving results...', frames);
     const normalFrameCount = frames.filter((f) => !f.bonusFrame).length;
@@ -241,6 +335,12 @@ const SubmitResultsScreen = () => {
   };
 
   const handleSubmit = async () => {
+    const problem = getSubmitProblem();
+    if (problem) {
+      Toast.show({ type: 'info', text1: problem.title, text2: problem.message });
+      setConfirmSubmitModalVisible(false);
+      return false;
+    }
     if (!drawsAllowed && homeScore === awayScore) {
       Toast.show({
         type: 'info',
@@ -269,18 +369,7 @@ const SubmitResultsScreen = () => {
     }
     setSubmitting(true);
     const success = await save(frames, true);
-    if (!success) {
-      Toast.show({
-        type: 'error',
-        text1: 'Save Failed',
-        text2: 'Could not save changes before submitting.',
-      });
-      setSubmitting(false);
-      return;
-    } else {
-      Toast.show({ type: 'success', text1: 'Success', text2: 'Results submitted successfully.' });
-      router.back();
-    }
+    if (success) router.back();
     setSubmitting(false);
   };
 
@@ -351,7 +440,13 @@ const SubmitResultsScreen = () => {
       router.back();
     } catch (err) {
       console.error(err);
-      Toast.show({ type: 'error', text1: 'Error', text2: 'Failed to amend results.' });
+      await handleFixtureError(err, {
+        fallbackTitle: 'Amendment Failed',
+        fallbackMessage: 'Could not amend the results. Please try again.',
+        queryClient,
+        fixtureId,
+        onStale: leaveStaleScreen,
+      });
     } finally {
       setQueryLoading(false);
     }
@@ -360,12 +455,7 @@ const SubmitResultsScreen = () => {
   const handleEscalate = async () => {
     setQueryLoading(true);
     try {
-      const { error } = await supabase
-        .from('Fixtures')
-        .update({ is_escalated: true, updated_at: new Date().toISOString() })
-        .eq('id', fixtureId)
-        .eq('approved', false)
-        .eq('is_disputed', true);
+      const { error } = await supabase.rpc('escalate_fixture', { p_fixture_id: fixtureId });
       if (error) throw error;
       Toast.show({
         type: 'success',
@@ -374,10 +464,13 @@ const SubmitResultsScreen = () => {
       });
       router.back();
     } catch (error) {
-      Toast.show({
-        type: 'error',
-        text1: 'Error',
-        text2: 'Could not escalate fixture. Please try again.',
+      console.error('Error escalating fixture:', error);
+      await handleFixtureError(error, {
+        fallbackTitle: 'Escalation Failed',
+        fallbackMessage: 'Could not escalate the fixture. Please try again.',
+        queryClient,
+        fixtureId,
+        onStale: leaveStaleScreen,
       });
     } finally {
       setQueryLoading(false);
@@ -392,18 +485,18 @@ const SubmitResultsScreen = () => {
     setForfeitModalVisible(false);
   };
 
-  const handleConfirmForfeit = async () => {
+  const handleConfirmForfeit = async ({ side, reason }) => {
     setIsForfeiting(true);
     try {
       const { data, error } = await supabase.rpc('forfeit_fixture', {
         p_fixture_id: fixtureId,
         p_side: side,
-        p_reason: forfeitReason || null,
+        p_reason: reason || null,
         p_admin: currentRole?.role === 'admin' ? true : false,
       });
 
       if (error) throw error;
-      if (!data?.success) throw new Error(data?.detail || data?.error || 'Forfeit failed');
+      if (!data?.success) throw data ?? new Error('Forfeit failed');
       Toast.show({
         type: 'success',
         text1: 'Forfeit Requested',
@@ -412,7 +505,13 @@ const SubmitResultsScreen = () => {
       router.back();
     } catch (err) {
       console.error(err);
-      Toast.show({ type: 'error', text1: 'Error', text2: 'Failed to request forfeit.' });
+      await handleFixtureError(err, {
+        fallbackTitle: 'Failed to request forfeit',
+        fallbackMessage: err?.detail || err?.message || 'Please try again.',
+        queryClient,
+        fixtureId,
+        onStale: leaveStaleScreen,
+      });
     } finally {
       setIsForfeiting(false);
       setForfeitModalVisible(false);
@@ -425,7 +524,7 @@ const SubmitResultsScreen = () => {
 
   // ─── Score card rendered as the list header ───────────────────────────────
   const ScoreHeader = (
-    <View className="my-4 rounded-3xl bg-bg-1 p-4 shadow-sm">
+    <View className="my-4 rounded-3xl bg-bg-grouped-2 p-4 shadow-sm">
       <View className="flex-row items-center justify-between gap-3 px-2">
         {/* HOME */}
         <View style={{ flex: 1 }} className="items-center">
@@ -444,19 +543,19 @@ const SubmitResultsScreen = () => {
           )}
           {fixtureDetails?.competitor_type === 'team' ? (
             <View className="mt-3 items-center">
-              <Text className="text-center font-saira-semibold text-lg text-text-1">
+              <Text className="text-center font-tektur-semibold text-lg text-text-1">
                 {fixtureDetails?.homeTeam?.abbreviation}
               </Text>
-              <Text className="text-center font-saira-semibold text-lg text-text-2">
+              <Text className="text-center font-tektur-semibold text-lg text-text-2">
                 {fixtureDetails?.homeTeam?.display_name}
               </Text>
             </View>
           ) : (
             <View className="flex-1 items-center">
-              <Text className="text-center font-saira-medium text-lg text-text-1">
+              <Text className="text-center font-tektur-medium text-lg text-text-1">
                 {fixtureDetails?.homePlayer?.first_name}
               </Text>
-              <Text className="text-center font-saira-medium text-lg text-text-2">
+              <Text className="text-center font-tektur-medium text-lg text-text-2">
                 {fixtureDetails?.homePlayer?.surname}
               </Text>
             </View>
@@ -465,24 +564,24 @@ const SubmitResultsScreen = () => {
 
         {/* CENTRE */}
         <View style={{ flex: 1.5 }} className="items-center justify-center">
-          <Text className="mb-2 text-center font-saira text-lg text-text-1">
+          <Text className="mb-2 text-center font-tektur text-lg text-text-1">
             {fixtureDetails?.competition?.name}
           </Text>
-          <View className="mx-2 flex-row items-center justify-center gap-1 rounded-2xl bg-bg-2 px-2 pb-1 pt-3 shadow-sm">
-            <Text className="w-12 text-center font-saira-bold text-3xl text-text-1">
+          <View className="mx-2 flex-row items-center justify-center gap-1 rounded-2xl bg-bg-grouped-3 px-2 pb-1 pt-3 shadow-sm">
+            <Text className="w-12 text-center font-tektur-bold text-3xl text-text-1">
               {homeScore}
             </Text>
-            <Text className="mb-2 font-saira text-text-2">vs</Text>
-            <Text className="w-12 text-center font-saira-bold text-3xl text-text-1">
+            <Text className="mb-2 font-tektur text-text-2">vs</Text>
+            <Text className="w-12 text-center font-tektur-bold text-3xl text-text-1">
               {awayScore}
             </Text>
           </View>
-          <Text className="mt-2 text-center font-saira-medium text-text-2">
+          <Text className="mt-2 text-center font-tektur-medium text-text-2">
             {fixtureDetails?.competition?.best_of
               ? `Best of ${fixtureDetails?.competition?.best_of} frames`
               : 'Open Frame Format'}
           </Text>
-          <Text className="mt-1 text-center font-saira text-text-2">
+          <Text className="mt-1 text-center font-tektur text-text-2">
             {new Date(fixtureDetails?.date_time).toLocaleDateString('en-GB', {
               weekday: 'short',
               day: 'numeric',
@@ -512,19 +611,19 @@ const SubmitResultsScreen = () => {
           )}
           {fixtureDetails?.competitor_type === 'team' ? (
             <View className="mt-3 items-center">
-              <Text className="font-saira-semibold text-lg text-text-1">
+              <Text className="font-tektur-semibold text-lg text-text-1">
                 {fixtureDetails?.awayTeam?.abbreviation}
               </Text>
-              <Text className="text-center font-saira-semibold text-lg text-text-2">
+              <Text className="text-center font-tektur-semibold text-lg text-text-2">
                 {fixtureDetails?.awayTeam?.display_name}
               </Text>
             </View>
           ) : (
             <View className="flex-1 items-center">
-              <Text className="text-center font-saira-medium text-lg text-text-1">
+              <Text className="text-center font-tektur-medium text-lg text-text-1">
                 {fixtureDetails?.awayPlayer?.first_name}
               </Text>
-              <Text className="text-center font-saira-medium text-lg text-text-2">
+              <Text className="text-center font-tektur-medium text-lg text-text-2">
                 {fixtureDetails?.awayPlayer?.surname}
               </Text>
             </View>
@@ -547,6 +646,38 @@ const SubmitResultsScreen = () => {
         : homeCount === 1 && awayCount === 1;
 
     const dragDisabled = !!activeFrameId || (amendMode && !isDisputed);
+
+    const PlayerSlot = ({ player, context, opponent, onPress, activeFrame, updateActiveFrame }) => (
+      <View
+        style={{ borderRadius: 18 }}
+        className="flex-1 flex-col gap-2 border border-theme-gray-5 p-1">
+        <Pressable
+          onPress={onPress}
+          className="flex-1 flex-row items-center justify-start gap-3 rounded-2xl bg-bg-grouped-3 p-2">
+          {player ? (
+            <Avatar size={32} borderRadius={8} player={player} />
+          ) : (
+            <View className="ml-2 h-8 w-8 flex-row items-center justify-center">
+              <UserPlus size={22} color={themeColors.secondaryText} />
+            </View>
+          )}
+
+          <Text
+            numberOfLines={1}
+            className={`text-center font-saira-medium ${player ? 'text-text-1' : 'text-text-2'}`}>
+            {getPlayerName(player)}
+          </Text>
+        </Pressable>
+
+        {player && opponent && (
+          <PlayerStatSelector
+            activeFrame={activeFrame}
+            updateActiveFrame={updateActiveFrame}
+            context={context}
+          />
+        )}
+      </View>
+    );
 
     return (
       <ScaleDecorator>
@@ -585,12 +716,12 @@ const SubmitResultsScreen = () => {
                 style={{ borderTopRightRadius: 14, borderTopLeftRadius: 14 }}
                 className={`gap-2 border-b border-theme-gray-5 ${amendMode && isDisputed ? 'bg-theme-red' : ''} pb-4`}>
                 <Text
-                  className={`mt-6 w-full px-5 ${isActive ? 'text-left' : 'text-center'} font-saira-semibold text-xl ${isDisputed ? 'text-white' : 'text-text-2'}`}>
+                  className={`mt-6 w-full px-5 ${isActive ? 'text-left' : 'text-center'} font-tektur-medium text-xl ${isDisputed ? 'text-white' : 'text-text-2'}`}>
                   {index}
                   {`${getOrdinalSuffix(index)} Frame ${fixtureDetails?.is_disputed ? '- Disputed' : ''}`}
                 </Text>
                 {amendMode && isDisputed && (
-                  <Text className="px-5 text-left font-saira text-sm text-white">
+                  <Text className="px-5 text-left font-tektur text-sm text-white">
                     {frame?.comment}
                   </Text>
                 )}
@@ -623,7 +754,12 @@ const SubmitResultsScreen = () => {
                         });
                       }
                     }}
-                    className="flex-row items-center gap-2 rounded-xl border border-[#3ca65c] bg-[#2b7c41] p-2 px-4">
+                    style={{
+                      backgroundColor: themeColors.success.primary,
+                      borderColor: themeColors.success.secondary,
+                      borderWidth: 1,
+                    }}
+                    className="flex-row items-center gap-2 rounded-xl p-2 px-4">
                     <Ionicons name="checkmark-outline" size={24} color={'white'} />
                     <Text className="font-saira-medium text-lg text-white">Save</Text>
                   </Pressable>
@@ -633,7 +769,12 @@ const SubmitResultsScreen = () => {
                         setFrameToDelete(frame.tempId);
                         setConfirmDeleteModalVisible(true);
                       }}
-                      className="rounded-xl border border-theme-red/50 bg-theme-red/80 p-2">
+                      style={{
+                        backgroundColor: themeColors.error.primary,
+                        borderColor: themeColors.error.secondary,
+                        borderWidth: 1,
+                      }}
+                      className="rounded-xl p-2">
                       <Ionicons name="trash-outline" size={24} color={'white'} />
                     </Pressable>
                   )}
@@ -647,19 +788,19 @@ const SubmitResultsScreen = () => {
                       {
                         value: 'singles',
                         label: 'Singles',
-                        icon: <User size={14} color="#000" />,
+                        icon: <User size={14} color={themeColors.icon} />,
                         selectedIcon: <User size={14} color="#fff" />,
                       },
                       {
                         value: 'scotch-doubles',
                         label: 'Scotch Doubles',
-                        icon: <Users size={14} color="#000" />,
+                        icon: <Users size={14} color={themeColors.icon} />,
                         selectedIcon: <Users size={14} color="#fff" />,
                       },
                       {
                         value: 'standard-doubles',
                         label: 'Standard Doubles',
-                        icon: <Users size={14} color="#000" />,
+                        icon: <Users size={14} color={themeColors.icon} />,
                         selectedIcon: <Users size={14} color="#fff" />,
                       },
                     ]}
@@ -670,140 +811,51 @@ const SubmitResultsScreen = () => {
                   />
                 )}
 
-                <View className="flex-row gap-5">
-                  <View
-                    style={{ borderRadius: 18 }}
-                    className="flex-1 flex-col gap-2 border border-theme-gray-5 p-1">
-                    <Pressable
-                      onPress={() => {
-                        if (fixtureDetails?.competitor_type === 'individual') return;
-                        setEditingPlayer('homePlayer1');
-                        openSheet();
-                      }}
-                      className="flex-1 flex-row items-center justify-start gap-3 rounded-2xl bg-bg-2 p-2">
-                      {frame.homePlayer1 ? (
-                        <Avatar size={32} borderRadius={8} player={frame.homePlayer1} />
-                      ) : (
-                        <View className="ml-2 h-8 w-8 flex-row items-center justify-center">
-                          <UserPlus size={22} color="#666" />
-                        </View>
-                      )}
+                <View className="flex-col gap-3">
+                  {[1, 2].map((playerNumber) => {
+                    if (playerNumber === 2 && activeFrame?.frameType === 'singles') {
+                      return null;
+                    }
 
-                      <Text
-                        numberOfLines={1}
-                        className={`text-center ${frame.homePlayer1 ? 'font-saira-medium text-text-1' : 'font-saira-medium text-text-2'}`}>
-                        {getPlayerName(frame.homePlayer1)}
-                      </Text>
-                    </Pressable>
-                    {frame.homePlayer1 && frame.awayPlayer1 && (
-                      <PlayerStatSelector
-                        activeFrame={activeFrame}
-                        updateActiveFrame={updateActiveFrame}
-                        context="homePlayer1"
-                      />
-                    )}
-                  </View>
-                  <View
-                    style={{ borderRadius: 18 }}
-                    className="flex-1 flex-col gap-2 border border-theme-gray-5 p-1">
-                    <Pressable
-                      onPress={() => {
-                        if (fixtureDetails?.competitor_type === 'individual') return;
-                        setEditingPlayer('awayPlayer1');
-                        openSheet();
-                      }}
-                      className="flex-1 flex-row items-center justify-start gap-3 rounded-2xl bg-bg-2 p-2">
-                      {frame.awayPlayer1 ? (
-                        <Avatar size={32} borderRadius={8} player={frame.awayPlayer1} />
-                      ) : (
-                        <View className="ml-2 h-8 w-8 flex-row items-center justify-center">
-                          <UserPlus size={22} color="#666" />
-                        </View>
-                      )}
-                      <Text
-                        numberOfLines={1}
-                        className={`text-center ${frame.awayPlayer1 ? 'font-saira-medium text-text-1' : 'font-saira-medium text-text-2'}`}>
-                        {getPlayerName(frame.awayPlayer1)}
-                      </Text>
-                    </Pressable>
-                    {frame.homePlayer1 && frame.awayPlayer1 && (
-                      <PlayerStatSelector
-                        activeFrame={activeFrame}
-                        updateActiveFrame={updateActiveFrame}
-                        context="awayPlayer1"
-                      />
-                    )}
-                  </View>
+                    const homeContext = `homePlayer${playerNumber}`;
+                    const awayContext = `awayPlayer${playerNumber}`;
+
+                    const homePlayer = frame[homeContext];
+                    const awayPlayer = frame[awayContext];
+
+                    return (
+                      <View key={playerNumber} className="flex-row gap-5">
+                        <PlayerSlot
+                          player={homePlayer}
+                          context={homeContext}
+                          opponent={awayPlayer}
+                          activeFrame={activeFrame}
+                          updateActiveFrame={updateActiveFrame}
+                          onPress={() => {
+                            if (fixtureDetails?.competitor_type === 'individual') return;
+
+                            setEditingPlayer(homeContext);
+                            openSheet();
+                          }}
+                        />
+
+                        <PlayerSlot
+                          player={awayPlayer}
+                          context={awayContext}
+                          opponent={homePlayer}
+                          activeFrame={activeFrame}
+                          updateActiveFrame={updateActiveFrame}
+                          onPress={() => {
+                            if (fixtureDetails?.competitor_type === 'individual') return;
+
+                            setEditingPlayer(awayContext);
+                            openSheet();
+                          }}
+                        />
+                      </View>
+                    );
+                  })}
                 </View>
-                {activeFrame?.frameType !== 'singles' && (
-                  <View className="mt-3 flex-col">
-                    <View className="flex-row gap-5">
-                      <View
-                        style={{ borderRadius: 18 }}
-                        className="flex-1 flex-col gap-2 border border-theme-gray-5 p-1">
-                        <Pressable
-                          onPress={() => {
-                            if (fixtureDetails?.competitor_type === 'individual') return;
-                            setEditingPlayer('homePlayer2');
-                            openSheet();
-                          }}
-                          className="flex-1 flex-row items-center justify-start gap-3 rounded-2xl bg-bg-2 p-2">
-                          {frame.homePlayer2 ? (
-                            <Avatar size={32} borderRadius={8} player={frame.homePlayer2} />
-                          ) : (
-                            <View className="ml-2 h-8 w-8 flex-row items-center justify-center">
-                              <UserPlus size={22} color="#666" />
-                            </View>
-                          )}
-                          <Text
-                            numberOfLines={1}
-                            className={`text-center ${frame.homePlayer2 ? 'font-saira-medium text-text-1' : 'font-saira-medium text-text-2'}`}>
-                            {getPlayerName(frame.homePlayer2)}
-                          </Text>
-                        </Pressable>
-                        {frame.homePlayer2 && frame.awayPlayer2 && (
-                          <PlayerStatSelector
-                            activeFrame={activeFrame}
-                            updateActiveFrame={updateActiveFrame}
-                            context="homePlayer2"
-                          />
-                        )}
-                      </View>
-                      <View
-                        style={{ borderRadius: 18 }}
-                        className="flex-1 flex-col gap-2 border border-theme-gray-5 p-1">
-                        <Pressable
-                          onPress={() => {
-                            if (fixtureDetails?.competitor_type === 'individual') return;
-                            setEditingPlayer('awayPlayer2');
-                            openSheet();
-                          }}
-                          className="flex-1 flex-row items-center justify-start gap-3 rounded-2xl bg-bg-2 p-2">
-                          {frame.awayPlayer2 ? (
-                            <Avatar size={32} borderRadius={8} player={frame.awayPlayer2} />
-                          ) : (
-                            <View className="ml-2 h-8 w-8 flex-row items-center justify-center">
-                              <UserPlus size={22} color="#666" />
-                            </View>
-                          )}
-                          <Text
-                            numberOfLines={1}
-                            className={`text-center ${frame.awayPlayer2 ? 'font-saira-medium text-text-1' : 'font-saira-medium text-text-2'}`}>
-                            {getPlayerName(frame.awayPlayer2)}
-                          </Text>
-                        </Pressable>
-                        {frame.awayPlayer2 && frame.homePlayer2 && (
-                          <PlayerStatSelector
-                            activeFrame={activeFrame}
-                            updateActiveFrame={updateActiveFrame}
-                            context="awayPlayer2"
-                          />
-                        )}
-                      </View>
-                    </View>
-                    <View className="flex-row gap-5 pb-2"></View>
-                  </View>
-                )}
 
                 {isValidPlayers && (
                   <View className="flex-col items-center justify-center gap-3">
@@ -836,7 +888,7 @@ const SubmitResultsScreen = () => {
                       </Pressable>
                     </View>
                     {/* Bonus frame toggle */}
-                    <View className="mt-2 flex-row items-center justify-between gap-5 border-t border-theme-gray-4 bg-bg-1 pt-3">
+                    <View className="mt-2 flex-row items-center justify-between gap-5 border-t border-theme-gray-4 pl-2 pr-4 pt-3">
                       <View className="flex-1 items-start justify-center gap-1">
                         <Text className="font-saira-medium text-xl text-text-1">
                           {fixtureDetails?.competition?.special_match_name || 'Bonus Frame'}
@@ -874,15 +926,23 @@ const SubmitResultsScreen = () => {
           />
           <FloatingBottomSheet
             visible={confirmSubmitModalVisible}
-            title="Submit Results?"
-            message={`Are you sure you want to submit the final results? Once submitted, you won't be able to make any changes unless the opponent disputes the result.`}
+            title={adminMode ? 'Save and Approve?' : 'Submit Results?'}
+            message={
+              adminMode
+                ? 'This saves the frames as shown and approves the result straight away. Player stats are updated and the result cannot be changed afterwards.'
+                : `Are you sure you want to submit the final results? Once submitted, you won't be able to make any changes unless the opponent disputes the result.`
+            }
             onCancel={handleCancel}
             topButtonText="Cancel"
-            bottomButtonText="Submit"
+            bottomButtonText={adminMode ? 'Approve' : 'Submit'}
             topButtonType="default"
             bottomButtonType="success"
             topButtonFn={handleCancel}
-            bottomButtonFn={handleSubmit}
+            bottomButtonFn={
+              adminMode
+                ? () => handleResolve({ rejectForfeit: !!fixtureDetails?.is_forfeited })
+                : handleSubmit
+            }
           />
 
           {/* ── Collapsed summary view ───────────────────────────────── */}
@@ -918,12 +978,12 @@ const SubmitResultsScreen = () => {
                   )}
                   {(frame.reverseDish1 || frame.reverseDish2) && frame.winnerSide === 'home' && (
                     <View className="items-center justify-center rounded-lg bg-bg-1 p-2 shadow-sm">
-                      <Undo2 size={14} color="#000000" />
+                      <Undo2 size={14} color={themeColors.primaryText} />
                     </View>
                   )}
                   {(frame.breakDish1 || frame.breakDish2) && frame.winnerSide === 'home' && (
                     <View className="items-center justify-center rounded-lg bg-bg-1 p-2 shadow-sm">
-                      <Zap size={14} color="#000" />
+                      <Zap size={14} color={themeColors.primaryText} />
                     </View>
                   )}
                   {frame.winnerSide === 'home' && (
@@ -963,12 +1023,12 @@ const SubmitResultsScreen = () => {
                   )}
                   {(frame.breakDish1 || frame.breakDish2) && frame.winnerSide === 'away' && (
                     <View className="items-center justify-center rounded-lg bg-bg-1 p-2 shadow-sm">
-                      <Zap size={14} color="#000" />
+                      <Zap size={14} color={themeColors.primaryText} />
                     </View>
                   )}
                   {(frame.reverseDish1 || frame.reverseDish2) && frame.winnerSide === 'away' && (
                     <View className="items-center justify-center rounded-lg bg-bg-1 p-2 shadow-sm">
-                      <Undo2 size={14} color="#000000" />
+                      <Undo2 size={14} color={themeColors.primaryText} />
                     </View>
                   )}
                   {(frame.lagWon === frame.awayPlayer1?.id ||
@@ -1052,7 +1112,7 @@ const SubmitResultsScreen = () => {
       isAwayTeamPlayersLoading ? (
         <LoadingScreen />
       ) : (
-        <View className="flex-1 bg-bg-2">
+        <View className="flex-1 bg-bg-grouped-1">
           {/* ── DraggableFlatList replaces the old ScrollView + .map() ── */}
           <DraggableFlatList
             // Display in reverse so newest frame is at the top
@@ -1097,16 +1157,39 @@ const SubmitResultsScreen = () => {
                       type="default"
                       lucideIcon={
                         frameCountReached ? (
-                          <ShieldAlert size={22} color="#FFF" />
+                          <ShieldAlert size={22} color={themeColors.bg1} />
                         ) : (
-                          <Plus size={24} color="#FFF" />
+                          <Plus size={24} color={themeColors.bg1} />
                         )
                       }
                       disabled={submitting || saving}
                       callbackFn={addFrame}
                     />
                   )}
-                  {!amendMode && frames.length > 0 && (
+                  {adminMode && fixtureDetails?.is_forfeited && (
+                    <CTAButton
+                      text={submitting ? 'Approving...' : 'Approve Forfeit'}
+                      type="success"
+                      disabled={saving || submitting}
+                      loading={submitting}
+                      callbackFn={handleApproveForfeit}
+                    />
+                  )}
+                  {adminMode && frames.length > 0 && (
+                    <CTAButton
+                      text={
+                        fixtureDetails?.is_forfeited
+                          ? 'Reject Forfeit and Approve Result'
+                          : 'Save and Approve Result'
+                      }
+                      type={fixtureDetails?.is_forfeited ? 'error' : 'success'}
+                      lucideIcon={<Send size={24} color="#FFF" />}
+                      callbackFn={() => setConfirmSubmitModalVisible(true)}
+                      disabled={saving || submitting}
+                      loading={submitting || saving}
+                    />
+                  )}
+                  {!amendMode && !adminMode && frames.length > 0 && (
                     <View className="gap-3">
                       <CTAButton
                         text={saving ? 'Saving Updates...' : 'Save Updates'}
@@ -1126,9 +1209,9 @@ const SubmitResultsScreen = () => {
                       />
                     </View>
                   )}
-                  {!amendMode && (
+                  {!amendMode && !(adminMode && fixtureDetails?.is_forfeited) && (
                     <CTAButton
-                      text={'Request Forfeit'}
+                      text={adminMode ? 'Forfeit Fixture' : 'Request Forfeit'}
                       type="error"
                       lucideIcon={<Flag size={20} color="#FFF" />}
                       disabled={submitting || saving}
@@ -1149,9 +1232,7 @@ const SubmitResultsScreen = () => {
         snapPoints={['90%']}
         footerComponent={(props) => (
           <BottomSheetFooter {...props}>
-            <View
-              style={{ paddingBottom: 140 }}
-              className="w-full rounded-t-3xl bg-bg-grouped-3 p-6">
+            <View style={{ paddingBottom: 140 }} className="w-full rounded-t-3xl bg-bg-3 p-6">
               <CTAButton text="Save" type="brand" callbackFn={handlePlayerSave} />
             </View>
           </BottomSheetFooter>
@@ -1162,8 +1243,8 @@ const SubmitResultsScreen = () => {
             paddingTop: 8,
             paddingBottom: 8,
             borderBottomWidth: 1,
-            borderBottomColor: '#ccc',
-            backgroundColor: themeColors.bgGrouped2,
+            borderBottomColor: themeColors.border,
+            backgroundColor: themeColors.bg2,
             zIndex: 10,
             flexDirection: 'row',
             alignItems: 'center',
@@ -1192,7 +1273,7 @@ const SubmitResultsScreen = () => {
                   if (isAlreadySelected) return;
                   setSelectedPlayer(player);
                 }}
-                className={`mb-3 flex-row items-center gap-3 rounded-2xl border-2 bg-bg-2 p-2 ${
+                className={`mb-3 flex-row items-center gap-3 rounded-2xl border-2 bg-bg-3 p-2 ${
                   selectedPlayer?.id === player.id
                     ? 'border-brand'
                     : isAlreadySelected
@@ -1210,6 +1291,7 @@ const SubmitResultsScreen = () => {
             visible={forfeitModalVisible}
             onCancel={handleCancelForfeit}
             onConfirm={handleConfirmForfeit}
+            loading={isForfeiting}
           />
         </BottomSheetScrollView>
       </BottomSheetWrapper>

@@ -14,11 +14,13 @@ import PlayerLeaderboard from '@components/PlayerLeaderboard';
 import { usePlayerRankings } from '@hooks/usePlayerRankings';
 import ChipSelector from '@components/ChipSelector';
 import { useUser } from '@contexts/UserProvider';
+import { useTheme } from '@contexts/ThemeProvider';
 
 const HEADER_HEIGHT = 54;
 const CHIP_BAR_FALLBACK_HEIGHT = 56;
 
 const LeaderboardLayout = () => {
+  const { colors: themeColors } = useTheme();
   const { currentRole } = useUser();
   const [selectedScope, setSelectedScope] = useState('Global');
   const [chipBarHeight, setChipBarHeight] = useState(CHIP_BAR_FALLBACK_HEIGHT);
@@ -89,7 +91,9 @@ const LeaderboardLayout = () => {
         {/* Clipping container: anything the chip bar slides above its own
             top edge is cut off here, so it tucks away cleanly regardless
             of how the native header is layered/elevated. */}
-        <View style={{ flex: 1, marginTop: HEADER_HEIGHT, overflow: 'hidden' }}>
+        <View
+          className="flex-1 bg-bg-grouped-1"
+          style={{ flex: 1, marginTop: HEADER_HEIGHT, overflow: 'hidden' }}>
           <Animated.View
             onLayout={(e) => {
               const height = e.nativeEvent.layout.height;
@@ -99,25 +103,25 @@ const LeaderboardLayout = () => {
               }
             }}
             style={[styles.chipBar, chipAnimatedStyle]}
-            className="border-b border-theme-gray-5 bg-white py-2">
+            className="border-b border-theme-gray-5 bg-bg-1 py-2">
             <ChipSelector
               options={[
                 {
                   value: 'Global',
                   label: 'Global',
-                  icon: <Globe size={14} color="#000" />,
+                  icon: <Globe size={14} color={themeColors.icon} />,
                   selectedIcon: <Globe size={14} color="#fff" />,
                 },
                 {
                   value: 'District',
                   label: 'My District',
-                  icon: <Landmark size={14} color="#000" />,
+                  icon: <Landmark size={14} color={themeColors.icon} />,
                   selectedIcon: <Landmark size={14} color="#fff" />,
                 },
                 {
                   value: 'Division',
                   label: 'My Division',
-                  icon: <List size={14} color="#000" />,
+                  icon: <List size={14} color={themeColors.icon} />,
                   selectedIcon: <List size={14} color="#fff" />,
                 },
               ]}

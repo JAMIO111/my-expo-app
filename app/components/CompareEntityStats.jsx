@@ -1,14 +1,6 @@
 import { useRef, useState } from 'react';
-import {
-  View,
-  Image,
-  Text,
-  Animated,
-  StyleSheet,
-  StatusBar,
-  Pressable,
-  TouchableOpacity,
-} from 'react-native';
+import { View, Image, Text, Animated, StyleSheet, Pressable, TouchableOpacity } from 'react-native';
+import { StatusBar } from 'expo-status-bar';
 import { Ionicons } from '@expo/vector-icons';
 import BottomSheetWrapper from '@/components/BottomSheetWrapper';
 import { BottomSheetScrollView } from '@gorhom/bottom-sheet';
@@ -26,8 +18,10 @@ import MultiOptionSlidingToggle from './MultiOptionSlidingToggle';
 import ProGate from './ProGate';
 import ChipSelector from './ChipSelector';
 import { Globe, List, Landmark } from 'lucide-react-native';
+import { useTheme } from '@contexts/ThemeProvider';
 
 export default function CompareTeamStats() {
+  const { colors: themeColors } = useTheme();
   const { currentRole } = useUser();
   const { defaultEntity, entityType } = useLocalSearchParams();
   const [selectedScope, setSelectedScope] = useState('District');
@@ -117,7 +111,7 @@ export default function CompareTeamStats() {
 
   const EmptySearchState = ({ type }) => (
     <View className="w-full items-center justify-center rounded-2xl bg-bg-2 py-8">
-      <Ionicons name="search-outline" size={36} color="#333" />
+      <Ionicons name="search-outline" size={36} color={themeColors.secondaryText} />
 
       <Text className="mt-3 text-lg text-text-1" style={{ fontFamily: 'Saira-SemiBold' }}>
         No {type} found
@@ -131,8 +125,8 @@ export default function CompareTeamStats() {
 
   return (
     <>
-      <View style={styles.container}>
-        <StatusBar barStyle="light-content" />
+      <View style={[styles.container, { backgroundColor: themeColors.bgGrouped1 }]}>
+        <StatusBar style="light" />
         {stats1 && stats2 ? (
           <Animated.ScrollView
             className="bg-brand-dark p-3"
@@ -295,7 +289,7 @@ export default function CompareTeamStats() {
               </Text>
               <Text className="text-sm text-text-on-brand-2">
                 {entityType === 'team'
-                  ? entity1?.division.name
+                  ? entity1?.division?.name
                   : entity1?.nickname?.toUpperCase() || ''}
               </Text>
             </View>
@@ -311,7 +305,7 @@ export default function CompareTeamStats() {
               </Text>
               <Text className="text-sm text-text-on-brand-2">
                 {entityType === 'team'
-                  ? entity2?.division.name
+                  ? entity2?.division?.name
                   : entity2?.nickname?.toUpperCase() || ''}
               </Text>
             </View>
@@ -342,8 +336,8 @@ export default function CompareTeamStats() {
       <BottomSheetWrapper ref={bottomSheetRef} initialIndex={-1} snapPoints={['100%']}>
         <AnimatedSearchBar
           cancelColor="text-text-2"
-          backColor="bg-bg-1"
-          searchBarColor="bg-bg-2"
+          backColor="bg-bg-2"
+          searchBarColor="bg-bg-1"
           searchActive={searchActive}
           setSearchActive={setSearchActive}
           onDebouncedChange={setSearchQuery}
@@ -396,7 +390,7 @@ export default function CompareTeamStats() {
                       {teams.map((entity, index) => (
                         <Pressable
                           key={entity.id}
-                          className={`relative rounded-xl bg-bg-2 py-4 ${
+                          className={`relative rounded-xl bg-bg-grouped-3 py-4 ${
                             (changingEntity === 'entity1' && entity.id === entity1?.id) ||
                             (changingEntity === 'entity2' && entity.id === entity2?.id)
                               ? 'border-2 border-brand'
@@ -467,7 +461,7 @@ export default function CompareTeamStats() {
                     {filteredEntities.map((entity, index) => (
                       <Pressable
                         key={entity.id}
-                        className={`relative rounded-xl bg-bg-2 py-4 ${
+                        className={`relative rounded-xl bg-bg-3 py-4 ${
                           (changingEntity === 'entity1' && entity.id === entity1?.id) ||
                           (changingEntity === 'entity2' && entity.id === entity2?.id)
                             ? 'border-2 border-brand'

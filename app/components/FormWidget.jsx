@@ -1,5 +1,5 @@
 import { Text, Pressable, View } from 'react-native';
-import { useRef } from 'react';
+import { useRef, useEffect } from 'react';
 import { Animated, Easing } from 'react-native';
 import { useLast5Results } from '@hooks/useLast5Results'; // adjust import as needed
 import Ionicons from 'react-native-vector-icons/Ionicons';
@@ -17,12 +17,49 @@ const getColor = (result) => {
   }
 };
 
-const FormCircle = ({ result }) => {
+const FormCircle = ({ result, loading }) => {
+  const spin = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    if (!loading) {
+      spin.stopAnimation();
+      spin.setValue(0);
+      return;
+    }
+
+    const animation = Animated.loop(
+      Animated.timing(spin, {
+        toValue: 1,
+        duration: 800,
+        easing: Easing.linear,
+        useNativeDriver: true,
+      })
+    );
+
+    animation.start();
+
+    return () => animation.stop();
+  }, [loading]);
+
+  const rotation = spin.interpolate({
+    inputRange: [0, 1],
+    outputRange: ['0deg', '360deg'],
+  });
+
   const isEmpty = result === '-';
+
   return (
     <View
       style={{ padding: 2 }}
-      className={`${result === 'L' ? 'border-2 border-theme-red' : result === 'W' ? 'border-2 border-theme-green' : result === 'D' ? 'border-2 border-theme-gray-1' : ''} items-center justify-center rounded-full`}>
+      className={`items-center justify-center rounded-full ${
+        result === 'L'
+          ? 'border-2 border-theme-red'
+          : result === 'W'
+            ? 'border-2 border-theme-green'
+            : result === 'D'
+              ? 'border-2 border-theme-gray-1'
+              : ''
+      }`}>
       <View className={`h-5 w-5 items-center justify-center rounded-full ${getColor(result)}`}>
         {!isEmpty ? (
           <Ionicons
@@ -118,17 +155,9 @@ const FormWidget = ({
     return 'No recent streak';
   };
 
-  if (loadingHome || loadingAway) {
-    return (
-      <View className="items-center justify-center rounded-3xl bg-bg-1 p-10 shadow-sm">
-        <Text className="text-center font-saira text-lg text-text-2">Loading form data...</Text>
-      </View>
-    );
-  }
-
   return (
     <Pressable onPress={handlePress} pointerEvents="box-none">
-      <View className="h-28 gap-4 rounded-3xl bg-bg-1 px-2 py-3 shadow-sm">
+      <View className="h-28 gap-4 rounded-3xl bg-bg-grouped-2 px-2 py-3">
         <View className="flex-row items-center justify-between px-2">
           <Text className="text-md flex-1 text-left font-saira font-semibold text-text-1">
             {getFormStreak(homeForm)}
@@ -144,7 +173,7 @@ const FormWidget = ({
         <View className="flex-1 flex-row items-center justify-between px-2">
           <View className="flex-1 flex-row items-center gap-1">
             {[...(homeForm ?? [])].reverse().map((result, index) => (
-              <FormCircle key={`home-${index}`} result={result} />
+              <FormCircle key={`home-${index}`} result={result} loading={loadingHome} />
             ))}
           </View>
           <View className="mx-2">
@@ -154,7 +183,7 @@ const FormWidget = ({
           </View>
           <View className="flex-1 flex-row items-center justify-end gap-1">
             {(awayForm ?? []).map((result, index) => (
-              <FormCircle key={`away-${index}`} result={result} />
+              <FormCircle key={`away-${index}`} result={result} loading={loadingAway} />
             ))}
           </View>
         </View>

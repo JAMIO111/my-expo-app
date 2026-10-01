@@ -1,9 +1,9 @@
+import KeyboardAwareScrollView from '@components/KeyboardAwareScrollView';
 import { useState, useEffect, useCallback } from 'react';
 import { View, Text, Platform, Pressable } from 'react-native';
 import { useFixtureDetails } from '@hooks/useFixtureDetails';
 import TeamLogo from './TeamLogo';
 import Avatar from './Avatar';
-import { ScrollView } from 'react-native-gesture-handler';
 import LoadingScreen from './LoadingScreen';
 import CTAButton from './CTAButton';
 import DateTimePicker from '@react-native-community/datetimepicker';
@@ -13,6 +13,7 @@ import CustomDropdown from './CustomDropdown';
 import { useAddresses } from '@hooks/useAddresses';
 import { useUser } from '@contexts/UserProvider';
 import Toast from 'react-native-toast-message';
+import { handleFixtureError } from '@lib/fixtureActionErrors';
 import { supabase } from '@/lib/supabase';
 import { useQueryClient } from '@tanstack/react-query';
 import FloatingBottomSheet from '@components/FloatingBottomSheet';
@@ -28,7 +29,7 @@ export const PickerRow = ({
   isExpanded,
   minimumDate,
   onToggle,
-  backgroundColor = 'bg-bg-2',
+  backgroundColor = 'bg-bg-grouped-1',
   disabled = false,
 }) => (
   <View
@@ -283,10 +284,11 @@ const FixtureManagement = ({ fixtureId, closeModal }) => {
     } catch (error) {
       console.error('Error saving fixture:', error);
 
-      Toast.show({
-        type: 'error',
-        text1: 'Error Updating Fixture',
-        text2: error?.message || 'Something went wrong while updating the fixture.',
+      await handleFixtureError(error, {
+        fallbackTitle: 'Error Updating Fixture',
+        fallbackMessage: error?.message || 'Something went wrong while updating the fixture.',
+        queryClient,
+        fixtureId,
       });
     } finally {
       setIsSaving(false);
@@ -305,7 +307,7 @@ const FixtureManagement = ({ fixtureId, closeModal }) => {
       });
 
       if (error) throw error;
-      if (!data?.success) throw new Error(data?.detail || data?.error || 'Forfeit failed');
+      if (!data?.success) throw data ?? new Error('Forfeit failed');
 
       await Promise.all([
         queryClient.invalidateQueries(['fixture-details', fixtureId]),
@@ -329,10 +331,12 @@ const FixtureManagement = ({ fixtureId, closeModal }) => {
     } catch (error) {
       console.error('Error forfeiting fixture:', error);
 
-      Toast.show({
-        type: 'error',
-        text1: 'Error Forfeiting Fixture',
-        text2: error?.message || 'Something went wrong while forfeiting the fixture.',
+      await handleFixtureError(error, {
+        fallbackTitle: 'Error Forfeiting Fixture',
+        fallbackMessage:
+          error?.detail || error?.message || 'Something went wrong while forfeiting the fixture.',
+        queryClient,
+        fixtureId,
       });
     } finally {
       setIsForfeiting(false);
@@ -368,7 +372,7 @@ const FixtureManagement = ({ fixtureId, closeModal }) => {
   return (
     <View className="flex-1">
       {/* Match header */}
-      <View className="flex-row items-center justify-between gap-10 rounded-t-2xl bg-bg-3 p-3 shadow-sm">
+      <View className="flex-row items-center justify-between gap-10 bg-bg-grouped-1 p-3 shadow-sm">
         {/* Home */}
         <View className="flex-1 items-start">
           <View className="flex-row items-center justify-start gap-4">
@@ -379,23 +383,23 @@ const FixtureManagement = ({ fixtureId, closeModal }) => {
             )}
             <Text
               style={{ lineHeight: 50 }}
-              className={`font-saira-semibold ${isIndividual ? 'text-xl' : 'text-4xl'}`}>
+              className={`font-tektur-semibold ${isIndividual ? 'text-xl' : 'text-4xl'}`}>
               {isIndividual
                 ? fixture?.homeCompetitor?.nickname?.toUpperCase() ||
                   `(${fixture?.homeCompetitor?.first_name})`
                 : fixture?.homeCompetitor?.abbreviation}
             </Text>
           </View>
-          <Text className="pl-1 font-saira-medium text-lg text-text-2">
+          <Text className="pl-1 font-tektur-medium text-lg text-text-2">
             {fixture?.homeCompetitor?.display_name}
           </Text>
         </View>
 
         <View className="w-24 flex-row items-start justify-center">
-          <View className="flex-row items-center justify-center gap-2 rounded-xl bg-theme-gray-4 px-3 py-1.5">
-            <Text className="font-michroma text-2xl text-text-1">{homeScore}</Text>
-            <Text className="font-michroma text-2xl text-text-2">-</Text>
-            <Text className="font-michroma text-2xl text-text-1">{awayScore}</Text>
+          <View className="flex-row items-center justify-center gap-2 rounded-xl bg-theme-gray-4 px-4 pb-2 pt-3">
+            <Text className="font-tektur text-4xl text-text-1">{homeScore}</Text>
+            <Text className="font-tektur text-3xl text-text-2">-</Text>
+            <Text className="font-tektur text-4xl text-text-1">{awayScore}</Text>
           </View>
         </View>
 
@@ -404,7 +408,7 @@ const FixtureManagement = ({ fixtureId, closeModal }) => {
           <View className="flex-row items-center justify-start gap-4">
             <Text
               style={{ lineHeight: 50 }}
-              className={`font-saira-semibold ${isIndividual ? 'text-xl' : 'text-4xl'}`}>
+              className={`font-tektur-semibold ${isIndividual ? 'text-xl' : 'text-4xl'}`}>
               {isIndividual
                 ? fixture?.awayCompetitor?.nickname?.toUpperCase() ||
                   `(${fixture?.awayCompetitor?.first_name})`
@@ -416,25 +420,25 @@ const FixtureManagement = ({ fixtureId, closeModal }) => {
               <TeamLogo size={40} {...fixture?.awayCompetitor?.crest} />
             )}
           </View>
-          <Text className="pr-1 text-right font-saira-medium text-lg text-text-2">
+          <Text className="pr-1 text-right font-tektur-medium text-lg text-text-2">
             {fixture?.awayCompetitor?.display_name}
           </Text>
         </View>
       </View>
 
-      <ScrollView
-        className="flex-1 bg-bg-2"
-        contentContainerStyle={{ flexGrow: 1, paddingTop: 8, gap: 8, paddingBottom: 380 }}
+      <KeyboardAwareScrollView
+        className="flex-1 bg-bg-grouped-1"
+        contentContainerStyle={{ flexGrow: 1, paddingTop: 8, gap: 8, paddingBottom: 140 }}
         keyboardShouldPersistTaps="handled">
-        <View className="gap-2 bg-bg-1 p-5">
+        <View className="gap-2 bg-bg-grouped-2 p-5">
           {/* Fixture details summary */}
           <Heading text="Fixture Details" />
 
-          <View className="gap-3 rounded-2xl bg-bg-2 p-4 shadow-sm">
+          <View className="gap-3 rounded-2xl p-4">
             <View className="flex-row items-center gap-3">
               <Ionicons name="calendar-outline" size={22} color="purple" />
-              <Text className="font-saira text-lg text-text-1">Date & Time</Text>
-              <Text className="flex-1 text-right font-saira-medium text-lg text-text-1">
+              <Text className="font-tektur text-lg text-text-1">Date & Time</Text>
+              <Text className="flex-1 text-right font-tektur-medium text-lg text-text-1">
                 {dateTime.toLocaleString('en-GB', {
                   weekday: 'short',
                   day: 'numeric',
@@ -451,10 +455,10 @@ const FixtureManagement = ({ fixtureId, closeModal }) => {
             <View className="flex-row items-start gap-3">
               <View className=" flex-row items-center gap-3">
                 <Ionicons name="location-outline" size={22} color="purple" />
-                <Text className="font-saira text-lg text-text-1">Location</Text>
+                <Text className="font-tektur text-lg text-text-1">Location</Text>
               </View>
               <Text
-                className={`flex-1 text-right font-saira-medium text-lg ${selectedVenueLabel === 'No Venue Set' ? 'text-text-2' : 'text-text-1'}`}>
+                className={`flex-1 text-right font-tektur-medium text-lg ${selectedVenueLabel === 'No Venue Set' ? 'text-text-2' : 'text-text-1'}`}>
                 {selectedVenueLabel}
               </Text>
             </View>
@@ -464,7 +468,7 @@ const FixtureManagement = ({ fixtureId, closeModal }) => {
             <View className="flex-row items-start gap-3">
               <View className=" flex-row items-center gap-3">
                 <Ionicons name="radio-button-on-outline" size={22} color="purple" />
-                <Text className="font-saira text-lg text-text-1">Status</Text>
+                <Text className="font-tektur text-lg text-text-1">Status</Text>
               </View>
               <View className="flex-1 gap-1">
                 <View className="flex-row items-center justify-end gap-2">
@@ -478,18 +482,18 @@ const FixtureManagement = ({ fixtureId, closeModal }) => {
                     }}
                   />
 
-                  <Text className="text-right font-saira-medium text-lg text-text-1">
+                  <Text className="text-right font-tektur-medium text-lg text-text-1">
                     {status.status1}
                   </Text>
                 </View>
-                <Text className="flex-1 text-right font-saira text-sm text-text-2">
+                <Text className="flex-1 text-right font-tektur text-sm text-text-2">
                   {status.status2}
                 </Text>
               </View>
             </View>
           </View>
         </View>
-        <View className="w-full gap-5 bg-bg-1 p-5">
+        <View className="w-full gap-5 bg-bg-grouped-2 p-5">
           <Heading text="Fixture Scheduling" />
 
           <PickerRow
@@ -514,7 +518,7 @@ const FixtureManagement = ({ fixtureId, closeModal }) => {
             onToggle={() => togglePicker('time')}
           />
         </View>
-        <View className="w-full gap-5 bg-bg-1 p-5">
+        <View className="w-full gap-5 bg-bg-grouped-2 p-5">
           <Heading text="Fixture Venue" />
           <CustomDropdown
             options={venueOptions}
@@ -526,7 +530,7 @@ const FixtureManagement = ({ fixtureId, closeModal }) => {
             placeholder="Select a Venue..."
           />
         </View>
-        <View className="w-full gap-5 bg-bg-1 p-5">
+        <View className="w-full gap-5 bg-bg-grouped-2 p-5">
           <Heading text="Forfeit Fixture" />
           {!isForfeited ? (
             <>
@@ -579,7 +583,7 @@ const FixtureManagement = ({ fixtureId, closeModal }) => {
         <View className="w-full gap-5 bg-bg-1 p-5">
           <Text className="text-center text-xs">{`Fixture ID: ${fixture?.id}`}</Text>
         </View>
-      </ScrollView>
+      </KeyboardAwareScrollView>
       <FloatingBottomSheet
         visible={modalVisible}
         onCancel={closeFloatingModal}

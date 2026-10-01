@@ -10,18 +10,20 @@ import {
 } from 'react-native';
 import { useState, useRef, useEffect } from 'react';
 import { Check, X, Link, Unlink } from 'lucide-react-native';
+import * as AppleAuthentication from 'expo-apple-authentication';
 import { supabase } from '@/lib/supabase';
 import { Stack } from 'expo-router';
 import SettingsItem from '@components/SettingsItem';
 import MenuContainer from '@components/MenuContainer';
 import { useUser } from '@contexts/UserProvider';
+import { useTheme } from '@contexts/ThemeProvider';
 import SafeViewWrapper from '@components/SafeViewWrapper';
 import CTAButton from '@components/CTAButton';
 import FloatingBottomSheet from '@components/FloatingBottomSheet';
 import CustomHeader from '@components/CustomHeader';
 import Purchases from 'react-native-purchases';
 import IonIcons from 'react-native-vector-icons/Ionicons';
-import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
+import KeyboardAwareScrollView from '@components/KeyboardAwareScrollView';
 import Toast from 'react-native-toast-message';
 import { makeRedirectUri } from 'expo-auth-session';
 import * as WebBrowser from 'expo-web-browser';
@@ -46,12 +48,14 @@ const getPasswordStrength = (pw) => {
 // ─── Secure input ─────────────────────────────────────────
 const PasswordInput = ({ placeholder, value, onChangeText, hasError }) => {
   const [visible, setVisible] = useState(false);
+  const { colors: themeColors } = useTheme();
+  const styles = createStyles(themeColors);
   return (
     <View style={[styles.inputWrap, hasError && styles.inputWrapError]}>
       <TextInput
         style={styles.input}
         placeholder={placeholder}
-        placeholderTextColor="#9ca3af"
+        placeholderTextColor={themeColors.secondaryText}
         secureTextEntry={!visible}
         value={value}
         onChangeText={onChangeText}
@@ -60,7 +64,11 @@ const PasswordInput = ({ placeholder, value, onChangeText, hasError }) => {
         textContentType="password"
       />
       <Pressable onPress={() => setVisible((v) => !v)} style={styles.eyeBtn} hitSlop={8}>
-        <IonIcons name={visible ? 'eye-off-outline' : 'eye-outline'} size={20} color="#9ca3af" />
+        <IonIcons
+          name={visible ? 'eye-off-outline' : 'eye-outline'}
+          size={20}
+          color={themeColors.secondaryText}
+        />
       </Pressable>
     </View>
   );
@@ -92,33 +100,21 @@ const PROVIDERS = [
     key: 'apple',
     label: 'Apple',
     icon: require('../../assets/apple-logo.png'),
+    iconDark: require('../../assets/apple-logo-dark.png'),
     canUnlink: true,
   },
 ];
 
 // ─── Connected Logins Section ─────────────────────────────
-const ConnectedLoginsSection = ({ user, onIdentitiesChange }) => {
-  const [identities, setIdentities] = useState(user?.identities ?? []);
+// identities/refreshIdentities are owned by the parent (SignInAndSecurity)
+// now, not this component -- the "Add a password" panel down there needs to
+// see the same live identity list this section links/unlinks, so there's
+// one shared source of truth instead of two copies that can drift apart.
+const ConnectedLoginsSection = ({ identities, refreshIdentities }) => {
+  const { colors: themeColors, isDark } = useTheme();
+  const styles = createStyles(themeColors);
   const [loadingKey, setLoadingKey] = useState(null);
   const [confirmUnlink, setConfirmUnlink] = useState(null);
-
-  const refreshIdentities = async () => {
-    const { data, error } = await supabase.auth.getUserIdentities();
-    if (error) {
-      console.error('[ConnectedLogins] Failed to fetch identities:', error);
-      return;
-    }
-    setIdentities(data.identities);
-    onIdentitiesChange?.(data.identities);
-  };
-
-  useEffect(() => {
-    refreshIdentities();
-  }, []);
-
-  useEffect(() => {
-    if (user?.identities) setIdentities(user.identities);
-  }, [user]);
 
   const isConnected = (providerKey) => identities.some((i) => i.provider === providerKey);
 
@@ -136,7 +132,7 @@ const ConnectedLoginsSection = ({ user, onIdentitiesChange }) => {
         throw new Error('No identity token returned from Apple');
       }
 
-      const { error } = await supabase.auth.linkIdentityWithIdToken({
+      const { error } = await supabase.auth.linkIdentity({
         provider: 'apple',
         token: credential.identityToken,
       });
@@ -227,9 +223,7 @@ const ConnectedLoginsSection = ({ user, onIdentitiesChange }) => {
       const { error } = await supabase.auth.unlinkIdentity(identity);
       if (error) throw error;
 
-      const updated = identities.filter((i) => i.provider !== providerKey);
-      setIdentities(updated);
-      onIdentitiesChange?.(updated);
+      await refreshIdentities();
 
       Toast.show({
         type: 'success',
@@ -246,7 +240,7 @@ const ConnectedLoginsSection = ({ user, onIdentitiesChange }) => {
 
   return (
     <>
-      <Text className="pb-3 pl-1 font-saira-bold text-xl">Social Logins</Text>
+      <Text className="pb-3 pl-1 font-saira-bold text-xl text-text-1">Social Logins</Text>
       <View style={styles.providerList}>
         {PROVIDERS.map((provider, index) => {
           const connected = isConnected(provider.key);
@@ -264,8 +258,8 @@ const ConnectedLoginsSection = ({ user, onIdentitiesChange }) => {
                     <IonIcons name="mail-outline" size={28} color={provider.color} />
                   ) : (
                     <Image
-                      source={provider.icon}
-                      style={{ width: 28, height: 28, tintColor: provider.color, paddingBottom: 2 }}
+                      source={isDark && provider.iconDark ? provider.iconDark : provider.icon}
+                      style={{ width: 28, height: 32, tintColor: provider.color, paddingBottom: 2 }}
                     />
                   )}
                 </View>
@@ -275,45 +269,75 @@ const ConnectedLoginsSection = ({ user, onIdentitiesChange }) => {
                   <Text style={styles.providerLabel}>{provider.label}</Text>
                   <Text
                     className="font-saira-medium text-sm"
-                    style={[styles.providerStatus, { color: connected ? '#199345' : '#9ca3af' }]}>
+                    style={[
+                      styles.providerStatus,
+                      {
+                        color: connected ? themeColors.success.primary : themeColors.secondaryText,
+                      },
+                    ]}>
                     {connected ? 'Connected' : 'Not connected'}
                   </Text>
                 </View>
 
                 {/* Action */}
                 {isLoading ? (
-                  <ActivityIndicator size="small" color="#6b7280" />
-                ) : provider.key === 'email' ? (
+                  <ActivityIndicator size="small" color={themeColors.secondaryText} />
+                ) : provider.key === 'email' && connected ? (
+                  // Only shown once an email/password identity actually exists --
+                  // this used to render unconditionally, claiming "Primary" even
+                  // for accounts with no password set at all.
                   <View
-                    className="bg-brand-light/10 w-32 items-center justify-center rounded-xl border p-2"
+                    className="w-32 items-center justify-center rounded-xl border p-2"
                     style={[
                       styles.providerBadge,
-                      { borderColor: '#199345', backgroundColor: '#19934515' },
+                      {
+                        borderColor: themeColors.success.primary,
+                        backgroundColor: `${themeColors.success.primary}1A`,
+                      },
                     ]}>
-                    <Text style={[styles.providerBadgeText, { color: '#199345' }]}>Primary</Text>
+                    <Text
+                      style={[styles.providerBadgeText, { color: themeColors.success.primary }]}>
+                      Primary
+                    </Text>
                   </View>
+                ) : provider.key === 'email' ? (
+                  // No password set yet -- use the "Add a Password" panel
+                  // below rather than a cramped inline form in this row.
+                  <Text
+                    className="w-32 text-right text-xs"
+                    style={{ color: themeColors.secondaryText }}>
+                    Set below
+                  </Text>
                 ) : connected ? (
                   <Pressable
                     onPress={() => (canUnlink ? setConfirmUnlink(provider) : null)}
                     style={({ pressed }) => [
                       styles.providerBadge,
                       {
-                        backgroundColor: canUnlink ? '#fef2f2' : '#f9fafb',
-                        borderColor: canUnlink ? '#fecaca' : '#e5e7eb',
+                        backgroundColor: canUnlink
+                          ? `${themeColors.error.primary}1A`
+                          : themeColors.bgGrouped1,
+                        borderColor: canUnlink
+                          ? `${themeColors.error.primary}66`
+                          : themeColors.border,
                         opacity: pressed ? 0.7 : 1,
                       },
                     ]}>
                     <View
-                      className={`w-32 flex-row items-center justify-center gap-2 rounded-xl border ${canUnlink ? 'border-theme-red' : 'border-gray-300'} p-2`}>
+                      className={`w-32 flex-row items-center justify-center gap-2 rounded-xl border ${canUnlink ? 'border-theme-red' : 'border-theme-blue'} p-2`}>
                       {canUnlink ? (
-                        <Unlink size={16} color="#ef4444" />
+                        <Unlink size={16} color={themeColors.error.primary} />
                       ) : (
-                        <Link size={16} color="#9ca3af" />
+                        <Link size={16} color={themeColors.secondaryText} />
                       )}
                       <Text
                         style={[
                           styles.providerBadgeText,
-                          { color: canUnlink ? '#ef4444' : '#9ca3af' },
+                          {
+                            color: canUnlink
+                              ? themeColors.error.primary
+                              : themeColors.secondaryText,
+                          },
                         ]}>
                         {canUnlink ? 'Unlink' : 'Linked'}
                       </Text>
@@ -321,18 +345,28 @@ const ConnectedLoginsSection = ({ user, onIdentitiesChange }) => {
                   </Pressable>
                 ) : (
                   <Pressable
-                    onPress={() => handleLink(provider.key)}
+                    onPress={() =>
+                      // Apple needs its own native sign-in sheet
+                      // (AppleAuthentication.signInAsync + linkIdentity with the
+                      // resulting id token) -- the generic handleLink below opens
+                      // a web browser OAuth
+                      // session instead, which isn't how Apple linking works here.
+                      provider.key === 'apple' ? handleLinkApple() : handleLink(provider.key)
+                    }
                     style={({ pressed }) => [
                       styles.providerBadge,
                       {
-                        backgroundColor: '#f0f9ff',
-                        borderColor: '#bae6fd',
+                        backgroundColor: `${themeColors.info.primary}1A`,
+                        borderColor: `${themeColors.info.primary}66`,
                         opacity: pressed ? 0.7 : 1,
                       },
                     ]}>
                     <View className="w-32 flex-row items-center justify-center gap-2 rounded-xl border border-theme-blue p-2">
-                      <Link size={16} color="#0284c7" />
-                      <Text style={[styles.providerBadgeText, { color: '#0284c7' }]}>Link Now</Text>
+                      <Link size={16} color={themeColors.info.secondary} />
+                      <Text
+                        style={[styles.providerBadgeText, { color: themeColors.info.secondary }]}>
+                        Link Now
+                      </Text>
                     </View>
                   </Pressable>
                 )}
@@ -362,7 +396,14 @@ const ConnectedLoginsSection = ({ user, onIdentitiesChange }) => {
 
 // ─── Main page ────────────────────────────────────────────
 const SignInAndSecurity = () => {
+  const { colors: themeColors } = useTheme();
+  const styles = createStyles(themeColors);
   const { user, player } = useUser();
+  // Shared with ConnectedLoginsSection below, so linking/unlinking an
+  // identity there is immediately reflected in the password panel here
+  // (e.g. adding a password makes "Change Password" replace "Add a Password"
+  // without needing a full user refetch).
+  const [identities, setIdentities] = useState(user?.identities ?? []);
   const [deleteAccountModal, setDeleteAccountModal] = useState(false);
   const [isChangingPassword, setIsChangingPassword] = useState(false);
   const [currentPassword, setCurrentPassword] = useState('');
@@ -405,9 +446,28 @@ const SignInAndSecurity = () => {
   };
 
   const strength = getPasswordStrength(newPassword);
-  const provider = user?.identities?.[0]?.provider ?? 'email';
-  const isOAuthUser = provider !== 'email';
-  const providerLabel = `${provider.slice(0, 1).toUpperCase()}${provider.slice(1)}`;
+  // Whether an email/password identity actually exists -- not just whether
+  // the FIRST entry in identities happens to be 'email', which depended on
+  // array order and stayed true/false based on how the account originally
+  // signed up rather than its current, live set of linked identities.
+  const hasEmailIdentity = identities.some((i) => i.provider === 'email');
+
+  const refreshIdentities = async () => {
+    const { data, error } = await supabase.auth.getUserIdentities();
+    if (error) {
+      console.error('[SignInAndSecurity] Failed to fetch identities:', error);
+      return;
+    }
+    setIdentities(data.identities);
+  };
+
+  useEffect(() => {
+    refreshIdentities();
+  }, []);
+
+  useEffect(() => {
+    if (user?.identities) setIdentities(user.identities);
+  }, [user]);
 
   const waitForAuthSettle = () =>
     new Promise((resolve) => {
@@ -455,6 +515,33 @@ const SignInAndSecurity = () => {
     }
   };
 
+  // For accounts with no email/password identity yet (signed up via Apple,
+  // Google or Facebook only). No current password to re-auth with -- the
+  // user is already authenticated via their OAuth session -- so this just
+  // sets a password directly, which links an 'email' identity to the
+  // account's existing email.
+  const handleAddPassword = async () => {
+    setPasswordError(null);
+    if (newPassword.length < 8) return setPasswordError('Password must be at least 8 characters.');
+    if (newPassword !== confirmPassword) return setPasswordError("Passwords don't match.");
+
+    setIsSaving(true);
+    try {
+      const { error: updateError } = await supabase.auth.updateUser({ password: newPassword });
+      if (updateError) {
+        setPasswordError(updateError.message);
+        return;
+      }
+      await refreshIdentities();
+      setPasswordSuccess(true);
+      setTimeout(() => closePanel(), 1800);
+    } catch (err) {
+      setPasswordError('Something went wrong. Please try again.');
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
   const animatedMaxHeight = panelHeight.interpolate({ inputRange: [0, 1], outputRange: [0, 500] });
 
   const minimumLength = newPassword.length >= 8;
@@ -477,14 +564,12 @@ const SignInAndSecurity = () => {
 
       <KeyboardAwareScrollView
         style={{ flex: 1 }}
-        enableOnAndroid
-        keyboardShouldPersistTaps="handled"
-        extraScrollHeight={120}
+        bottomOffset={120}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: 60 }}
         className="mt-16 flex-1 bg-bg-grouped-1 p-5">
         {/* ── Connected logins ── */}
-        <ConnectedLoginsSection user={user} />
+        <ConnectedLoginsSection identities={identities} refreshIdentities={refreshIdentities} />
 
         {/* ── Account info ── */}
         <MenuContainer title="Account Info">
@@ -493,159 +578,176 @@ const SignInAndSecurity = () => {
           <SettingsItem disabled lastItem title="Player ID" text={player?.id} />
         </MenuContainer>
 
-        {/* ── Password ── */}
-        {!isOAuthUser && (
-          <>
-            <Text className="pb-3 pl-1 font-saira-bold text-xl">Your Password</Text>
-            <View style={styles.passwordSection}>
-              <Pressable
-                style={styles.passwordHeader}
-                onPress={isChangingPassword ? closePanel : openPanel}>
-                <View>
-                  <Text style={styles.passwordTitle}>Change Password</Text>
-                  <Text style={styles.passwordSubtitle}>
-                    {isChangingPassword ? 'Tap to cancel' : 'Update your account password'}
-                  </Text>
-                </View>
-                <Animated.View
-                  style={{
-                    transform: [
-                      {
-                        rotate: panelHeight.interpolate({
-                          inputRange: [0, 1],
-                          outputRange: ['0deg', '180deg'],
-                        }),
-                      },
-                    ],
-                  }}>
-                  <IonIcons name="chevron-down" size={20} color="#6b7280" />
-                </Animated.View>
-              </Pressable>
-
-              <Animated.View
-                style={{
-                  maxHeight: animatedMaxHeight,
-                  opacity: panelOpacity,
-                  overflow: 'hidden',
-                }}>
-                <View style={styles.passwordForm}>
-                  {passwordSuccess ? (
-                    <View style={styles.successBanner}>
-                      <IonIcons name="checkmark-circle" size={20} color="#22c55e" />
-                      <Text style={styles.successText}>Password updated successfully!</Text>
-                    </View>
-                  ) : (
-                    <>
-                      <PasswordInput
-                        placeholder="Current password"
-                        value={currentPassword}
-                        onChangeText={setCurrentPassword}
-                        hasError={!!passwordError && !currentPassword}
-                      />
-                      <View style={{ gap: 6 }}>
-                        <PasswordInput
-                          placeholder="New password"
-                          value={newPassword}
-                          onChangeText={setNewPassword}
-                          hasError={!!passwordError && newPassword.length < 8}
-                        />
-                      </View>
-                      <PasswordInput
-                        placeholder="Confirm new password"
-                        value={confirmPassword}
-                        onChangeText={setConfirmPassword}
-                        hasError={
-                          !!passwordError &&
-                          confirmPassword.length > 0 &&
-                          confirmPassword !== newPassword
-                        }
-                      />
-                      {newPassword.length > 0 && strength && (
-                        <View style={styles.strengthRow}>
-                          <View style={styles.strengthTrack}>
-                            <View
-                              style={[
-                                styles.strengthFill,
-                                { width: strength.width, backgroundColor: strength.color },
-                              ]}
-                            />
-                          </View>
-                          <Text style={[styles.strengthLabel, { color: strength.color }]}>
-                            {strength.label}
-                          </Text>
-                        </View>
-                      )}
-                      {passwordError && (
-                        <View style={styles.errorBanner}>
-                          <IonIcons name="alert-circle-outline" size={16} color="#ef4444" />
-                          <Text style={styles.errorText}>{passwordError}</Text>
-                        </View>
-                      )}
-                      <View className="mt-2 flex-row gap-2 px-1">
-                        {minimumLength ? (
-                          <Check size={16} color="#22c55e" />
-                        ) : (
-                          <X size={16} color="#ef4444" />
-                        )}
-                        <Text>Minimum 8 characters long.</Text>
-                      </View>
-                      <View className="flex-row gap-2 px-1">
-                        {hasNumber ? (
-                          <Check size={16} color="#22c55e" />
-                        ) : (
-                          <X size={16} color="#ef4444" />
-                        )}
-                        <Text>Contains at least one number.</Text>
-                      </View>
-                      <View className="flex-row gap-2 px-1">
-                        {hasUppercase ? (
-                          <Check size={16} color="#22c55e" />
-                        ) : (
-                          <X size={16} color="#ef4444" />
-                        )}
-                        <Text>Contains at least one uppercase letter.</Text>
-                      </View>
-                      <View className="mb-2 flex-row gap-2 px-1">
-                        {passwordsMatch ? (
-                          <Check size={16} color="#22c55e" />
-                        ) : (
-                          <X size={16} color="#ef4444" />
-                        )}
-                        <Text>Passwords must match.</Text>
-                      </View>
-                      <CTAButton
-                        text={isSaving ? 'Updating...' : 'Change Password'}
-                        type="yellow"
-                        textColor="black"
-                        callbackFn={handleChangePassword}
-                        disabled={isSaving || !isValidPassword}
-                      />
-                    </>
-                  )}
-                </View>
-              </Animated.View>
-            </View>
-          </>
-        )}
-
-        {isOAuthUser && (
-          <>
-            <Text style={styles.sectionLabel}>PASSWORD</Text>
-            <View style={styles.oauthNotice}>
-              <IonIcons name="information-circle-outline" size={18} color="#6b7280" />
-              <Text style={styles.oauthNoticeText}>
-                You signed in with {providerLabel}. Password management is handled by your{' '}
-                {providerLabel} account.
+        {/* ── Password ──
+             Same panel for both cases: hasEmailIdentity picks the copy, the
+             current-password field, and the submit handler. There used to be
+             a separate branch for OAuth-only accounts that just said
+             "password management is handled by your {provider} account" --
+             but that's not true once this panel can add a password to any
+             account, so it's replaced rather than kept as an alternative. */}
+        <Text className="pb-3 pl-1 font-saira-bold text-xl text-text-1">
+          {hasEmailIdentity ? 'Your Password' : 'Add a Password'}
+        </Text>
+        <View style={styles.passwordSection}>
+          <Pressable
+            style={styles.passwordHeader}
+            onPress={isChangingPassword ? closePanel : openPanel}>
+            <View>
+              <Text style={styles.passwordTitle}>
+                {hasEmailIdentity ? 'Change Password' : 'Add a Password'}
+              </Text>
+              <Text style={styles.passwordSubtitle}>
+                {isChangingPassword
+                  ? 'Tap to cancel'
+                  : hasEmailIdentity
+                    ? 'Update your account password'
+                    : 'Sign in with email as well as your other methods'}
               </Text>
             </View>
-          </>
-        )}
+            <Animated.View
+              style={{
+                transform: [
+                  {
+                    rotate: panelHeight.interpolate({
+                      inputRange: [0, 1],
+                      outputRange: ['0deg', '180deg'],
+                    }),
+                  },
+                ],
+              }}>
+              <IonIcons name="chevron-down" size={20} color={themeColors.secondaryText} />
+            </Animated.View>
+          </Pressable>
+
+          <Animated.View
+            style={{
+              maxHeight: animatedMaxHeight,
+              opacity: panelOpacity,
+              overflow: 'hidden',
+            }}>
+            <View style={styles.passwordForm}>
+              {passwordSuccess ? (
+                <View style={styles.successBanner}>
+                  <IonIcons name="checkmark-circle" size={20} color={themeColors.success.primary} />
+                  <Text style={styles.successText}>
+                    {hasEmailIdentity
+                      ? 'Password updated successfully!'
+                      : 'Password added — you can now sign in with email too!'}
+                  </Text>
+                </View>
+              ) : (
+                <>
+                  {hasEmailIdentity && (
+                    <PasswordInput
+                      placeholder="Current password"
+                      value={currentPassword}
+                      onChangeText={setCurrentPassword}
+                      hasError={!!passwordError && !currentPassword}
+                    />
+                  )}
+                  <View style={{ gap: 6 }}>
+                    <PasswordInput
+                      placeholder="New password"
+                      value={newPassword}
+                      onChangeText={setNewPassword}
+                      hasError={!!passwordError && newPassword.length < 8}
+                    />
+                  </View>
+                  <PasswordInput
+                    placeholder="Confirm new password"
+                    value={confirmPassword}
+                    onChangeText={setConfirmPassword}
+                    hasError={
+                      !!passwordError &&
+                      confirmPassword.length > 0 &&
+                      confirmPassword !== newPassword
+                    }
+                  />
+                  {newPassword.length > 0 && strength && (
+                    <View style={styles.strengthRow}>
+                      <View style={styles.strengthTrack}>
+                        <View
+                          style={[
+                            styles.strengthFill,
+                            { width: strength.width, backgroundColor: strength.color },
+                          ]}
+                        />
+                      </View>
+                      <Text style={[styles.strengthLabel, { color: strength.color }]}>
+                        {strength.label}
+                      </Text>
+                    </View>
+                  )}
+                  {passwordError && (
+                    <View style={styles.errorBanner}>
+                      <IonIcons
+                        name="alert-circle-outline"
+                        size={16}
+                        color={themeColors.error.primary}
+                      />
+                      <Text style={styles.errorText}>{passwordError}</Text>
+                    </View>
+                  )}
+                  <View className="mt-2 flex-row gap-2 px-1">
+                    {minimumLength ? (
+                      <Check size={16} color={themeColors.success.primary} />
+                    ) : (
+                      <X size={16} color={themeColors.error.primary} />
+                    )}
+                    <Text className="text-text-1">Minimum 8 characters long.</Text>
+                  </View>
+                  <View className="flex-row gap-2 px-1">
+                    {hasNumber ? (
+                      <Check size={16} color={themeColors.success.primary} />
+                    ) : (
+                      <X size={16} color={themeColors.error.primary} />
+                    )}
+                    <Text className="text-text-1">Contains at least one number.</Text>
+                  </View>
+                  <View className="flex-row gap-2 px-1">
+                    {hasUppercase ? (
+                      <Check size={16} color={themeColors.success.primary} />
+                    ) : (
+                      <X size={16} color={themeColors.error.primary} />
+                    )}
+                    <Text className="text-text-1">Contains at least one uppercase letter.</Text>
+                  </View>
+                  <View className="mb-2 flex-row gap-2 px-1">
+                    {passwordsMatch ? (
+                      <Check size={16} color={themeColors.success.primary} />
+                    ) : (
+                      <X size={16} color={themeColors.error.primary} />
+                    )}
+                    <Text className="text-text-1">Passwords must match.</Text>
+                  </View>
+                  <CTAButton
+                    text={
+                      isSaving
+                        ? hasEmailIdentity
+                          ? 'Updating...'
+                          : 'Adding...'
+                        : hasEmailIdentity
+                          ? 'Change Password'
+                          : 'Add Password'
+                    }
+                    type="yellow"
+                    textColor="black"
+                    callbackFn={hasEmailIdentity ? handleChangePassword : handleAddPassword}
+                    disabled={
+                      isSaving || !isValidPassword || (hasEmailIdentity && !currentPassword)
+                    }
+                  />
+                </>
+              )}
+            </View>
+          </Animated.View>
+        </View>
 
         {/* ── Danger zone ── */}
-        <View className="mt-8 rounded-3xl border border-theme-red bg-bg-1 p-4 pb-2">
+        <View className="mt-8 rounded-3xl border border-theme-red bg-bg-grouped-2 p-4 pb-2">
           <Text
             className="pb-3 pl-1 font-saira-bold text-xl"
-            style={[styles.sectionLabel, { color: '#ef4444', marginTop: 8 }]}>
+            style={{ color: themeColors.error.primary, marginTop: 8 }}>
             DANGER ZONE
           </Text>
           <View style={styles.dangerSection}>
@@ -716,142 +818,130 @@ const SignInAndSecurity = () => {
 
 export default SignInAndSecurity;
 
-const styles = StyleSheet.create({
-  // ── Provider list ──
-  providerList: {
-    backgroundColor: '#ffffff',
-    borderRadius: 24,
-    overflow: 'hidden',
-    marginBottom: 36,
-  },
+// Theme-aware styles: rebuilt whenever the active theme colours change,
+// so this screen follows light/dark mode and the selected accent.
+const createStyles = (themeColors) =>
+  StyleSheet.create({
+    // ── Provider list ──
+    providerList: {
+      backgroundColor: themeColors.bgGrouped2,
+      borderRadius: 24,
+      overflow: 'hidden',
+      marginBottom: 36,
+    },
 
-  providerRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-    gap: 12,
-  },
+    providerRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      paddingHorizontal: 16,
+      paddingVertical: 10,
+      gap: 12,
+    },
 
-  providerDivider: {
-    height: 1,
-    backgroundColor: '#f3f4f6',
-    marginHorizontal: 16,
-  },
+    providerIconWrap: {
+      width: 38,
+      height: 38,
+      borderRadius: 10,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
 
-  providerIconWrap: {
-    width: 38,
-    height: 38,
-    borderRadius: 10,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
+    providerInfo: {
+      flex: 1,
+      gap: 2,
+    },
 
-  providerInfo: {
-    flex: 1,
-    gap: 2,
-  },
+    providerLabel: {
+      fontSize: 15,
+      fontWeight: '600',
+      color: themeColors.primaryText,
+    },
 
-  providerLabel: {
-    fontSize: 15,
-    fontWeight: '600',
-    color: '#111827',
-  },
+    providerStatus: {
+      fontSize: 12,
+    },
 
-  providerStatus: {
-    fontSize: 12,
-  },
+    providerBadge: {
+      paddingHorizontal: 12,
+      paddingVertical: 6,
+      borderRadius: 8,
+      borderWidth: 1,
+    },
 
-  providerBadge: {
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 8,
-    borderWidth: 1,
-  },
+    providerBadgeText: {
+      fontSize: 13,
+      fontWeight: '600',
+    },
 
-  providerBadgeText: {
-    fontSize: 13,
-    fontWeight: '600',
-  },
+    // ── Password section ──
+    passwordSection: {
+      backgroundColor: themeColors.bgGrouped2,
+      borderRadius: 24,
+    },
 
-  // ── Password section ──
-  passwordSection: {
-    backgroundColor: '#ffffff',
-    borderRadius: 24,
-  },
+    passwordHeader: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      padding: 16,
+    },
 
-  passwordHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    padding: 16,
-  },
+    passwordTitle: { fontSize: 16, fontWeight: '600', color: themeColors.primaryText },
+    passwordSubtitle: { fontSize: 13, color: themeColors.secondaryText, marginTop: 2 },
 
-  passwordTitle: { fontSize: 16, fontWeight: '600', color: '#111827' },
-  passwordSubtitle: { fontSize: 13, color: '#6b7280', marginTop: 2 },
+    passwordForm: { paddingHorizontal: 16, paddingBottom: 16, gap: 12 },
 
-  passwordForm: { paddingHorizontal: 16, paddingBottom: 16, gap: 12 },
+    inputWrap: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      height: 50,
+      borderRadius: 12,
+      borderWidth: 1,
+      borderColor: themeColors.border,
+      backgroundColor: themeColors.bgGrouped1,
+      paddingHorizontal: 14,
+    },
 
-  inputWrap: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    height: 50,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: '#e5e7eb',
-    backgroundColor: '#f9fafb',
-    paddingHorizontal: 14,
-  },
+    inputWrapError: {
+      borderColor: themeColors.error.primary,
+      backgroundColor: `${themeColors.error.primary}1A`,
+    },
+    input: { flex: 1, fontSize: 16, color: themeColors.primaryText },
+    eyeBtn: { paddingLeft: 8 },
 
-  inputWrapError: { borderColor: '#ef4444', backgroundColor: '#fff5f5' },
-  input: { flex: 1, fontSize: 16, color: '#111827' },
-  eyeBtn: { paddingLeft: 8 },
+    strengthRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+    strengthTrack: {
+      flex: 1,
+      height: 4,
+      borderRadius: 4,
+      backgroundColor: themeColors.border,
+      overflow: 'hidden',
+    },
+    strengthFill: { height: '100%', borderRadius: 4 },
+    strengthLabel: { fontSize: 12, fontWeight: '600', width: 44, textAlign: 'right' },
 
-  strengthRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  strengthTrack: {
-    flex: 1,
-    height: 4,
-    borderRadius: 4,
-    backgroundColor: '#e5e7eb',
-    overflow: 'hidden',
-  },
-  strengthFill: { height: '100%', borderRadius: 4 },
-  strengthLabel: { fontSize: 12, fontWeight: '600', width: 44, textAlign: 'right' },
+    errorBanner: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 6,
+      backgroundColor: `${themeColors.error.primary}1A`,
+      borderRadius: 10,
+      paddingVertical: 10,
+      paddingHorizontal: 12,
+    },
+    errorText: { fontSize: 13, color: themeColors.error.primary, flex: 1 },
 
-  errorBanner: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    backgroundColor: '#fef2f2',
-    borderRadius: 10,
-    paddingVertical: 10,
-    paddingHorizontal: 12,
-  },
-  errorText: { fontSize: 13, color: '#ef4444', flex: 1 },
+    successBanner: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 8,
+      backgroundColor: `${themeColors.success.primary}1A`,
+      borderRadius: 10,
+      paddingVertical: 14,
+      paddingHorizontal: 12,
+      marginBottom: 4,
+    },
+    successText: { fontSize: 14, fontWeight: '600', color: themeColors.success.primary },
 
-  successBanner: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    backgroundColor: '#f0fdf4',
-    borderRadius: 10,
-    paddingVertical: 14,
-    paddingHorizontal: 12,
-    marginBottom: 4,
-  },
-  successText: { fontSize: 14, fontWeight: '600', color: '#16a34a' },
-
-  oauthNotice: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    gap: 8,
-    backgroundColor: '#f9fafb',
-    borderRadius: 12,
-    padding: 14,
-    borderWidth: 0.5,
-    borderColor: '#e5e7eb',
-  },
-  oauthNoticeText: { fontSize: 13, color: '#6b7280', flex: 1, lineHeight: 20 },
-
-  dangerSection: { marginBottom: 8 },
-});
+    dangerSection: { marginBottom: 8 },
+  });

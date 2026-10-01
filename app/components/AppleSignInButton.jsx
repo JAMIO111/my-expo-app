@@ -2,8 +2,10 @@ import { useEffect, useState } from 'react';
 import { Alert } from 'react-native';
 import * as AppleAuthentication from 'expo-apple-authentication';
 import { supabase } from '@/lib/supabase';
+import { useTheme } from '@contexts/ThemeProvider';
 
 export default function AppleSignInButton() {
+  const { isDark } = useTheme();
   const [isAvailable, setIsAvailable] = useState(false);
 
   useEffect(() => {
@@ -38,13 +40,14 @@ export default function AppleSignInButton() {
       // ✅ Apple only gives you fullName on the FIRST authorization ever.
       // If present, push it onto the Players row now — you won't get it again.
       if (credential.fullName?.givenName || credential.fullName?.familyName) {
-        const fullName = [credential.fullName.givenName, credential.fullName.familyName]
-          .filter(Boolean)
-          .join(' ');
+        // Players has first_name / surname (there is no "name" column, so the old update failed).
+        const nameUpdate = {};
+        if (credential.fullName.givenName) nameUpdate.first_name = credential.fullName.givenName;
+        if (credential.fullName.familyName) nameUpdate.surname = credential.fullName.familyName;
 
         const { error: profileError } = await supabase
           .from('Players')
-          .update({ name: fullName })
+          .update(nameUpdate)
           .eq('auth_id', data.user.id);
 
         if (profileError) {
@@ -67,7 +70,11 @@ export default function AppleSignInButton() {
   return (
     <AppleAuthentication.AppleAuthenticationButton
       buttonType={AppleAuthentication.AppleAuthenticationButtonType.SIGN_IN}
-      buttonStyle={AppleAuthentication.AppleAuthenticationButtonStyle.BLACK}
+      buttonStyle={
+        isDark
+          ? AppleAuthentication.AppleAuthenticationButtonStyle.WHITE
+          : AppleAuthentication.AppleAuthenticationButtonStyle.BLACK
+      }
       cornerRadius={8}
       style={{
         width: '100%',

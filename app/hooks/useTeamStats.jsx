@@ -26,27 +26,18 @@ export function useTeamStats(teamId) {
     select: (data) => {
       if (!data) return null;
 
+      // No approved frames yet => the RPC returns no totalStats at all.
+      const totals = data.totalStats ?? {};
+
       // 1. Calculate for Total Stats
       const totalStats = {
-        ...data.totalStats,
-        match_win_percent: getWinRate(data.totalStats.matches_won, data.totalStats.matches_played),
-        frame_win_percent: getWinRate(data.totalStats.frames_won, data.totalStats.frames_played),
-        home_match_win_percent: getWinRate(
-          data.totalStats.home_matches_won,
-          data.totalStats.home_matches_played
-        ),
-        away_match_win_percent: getWinRate(
-          data.totalStats.away_matches_won,
-          data.totalStats.away_matches_played
-        ),
-        home_frame_win_percent: getWinRate(
-          data.totalStats.home_frames_won,
-          data.totalStats.home_frames_played
-        ),
-        away_frame_win_percent: getWinRate(
-          data.totalStats.away_frames_won,
-          data.totalStats.away_frames_played
-        ),
+        ...totals,
+        match_win_percent: getWinRate(totals.matches_won, totals.matches_played),
+        frame_win_percent: getWinRate(totals.frames_won, totals.frames_played),
+        home_match_win_percent: getWinRate(totals.home_matches_won, totals.home_matches_played),
+        away_match_win_percent: getWinRate(totals.away_matches_won, totals.away_matches_played),
+        home_frame_win_percent: getWinRate(totals.home_frames_won, totals.home_frames_played),
+        away_frame_win_percent: getWinRate(totals.away_frames_won, totals.away_frames_played),
       };
 
       // 2. Calculate for each Season/Division entry

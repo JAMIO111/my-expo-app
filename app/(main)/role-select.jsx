@@ -36,7 +36,7 @@ const RoleSelect = () => {
         </Text>
         <ScrollView className="flex-1 px-2 py-3">
           {!roles || roles.length === 0 ? (
-            <View className="items-center justify-center rounded-2xl bg-bg-1 px-4 py-8 shadow-sm">
+            <View className="items-center justify-center rounded-2xl bg-bg-grouped-1 px-4 py-8 shadow-sm">
               <Text className="font-saira text-lg text-text-2">No roles available.</Text>
             </View>
           ) : (
@@ -55,7 +55,7 @@ const RoleSelect = () => {
                     } else router.replace('/(main)/home/paywall');
                   }
                 }}>
-                <View className="mb-3 flex-row items-center justify-between gap-5 rounded-3xl border border-theme-gray-6 bg-bg-1 px-4 py-3">
+                <View className="mb-3 flex-row items-center justify-between gap-5 rounded-3xl border border-theme-gray-6 bg-bg-3 px-4 py-3">
                   {role?.type === 'admin' ? (
                     <IonIcon
                       name={role?.type === 'admin' ? 'shield-half-sharp' : 'people'}

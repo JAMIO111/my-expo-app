@@ -1,16 +1,16 @@
-import { View } from 'react-native';
 import '../../global.css'; // Ensure global styles are imported
-import { Slot, useRouter, useSegments } from 'expo-router';
+import { Stack, useRouter, useSegments } from 'expo-router';
 import { useEffect, useRef } from 'react';
 import { useUser } from '@contexts/UserProvider';
 import LoadingScreen from '../components/LoadingScreen';
+import ProfileLoadFailed from '../components/ProfileLoadFailed';
 import { useRevenueCat } from '@contexts/RevenueCatProvider';
 
 const _layout = () => {
   const { isPro, isCore } = useRevenueCat();
   const router = useRouter();
   const segments = useSegments();
-  const { user, player, loading, roles, setCurrentRole, currentRole } = useUser();
+  const { user, player, loading, roles, setCurrentRole, currentRole, refetch } = useUser();
 
   console.log('AppLayout (main)');
   console.log('User:', user);
@@ -85,10 +85,36 @@ const _layout = () => {
     return <LoadingScreen />;
   }
 
+  // Signed in but no profile came back: never leave a blank screen.
+  if (user && !player) {
+    return <ProfileLoadFailed onRetry={refetch} />;
+  }
+
+  // A real Stack (not just <Slot />) so home/profile/teams/settings/etc. are
+  // screens on ONE shared navigator instead of independent root stacks each
+  // with their own push history. Without this, pushing from Profile or Teams
+  // into /settings lands in a completely separate native stack that has
+  // nothing behind it -- the in-app back button still works (it walks Expo
+  // Router's own JS history), but the native swipe-back gesture doesn't
+  // (there's nothing in *that* stack's own history to reveal). Each section
+  // keeps its own nested Stack for its internal navigation, unaffected.
   return (
-    <View className={`flex-1`}>
-      <Slot />
-    </View>
+    <Stack screenOptions={{ headerShown: false }}>
+      {/* Top-level sections switched via the bottom nav's router.replace() --
+          no slide, matching how tab switching felt before this Stack existed.
+          settings keeps the default push animation, since that's the one
+          that now properly supports swipe-back. */}
+      <Stack.Screen name="home" options={{ animation: 'none' }} />
+      <Stack.Screen name="profile" options={{ animation: 'none' }} />
+      <Stack.Screen name="teams" options={{ animation: 'none' }} />
+      <Stack.Screen name="my-leagues" options={{ animation: 'none' }} />
+      <Stack.Screen name="competitions" options={{ animation: 'none' }} />
+      <Stack.Screen name="rankings" options={{ animation: 'none' }} />
+      <Stack.Screen name="settings" />
+      <Stack.Screen name="onboarding" options={{ animation: 'none' }} />
+      <Stack.Screen name="role-select" options={{ animation: 'none' }} />
+      <Stack.Screen name="index" options={{ animation: 'none' }} />
+    </Stack>
   );
 };
 

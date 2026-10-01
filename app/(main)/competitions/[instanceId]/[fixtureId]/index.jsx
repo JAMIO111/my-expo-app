@@ -23,15 +23,22 @@ const index = () => {
 
   const isDisputedEditable = fixtureDetails?.is_disputed && !fixtureDetails?.is_amended;
 
-  const fixtureValid = isOpen || isDisputedEditable;
+  // Closed fixtures (approved / forfeited) and escalated ones are with the admins.
+  const fixtureLocked =
+    fixtureDetails?.approved || fixtureDetails?.is_forfeited || fixtureDetails?.is_escalated;
+
+  const fixtureValid = !fixtureLocked && (isOpen || isDisputedEditable);
 
   const playerValid =
     competitorType === 'team'
-      ? player?.id === currentRole?.team?.captain &&
-        currentRole?.team.id === fixtureDetails?.homeCompetitor?.id
+      ? ['captain', 'vice_captain'].includes(currentRole?.role) &&
+        currentRole?.team?.id === fixtureDetails?.homeCompetitor?.id
       : player?.id === fixtureDetails?.homeCompetitor?.id;
 
-  const canSubmit = fixtureValid && playerValid;
+  const canResolve =
+    currentRole?.type === 'admin' && !!fixtureDetails?.is_escalated && !fixtureDetails?.approved;
+
+  const canSubmit = (fixtureValid && playerValid) || canResolve;
 
   const homeName =
     competitorType === 'team'
@@ -54,9 +61,9 @@ const index = () => {
               <CustomHeader
                 title={`${homeName || 'Home'} vs ${awayName || 'Away'}`}
                 onRightPress={
-                  canSubmit
-                    ? () => router.push(`competitions/${instanceId}/${fixtureId}/submit-results`)
-                    : null
+                  // There is no competitions/.../submit-results route: results are always
+                  // submitted through the shared home/[fixtureId] screen.
+                  canSubmit ? () => router.push(`/home/${fixtureId}/submit-results`) : null
                 }
                 rightIcon={ClipboardCheck}
               />

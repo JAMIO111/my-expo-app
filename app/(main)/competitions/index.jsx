@@ -18,7 +18,7 @@ const index = () => {
   const hasNavigated = useRef(false);
   const { loading, currentRole } = useUser();
   const { data: competitionsInstances, isLoading: isCompetitionsLoading } = useCompetitionInstances(
-    currentRole?.activeSeason.id
+    currentRole?.activeSeason?.id
   );
   console.log('Competitions:', competitionsInstances);
 
@@ -48,7 +48,7 @@ const index = () => {
       <SafeViewWrapper bottomColor="bg-brand" topColor="bg-brand">
         <ScrollView
           contentContainerStyle={{ display: 'flex', flexGrow: 1, gap: 30, paddingVertical: 20 }}
-          className="mt-16 flex-1 bg-bg-1 px-4">
+          className="mt-16 flex-1 bg-bg-grouped-1 px-4">
           {currentRole?.type === 'admin' && (
             <View className="gap-2">
               <Heading text="Competition Admin Tools" className="text-text-1" />
@@ -106,7 +106,7 @@ const index = () => {
                 }, 500);
                 router.push('/competitions/team-management');
               }}>
-              <View className="flex-1 flex-row gap-8 rounded-3xl bg-brand-dark p-4 shadow-sm">
+              <View className="flex-1 flex-row gap-8 rounded-3xl bg-brand-light p-4 shadow-sm">
                 <View className="flex-1">
                   <Text className="font-tektur-medium text-xl text-text-on-brand">
                     Competition Team Management

@@ -1,5 +1,5 @@
 import { usePlayerFrames } from '@/hooks/usePlayerFrames';
-import { FlatList, View, Text } from 'react-native';
+import { FlatList, View, Text, Pressable } from 'react-native';
 import Avatar from './Avatar';
 import { useUser } from '@contexts/UserProvider';
 import { ArrowUpDown, Undo2, Zap } from 'lucide-react-native';
@@ -43,9 +43,45 @@ const ACHIEVEMENT_CONFIG = {
   },
 };
 
+// Frames are shown for every fixture, not just approved ones; anything not yet
+// approved gets a badge (fixture_status comes from get_player_frames).
+const FIXTURE_STATUS_CONFIG = {
+  pending: {
+    label: 'Awaiting approval',
+    bgClass: 'bg-theme-orange/15',
+    textClass: 'text-theme-orange',
+  },
+  disputed: { label: 'Disputed', bgClass: 'bg-theme-red/15', textClass: 'text-theme-red' },
+  escalated: {
+    label: 'Escalated',
+    bgClass: 'bg-theme-purple/15',
+    textClass: 'text-theme-purple',
+  },
+  in_progress: {
+    label: 'In progress',
+    bgClass: 'bg-theme-blue/15',
+    textClass: 'text-theme-blue',
+  },
+};
+
+// Pinned to the card's top-right corner, straddling its top border like a tag.
+// The solid outer view stops the border line showing through the tinted badge.
+// Must be a direct child of the (relative-positioned) card.
+const FixtureStatusBadge = ({ status }) => {
+  const config = FIXTURE_STATUS_CONFIG[status];
+  if (!config) return null;
+  return (
+    <View style={{ bottom: 6, right: 6 }} className="absolute z-10 rounded-full bg-bg-grouped-2">
+      <View className={`rounded-full px-2 py-0.5 ${config.bgClass}`}>
+        <Text className={`font-saira-medium text-xs ${config.textClass}`}>{config.label}</Text>
+      </View>
+    </View>
+  );
+};
+
 const AchievementCard = ({ player, labels }) => {
   return (
-    <View className="my-1 gap-2 rounded-2xl border border-theme-gray-5 bg-bg-2 px-3 py-2">
+    <View className="my-1 gap-2 rounded-2xl border border-theme-gray-5 bg-bg-grouped-3 px-3 py-2">
       <View className="flex-row items-center gap-3">
         <Avatar size={28} borderRadius={8} player={player} />
         <Text
@@ -73,7 +109,7 @@ const AchievementCard = ({ player, labels }) => {
   );
 };
 
-const FrameRow = ({ frame, playersById, player }) => {
+export const FrameRow = ({ frame, playersById, player }) => {
   const homePlayer1 = playersById.get(frame.home_player_1);
   const awayPlayer1 = playersById.get(frame.away_player_1);
   const homePlayer2 = frame.home_player_2 ? playersById.get(frame.home_player_2) : null;
@@ -103,13 +139,15 @@ const FrameRow = ({ frame, playersById, player }) => {
   }));
 
   return (
-    <View className="my-2 gap-2 rounded-3xl border border-theme-gray-5 bg-bg-1">
+    <View className="my-2 gap-2 rounded-3xl border border-theme-gray-5 bg-bg-grouped-2">
+      <FixtureStatusBadge status={frame.fixture_status} />
       <View
         style={{ borderTopRightRadius: 20, borderTopLeftRadius: 20 }}
         className="gap-2 px-3 pt-3">
         <View className="flex-row items-center justify-between gap-2 border-b border-theme-gray-5 pb-1">
           <Text className="p-1 font-saira-medium text-sm text-text-2">
-            {frame?.competition_name} {frame?.stage_name ? ` | ${frame.stage_name}` : ''}
+            {frame?.competition_name ? `${frame.competition_name}` : 'Fixture'}{' '}
+            {frame?.stage_name ? ` | ${frame.stage_name}` : ''}
           </Text>
           <Text className="p-1 font-saira-medium text-sm text-text-2">
             {new Date(frame?.fixture_date_time).toLocaleDateString('en-GB', {
@@ -159,6 +197,109 @@ const FrameRow = ({ frame, playersById, player }) => {
   );
 };
 
+const RESULT_STYLES = {
+  Win: { bar: 'bg-theme-green', pill: 'bg-theme-green/20 text-theme-green' },
+  Loss: { bar: 'bg-theme-red', pill: 'bg-theme-red/20 text-theme-red' },
+  Draw: { bar: 'bg-theme-blue', pill: 'bg-theme-blue/20 text-theme-blue' },
+};
+
+const fullName = (p) => (p ? `${p.first_name ?? ''} ${p.surname ?? ''}`.trim() : 'Unknown');
+
+// Compact one-line summary of a frame, used for the "Recent Frames" preview
+// on the profile page. FrameRow above is the full-detail version.
+export const FramePreviewRow = ({ frame, playersById, player, onPress }) => {
+  const isHome = frame.home_player_1 === player?.id || frame.home_player_2 === player?.id;
+  const mySide = isHome ? 'home' : 'away';
+  const result =
+    frame.winner_side === null ? 'Draw' : frame.winner_side === mySide ? 'Win' : 'Loss';
+  const styles = RESULT_STYLES[result];
+
+  const mine = (
+    isHome ? [frame.home_player_1, frame.home_player_2] : [frame.away_player_1, frame.away_player_2]
+  ).filter(Boolean);
+  const opponentIds = (
+    isHome ? [frame.away_player_1, frame.away_player_2] : [frame.home_player_1, frame.home_player_2]
+  ).filter(Boolean);
+  const partner = mine.find((id) => id !== player?.id);
+  const opponents = opponentIds.map((id) => playersById.get(id));
+
+  const myAchievements = [];
+  if (frame.lag_won === player?.id) myAchievements.push('Lag Won');
+  if (frame.break_dish_player_1 === player?.id || frame.break_dish_player_2 === player?.id)
+    myAchievements.push('Break Dish');
+  if (frame.reverse_dish_player_1 === player?.id || frame.reverse_dish_player_2 === player?.id)
+    myAchievements.push('Reverse Dish');
+
+  const date = frame?.fixture_date_time
+    ? new Date(frame.fixture_date_time).toLocaleDateString('en-GB', {
+        day: 'numeric',
+        month: 'short',
+      })
+    : '';
+
+  return (
+    <Pressable
+      onPress={onPress}
+      className="flex-row items-stretch overflow-hidden rounded-2xl border border-theme-gray-5 bg-bg-grouped-2">
+      <FixtureStatusBadge status={frame.fixture_status} />
+      <View
+        style={{ borderTopLeftRadius: 14, borderBottomLeftRadius: 14 }}
+        className={`w-1.5 ${styles.bar}`}
+      />
+      <View className="flex-1 gap-1 px-3 py-2">
+        <Text className="font-saira-medium text-sm text-text-2" numberOfLines={1}>
+          {frame?.competition_name ?? 'Fixture'}
+          {frame?.stage_name ? ` | ${frame.stage_name}` : ''}
+          {date ? ` | ${date}` : ''} | Frame {frame?.frame_number}
+        </Text>
+        <View className="flex-row items-center gap-2">
+          <View className="flex-row">
+            {opponents.map((opponent, i) => (
+              <View key={opponent?.id ?? i} style={{ marginLeft: i === 0 ? 0 : -10 }}>
+                <Avatar size={28} borderRadius={8} player={opponent} />
+              </View>
+            ))}
+          </View>
+          <View className="flex-1">
+            <Text className="font-saira-medium text-base text-text-1" numberOfLines={1}>
+              vs {opponents.map(fullName).join(' & ')}
+            </Text>
+            {partner && (
+              <Text className="font-saira text-sm text-text-2" numberOfLines={1}>
+                with {fullName(playersById.get(partner))}
+              </Text>
+            )}
+          </View>
+        </View>
+        {myAchievements.length > 0 && (
+          <View className="mt-2 flex-row items-center gap-1.5">
+            {myAchievements.map((label) => {
+              const config = ACHIEVEMENT_CONFIG[label];
+              const Icon = config.icon;
+              return (
+                <View
+                  key={label}
+                  className={`flex-row items-center gap-1 rounded-full px-2 py-0.5 ${config.bgClass}`}>
+                  <Icon size={12} color={config.color} />
+                  <Text className={`font-saira-medium text-xs ${config.textClass}`}>{label}</Text>
+                </View>
+              );
+            })}
+          </View>
+        )}
+      </View>
+      <View
+        style={{ top: 6, right: 6, position: 'absolute' }}
+        className="items-center justify-center">
+        <Text className={`rounded-xl px-3 py-1 font-saira-semibold text-base ${styles.pill}`}>
+          {result}
+          {frame?.forfeited ? '*' : ''}
+        </Text>
+      </View>
+    </Pressable>
+  );
+};
+
 const EmptyFramesState = () => (
   <View className="h-full items-center justify-center gap-3 px-6 py-16">
     <Ionicons name="file-tray-outline" size={80} color="rgba(0,0,0,0.2)" />
@@ -179,7 +320,7 @@ const PlayerFrameList = ({ playerId }) => {
   }
 
   return (
-    <View className="flex-1 bg-bg-2 pb-16">
+    <View className="flex-1 bg-bg-grouped-1 pb-16">
       <FlatList
         style={{ padding: 10 }}
         data={frames}

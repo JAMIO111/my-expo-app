@@ -2,7 +2,6 @@ import { Pressable, StyleSheet, Text, View, Image } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { Stack } from 'expo-router';
-import StepPillGroup from '@components/StepPillGroup';
 import SafeViewWrapper from '@components/SafeViewWrapper';
 import CTAButton from '@components/CTAButton';
 import { romanNumerals } from '@lib/badgeIcons';
@@ -11,59 +10,86 @@ import { ScrollView } from 'react-native-gesture-handler';
 import { supabase } from '@/lib/supabase';
 import Toast from 'react-native-toast-message';
 import { useUser } from '@contexts/UserProvider';
+import { useQueryClient } from '@tanstack/react-query';
 import useCompressAndUploadImage from '@hooks/useCompressAndUploadImage';
+import { useOnboardingStep } from '@contexts/OnboardingStepContext';
+import OnboardingScreen from '@components/onboarding/OnboardingScreen';
+import ChoiceCard from '@components/onboarding/ChoiceCard';
+import Animated, { FadeInDown } from 'react-native-reanimated';
 
 const TeamDivisionRequest = () => {
+  useOnboardingStep(6, 6);
   const { player } = useUser();
   const router = useRouter();
+  const queryClient = useQueryClient();
   const params = useLocalSearchParams();
   const league = JSON.parse(params.league || '{}');
   const teamDetails = JSON.parse(params.teamDetails || '{}');
-  const teams = JSON.parse(params.teams || '[]');
-  const [selectedDivision, setSelectedDivision] = useState(null);
+    const [selectedDivision, setSelectedDivision] = useState(null);
   const { uploadToSupabase, uploading } = useCompressAndUploadImage();
   const [loading, setLoading] = useState(false);
 
   console.log('league in TeamDivisionRequest:', league);
   console.log('teamDetails in TeamDivisionRequest:', teamDetails);
-  console.log('teams in TeamDivisionRequest:', teams);
+
+  const ERROR_MESSAGES = {
+    TEAM_NAME_TAKEN: 'Another team already uses that team name. Go back and choose a different one.',
+    TEAM_DISPLAY_NAME_TAKEN:
+      'Another team already uses that display name. Go back and choose a different one.',
+    TEAM_ABBREVIATION_TAKEN:
+      'Another team already uses that abbreviation. Go back and choose a different one.',
+    DIVISION_FULL: 'That division is full. Please choose another.',
+    DIVISION_REQUIRED: 'Please choose a division to join.',
+    DIVISION_NOT_FOUND: 'That division is no longer available. Please choose another.',
+    LEAGUE_NOT_FOUND: 'This league is not available right now.',
+    ALREADY_PENDING: 'You already have a team waiting for approval.',
+    ALREADY_IN_DISTRICT: 'You are already on a team in this league.',
+    INVALID_TEAM_DETAILS: 'Please check your team details and try again.',
+    INVALID_ADDRESS: 'Please check your venue details and try again.',
+  };
 
   const handleContinue = async () => {
+    if (loading || uploading) return;
+    if (!selectedDivision) {
+      Toast.show({
+        type: 'info',
+        text1: 'Choose a Division',
+        text2: 'Pick the division your team wants to join.',
+      });
+      return;
+    }
     setLoading(true);
-    const folderPath = `${teamDetails.name}/`;
-
-    let imageURL = null;
 
     try {
+      let imageURL = null;
       if (teamDetails.photoUri) {
-        imageURL = await uploadToSupabase(teamDetails.photoUri, folderPath, 'team-cover-images');
+        imageURL = await uploadToSupabase(
+          teamDetails.photoUri,
+          `${player.id}/`,
+          'team-cover-images'
+        );
       }
 
+      const address = teamDetails.address || {};
       const { data: newTeamDetails, error } = await supabase.rpc('create_team_with_address', {
         payload: {
-          _venue_name: teamDetails.venue_name,
-          _line1: teamDetails.address.line_1,
-          _line2: teamDetails.address.line_2 ?? null,
-          _city: teamDetails.address.city,
-          _county: teamDetails.address.county ?? null,
-          _post_code: teamDetails.address.postcode,
-          _tables: teamDetails.tables,
+          _venue_name: address.venue_name || null,
+          _line1: address.line_1,
+          _line2: address.line_2 || null,
+          _city: address.city,
+          _county: address.county || null,
+          _post_code: address.postcode,
+          _tables: address.tables,
           _name: teamDetails.name,
           _display_name: teamDetails.display_name,
           _abbreviation: teamDetails.abbreviation,
           _crest: teamDetails.crest,
-          _division: selectedDivision ?? null,
+          _division: selectedDivision,
           _district: league.id,
           _is_private: teamDetails.is_private,
-          _captain: player.id,
           _cover_image_url: imageURL ?? null,
         },
       });
-
-      if (error) throw error;
-      if (!newTeamDetails) {
-        throw new Error('No team returned from create_team_with_address');
-      }
 
       if (error) throw error;
       if (!newTeamDetails) {
@@ -76,20 +102,18 @@ const TeamDivisionRequest = () => {
         text2: 'Your request to join the league has been sent. Please wait for approval.',
       });
 
-      router.push({
-        pathname: '/(main)/onboarding/(entity-onboarding)/team-pending-approval',
-        params: {
-          league: JSON.stringify(league),
-          teamDetails: JSON.stringify(newTeamDetails),
-        },
-      });
+      // The server has moved the player on to the waiting screen.
+      await queryClient.invalidateQueries({ queryKey: ['authUserProfile'] });
+      router.replace('/(main)/onboarding/(entity-onboarding)/pending-request');
     } catch (err) {
       console.error('Team creation failed:', err);
 
       Toast.show({
         type: 'error',
         text1: 'Team creation failed',
-        text2: 'An error occurred while creating your team. Please try again.',
+        text2:
+          ERROR_MESSAGES[err?.message] ||
+          'An error occurred while creating your team. Please try again.',
       });
     } finally {
       setLoading(false);
@@ -97,14 +121,11 @@ const TeamDivisionRequest = () => {
   };
 
   const getRemainingSpaces = (division) => {
-    if (!division?.max_teams) return null;
-
-    const activeTeamsInDivision = teams.filter(
-      (team) => team.division === division.id && team.status === 'active'
-    ).length;
-
-    return Math.max(division?.max_teams - activeTeamsInDivision, 0);
+    if (!division?.max_competitors) return null;
+    return Math.max(division.max_competitors - (division.member_count || 0), 0);
   };
+
+  const selectedDivisionRow = league.Divisions?.find((d) => d.id === selectedDivision);
 
   const groupedDivisions = league.Divisions?.reduce((acc, division) => {
     const groupId = division.group_id || 'ungrouped';
@@ -122,140 +143,66 @@ const TeamDivisionRequest = () => {
   }, {});
 
   return (
-    <>
-      <Stack.Screen
-        options={{
-          title: 'Step 6 of 6',
-        }}
-      />
-      <SafeViewWrapper useTopInset={false} topColor="bg-brand" bottomColor="bg-brand-dark">
-        <View className={`flex-1 justify-between gap-3 bg-brand`}>
-          <StepPillGroup steps={6} currentStep={6} />
-          <View className="flex-1">
-            <Text
-              style={{ lineHeight: 40 }}
-              className={`p-4 font-delagothic text-3xl font-bold text-text-on-brand`}>
-              Request to join a division in your league.
-            </Text>
-            <Text className="px-4 font-saira-medium text-sm text-text-on-brand-2">
-              A request to join a division will be sent to the league admin for approval. Once
-              approved, your team will be added to the division and you can start adding players and
-              competing in the league!
-            </Text>
-            <View className="flex-1 gap-3">
-              {!league.Divisions?.length ? (
-                <View className="mx-3 mt-6 rounded-2xl bg-bg-2 p-2">
-                  <Text className="text-md p-3 px-5 font-saira-medium text-text-2">
-                    Your league doesn't have any divisions yet. You can still request to join the
-                    league and the admin can assign you to a division later.
-                  </Text>
-                </View>
-              ) : (
-                <ScrollView
-                  className="flex-1 p-3"
-                  contentContainerStyle={{ paddingBottom: 20, gap: 16 }}>
-                  {Object.entries(groupedDivisions || {}).map(([groupId, group]) => (
-                    <View key={groupId} className="gap-3">
-                      {/* Group Title */}
-                      <Text className="px-1 font-saira-semibold text-lg text-text-2">
-                        {group.groupName}
-                      </Text>
-
-                      {/* Divisions in this group */}
-                      {group.divisions
-                        .sort((a, b) => a.tier - b.tier)
-                        .map((division) => (
-                          <Pressable
-                            key={division.id}
-                            onPress={() =>
-                              selectedDivision === division.id
-                                ? setSelectedDivision(null)
-                                : setSelectedDivision(division.id)
-                            }
-                            style={{
-                              borderColor:
-                                selectedDivision === division.id ? 'blue' : 'transparent',
-                              borderWidth: 2,
-                            }}
-                            className="w-full flex-row items-center justify-between rounded-xl border border-theme-gray-5 bg-bg-grouped-2 p-2 px-3">
-                            <View className="flex-row items-center gap-4">
-                              {romanNumerals[division.tier] && (
-                                <Image
-                                  source={romanNumerals[division.tier]}
-                                  style={{ width: 40, height: 48 }}
-                                  resizeMode="contain"
-                                />
-                              )}
-                              <View>
-                                <Text className="font-saira-semibold text-xl text-text-1">
-                                  {division?.name}
-                                </Text>
-                                <Text
-                                  className={`text-md font-saira ${
-                                    getRemainingSpaces(division) === 0
-                                      ? 'text-theme-red'
-                                      : 'text-text-2'
-                                  }`}>
-                                  {!division?.max_teams
-                                    ? 'No team limit'
-                                    : `${getRemainingSpaces(division)} spaces remaining`}
-                                </Text>
-                              </View>
-                            </View>
-
-                            <View
-                              className={`h-8 w-8 rounded-full ${
-                                selectedDivision === division.id
-                                  ? 'border-theme-blue bg-theme-blue'
-                                  : 'border-theme-gray-3'
-                              } border-2`}>
-                              {selectedDivision === division.id && (
-                                <Ionicons
-                                  name="checkmark"
-                                  size={20}
-                                  color="white"
-                                  style={{
-                                    position: 'absolute',
-                                    top: '50%',
-                                    left: '50%',
-                                    transform: [{ translateX: -10 }, { translateY: -10 }],
-                                  }}
-                                />
-                              )}
-                            </View>
-                          </Pressable>
-                        ))}
-                    </View>
-                  ))}
-                </ScrollView>
-              )}
-            </View>
-
-            <View className="gap-5 rounded-t-3xl bg-brand-dark px-5 py-6">
-              <CTAButton
-                disabled={loading || uploading}
-                type="yellow"
-                text={
-                  !selectedDivision
-                    ? 'Request to join league'
-                    : getRemainingSpaces(selectedDivision) === 0
-                      ? 'Request to join league'
-                      : 'Request to join division'
-                }
-                callbackFn={handleContinue}
-              />
-              <Text className="font-saira-medium text-sm text-text-on-brand-2">
-                If your league doesn't have any divisions yet, don't worry - you can still request
-                to join the league and the admin can assign you to a division later.
-              </Text>
-            </View>
-          </View>
+    <OnboardingScreen
+      title="Choose a division"
+      subtitle="The league admin reviews your request before your team joins the division."
+      onCta={handleContinue}
+      ctaText={
+        loading || uploading
+          ? 'Creating team…'
+          : selectedDivisionRow
+            ? `Request to join ${selectedDivisionRow.name}`
+            : 'Choose a division'
+      }
+      ctaDisabled={loading || uploading || !selectedDivision}
+      ctaLoading={loading || uploading}>
+      {!league.Divisions?.length ? (
+        <View className="rounded-3xl border-2 border-white/15 bg-white/10 p-5">
+          <Text className="font-saira-medium text-lg text-text-on-brand">
+            This league doesn't have any divisions for teams yet, so it can't take new teams right
+            now. Please check back with your league official.
+          </Text>
         </View>
-      </SafeViewWrapper>
-    </>
+      ) : (
+        <View className="gap-7">
+          {Object.entries(groupedDivisions || {}).map(([groupId, group]) => (
+            <View key={groupId} className="gap-3">
+              <Text className="pl-1 font-saira-semibold text-xs uppercase tracking-[2px] text-text-on-brand-2">
+                {group.groupName}
+              </Text>
+              {group.divisions
+                .sort((a, b) => a.tier - b.tier)
+                .map((division, i) => {
+                  const spaces = getRemainingSpaces(division);
+                  const full = spaces === 0;
+                  return (
+                    <ChoiceCard
+                      key={division.id}
+                      delay={i * 60}
+                      icon="trophy"
+                      iconColor={full ? '#6B7280' : '#8B5CF6'}
+                      title={division.name}
+                      subtitle={
+                        division.max_competitors
+                          ? full
+                            ? 'Full'
+                            : `${spaces} space${spaces === 1 ? '' : 's'} left`
+                          : 'No team limit'
+                      }
+                      disabled={full}
+                      selected={selectedDivision === division.id}
+                      onPress={() =>
+                        setSelectedDivision(selectedDivision === division.id ? null : division.id)
+                      }
+                    />
+                  );
+                })}
+            </View>
+          ))}
+        </View>
+      )}
+    </OnboardingScreen>
   );
 };
 
 export default TeamDivisionRequest;
-
-const styles = StyleSheet.create({});

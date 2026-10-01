@@ -40,7 +40,7 @@ const PlayerStatsPage = ({ userId }) => {
             )}
           </View>
         </View>
-        <ScrollView className="w-full flex-1 gap-5 bg-bg-grouped-1">
+        <ScrollView className="w-full flex-1 gap-5 bg-bg-2">
           <EntityStats entityId={userId} entityType="player" />
         </ScrollView>
       </View>

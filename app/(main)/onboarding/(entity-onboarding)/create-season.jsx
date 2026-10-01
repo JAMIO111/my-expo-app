@@ -1,19 +1,26 @@
-import { View, Text, Switch, Platform, ScrollView } from 'react-native';
+import KeyboardAwareScrollView from '@components/KeyboardAwareScrollView';
+import { View, Text, Switch, Platform } from 'react-native';
 import { useState } from 'react';
 import { Stack, useLocalSearchParams } from 'expo-router';
 import CTAButton from '@components/CTAButton';
-import StepPillGroup from '@components/StepPillGroup';
 import CustomTextInput from '@components/CustomTextInput';
 import { useRouter } from 'expo-router';
 import { supabase } from '@/lib/supabase';
 import Toast from 'react-native-toast-message';
-import CustomDatePicker from '@components/CustomDatePicker';
+import DateTimePicker from '@react-native-community/datetimepicker';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import CustomMultiSelect from '@components/CustomMultiSelect';
-import { StatusBar } from 'expo-status-bar';
 import { useUser } from '@contexts/UserProvider';
 import { useQueryClient } from '@tanstack/react-query';
+import TieBreakEditor, { DEFAULT_TIE_BREAKS } from '@components/TieBreakEditor';
+import { useOnboardingStep } from '@contexts/OnboardingStepContext';
+import OnboardingScreen from '@components/onboarding/OnboardingScreen';
+import OnboardingInput from '@components/onboarding/OnboardingInput';
+import ChoiceCard from '@components/onboarding/ChoiceCard';
+import ToggleCard from '@components/onboarding/ToggleCard';
 
 export default function SeasonName() {
+  useOnboardingStep(4, 4);
   const router = useRouter();
   const { player } = useUser();
   const queryClient = useQueryClient();
@@ -21,6 +28,7 @@ export default function SeasonName() {
   const [startDate, setStartDate] = useState(new Date().toISOString().split('T')[0]); // Default to today's date
   const [seasonStatus, setSeasonStatus] = useState(['draft']);
   const [loading, setLoading] = useState(false);
+  const [tieBreakRules, setTieBreakRules] = useState(DEFAULT_TIE_BREAKS);
 
   const { districtId, districtName, privateDistrict, divisions } = useLocalSearchParams();
 
@@ -75,6 +83,7 @@ export default function SeasonName() {
         _season_status: seasonStatus[0], // since it's single select, take the first value
         _divisions: JSON.parse(divisions || '[]'),
         _admin_id: player?.id,
+        _tie_break_rules: tieBreakRules,
       });
 
       if (error) throw error;
@@ -102,60 +111,86 @@ export default function SeasonName() {
   console.log('start date :', startDate);
 
   return (
-    <>
-      <Stack.Screen
-        options={{
-          title: 'Step 4 of 4',
-        }}
-      />
-      <StatusBar style="light" />
-      <View className="flex-1 bg-brand px-4">
-        <StepPillGroup steps={4} currentStep={4} />
-        <Text className="my-4 pt-2 font-delagothic text-3xl text-text-on-brand">
-          Let's create your first season!
-        </Text>
-        <ScrollView contentContainerStyle={{ paddingBottom: 20, gap: 20 }} className="flex-1">
-          <CustomTextInput
-            title="Season Name"
-            value={seasonName}
-            onChangeText={setSeasonName}
-            leftIconName="pencil-outline"
-            iconColor="purple"
-            placeholder={`e.g. 20${new Date().getFullYear().toString().slice(-2)}/${(new Date().getFullYear() + 1).toString().slice(-2)}, Winter ${new Date().getFullYear()}`}
-            autoCapitalize="words"
-            returnKeyType="done"
+    <OnboardingScreen
+      title="Create your first season"
+      subtitle="Everything in your league runs inside a season."
+      onCta={handleSubmit}
+      ctaText={loading ? 'Creating league…' : 'Create season'}
+      ctaDisabled={loading || !seasonName.trim()}
+      ctaLoading={loading}>
+      <View className="gap-6">
+        <OnboardingInput
+          label="Season name"
+          icon="pencil-outline"
+          value={seasonName}
+          onChangeText={setSeasonName}
+          placeholder={`e.g. ${new Date().getFullYear()}/${(new Date().getFullYear() + 1).toString().slice(-2)}`}
+          autoCapitalize="words"
+          returnKeyType="done"
+        />
+        <View>
+          <Text className="mb-2 pl-1 font-saira-semibold text-xs uppercase tracking-[2px] text-text-on-brand-2">
+            Season start date
+          </Text>
+          <View className="h-16 flex-row items-center justify-between rounded-2xl border-2 border-white/15 bg-white/10 px-4">
+            <View className="flex-row items-center gap-3">
+              <Ionicons name="calendar-outline" size={22} color="#FFFFFFAA" />
+              <Text className="font-saira text-xl text-white">
+                {new Date(startDate).toLocaleDateString('en-GB', {
+                  weekday: 'short',
+                  day: 'numeric',
+                  month: 'short',
+                  year: 'numeric',
+                })}
+              </Text>
+            </View>
+            <DateTimePicker
+              value={new Date(startDate)}
+              mode="date"
+              display="compact"
+              themeVariant="dark"
+              minimumDate={new Date(2000, 0, 1)}
+              maximumDate={new Date(2100, 11, 31)}
+              onChange={(event, d) => {
+                if (d) setStartDate(d.toISOString().split('T')[0]);
+              }}
+            />
+          </View>
+        </View>
+
+        <View className="gap-3">
+          <Text className="pl-1 font-saira-semibold text-xs uppercase tracking-[2px] text-text-on-brand-2">
+            Season status
+          </Text>
+          <ChoiceCard
+            icon="play"
+            iconColor="#10B981"
+            title="Active"
+            subtitle="Starts straight away"
+            selected={seasonStatus[0] === 'active'}
+            onPress={() => setSeasonStatus(['active'])}
           />
-          <CustomDatePicker
-            title="Season Start Date"
-            value={startDate}
-            onChange={setStartDate}
-            leftIconName="calendar-outline"
-            iconColor="purple"
-          />
-          <CustomMultiSelect
-            title="Season Status"
-            leftIconName="pulse-outline"
-            iconColor="purple"
-            titleColor="text-text-on-brand"
-            multiSelect={false}
-            options={[
-              { label: 'Active', value: 'active' },
-              { label: 'Draft', value: 'draft' },
-            ]}
-            selectedValues={seasonStatus}
-            onValueChange={setSeasonStatus}
-          />
-        </ScrollView>
-        <View className="px-2 py-8">
-          <CTAButton
-            type="yellow"
-            textColor="text-black"
-            text={loading ? 'Creating League...' : 'Create Season'}
-            callbackFn={handleSubmit}
-            disabled={loading}
+          <ChoiceCard
+            icon="create-outline"
+            iconColor="#6B7280"
+            title="Draft"
+            subtitle="Set things up first, start it when you're ready"
+            selected={seasonStatus[0] === 'draft'}
+            onPress={() => setSeasonStatus(['draft'])}
           />
         </View>
+
+        <View className="gap-3">
+          <Text className="pl-1 font-saira-semibold text-xs uppercase tracking-[2px] text-text-on-brand-2">
+            Tie-break rules
+          </Text>
+          <Text className="pl-1 font-saira text-base leading-5 text-text-on-brand-2">
+            When teams are level on points, these are applied in order. You can change them later in
+            league settings.
+          </Text>
+          <TieBreakEditor rules={tieBreakRules} onChange={setTieBreakRules} onBrand />
+        </View>
       </View>
-    </>
+    </OnboardingScreen>
   );
 }

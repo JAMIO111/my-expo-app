@@ -21,6 +21,7 @@ import SelectStatMenu from './SelectStatMenu';
 import PlayerProfileHeader from './PlayerProfileHeader';
 import FloatingBottomSheet from './FloatingBottomSheet';
 import { UserMinus, Star, UserStar } from 'lucide-react-native';
+import AdBanner from './AdBanner';
 
 const PlayerProfile = ({ context, isLoading, playerProfile, error }) => {
   const router = useRouter();
@@ -66,17 +67,17 @@ const PlayerProfile = ({ context, isLoading, playerProfile, error }) => {
 
   const currentTeam =
     context === 'teams'
-      ? playerProfile?.teams.find((t) => t.team_id === currentRole?.team?.id)
-      : playerProfile?.teams.find((t) => t.team_id === teamId) || null;
+      ? playerProfile?.teams?.find((t) => t.team_id === currentRole?.team?.id)
+      : playerProfile?.teams?.find((t) => t.team_id === teamId) || null;
   console.log('Current Teams:', playerProfile?.teams);
   const inMyTeam = currentTeam?.team_id === currentRole?.team?.id;
   const isMe = playerProfile?.id === player?.id;
   const iAmCaptain = currentRole?.role === 'captain';
   const iAmViceCaptain = currentRole?.role === 'vice_captain';
-  const playerIsCaptain = playerProfile?.teams.some(
+  const playerIsCaptain = playerProfile?.teams?.some(
     (t) => t.team_id === currentTeam?.team_id && t.role === 'captain'
   );
-  const playerIsViceCaptain = playerProfile?.teams.some(
+  const playerIsViceCaptain = playerProfile?.teams?.some(
     (t) => t.team_id === currentTeam?.team_id && t.role === 'vice_captain'
   );
 
@@ -88,7 +89,7 @@ const PlayerProfile = ({ context, isLoading, playerProfile, error }) => {
   console.log('Player is Vice Captain:', playerIsViceCaptain);
 
   useEffect(() => {
-    if (playerStats?.playerMeta?.displayed_stats.length) {
+    if (playerStats?.playerMeta?.displayed_stats?.length) {
       setStatSlots(playerStats.playerMeta.displayed_stats);
     }
   }, [playerStats?.playerMeta?.displayed_stats]);
@@ -318,7 +319,7 @@ const PlayerProfile = ({ context, isLoading, playerProfile, error }) => {
         contentContainerStyle={{ alignItems: 'center', justifyContent: 'center' }}
         className="w-full bg-brand">
         <PlayerProfileHeader playerProfile={playerProfile} currentTeam={currentTeam} />
-        <View className="w-full bg-bg-grouped-1">
+        <View className="w-full gap-2 bg-bg-grouped-1">
           <View className="w-full bg-bg-grouped-2 px-2 py-6">
             <Heading className="pl-3" text="Showcase Stats" />
             <View className="mt-2 gap-4 px-2">
@@ -394,7 +395,10 @@ const PlayerProfile = ({ context, isLoading, playerProfile, error }) => {
               />
             </View>
           </View>
-          <View className="mt-1 w-full gap-3 bg-bg-grouped-2 px-4 pb-8 pt-4">
+          <View className="py-4">
+            <AdBanner />
+          </View>
+          <View className="w-full gap-3 bg-bg-grouped-2 px-4 pb-8 pt-4">
             <Heading text="Trophy Cabinet" />
             <TrophyCabinet
               trophies={trophies || []}

@@ -1,12 +1,12 @@
-import { StyleSheet, Text, View, Pressable, useColorScheme, ScrollView } from 'react-native';
+import { StyleSheet, Text, View, Pressable, ScrollView } from 'react-native';
 import { useState } from 'react';
 import TeamLogo from '@components/TeamLogo';
 import CTAButton from '@components/CTAButton';
 import ColorPickerGrid from '@components/ColorPickerGrid';
 import BottomSheetModal from '@components/BottomSheetModal';
 import Ionicons from '@expo/vector-icons/Ionicons';
-import colors from '@lib/colors';
 import { Palette, Shapes, SlidersVertical } from 'lucide-react-native';
+import { useTheme } from '@contexts/ThemeProvider';
 
 const THICKNESSES = [
   {
@@ -45,8 +45,7 @@ const CrestEditor = ({ crest, handleSave, buttonText = 'Save Changes', isSaving 
   const [secondaryColor, setSecondaryColor] = useState(crest?.color2 || '#FFFFFF'); //Yellow
   const [thickness, setThickness] = useState(crest?.thickness || '2.7');
   const [type, setType] = useState(crest?.type || 'Horizontal Stripe'); // Assuming 'default' is a valid type
-  const colorScheme = useColorScheme();
-  const themeColors = colors[colorScheme] || colors.light; // Fallback to light theme if colorScheme is undefined
+  const { colors: themeColors } = useTheme();
   const [activeMenu, setActiveMenu] = useState(null);
 
   const hasChanges = () => {
@@ -76,7 +75,7 @@ const CrestEditor = ({ crest, handleSave, buttonText = 'Save Changes', isSaving 
           {({ pressed }) => (
             <View
               className={`flex-1 flex-row items-center justify-between gap-4 px-6 py-4 ${pressed ? 'bg-theme-gray-5' : 'bg-bg-grouped-2'}`}>
-              <Shapes size={24} color={'#000'} />
+              <Shapes size={24} color={themeColors.icon} />
               <Text className="flex-1 font-saira-medium text-xl text-text-1">Type</Text>
               <Text className="font-saira-medium text-xl text-text-2">
                 {TYPES.find((item) => item === type) || 'Horizontal Stripe'}
@@ -93,7 +92,7 @@ const CrestEditor = ({ crest, handleSave, buttonText = 'Save Changes', isSaving 
               className={`flex-row items-center justify-between gap-4 px-6 py-2 ${
                 pressed ? 'bg-theme-gray-5' : 'bg-bg-grouped-2'
               }`}>
-              <Palette size={24} color={'#000'} />
+              <Palette size={24} color={themeColors.icon} />
               <Text className="flex-1 font-saira-medium text-xl text-text-1">
                 Primary Team Color
               </Text>
@@ -115,7 +114,7 @@ const CrestEditor = ({ crest, handleSave, buttonText = 'Save Changes', isSaving 
               className={`flex-row items-center justify-between gap-4 px-6 py-2 ${
                 pressed ? 'bg-theme-gray-5' : 'bg-bg-grouped-2'
               }`}>
-              <Palette size={24} color={'#000'} />
+              <Palette size={24} color={themeColors.icon} />
               <Text className="flex-1 font-saira-medium text-xl text-text-1">
                 Secondary Team Color
               </Text>
@@ -137,7 +136,7 @@ const CrestEditor = ({ crest, handleSave, buttonText = 'Save Changes', isSaving 
                   className={`flex-row items-center justify-between gap-4 px-6 py-4 ${
                     pressed ? 'bg-theme-gray-5' : 'bg-bg-grouped-2'
                   }`}>
-                  <SlidersVertical size={24} color={'#000'} />
+                  <SlidersVertical size={24} color={themeColors.icon} />
                   <Text className="flex-1 font-saira-medium text-xl text-text-1">Thickness</Text>
                   <Text className="font-saira-medium text-xl text-text-2">
                     {THICKNESSES.find((item) => item.value === thickness)?.label}
@@ -179,6 +178,7 @@ const CrestEditor = ({ crest, handleSave, buttonText = 'Save Changes', isSaving 
             paddingTop: 40,
             paddingHorizontal: 20,
             gap: 8,
+            backgroundColor: themeColors.bgGrouped2,
           }}>
           {/* Your selectable items */}
           {activeMenu === 'Style Weight' &&

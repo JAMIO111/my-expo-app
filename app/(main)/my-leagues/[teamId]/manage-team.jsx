@@ -1,4 +1,5 @@
-import { View, ScrollView, Pressable, Text } from 'react-native';
+import KeyboardAwareScrollView from '@components/KeyboardAwareScrollView';
+import { View, Pressable, Text } from 'react-native';
 import { useState, useEffect } from 'react';
 import { Stack } from 'expo-router';
 import SafeViewWrapper from '@components/SafeViewWrapper';
@@ -17,6 +18,8 @@ import { useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 import BottomSheetModal from '@components/BottomSheetModal';
 import { useDivisions } from '@hooks/useDivisions';
+import { useTeamPlayers } from '@hooks/useTeamPlayers';
+import { assertRpcOk } from '@lib/rpc';
 import CTAButton from '@components/CTAButton';
 
 const ManageTeam = () => {
@@ -35,7 +38,45 @@ const ManageTeam = () => {
   const [teamDisplayName, setTeamDisplayName] = useState(teamProfile?.display_name);
   const [teamJoinCode, setTeamJoinCode] = useState(teamProfile?.code);
   const [tempDivision, setTempDivision] = useState(null);
+  // null = not checked yet / unchanged, true = free, false = already used by another team
+  const [codeFree, setCodeFree] = useState(null);
+  const [checkingCode, setCheckingCode] = useState(false);
   const { data: divisions } = useDivisions(currentRole?.district?.id);
+  const { data: teamPlayers } = useTeamPlayers(teamId);
+  const [showCaptainModal, setShowCaptainModal] = useState(false);
+  const [tempCaptain, setTempCaptain] = useState(null);
+  const [settingCaptain, setSettingCaptain] = useState(false);
+
+  const currentCaptainId = teamPlayers?.find((p) => p.role === 'captain')?.player_id;
+
+  const handleSetCaptain = async () => {
+    if (!tempCaptain || settingCaptain) return;
+    try {
+      setSettingCaptain(true);
+      const { data, error } = await supabase.rpc('transfer_captaincy', {
+        p_team_id: teamId,
+        p_new_captain_id: tempCaptain.player_id,
+      });
+      assertRpcOk(data, error);
+      await queryClient.invalidateQueries({ queryKey: ['TeamPlayers', teamId] });
+      await queryClient.invalidateQueries({ queryKey: ['TeamProfile', teamId] });
+      Toast.show({
+        type: 'success',
+        text1: 'Captain Updated',
+        text2: `${tempCaptain.first_name} ${tempCaptain.surname} is now the team captain.`,
+      });
+      setShowCaptainModal(false);
+      setTempCaptain(null);
+    } catch (err) {
+      Toast.show({
+        type: 'error',
+        text1: 'Could not change captain',
+        text2: err?.message || 'Please try again.',
+      });
+    } finally {
+      setSettingCaptain(false);
+    }
+  };
 
   const transferableDivisions = divisions?.filter(
     (d) => d.id !== teamProfile?.division?.id && d.group_id === teamProfile?.division?.group_id
@@ -65,6 +106,30 @@ const ManageTeam = () => {
     setTempDivision(null);
   }, [showModal]);
 
+  // Check the join code as it is typed, so a clash shows up before saving
+  useEffect(() => {
+    if (!teamProfile?.id || teamJoinCode === teamProfile?.code || teamJoinCode?.length !== 6) {
+      setCodeFree(null);
+      setCheckingCode(false);
+      return;
+    }
+    let cancelled = false;
+    setCheckingCode(true);
+    const timer = setTimeout(async () => {
+      const { data, error } = await supabase.rpc('team_code_available', {
+        p_team_id: teamProfile.id,
+        p_code: teamJoinCode,
+      });
+      if (cancelled) return;
+      setCheckingCode(false);
+      setCodeFree(error ? null : !!data);
+    }, 350);
+    return () => {
+      cancelled = true;
+      clearTimeout(timer);
+    };
+  }, [teamJoinCode, teamProfile?.id, teamProfile?.code]);
+
   const openConfirm = ({
     title,
     message,
@@ -91,7 +156,7 @@ const ManageTeam = () => {
   const handleRemoveTeam = () => {
     openConfirm({
       title: 'Remove from Competitions too?',
-      message: `You are about to remove ${teamProfile?.name}'s membership from ${teamProfile?.division.name}? Would you also like to remove them from any active competitions?`,
+      message: `You are about to remove ${teamProfile?.name}'s membership from ${teamProfile?.division?.name}? Would you also like to remove them from any active competitions?`,
       topButtonText: 'Remove from division only',
       bottomButtonText: 'Remove from all comps',
       topButtonType: 'default',
@@ -165,6 +230,14 @@ const ManageTeam = () => {
       });
       return;
     }
+    if (codeFree === false) {
+      Toast.show({
+        type: 'error',
+        text1: 'Join code already in use',
+        text2: 'Another team already uses that code. Choose a different one.',
+      });
+      return;
+    }
     if (hasChanges) {
       try {
         setSaving(true);
@@ -183,6 +256,7 @@ const ManageTeam = () => {
 
         // Business-logic failure returned by the function itself
         if (!data?.success) {
+          if (data?.code === 'code_taken') setCodeFree(false);
           Toast.show({
             type: 'error',
             text1: data?.message || 'Failed to save changes',
@@ -199,9 +273,12 @@ const ManageTeam = () => {
       } catch (err) {
         // Unexpected error: network drop, JSON parse issue, etc.
         console.error('saveChanges unexpected error:', err);
+        // A unique-constraint hit (two admins saving the same code at once) is still just "code taken"
+        const clash = err?.code === '23505' && /code/i.test(`${err?.message} ${err?.details}`);
+        if (clash) setCodeFree(false);
         Toast.show({
           type: 'error',
-          text1: 'Something went wrong. Please try again.',
+          text1: clash ? 'Join code already in use' : 'Something went wrong. Please try again.',
         });
       } finally {
         setSaving(false);
@@ -212,14 +289,16 @@ const ManageTeam = () => {
   return (
     <>
       <SafeViewWrapper topColor="bg-brand" useBottomInset={false} bottomColor="bg-brand">
-        <StatusBar style="light" backgroundColor="#000" />
+        <StatusBar style="light" />
         <View className="flex-1">
           <Stack.Screen
             options={{
               header: () => (
                 <SafeViewWrapper useBottomInset={false}>
                   <CustomHeader
-                    rightIcon={saving ? Loader : hasChanges ? CircleCheckBig : null}
+                    rightIcon={
+                      saving ? Loader : hasChanges && codeFree !== false ? CircleCheckBig : null
+                    }
                     onRightPress={saving ? null : saveChanges}
                     showBack={true}
                     title={teamProfile ? teamProfile.name : 'Team Name'}
@@ -228,7 +307,7 @@ const ManageTeam = () => {
               ),
             }}
           />
-          <ScrollView className="mt-16 flex-1 p-4">
+          <KeyboardAwareScrollView className="mt-16 flex-1 bg-bg-grouped-1 p-4">
             <MenuContainer
               title="Team Details"
               footer="As league admin you may edit any of the team details above by tapping on the respective fields. Save changes after by tapping the tick in the top right.">
@@ -264,6 +343,25 @@ const ManageTeam = () => {
               />
             </MenuContainer>
 
+            {teamJoinCode !== teamProfile?.code && teamJoinCode?.length === 6 ? (
+              <Text
+                className={`mb-4 px-2 font-saira-medium text-base ${
+                  codeFree === false
+                    ? 'text-theme-red'
+                    : codeFree === true
+                      ? 'text-theme-green'
+                      : 'text-text-2'
+                }`}>
+                {checkingCode
+                  ? 'Checking join code…'
+                  : codeFree === false
+                    ? 'That join code is already used by another team.'
+                    : codeFree === true
+                      ? 'That join code is available.'
+                      : ''}
+              </Text>
+            ) : null}
+
             <MenuContainer title="Team Image">
               <SettingsItem
                 routerPath={`/my-leagues/${teamProfile?.id}/manage-crest`}
@@ -282,6 +380,14 @@ const ManageTeam = () => {
                 title="Transfer Division"
                 icon="arrowLeftRight"
                 callbackFn={() => setShowModal(true)}
+              />
+              <SettingsItem
+                title="Set Team Captain"
+                icon="crown"
+                callbackFn={() => {
+                  setTempCaptain(null);
+                  setShowCaptainModal(true);
+                }}
               />
               <SettingsItem
                 title="Remove Team from Division"
@@ -318,7 +424,7 @@ const ManageTeam = () => {
                 text={teamProfile?.is_recruiting ? 'Recruiting' : 'Closed'}
               />
             </MenuContainer>
-          </ScrollView>
+          </KeyboardAwareScrollView>
         </View>
       </SafeViewWrapper>
       <FloatingBottomSheet
@@ -333,6 +439,46 @@ const ManageTeam = () => {
         bottomButtonFn={confirmConfig?.bottomButtonFn}
         onCancel={() => setModalVisible(false)}
       />
+      <BottomSheetModal
+        showModal={showCaptainModal}
+        setShowModal={setShowCaptainModal}
+        title="Set Team Captain">
+        <View className="flex-1 p-4 pb-16">
+          <View className="flex-1">
+            {(teamPlayers || [])
+              .filter((p) => p.player_id !== currentCaptainId)
+              .map((p) => (
+                <Pressable
+                  className="mb-3 flex-row items-center justify-between rounded-3xl bg-bg-2 p-4"
+                  key={p.player_id}
+                  onPress={() => setTempCaptain(p)}>
+                  <View>
+                    <Text
+                      className={`font-tektur-medium text-2xl ${
+                        tempCaptain?.player_id === p.player_id ? 'text-text-1' : 'text-text-2'
+                      }`}>
+                      {p.first_name} {p.surname}
+                    </Text>
+                    <Text className="font-tektur text-xl text-text-2">
+                      {p.role === 'vice_captain' ? 'Vice captain' : 'Player'}
+                    </Text>
+                  </View>
+                  {tempCaptain?.player_id === p.player_id ? (
+                    <CircleCheck size={40} strokeWidth={1.5} />
+                  ) : (
+                    <Circle size={40} strokeWidth={1.5} />
+                  )}
+                </Pressable>
+              ))}
+          </View>
+          <CTAButton
+            text={settingCaptain ? 'Saving...' : 'Set Captain'}
+            type="yellow"
+            disabled={!tempCaptain || settingCaptain}
+            onPress={handleSetCaptain}
+          />
+        </View>
+      </BottomSheetModal>
       <BottomSheetModal showModal={showModal} setShowModal={setShowModal} title="Transfer Division">
         <View className="flex-1 p-4 pb-16">
           <View className="flex-1">

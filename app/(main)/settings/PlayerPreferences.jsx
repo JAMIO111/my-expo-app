@@ -21,10 +21,7 @@ const PlayerPreferences = () => {
       .eq('id', player?.id)
       .select();
 
-    if (error) {
-      console.error(error);
-      return;
-    }
+    if (error) throw error;
 
     await refetch();
   };

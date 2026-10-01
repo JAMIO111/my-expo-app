@@ -5,17 +5,23 @@ import * as Linking from 'expo-linking';
 import { useAuthUserProfile } from '@hooks/useAuthUserProfile2';
 import Purchases from 'react-native-purchases'; // ✅ added
 import { syncPushToken } from '@/lib/pushNotifications';
+import Toast from 'react-native-toast-message';
 
 WebBrowser.maybeCompleteAuthSession();
 
 const UserContext = createContext(null);
 
 export const UserProvider = ({ children }) => {
-  const { data, isLoading, isFetching, isError, refetch } = useAuthUserProfile();
-
   const [currentRole, setCurrentRole] = useState(null);
   const [loadingAuth, setLoadingAuth] = useState(true);
   const [session, setSession] = useState(null);
+
+  // Single source of truth for the Supabase session — passed straight into
+  // the query instead of having it subscribe to its own auth listener too.
+  const { data, isLoading, isFetching, isError, refetch } = useAuthUserProfile(
+    session,
+    loadingAuth
+  );
 
   const hasUser = !!session?.user;
 
@@ -33,7 +39,27 @@ export const UserProvider = ({ children }) => {
       return;
     }
 
-    const params = Object.fromEntries(fragment.split('&').map((part) => part.split('=')));
+    // Split each pair on the *first* '=' only -- fragment.split('=') would
+    // truncate a token value that itself contains an '=' (e.g. base64
+    // padding), since Object.fromEntries only keeps the first two pieces.
+    // safeDecode falls back to the raw value instead of throwing on a
+    // malformed sequence, since these tokens aren't expected to need
+    // decoding in practice -- better to keep working than to start throwing
+    // here when the previous version never decoded at all.
+    const safeDecode = (value) => {
+      try {
+        return decodeURIComponent(value);
+      } catch {
+        return value;
+      }
+    };
+    const params = Object.fromEntries(
+      fragment.split('&').map((part) => {
+        const eq = part.indexOf('=');
+        if (eq === -1) return [safeDecode(part), ''];
+        return [safeDecode(part.slice(0, eq)), safeDecode(part.slice(eq + 1))];
+      })
+    );
 
     console.log('[AUTH] Parsed fragment:', params);
 
@@ -147,10 +173,7 @@ export const UserProvider = ({ children }) => {
         },
       });
 
-      if (error) {
-        console.log('[AUTH] OAuth error:', error);
-        return;
-      }
+      if (error) throw error;
 
       const result = await WebBrowser.openAuthSessionAsync(data.url, redirectUri);
       console.log('[AUTH] Browser result:', result);
@@ -159,7 +182,12 @@ export const UserProvider = ({ children }) => {
         await handleAuthRedirect(result.url);
       }
     } catch (err) {
-      console.error('[AUTH] OAuth crash:', err);
+      console.error('[AUTH] OAuth failed:', err);
+      Toast.show({
+        type: 'error',
+        text1: `Couldn't sign in with ${provider.charAt(0).toUpperCase() + provider.slice(1)}`,
+        text2: err.message,
+      });
     }
   };
 

@@ -1,94 +1,80 @@
-import { Text, View, Pressable } from 'react-native';
-import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
-import { Stack } from 'expo-router';
-import CTAButton from '@components/CTAButton';
-import StepPillGroup from '@components/StepPillGroup';
-import { useUser } from '@contexts/UserProvider';
-import Toast from 'react-native-toast-message';
+import { View, Text, Pressable } from 'react-native';
+import { useRouter, useLocalSearchParams } from 'expo-router';
+import Animated, { FadeInDown } from 'react-native-reanimated';
 import Ionicons from '@expo/vector-icons/Ionicons';
+import { useOnboardingStep } from '@contexts/OnboardingStepContext';
+import OnboardingScreen from '@components/onboarding/OnboardingScreen';
+
+const OPTIONS = [
+  { value: 'male', label: 'Male', icon: 'male', color: '#3B82F6' },
+  { value: 'female', label: 'Female', icon: 'female', color: '#EC4899' },
+  { value: 'none', label: 'Prefer not to say', icon: 'remove', color: '#6B7280' },
+];
 
 const Gender = () => {
-  const { user } = useUser();
+  useOnboardingStep(4, 5);
+  const router = useRouter();
   const params = useLocalSearchParams();
-
-  console.log('User in Gender component:', user); // Debugging line
-
   const [gender, setGender] = useState(null);
 
-  const router = useRouter();
+  const next = () => {
+    if (!gender) return;
+    router.push({
+      pathname: '/(main)/onboarding/(profile-onboarding)/avatar',
+      params: { ...params, gender },
+    });
+  };
 
   return (
-    <>
-      <Stack.Screen
-        options={{
-          title: 'Step 4 of 5',
-          headerBackTitle: 'Gender',
-        }}
-      />
-
-      <View className="flex-1 gap-3 bg-brand">
-        <StepPillGroup steps={5} currentStep={4} />
-        <View className="p-5">
-          <Text className="mb-4 font-delagothic text-5xl font-bold text-text-on-brand">
-            What's your gender?
-          </Text>
-          <Text className="font-saira text-2xl text-text-on-brand-2">
-            This is so we know which competitions you will be eligible for.
-          </Text>
-        </View>
-        <View className="flex-row gap-5 p-5">
-          <Pressable
-            onPress={() => (gender === 'male' ? setGender(null) : setGender('male'))}
-            className={`flex-1 flex-row items-center gap-3 rounded-xl border-2 bg-bg-1 p-4 ${
-              gender === 'male' ? 'border-theme-blue' : 'border-transparent'
-            }`}>
-            <Ionicons name="male" size={24} color="#007AFF" />
-            <Text className="font-saira-medium text-lg text-text-1">Male</Text>
-            {gender === 'male' && (
-              <View className="ml-auto h-6 w-6 items-center justify-center rounded-full bg-theme-blue">
-                <Ionicons name="checkmark" size={14} color="white" />
-              </View>
-            )}
-          </Pressable>
-          <Pressable
-            onPress={() => (gender === 'female' ? setGender(null) : setGender('female'))}
-            className={`flex-1 flex-row items-center gap-3 rounded-xl border-2 bg-bg-1 p-4 ${
-              gender === 'female' ? 'border-theme-pink' : 'border-transparent'
-            }`}>
-            <Ionicons name="female" size={24} color="#FF2D55" />
-            <Text className="font-saira-medium text-lg text-text-1">Female</Text>
-            {gender === 'female' && (
-              <View className="ml-auto h-6 w-6 items-center justify-center rounded-full bg-theme-pink">
-                <Ionicons name="checkmark" size={14} color="white" />
-              </View>
-            )}
-          </Pressable>
-        </View>
-
-        <View className="mt-4 px-5">
-          <CTAButton
-            type="yellow"
-            textColor="black"
-            text="Continue"
-            callbackFn={() => {
-              if (!gender) {
-                Toast.show({
-                  type: 'info',
-                  text1: 'Gender Required',
-                  text2: 'Please select your gender.',
-                });
-                return;
-              }
-              router.push({
-                pathname: '/(main)/onboarding/(profile-onboarding)/avatar',
-                params: { ...params, gender },
-              });
-            }}
-          />
-        </View>
+    <OnboardingScreen
+      title="What's your gender?"
+      subtitle="This decides which competitions you're eligible for."
+      onCta={next}
+      ctaDisabled={!gender}>
+      <View className="gap-4">
+        {OPTIONS.map((o, i) => {
+          const active = gender === o.value;
+          return (
+            <Animated.View key={o.value} entering={FadeInDown.delay(i * 90).duration(380)}>
+              <Pressable
+                onPress={() => setGender(o.value)}
+                className={`flex-row items-center gap-5 rounded-3xl border-2 p-5 ${
+                  active ? 'border-white bg-white/20' : 'border-white/15 bg-white/10'
+                }`}>
+                <View
+                  className="h-16 w-16 items-center justify-center rounded-2xl"
+                  style={{ backgroundColor: o.color }}>
+                  <Ionicons name={o.icon} size={34} color="white" />
+                </View>
+                <Text className="flex-1 font-saira-semibold text-2xl text-text-on-brand">
+                  {o.label}
+                </Text>
+                <View
+                  className={`h-8 w-8 items-center justify-center rounded-full border-2 ${
+                    active ? 'border-white bg-white' : 'border-white/40'
+                  }`}>
+                  {active ? <Ionicons name="checkmark" size={20} color="#111" /> : null}
+                </View>
+              </Pressable>
+            </Animated.View>
+          );
+        })}
+        {gender === 'none' ? (
+          <Animated.View
+            entering={FadeInDown.duration(300)}
+            className="flex-row items-start gap-3 rounded-2xl border border-amber-400/40 bg-amber-400/10 p-4">
+            <Ionicons name="warning-outline" size={20} color="#FBBF24" />
+            <Text className="flex-1 font-saira text-base leading-5 text-amber-200">
+              This may affect your ability to join certain competitions.
+            </Text>
+          </Animated.View>
+        ) : null}
+        <Text className="px-1 pt-2 font-saira text-sm text-text-on-brand-2">
+          You can only change this a couple of times after signing up.
+        </Text>
       </View>
-    </>
+    </OnboardingScreen>
   );
 };
 

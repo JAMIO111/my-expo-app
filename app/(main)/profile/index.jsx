@@ -1,4 +1,4 @@
-import { Text, View, ScrollView, Image, Pressable } from 'react-native';
+import { Text, View, ScrollView, Image, Pressable, ActivityIndicator } from 'react-native';
 import { Stack } from 'expo-router';
 import SafeViewWrapper from '@components/SafeViewWrapper';
 import NavBar from '@components/NavBar2';
@@ -26,12 +26,23 @@ import AdBanner from '@components/AdBanner';
 import TrophyCabinet from '@components/TrophyCabinet';
 import { trophyIcons } from '@lib/badgeIcons';
 import usePlayerAwards from '@hooks/usePlayerAwards';
+import { useTheme } from '@contexts/ThemeProvider';
+import usePlayerRecentFrames from '@hooks/usePlayerRecentFrames';
+import { FramePreviewRow } from '@components/PlayerFrameList';
+import ProGate from '@components/ProGate';
 
 const ProfilePage = () => {
+  const { colors: themeColors } = useTheme();
   const router = useRouter();
   const { player, currentRole } = useUser();
   const { data: globalRank, isLoading: isGlobalRankLoading } = useGlobalRank(player?.id);
   const { data: recentBadges, isLoading: isRecentBadgesLoading } = useRecentBadges(player?.id);
+  const {
+    frames: recentFrames,
+    playersById: recentFramePlayers,
+    isLoading: isRecentFramesLoading,
+    isError: isRecentFramesError,
+  } = usePlayerRecentFrames(player?.id);
 
   const {
     data: playerAwards,
@@ -77,124 +88,128 @@ const ProfilePage = () => {
       />
 
       <ScrollView className="mt-16 flex-1 bg-brand">
-        <View className="flex-1 bg-bg-grouped-1 pb-8">
+        <View className="flex-1 gap-6 bg-bg-2 pb-8">
           <PlayerProfileHeader playerProfile={player} currentTeam={currentRole?.team} />
-          <Pressable className="mt-8 px-5" onPress={() => router.push('/profile/leaderboard')}>
-            <View style={{ borderRadius: 22 }} className="mb-6 bg-brand-dark p-1 shadow-sm">
-              <View
-                style={{ borderRadius: 19 }}
-                className="flex-row items-center justify-around gap-2 bg-brand p-2 pt-3 shadow">
-                <View className="flex-1 items-center">
-                  <Star size={24} color="white" />
-                  <Text className="text-center font-saira text-lg text-text-on-brand">XP</Text>
-                  <Text className="text-center font-saira-semibold text-2xl text-white">
-                    {player?.xp}
-                  </Text>
-                </View>
-                <View className="flex-1 items-center">
-                  <Trophy size={24} color="white" />
-                  <Text className="text-center font-saira text-lg text-text-on-brand">Level</Text>
-                  <Text className="text-center font-saira-semibold text-2xl text-white">
-                    {calculateLevel(player?.xp).level}
-                  </Text>
-                </View>
-                <View className="flex-1 items-center">
-                  <Ionicons name="earth" size={24} color="white" />
-                  <Text className="text-center font-saira text-lg text-text-on-brand">Rank</Text>
-                  <Text className="text-center font-saira-semibold text-2xl text-white">
-                    {isGlobalRankLoading ? '...' : (globalRank?.rank ?? 'N/A')}
-                  </Text>
+          <View>
+            <Pressable className="mt-3 px-5" onPress={() => router.push('/profile/leaderboard')}>
+              <View style={{ borderRadius: 22 }} className="mb-6 bg-brand-dark p-1 shadow-sm">
+                <View
+                  style={{ borderRadius: 19 }}
+                  className="flex-row items-center justify-around gap-2 bg-brand p-2 pt-3 shadow">
+                  <View className="flex-1 items-center">
+                    <Star size={24} color="white" />
+                    <Text className="text-center font-saira text-lg text-text-on-brand">XP</Text>
+                    <Text className="text-center font-saira-semibold text-2xl text-white">
+                      {player?.xp}
+                    </Text>
+                  </View>
+                  <View className="flex-1 items-center">
+                    <Trophy size={24} color="white" />
+                    <Text className="text-center font-saira text-lg text-text-on-brand">Level</Text>
+                    <Text className="text-center font-saira-semibold text-2xl text-white">
+                      {calculateLevel(player?.xp).level}
+                    </Text>
+                  </View>
+                  <View className="flex-1 items-center">
+                    <Ionicons name="earth" size={24} color="white" />
+                    <Text className="text-center font-saira text-lg text-text-on-brand">Rank</Text>
+                    <Text className="text-center font-saira-semibold text-2xl text-white">
+                      {isGlobalRankLoading ? '...' : (globalRank?.rank ?? 'N/A')}
+                    </Text>
+                  </View>
                 </View>
               </View>
-            </View>
-          </Pressable>
-          <View className="mb-4 mt-2 flex-row items-center justify-between gap-5 px-5">
-            <View className="flex-1">
-              <CTAButton
-                type="brand"
-                text="View Rankings"
-                callbackFn={() => router.push('/profile/leaderboard')}
-                icon={<Ionicons name="podium" size={19} color="white" />}
-              />
-            </View>
-            <View className="flex-1">
-              <CTAButton
-                type="yellow"
-                text="View Stats"
-                callbackFn={() => router.push('/profile/stats')}
-                lucideIcon={<ChartNoAxesCombined size={24} color="black" />}
-              />
+            </Pressable>
+            <View className="mb-4 mt-2 flex-row items-center justify-between gap-5 px-5">
+              <View className="flex-1">
+                <CTAButton
+                  type="brand"
+                  text="View Rankings"
+                  callbackFn={() => router.push('/profile/leaderboard')}
+                  icon={<Ionicons name="podium" size={19} color="white" />}
+                />
+              </View>
+              <View className="flex-1">
+                <CTAButton
+                  type="yellow"
+                  text="View Stats"
+                  callbackFn={() => router.push('/profile/stats')}
+                  lucideIcon={<ChartNoAxesCombined size={24} color="black" />}
+                />
+              </View>
             </View>
           </View>
           <AdBanner />
-          <Heading text="Recently Earned Badges" className="mx-4 mb-2 mt-4" />
-          <View
-            style={{ borderRadius: 28 }}
-            className="mx-4 gap-2 border border-theme-gray-4 bg-bg-1 py-3">
-            {recentBadges && recentBadges?.length > 0 ? (
-              <ScrollView
-                horizontal
-                showsHorizontalScrollIndicator={false}
-                contentContainerStyle={{ gap: 20, paddingRight: 20 }}
-                className="flex-row px-6 py-3">
-                {recentBadges.map((badge) => {
-                  const fullKey = `${badge?.Badges?.key}-${badge?.tier}`;
-                  console.log(
-                    'Badge:',
-                    badge,
-                    'Full Key:',
-                    fullKey,
-                    'Icon Source:',
-                    badgeIcons[fullKey]
-                  );
-                  const iconSource = badgeIcons[fullKey];
-                  return (
-                    <Pressable
-                      onPress={() => router.push('/profile/badges')}
-                      className="flex-1 items-center rounded-2xl border border-theme-gray-5 bg-bg-2 shadow-sm"
-                      key={badge.id}>
-                      <Image
-                        source={iconSource}
-                        className="h-36 w-28 rounded-xl"
-                        resizeMode="contain"
-                      />
-                      <View
-                        style={{
-                          borderBottomLeftRadius: 14,
-                          borderBottomRightRadius: 14,
-                        }}
-                        className="mt-2 flex-row items-center gap-2 border-t border-theme-gray-4 bg-bg-1 p-2 py-1">
-                        <LockKeyholeOpen size={16} color="#444" />
-                        <Text
-                          className="text-center font-tektur-semibold text-text-2"
-                          numberOfLines={2}
-                          ellipsizeMode="tail">
-                          {new Date(badge?.unlocked_at).toLocaleDateString()}
-                        </Text>
-                      </View>
-                    </Pressable>
-                  );
-                })}
-              </ScrollView>
-            ) : (
-              <View className="items-center justify-center p-6">
-                <Ionicons name="ribbon-outline" size={70} color="#909" />
+          <View>
+            <Heading text="Recently Earned Badges" className="mx-4 mb-2 mt-4" />
+            <View
+              style={{ borderRadius: 28 }}
+              className="mx-4 gap-2 border border-theme-gray-4 bg-bg-3 py-3">
+              {recentBadges && recentBadges?.length > 0 ? (
+                <ScrollView
+                  horizontal
+                  showsHorizontalScrollIndicator={false}
+                  contentContainerStyle={{ gap: 20, paddingRight: 20 }}
+                  className="flex-row px-6 py-3">
+                  {recentBadges.map((badge) => {
+                    const fullKey = `${badge?.Badges?.key}-${badge?.tier}`;
+                    console.log(
+                      'Badge:',
+                      badge,
+                      'Full Key:',
+                      fullKey,
+                      'Icon Source:',
+                      badgeIcons[fullKey]
+                    );
+                    const iconSource = badgeIcons[fullKey];
+                    return (
+                      <Pressable
+                        onPress={() => router.push('/profile/badges')}
+                        className="flex-1 items-center rounded-2xl border border-theme-gray-5 bg-bg-grouped-3 shadow-sm"
+                        key={badge.id}>
+                        <Image
+                          source={iconSource}
+                          className="h-36 w-28 rounded-xl"
+                          resizeMode="contain"
+                        />
+                        <View
+                          style={{
+                            borderBottomLeftRadius: 14,
+                            borderBottomRightRadius: 14,
+                          }}
+                          className="mt-2 flex-row items-center gap-2 border-t border-theme-gray-4 bg-bg-1 p-2 py-1">
+                          <LockKeyholeOpen size={14} color={themeColors.secondaryText} />
+                          <Text
+                            className="text-center font-tektur-semibold text-sm text-text-2"
+                            numberOfLines={2}
+                            ellipsizeMode="tail">
+                            {new Date(badge?.unlocked_at).toLocaleDateString()}
+                          </Text>
+                        </View>
+                      </Pressable>
+                    );
+                  })}
+                </ScrollView>
+              ) : (
+                <View className="items-center justify-center p-6">
+                  <Ionicons name="ribbon-outline" size={60} color="#909" />
 
-                <Text className="mt-5 text-center font-saira-medium text-2xl text-text-1">
-                  No recent badges unlocked.
-                </Text>
-                <Text className="text-center font-saira text-lg text-text-2">
-                  Keep playing to earn your first!
-                </Text>
+                  <Text className="mt-3 font-tektur-semibold text-xl text-text-1">
+                    No recent badges unlocked.
+                  </Text>
+                  <Text className="mt-2 px-8 text-center font-tektur-medium text-text-3">
+                    Keep playing to earn your first badge!
+                  </Text>
+                </View>
+              )}
+              <View className="px-3">
+                <CTAButton
+                  text="See all Badges"
+                  type="brand"
+                  callbackFn={() => router.push('/profile/badges')}
+                  lucideIcon={<Award size={24} color="white" />}
+                />
               </View>
-            )}
-            <View className="px-3">
-              <CTAButton
-                text="See all Badges"
-                type="brand"
-                callbackFn={() => router.push('/profile/badges')}
-                lucideIcon={<Award size={24} color="white" />}
-              />
             </View>
           </View>
           <View className="p-4">
@@ -207,15 +222,55 @@ const ProfilePage = () => {
               }
             />
           </View>
-          <View
-            style={{ borderRadius: 28 }}
-            className="mx-4 mt-4 gap-2 border border-theme-gray-4 bg-bg-1 p-3">
-            <CTAButton
-              text="View Match History"
-              type="brand"
-              callbackFn={() => router.push('/profile/frames')}
-              lucideIcon={<ClipboardClock size={24} color="white" />}
-            />
+          <AdBanner />
+          <View className="mx-4 gap-1">
+            <Heading text="Recent Frames" />
+            <View
+              style={{ borderRadius: 28 }}
+              className="gap-2 border border-theme-gray-4 bg-bg-3 p-3">
+              {isRecentFramesLoading ? (
+                <View className="items-center justify-center gap-4 py-8">
+                  <ActivityIndicator size="large" color={themeColors.primaryText} />
+                  <Text className="text-center font-tektur text-lg text-text-2">
+                    Loading recent frames...
+                  </Text>
+                </View>
+              ) : isRecentFramesError ? (
+                <View className="items-center justify-center gap-4 py-8">
+                  <Ionicons name="alert-circle-outline" size={60} color={themeColors.icon} />
+                  <Text className="text-center font-tektur text-lg text-text-2">
+                    Couldn't load recent frames.
+                  </Text>
+                </View>
+              ) : recentFrames.length > 0 ? (
+                recentFrames.map((frame) => (
+                  <FramePreviewRow
+                    key={frame.id}
+                    frame={frame}
+                    playersById={recentFramePlayers}
+                    player={player}
+                  />
+                ))
+              ) : (
+                <View className="items-center justify-center py-8">
+                  <Ionicons name="file-tray-outline" size={60} color={themeColors.icon} />
+                  <Text className="mt-3 font-tektur-semibold text-xl text-text-1">
+                    No Frames Played
+                  </Text>
+                  <Text className="mt-2 px-8 text-center font-tektur-medium text-text-3">
+                    Once this player takes part in a fixture, their frame history will show up here.
+                  </Text>
+                </View>
+              )}
+              <ProGate mode="click">
+                <CTAButton
+                  text="View All Frames"
+                  type="brand"
+                  callbackFn={() => router.push('/profile/frames')}
+                  lucideIcon={<ClipboardClock size={24} color="white" />}
+                />
+              </ProGate>
+            </View>
           </View>
         </View>
       </ScrollView>

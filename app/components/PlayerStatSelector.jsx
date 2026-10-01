@@ -1,7 +1,9 @@
 import { ArrowUpDown, CircleCheckBig, Zap, Undo2 } from 'lucide-react-native';
 import { View, Text, Pressable } from 'react-native';
+import { useTheme } from '@contexts/ThemeProvider';
 
 export default function PlayerStatSelector({ activeFrame, updateActiveFrame, context }) {
+  const { colors: themeColors } = useTheme();
   console.log('activeFrame in PlayerStatSelector:', activeFrame);
   const currentPlayer = activeFrame[context]?.id;
   console.log('currentPlayer in PlayerStatSelector:', currentPlayer);
@@ -36,7 +38,7 @@ export default function PlayerStatSelector({ activeFrame, updateActiveFrame, con
           lagSelected ? 'border-brand bg-brand' : 'border-theme-gray-5 bg-bg-2'
         }`}>
         <View className="flex-1 flex-row items-center justify-start gap-2 pl-2">
-          <ArrowUpDown size={16} color={lagSelected ? 'white' : '#000'} />
+          <ArrowUpDown size={16} color={lagSelected ? 'white' : themeColors.primaryText} />
           <Text
             numberOfLines={1}
             className={`font-saira-medium ${lagSelected ? 'text-white' : 'text-text-1'}`}>
@@ -47,7 +49,7 @@ export default function PlayerStatSelector({ activeFrame, updateActiveFrame, con
           <CircleCheckBig size={20} color={'white'} />
         ) : (
           <View
-            style={{ height: 20, width: 20, borderWidth: 1.5, borderColor: '#777' }}
+            style={{ height: 20, width: 20, borderWidth: 1.5, borderColor: themeColors.border }}
             className="items-center justify-center rounded-full border bg-bg-1"
           />
         )}
@@ -61,7 +63,16 @@ export default function PlayerStatSelector({ activeFrame, updateActiveFrame, con
           breakDishSelected ? 'border-brand bg-brand' : 'border-theme-gray-5 bg-bg-2'
         }`}>
         <View className="flex-1 flex-row items-center justify-start gap-2 pl-2">
-          <Zap size={16} color={breakDishSelected ? 'white' : dishDisabled ? '#999' : '#000'} />
+          <Zap
+            size={16}
+            color={
+              breakDishSelected
+                ? 'white'
+                : dishDisabled
+                  ? themeColors.border
+                  : themeColors.primaryText
+            }
+          />
           <Text
             numberOfLines={1}
             className={`font-saira-medium ${breakDishSelected ? 'text-white' : dishDisabled ? 'text-text-3' : 'text-text-1'}`}>
@@ -76,7 +87,7 @@ export default function PlayerStatSelector({ activeFrame, updateActiveFrame, con
               height: 20,
               width: 20,
               borderWidth: 1.5,
-              borderColor: dishDisabled ? '#DDD' : '#777',
+              borderColor: themeColors.border,
             }}
             className={`items-center justify-center rounded-full border ${dishDisabled ? 'bg-bg-2' : 'bg-bg-1'}`}
           />
@@ -91,7 +102,16 @@ export default function PlayerStatSelector({ activeFrame, updateActiveFrame, con
           reverseDishSelected ? 'border-brand bg-brand' : 'border-theme-gray-5 bg-bg-2'
         }`}>
         <View className="flex-1 flex-row items-center justify-start gap-2 pl-2">
-          <Undo2 size={16} color={reverseDishSelected ? 'white' : dishDisabled ? '#999' : '#000'} />
+          <Undo2
+            size={16}
+            color={
+              reverseDishSelected
+                ? 'white'
+                : dishDisabled
+                  ? themeColors.border
+                  : themeColors.primaryText
+            }
+          />
           <Text
             numberOfLines={1}
             className={`font-saira-medium ${reverseDishSelected ? 'text-white' : dishDisabled ? 'text-text-3' : 'text-text-1'}`}>
@@ -106,7 +126,7 @@ export default function PlayerStatSelector({ activeFrame, updateActiveFrame, con
               height: 20,
               width: 20,
               borderWidth: 1.5,
-              borderColor: dishDisabled ? '#DDD' : '#777',
+              borderColor: themeColors.border,
             }}
             className={`items-center justify-center rounded-full border ${dishDisabled ? 'bg-bg-2' : 'bg-bg-1'}`}
           />

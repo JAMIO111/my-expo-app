@@ -83,7 +83,7 @@ const PoolRack = () => {
       <StatusBar style="light" />
       <Pressable
         onPress={handleNavigation}
-        className={`${colorScheme} relative w-full flex-1 bg-brand`}
+        className="relative w-full flex-1 bg-brand"
         style={{
           justifyContent: 'space-between',
           alignItems: 'center',

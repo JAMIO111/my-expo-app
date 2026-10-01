@@ -9,6 +9,8 @@ export function useNotifications(playerId) {
         .from('Notifications')
         .select('*')
         .eq('player_id', playerId)
+        // Push-only notifications (in-app switched off) are stored but never listed.
+        .eq('in_app', true)
         .order('created_at', { ascending: false });
 
       if (error) throw error;

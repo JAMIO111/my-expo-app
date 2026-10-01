@@ -1,8 +1,8 @@
+import KeyboardAwareScrollView from '@components/KeyboardAwareScrollView';
 import { View, Text, Pressable, Image, Switch } from 'react-native';
 import { Stack, useLocalSearchParams, useNavigation, router } from 'expo-router';
 import CustomHeader from '@components/CustomHeader';
 import SafeViewWrapper from '@components/SafeViewWrapper';
-import { ScrollView } from 'react-native-gesture-handler';
 import CTAButton from '@components/CTAButton';
 import { useState, useEffect } from 'react';
 import CustomTextInput from '@components/CustomTextInput';
@@ -185,10 +185,9 @@ const CompetitionRules = ({ context }) => {
         }}
       />
       <SafeViewWrapper useBottomInset={false} topColor="bg-brand">
-        <ScrollView
+        <KeyboardAwareScrollView
           keyboardShouldPersistTaps="handled"
           keyboardDismissMode="on-drag"
-          automaticallyAdjustKeyboardInsets={true}
           contentContainerStyle={{
             display: 'flex',
             flexGrow: 1,
@@ -331,7 +330,7 @@ const CompetitionRules = ({ context }) => {
               />
             </View>
           </View>
-        </ScrollView>
+        </KeyboardAwareScrollView>
         <View style={{ position: 'absolute', bottom: 0, left: 0, right: 0 }} className="p-6">
           <View
             style={{ borderRadius: 30 }}

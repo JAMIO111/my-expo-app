@@ -28,7 +28,7 @@ const Index = () => {
 
   return (
     <SafeViewWrapper topColor="bg-brand" bottomColor="bg-brand">
-      <StatusBar style="light" backgroundColor="#000" />
+      <StatusBar style="light" />
       <Stack.Screen
         options={{
           header: () => (

@@ -1,17 +1,19 @@
 import { Text, View, Pressable, ActivityIndicator } from 'react-native';
 import '../../global.css';
 import Ionicons from 'react-native-vector-icons/Ionicons';
+import { useTheme } from '@contexts/ThemeProvider';
 
 const StatCard = ({
   title,
   value,
   icon,
-  iconBgColor = 'bg-gray-500',
+  iconBgColor,
   backgroundColor = 'bg-bg-grouped-3',
   onPress,
   disabled = true,
   isLoading = false,
 }) => {
+  const { colors: themeColors } = useTheme();
   const displayValue =
     !isLoading && title?.endsWith('%') && typeof value === 'number'
       ? `${value.toFixed(1)}%`
@@ -32,7 +34,7 @@ const StatCard = ({
         {isLoading ? (
           <ActivityIndicator size="small" color="#999" />
         ) : (
-          !disabled && <Ionicons name="sync-outline" size={20} className="text-text-2" />
+          !disabled && <Ionicons name="sync-outline" size={20} color={themeColors.icon} />
         )}
       </View>
 

@@ -1,34 +1,24 @@
-import React from 'react';
-import {
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView,
-  TouchableWithoutFeedback,
-  Keyboard,
-  View,
-} from 'react-native';
+import { cssInterop } from 'nativewind';
+import { KeyboardAwareScrollView as ControllerScrollView } from 'react-native-keyboard-controller';
 
-const KeyboardAwareScrollView = ({
-  children,
-  style,
-  contentContainerStyle,
-  extraOffset = 100, // tweak this if inputs still get hidden
-}) => {
-  return (
-    <KeyboardAvoidingView
-      style={[{ flex: 1 }, style]}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      keyboardVerticalOffset={extraOffset}>
-      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-        <ScrollView
-          contentContainerStyle={[{ flexGrow: 1 }, contentContainerStyle]}
-          keyboardShouldPersistTaps="handled"
-          showsVerticalScrollIndicator={false}>
-          <View style={{ flex: 1 }}>{children}</View>
-        </ScrollView>
-      </TouchableWithoutFeedback>
-    </KeyboardAvoidingView>
-  );
-};
+// NativeWind only maps className on core RN components; register this one so
+// the className / contentContainerClassName callers pass actually apply.
+cssInterop(ControllerScrollView, {
+  className: 'style',
+  contentContainerClassName: 'contentContainerStyle',
+});
+
+// Scrolls the focused input above the keyboard (plus `bottomOffset` of
+// breathing room). Use this instead of a bare ScrollView on any screen or
+// sheet that contains a TextInput.
+const KeyboardAwareScrollView = ({ bottomOffset = 24, children, ...props }) => (
+  <ControllerScrollView
+    bottomOffset={bottomOffset}
+    keyboardShouldPersistTaps="handled"
+    showsVerticalScrollIndicator={false}
+    {...props}>
+    {children}
+  </ControllerScrollView>
+);
 
 export default KeyboardAwareScrollView;

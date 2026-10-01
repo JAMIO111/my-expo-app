@@ -1,5 +1,5 @@
 import { useState, useRef } from 'react';
-import { StyleSheet, View, Text, Image, Pressable, useColorScheme } from 'react-native';
+import { StyleSheet, View, Text, Image, Pressable } from 'react-native';
 import { Stack, useLocalSearchParams } from 'expo-router';
 import { useUser } from '@contexts/UserProvider';
 import CustomHeader from '@components/CustomHeader';
@@ -13,7 +13,7 @@ import LoadingScreen from '@components/LoadingScreen';
 import CTAButton from '@components/CTAButton';
 import { supabase } from '@lib/supabase';
 import { useQueryClient } from '@tanstack/react-query';
-import colors from '@lib/colors';
+import { assertRpcOk } from '@/lib/rpc';
 import {
   checkEligibility,
   formatCompetitionType,
@@ -54,6 +54,7 @@ import ExpandableView from '@components/ExpandableView';
 import { useKnockoutBracket } from '@hooks/useKnockoutBracket';
 import PressableScale from '@components/PressableScale';
 import SponsorshipCard from '@components/SponsorshipCard';
+import { useTheme } from '@contexts/ThemeProvider';
 
 export function getStatusColors(status) {
   switch (status) {
@@ -92,8 +93,7 @@ const index = () => {
   const [showParticipants, setShowParticipants] = useState(true);
   const [showFixtures, setShowFixtures] = useState(false);
   const queryClient = useQueryClient();
-  const colorScheme = useColorScheme();
-  const themeColors = colors[colorScheme];
+  const { colors: themeColors, scheme: colorScheme } = useTheme();
   const { loading, currentRole, player } = useUser();
   const { instanceId } = useLocalSearchParams();
   const { data: competitionInstance, error, isLoading } = useCompetitionInstanceDetails(instanceId);
@@ -115,7 +115,8 @@ const index = () => {
     currentRole?.type === 'admin' &&
     currentRole?.district?.id === competitionInstance?.competition?.district_id;
 
-  const isCaptain = currentRole?.team?.captain === player.id;
+  // TeamPlayers.role is the source of truth for team leaders (Teams.captain is deprecated).
+  const isCaptain = currentRole?.role === 'captain';
 
   const isTeam = competitionInstance?.competition?.competitor_type === 'team';
 
@@ -147,15 +148,16 @@ const index = () => {
     setSheetConfig(null);
   };
 
-  const visibleParticipants = competitionInstance?.CompetitionParticipants.filter((p) => {
-    const isOwn = p.team_id === currentRole?.team?.id || p.player_id === player?.id;
+  const visibleParticipants =
+    competitionInstance?.CompetitionParticipants?.filter((p) => {
+      const isOwn = p.team_id === currentRole?.team?.id || p.player_id === player?.id;
 
-    if (isAdmin) return true;
+      if (isAdmin) return true;
 
-    const publicStatuses = ['active', 'eliminated', 'champion', 'runner_up'];
+      const publicStatuses = ['active', 'eliminated', 'champion', 'runner_up'];
 
-    return publicStatuses.includes(p.status) || (p.status === 'requested' && isOwn);
-  });
+      return publicStatuses.includes(p.status) || (p.status === 'requested' && isOwn);
+    }) ?? [];
 
   console.log('Competition Instance Details:', competitionInstance);
 
@@ -238,6 +240,7 @@ const index = () => {
         REGISTRATION_CLOSED: 'Registration has closed for this competition.',
         COMPETITION_FULL: 'This competition is now full.',
         NOT_CAPTAIN: 'Only the team captain can join this competition.',
+        TEAM_NOT_ACTIVE: 'This team is inactive. Reactivate it in Manage Teams first.',
         ALREADY_PARTICIPATING: 'You are already participating in this competition.',
         TEAM_TOO_LARGE: 'Your team has too many players for this competition.',
         TEAM_TOO_SMALL: 'Your team does not have enough players for this competition.',
@@ -272,19 +275,11 @@ const index = () => {
     try {
       setQueryLoading(true);
 
-      const { error } = await supabase
-        .from('CompetitionParticipants')
-        .update({
-          status:
-            status === 'active' ? (currentRole.type === 'admin' ? 'removed' : 'left') : 'cancelled',
-          left_at: new Date().toISOString(),
-        })
-        .eq('competition_instance_id', instanceId)
-        .match(
-          isTeam ? { team_id: currentRole.team.id, status } : { player_id: player.id, status }
-        );
-
-      if (error) throw error;
+      const { data, error } = await supabase.rpc('withdraw_from_competition', {
+        p_instance_id: instanceId,
+        p_team_id: isTeam ? currentRole.team.id : null,
+      });
+      assertRpcOk(data, error);
 
       Toast.show({
         type: 'success',
@@ -316,38 +311,11 @@ const index = () => {
       if (!entity?.id) return;
       setQueryLoading(true);
 
-      if (action === 'accept') {
-        const { error } = await supabase
-          .from('CompetitionParticipants')
-          .update({
-            status: 'active',
-            joined_at: new Date().toISOString(),
-          })
-          .eq('id', entity.id);
-
-        if (error) throw error;
-      }
-
-      if (action === 'deny') {
-        const { error } = await supabase
-          .from('CompetitionParticipants')
-          .delete()
-          .eq('id', entity.id);
-
-        if (error) throw error;
-      }
-
-      if (action === 'remove') {
-        const { error } = await supabase
-          .from('CompetitionParticipants')
-          .update({
-            status: 'left',
-            left_at: new Date().toISOString(),
-          })
-          .eq('id', entity.id);
-
-        if (error) throw error;
-      }
+      const { data, error } = await supabase.rpc('manage_competition_participant', {
+        p_participant_id: entity.id,
+        p_action: action,
+      });
+      assertRpcOk(data, error);
 
       // refresh data
       await queryClient.invalidateQueries(['CompetitionInstanceDetails', instanceId]);
@@ -374,7 +342,7 @@ const index = () => {
       Toast.show({
         type: 'error',
         text1: 'Action Failed',
-        text2: 'An error occurred while processing this action. Please try again.',
+        text2: err?.message || 'An error occurred while processing this action. Please try again.',
       });
     } finally {
       setSheetConfig(null);
@@ -541,8 +509,8 @@ const index = () => {
     {
       title: 'Gender',
       value:
-        competitionInstance?.gender.slice(0, 1).toUpperCase() +
-        competitionInstance?.gender.slice(1),
+        competitionInstance?.gender?.slice(0, 1).toUpperCase() +
+        competitionInstance?.gender?.slice(1),
       icon:
         competitionInstance?.gender === 'male'
           ? Mars
@@ -575,7 +543,7 @@ const index = () => {
         <SafeViewWrapper useBottomInset={false} topColor="bg-brand">
           <ScrollView
             contentContainerStyle={{ display: 'flex', flexGrow: 1, gap: 12 }}
-            className="mt-16 flex-1 bg-bg-2 p-3">
+            className="mt-16 flex-1 bg-bg-grouped-1 p-3">
             <View className="gap-2">
               {competitionInstance?.CompetitionInstanceSponsors?.[0]?.is_paid && (
                 <SponsorshipCard
@@ -590,7 +558,9 @@ const index = () => {
                 <View className="flex-col gap-2 p-2 pt-0">
                   {competitionDetailsConfig.map(({ title, value, icon: Icon }) => (
                     <View key={title} className="flex-row gap-2 pt-2">
-                      {Icon && <Icon className="mr-2" size={20} color={'#666'} />}
+                      {Icon && (
+                        <Icon className="mr-2" size={20} color={themeColors.secondaryText} />
+                      )}
                       <Text className="flex-1 px-1 font-saira text-lg text-text-2">{title}</Text>
                       <Text className="px-1 font-saira text-xl text-text-1">{value}</Text>
                     </View>
@@ -674,11 +644,9 @@ const index = () => {
                   competitionInstance?.status === 'closed'
                 }
                 fixedClosedComponent={
-                  <View className="flex-row items-center gap-2 rounded-lg bg-bg-2 p-2 px-3">
-                    <CalendarClock size={20} color="#777" />
-                    <Text className="font-saira text-lg text-text-2">
-                      No Fixtures available yet.
-                    </Text>
+                  <View className="flex-row items-center gap-2 rounded-lg bg-bg-grouped-1 p-2 px-3">
+                    <CalendarClock size={20} color={themeColors.secondaryText} />
+                    <Text className="font-saira text-lg text-text-2">No fixtures yet.</Text>
                   </View>
                 }>
                 <View style={{ display: showFixtures ? 'flex' : 'none' }}>
@@ -703,14 +671,14 @@ const index = () => {
                         default:
                           return (
                             <Text className="pl-1 font-saira-medium text-xl text-text-2">
-                              No Fixtures available yet.
+                              No fixtures yet.
                             </Text>
                           );
                       }
                     })()
                   ) : (
                     <Text className="pl-1 font-saira-medium text-xl text-text-2">
-                      No Fixtures available yet.
+                      No fixtures yet.
                     </Text>
                   )}
                 </View>
@@ -723,8 +691,8 @@ const index = () => {
                 setShow={setShowParticipants}
                 fixedClosed={visibleParticipants?.length === 0}
                 fixedClosedComponent={
-                  <View className="flex-row items-center gap-2 rounded-lg bg-bg-2 p-2 px-3">
-                    <Users size={20} color="#777" />
+                  <View className="flex-row items-center gap-2 rounded-lg bg-bg-grouped-1 p-2 px-3">
+                    <Users size={20} color={themeColors.secondaryText} />
                     <Text className="font-saira text-lg text-text-2">No Participants yet.</Text>
                   </View>
                 }>
@@ -806,7 +774,7 @@ const index = () => {
                               }}>
                               {entity.status === 'champion' && <Crown size={16} color="#ff9100" />}
                               {entity.status === 'runner_up' && (
-                                <CircleStar size={16} color="#666" />
+                                <CircleStar size={16} color={themeColors.secondaryText} />
                               )}
                               {entity.status === 'eliminated' && <Ban size={16} color="#FF0000" />}
                               {entity.status === 'active' && (
@@ -825,7 +793,7 @@ const index = () => {
                             </View>
 
                             {competitionInstance?.status !== 'completed' &&
-                              ((isMyTeam && currentRole.team?.captain === player.id) || isMe) &&
+                              ((isMyTeam && currentRole?.role === 'captain') || isMe) &&
                               !isAdmin && (
                                 <PressableScale
                                   onPress={() => {
@@ -911,7 +879,7 @@ const index = () => {
             </View>
             <View
               style={{ minHeight: 360 }}
-              className="rounded-3xl border border-theme-gray-5 bg-bg-1 p-4 pb-8">
+              className="rounded-3xl border border-theme-gray-6 bg-bg-grouped-2 p-4 pb-8">
               <Text className="pb-4 font-tektur-semibold text-2xl text-text-1">
                 Competition Awards
               </Text>
@@ -922,8 +890,10 @@ const index = () => {
                   <View className="flex-1 flex-col items-center justify-end">
                     {competitionInstance?.winner_reward === null ? (
                       <View className="h-30 w-30 mb-4 flex-1 items-center justify-center rounded-2xl">
-                        {isAdmin && <Plus size={120} color="#000000" />}
-                        {!isAdmin && <Ghost size={120} color="#999" strokeWidth={1.5} />}
+                        {isAdmin && <Plus size={120} color={themeColors.primaryText} />}
+                        {!isAdmin && (
+                          <Ghost size={120} color={themeColors.secondaryText} strokeWidth={1.5} />
+                        )}
                       </View>
                     ) : (
                       <Image source={winnerTrophy?.icon} className="h-30 w-30 mb-4" />
@@ -941,9 +911,9 @@ const index = () => {
                     {competitionInstance?.runner_up_reward === null ? (
                       <View className="mb-4 flex-1 items-center justify-center rounded-2xl">
                         {isAdmin ? (
-                          <Plus size={120} color="#000000" />
+                          <Plus size={120} color={themeColors.primaryText} />
                         ) : (
-                          <Ghost size={120} color="#999" strokeWidth={1.5} />
+                          <Ghost size={120} color={themeColors.secondaryText} strokeWidth={1.5} />
                         )}
                       </View>
                     ) : (
@@ -959,7 +929,7 @@ const index = () => {
                 </Pressable>
               </View>
             </View>
-            <View className="mb-16 gap-3 rounded-3xl border border-theme-gray-5 bg-bg-1 p-4">
+            <View className="mb-16 gap-3 rounded-3xl border border-theme-gray-6 bg-bg-grouped-2 p-4">
               <Text
                 numberOfLines={1}
                 adjustsFontSizeToFit
@@ -1008,7 +978,7 @@ const index = () => {
             paddingTop: 8,
             paddingBottom: 8,
             borderBottomWidth: 1,
-            borderBottomColor: '#ccc',
+            borderBottomColor: themeColors.border,
             backgroundColor: themeColors.bgGrouped2,
             zIndex: 10,
             flexDirection: 'row',

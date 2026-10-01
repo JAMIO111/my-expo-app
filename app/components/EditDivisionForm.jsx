@@ -1,13 +1,5 @@
-import {
-  View,
-  Text,
-  Switch,
-  ScrollView,
-  Pressable,
-  Image,
-  useColorScheme,
-  Alert,
-} from 'react-native';
+import KeyboardAwareScrollView from '@components/KeyboardAwareScrollView';
+import { View, Text, Switch, Pressable, Image, Alert } from 'react-native';
 import { useState, useEffect, useRef } from 'react';
 import CustomTextInput from './CustomTextInput';
 import CTAButton from './CTAButton';
@@ -18,18 +10,17 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import { trophyIcons } from '@lib/badgeIcons';
 import BottomSheetWrapper from '@/components/BottomSheetWrapper';
 import { BottomSheetScrollView, BottomSheetView } from '@gorhom/bottom-sheet';
-import colors from '@lib/colors';
 import Heading from './Heading';
 import { useUser } from '@contexts/UserProvider';
 import CustomDropdown from './CustomDropdown';
 import ExpandableView from './ExpandableView';
 import TeamLogo from './TeamLogo';
+import { useTheme } from '@contexts/ThemeProvider';
 
 const EditDivisionForm = ({ competition, division, participants, closeModal, context }) => {
   const bottomSheetRef = useRef();
-  const colorScheme = useColorScheme();
+  const { colors: themeColors, scheme: colorScheme } = useTheme();
   const { currentRole } = useUser();
-  const themeColors = colors[colorScheme] || colors.light; // Fallback to light theme if colorScheme is undefined
   const [showParticipants, setShowParticipants] = useState(true);
   const [selectedRewardType, setSelectedRewardType] = useState(null); // 'winner' or 'runnerUp'
   const [winnerReward, setWinnerReward] = useState(null);
@@ -365,12 +356,12 @@ const EditDivisionForm = ({ competition, division, participants, closeModal, con
   };
 
   return (
-    <View className="flex-1 gap-4 bg-bg-1">
-      <ScrollView
+    <View className="flex-1 gap-4 bg-bg-grouped-1">
+      <KeyboardAwareScrollView
         contentContainerStyle={{ gap: 8, paddingBottom: 140 }}
-        className="flex-1 gap-4 bg-bg-2">
+        className="flex-1 gap-4 bg-bg-grouped-1">
         {context === 'edit-division' && (
-          <View className="gap-4 bg-bg-1 p-5">
+          <View className="gap-4 bg-bg-grouped-2 p-5">
             <Heading text="Division Settings" />
 
             <CustomTextInput
@@ -452,7 +443,7 @@ const EditDivisionForm = ({ competition, division, participants, closeModal, con
               </View>
             </View>
 
-            <View className="flex-row items-center justify-between gap-5 rounded-xl bg-bg-1 px-1 py-3">
+            <View className="flex-row items-center justify-between gap-5 rounded-xl bg-bg-grouped-2 px-1 py-3">
               <View className="flex-1 items-start justify-center gap-1">
                 <Text className="font-saira-medium text-xl text-text-1">Mid-Season Transfers</Text>
                 <Text className="font-saira text-xs text-text-2">
@@ -468,7 +459,7 @@ const EditDivisionForm = ({ competition, division, participants, closeModal, con
                 thumbColor={midSeasonTransfers ? '#ffffff' : '#f4f3f4'}
               />
             </View>
-            <View className="flex-row items-center justify-between gap-5 rounded-xl bg-bg-1 px-1 py-3">
+            <View className="flex-row items-center justify-between gap-5 rounded-xl bg-bg-grouped-2 px-1 py-3">
               <View className="flex-1 items-start justify-center gap-1">
                 <Text className="font-saira-medium text-xl text-text-1">
                   Admin Approval Required
@@ -489,7 +480,7 @@ const EditDivisionForm = ({ competition, division, participants, closeModal, con
           </View>
         )}
 
-        <View className="gap-4 bg-bg-1 p-5">
+        <View className="gap-4 bg-bg-grouped-2 p-5">
           <Heading
             text={
               context === 'edit-division'
@@ -563,7 +554,7 @@ const EditDivisionForm = ({ competition, division, participants, closeModal, con
             This is the maximum number of frames playable in a fixture. Leave empty for open ended
             fixtures.
           </Text>
-          <View className="flex-row items-center justify-between gap-5 rounded-xl bg-bg-1 px-1 py-3">
+          <View className="flex-row items-center justify-between gap-5 rounded-xl px-1 py-3">
             <View className="flex-1 items-start justify-center gap-1">
               <Text className="font-saira-medium text-xl text-text-1">Draws Allowed</Text>
               <Text className="font-saira text-xs text-text-2">
@@ -641,7 +632,7 @@ const EditDivisionForm = ({ competition, division, participants, closeModal, con
               />
             </View>
           ) : null}
-          <View className="flex-row items-center justify-between gap-5 rounded-xl bg-bg-1 px-1 py-3">
+          <View className="flex-row items-center justify-between gap-5 rounded-xl px-1 py-3">
             <View className="flex-1 items-start justify-center gap-1">
               <Text className="font-saira-medium text-xl text-text-1">Enable Bonus Frame</Text>
               <Text className="font-saira text-xs text-text-2">
@@ -686,7 +677,7 @@ const EditDivisionForm = ({ competition, division, participants, closeModal, con
           )}
         </View>
 
-        <View className="gap-4 bg-bg-1 p-4 pb-8">
+        <View className="gap-4 bg-bg-grouped-2 p-4 pb-8">
           <Heading text="Competition Awards" />
           <View style={{ minHeight: 280 }} className="flex-row items-stretch justify-around gap-5">
             <Pressable
@@ -695,7 +686,7 @@ const EditDivisionForm = ({ competition, division, participants, closeModal, con
               <View className="flex-1 flex-col items-center justify-end">
                 {winnerReward === null ? (
                   <View className="h-30 w-30 mb-4 flex-1 items-center justify-center rounded-2xl">
-                    <Ionicons name="add" size={120} color="#000000" />
+                    <Ionicons name="add" size={120} color={themeColors.primaryText} />
                   </View>
                 ) : (
                   <Image source={winnerTrophy?.icon} className="h-30 w-30 mb-4" />
@@ -712,7 +703,7 @@ const EditDivisionForm = ({ competition, division, participants, closeModal, con
               <View className="flex-1 flex-col items-center justify-end">
                 {runnerUpReward === null ? (
                   <View className="mb-4 flex-1 items-center justify-center rounded-2xl">
-                    <Ionicons name="add" size={120} color="#000000" />
+                    <Ionicons name="add" size={120} color={themeColors.primaryText} />
                   </View>
                 ) : (
                   <Image source={runnerUpTrophy?.icon} className="h-30 w-30 mb-4" />
@@ -790,7 +781,7 @@ const EditDivisionForm = ({ competition, division, participants, closeModal, con
             </View>
           </ExpandableView>
         )}
-      </ScrollView>
+      </KeyboardAwareScrollView>
       <View className="absolute bottom-0 left-0 right-0 p-5">
         <View
           style={{ borderRadius: 28 }}
@@ -807,6 +798,7 @@ const EditDivisionForm = ({ competition, division, participants, closeModal, con
         marginTop={50}
         ref={bottomSheetRef}
         initialIndex={-1}
+        backgroundColor={themeColors.bg2}
         snapPoints={['100%']}>
         {/* Header */}
         <BottomSheetView
@@ -814,15 +806,15 @@ const EditDivisionForm = ({ competition, division, participants, closeModal, con
             paddingHorizontal: 32,
             paddingTop: 8,
             paddingBottom: 8,
-            borderBottomWidth: 1,
-            borderBottomColor: '#ccc',
-            backgroundColor: themeColors.bgGrouped2,
+            borderBottomWidth: 0.5,
+            borderBottomColor: themeColors.border,
+            backgroundColor: themeColors.bg2,
             zIndex: 10,
             flexDirection: 'row',
             alignItems: 'center',
             justifyContent: 'space-between',
           }}>
-          <Text style={{ lineHeight: 40, fontSize: 24 }} className="font-saira-medium text-text-1">
+          <Text style={{ lineHeight: 40, fontSize: 24 }} className="font-tektur-medium text-text-1">
             Choose {selectedRewardType === 'winner' ? "Winner's" : "Runner-up's"} award
           </Text>
           <Pressable className="p-2" onPress={closeSheet}>
@@ -832,7 +824,7 @@ const EditDivisionForm = ({ competition, division, participants, closeModal, con
 
         {/* Grid of rewards */}
         <BottomSheetScrollView
-          className="bg-bg-grouped-1"
+          className="bg-bg-2"
           contentContainerStyle={{
             paddingBottom: 200,
             paddingTop: 80,
@@ -855,9 +847,7 @@ const EditDivisionForm = ({ competition, division, participants, closeModal, con
                   updateReward(reward);
                   closeSheet();
                 }}
-                className={`rounded-2xl bg-bg-grouped-2 ${
-                  isSelected ? 'border-2 border-brand' : 'shadow-sm'
-                }`}
+                className={`rounded-2xl bg-bg-3 ${isSelected ? 'border-2 border-brand' : ''}`}
                 style={{
                   width: '48%',
                   marginBottom: 20,
@@ -874,7 +864,7 @@ const EditDivisionForm = ({ competition, division, participants, closeModal, con
                     fontSize: 16,
                     marginVertical: 8,
                   }}
-                  className="font-saira-medium text-text-1">
+                  className="font-tektur-medium text-text-1">
                   {reward.name}
                 </Text>
               </Pressable>
@@ -893,21 +883,21 @@ const EditDivisionForm = ({ competition, division, participants, closeModal, con
                   : false
                     ? 'border-2 border-brand'
                     : 'shadow-sm'
-            } w-full flex-row items-center justify-center gap-4 rounded-2xl bg-bg-grouped-2 p-6`}
+            } w-full flex-row items-center justify-center gap-4 rounded-2xl bg-bg-3 p-6`}
             style={{
               width: '100%',
               marginBottom: 20,
               alignItems: 'center',
             }}>
-            <Ionicons name="ban-outline" size={60} color="red" />
+            <Ionicons name="ban-outline" size={48} color="red" />
             <Text
               style={{
                 textAlign: 'center',
-                lineHeight: 60,
-                fontSize: 36,
+                lineHeight: 48,
+                fontSize: 32,
                 marginVertical: 0,
               }}
-              className="font-saira-medium text-text-1">
+              className="font-tektur-medium text-text-1">
               No Reward
             </Text>
           </Pressable>

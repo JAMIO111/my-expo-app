@@ -1,4 +1,4 @@
-import { StyleSheet, ScrollView, Alert, View, Text, useColorScheme, Pressable } from 'react-native';
+import { StyleSheet, ScrollView, Alert, View, Text, Pressable } from 'react-native';
 import { useRouter, Stack } from 'expo-router';
 import Toast from 'react-native-toast-message';
 import Avatar from '@components/Avatar';
@@ -7,6 +7,14 @@ import MenuContainer from '@components/MenuContainer';
 import SafeViewWrapper from '@components/SafeViewWrapper';
 import CustomHeader from '@components/CustomHeader';
 import { useUser } from '@contexts/UserProvider';
+import { monitoringEnabled, sendTestError, triggerNativeCrash } from '@lib/monitoring';
+
+// Developer-only tools are shown to these player accounts only.
+const DEVELOPER_PLAYER_IDS = [
+  '04987062-91e2-4a79-9a40-a94ea9e1e213',
+  '6132ddd0-9fe4-40df-a069-0577d1004f9b',
+];
+import { useMyAdminInvites } from '@hooks/useDistrictAdminInvites';
 import NavBar from '@components/NavBar2';
 import { useState, useRef } from 'react';
 import Purchases from 'react-native-purchases';
@@ -14,11 +22,11 @@ import { supabase } from '@/lib/supabase';
 import BottomSheetWrapper from '@components/BottomSheetWrapper';
 import { BottomSheetView, BottomSheetScrollView, BottomSheetFooter } from '@gorhom/bottom-sheet';
 import Ionicons from '@expo/vector-icons/Ionicons';
-import colors from '@lib/colors';
 import TeamLogo from '@components/TeamLogo';
 import { ShieldCheck } from 'lucide-react-native';
 import CTAButton from '@components/CTAButton';
 import { clearPushTokenOnLogout } from '@/lib/pushNotifications';
+import { useTheme } from '@contexts/ThemeProvider';
 
 const index = () => {
   const bottomSheetRef = useRef(null);
@@ -26,11 +34,11 @@ const index = () => {
   const [isSigningOut, setIsSigningOut] = useState(false);
   const [isBottomSheetOpen, setBottomSheetOpen] = useState(false);
   const router = useRouter();
-  const colorScheme = useColorScheme();
-  const themeColors = colors[colorScheme];
+  const { scheme: colorScheme, mode, accent, colors: themeColors } = useTheme();
 
   const { session, user, player, roles, currentRole, setCurrentRole, isLoading, refetch } =
     useUser();
+  const { data: adminInvites } = useMyAdminInvites();
   const [tempRole, setTempRole] = useState(null);
 
   console.log('Bottom Sheet index:', bottomSheetRef.current);
@@ -105,7 +113,7 @@ const index = () => {
         className="mt-16 flex-1 bg-bg-grouped-1 p-5">
         <Pressable
           onPress={() => router.push('/settings/PersonalDetails')}
-          className="mb-8 w-full flex-row items-center justify-center rounded-3xl bg-bg-1 p-4">
+          className="mb-8 w-full flex-row items-center justify-center rounded-3xl bg-bg-grouped-2 p-4">
           <Avatar player={player} size={76} borderRadius={14} />
           <View className="ml-6 flex-1 gap-1">
             <Text className="mt-2 font-saira-medium text-3xl text-text-1">
@@ -114,12 +122,12 @@ const index = () => {
             <Text className="font-saira text-text-2">{user?.email}</Text>
           </View>
         </Pressable>
-        <Text className="w-full pb-3 pl-1 font-saira-bold text-xl">Your Role</Text>
+        <Text className="w-full pb-3 pl-1 font-saira-bold text-xl text-text-1">Your Role</Text>
         <Pressable
           onPress={openSwitchRoleBottomSheet}
-          className="mb-8 w-full flex-row items-center justify-between rounded-3xl bg-bg-1 p-4 py-3">
+          className="mb-8 w-full flex-row items-center justify-between rounded-3xl bg-bg-grouped-2 p-4 py-3">
           {currentRole?.type === 'admin' ? (
-            <ShieldCheck size={48} color="#333" />
+            <ShieldCheck size={48} color={themeColors.primaryText} />
           ) : (
             <TeamLogo
               thickness={currentRole?.team?.crest?.thickness}
@@ -136,8 +144,8 @@ const index = () => {
                 : currentRole?.team?.display_name}
             </Text>
             <Text className="ml-4 font-saira text-lg text-text-2">
-              {currentRole?.role.charAt(0).toUpperCase() +
-                currentRole?.role.slice(1).replace('_', ' ')}
+              {currentRole?.role?.charAt(0).toUpperCase() +
+                currentRole?.role?.slice(1).replace('_', ' ')}
             </Text>
           </View>
 
@@ -171,6 +179,26 @@ const index = () => {
             icon="wallet"
           />
         </MenuContainer>
+        <MenuContainer title="Display">
+          <SettingsItem
+            routerPath="/settings/Appearance"
+            title="Appearance"
+            icon="palette"
+            text={`${mode === 'system' ? 'Auto' : mode === 'dark' ? 'Dark' : 'Light'} · ${
+              accent === 'blue' ? 'Blue' : 'Green'
+            }`}
+          />
+        </MenuContainer>
+        {adminInvites && adminInvites.length > 0 && (
+          <MenuContainer title="Invitations">
+            <SettingsItem
+              title="League Admin Invites"
+              icon="shieldCheck"
+              routerPath="/settings/DistrictAdminInvites"
+              text={`${adminInvites.length} pending`}
+            />
+          </MenuContainer>
+        )}
         {currentRole?.type === 'admin' && (
           <MenuContainer title="Admin Tools">
             <SettingsItem
@@ -179,6 +207,47 @@ const index = () => {
               routerPath="/settings/LeagueConfig"
             />
             <SettingsItem iconBGColor="red" title="Rules & Penalties" icon="scale" />
+          </MenuContainer>
+        )}
+
+        {DEVELOPER_PLAYER_IDS.includes(player?.id) && (
+          <MenuContainer
+            title="Developer"
+            footer={
+              monitoringEnabled
+                ? 'Sends a test report to Sentry. Check the Issues page there.'
+                : 'Crash reporting is off in this build (development build or no SENTRY_DSN).'
+            }>
+            <SettingsItem
+              title="Send test error"
+              icon="bug"
+              callbackFn={() => {
+                const sent = sendTestError();
+                Toast.show({
+                  type: sent ? 'success' : 'info',
+                  text1: sent ? 'Test error sent' : 'Crash reporting is off',
+                  text2: sent
+                    ? 'It should appear in Sentry within a minute.'
+                    : 'Use a preview or production build with SENTRY_DSN set.',
+                });
+              }}
+            />
+            <SettingsItem
+              title="Trigger test crash"
+              icon="bug"
+              iconColor="#ff0000"
+              titleColor="text-[#ff0000]"
+              callbackFn={() =>
+                Alert.alert(
+                  'Crash the app?',
+                  'The app will close. The crash is reported when you reopen it.',
+                  [
+                    { text: 'Cancel', style: 'cancel' },
+                    { text: 'Crash', style: 'destructive', onPress: () => triggerNativeCrash() },
+                  ]
+                )
+              }
+            />
           </MenuContainer>
         )}
 
@@ -224,13 +293,12 @@ const index = () => {
         onBackdropPress={closeSheet} // ✅ new — lets the parent own the close path
         footerComponent={(props) => (
           <BottomSheetFooter {...props}>
-            <View
-              style={{ paddingBottom: 140 }}
-              className="w-full rounded-t-3xl bg-bg-grouped-3 p-6">
+            <View style={{ paddingBottom: 140 }} className="w-full rounded-t-3xl bg-bg-3 p-6">
               <CTAButton
                 text="Switch Role"
                 type="brand"
                 callbackFn={() => handleSwitchRole(tempRole)}
+                disabled={!tempRole}
               />
             </View>
           </BottomSheetFooter>
@@ -242,8 +310,8 @@ const index = () => {
             paddingTop: 8,
             paddingBottom: 8,
             borderBottomWidth: 1,
-            borderBottomColor: '#ccc',
-            backgroundColor: themeColors.bgGrouped2,
+            borderBottomColor: themeColors.border,
+            backgroundColor: themeColors.bg2,
             zIndex: 10,
             flexDirection: 'row',
             alignItems: 'center',
@@ -261,44 +329,48 @@ const index = () => {
         <BottomSheetScrollView
           contentContainerStyle={{ paddingBottom: 240, paddingTop: 80, paddingHorizontal: 32 }}>
           {/* Your selectable items */}
-          {roles
-            ?.filter((r) => r.id !== currentRole?.id)
-            .map((r, index) => (
-              <Pressable
-                className="mb-5 flex-row items-center justify-between"
-                key={index}
-                onPress={() => setTempRole(r)}>
-                <View className="flex-row items-center gap-5">
-                  {r.type === 'admin' ? (
-                    <ShieldCheck size={40} color={themeColors.primaryText} />
-                  ) : (
-                    <TeamLogo
-                      thickness={r.team?.crest?.thickness}
-                      type={r.team?.crest?.type}
-                      color1={r.team?.crest?.color1}
-                      color2={r.team?.crest?.color2}
-                      size={40}
-                    />
-                  )}
-                  <View>
-                    <Text
-                      className={`font-saira text-2xl ${
-                        tempRole?.id === r.id ? 'text-text-2' : 'text-text-2'
-                      }`}>
-                      {r.type.charAt(0).toUpperCase() + r.type.slice(1)}
-                    </Text>
-                    <Text className="font-saira text-2xl text-text-1">
-                      {r.type === 'admin' ? r.district.name : r.team.display_name}
-                    </Text>
+          {roles.length > 1 ? (
+            roles
+              ?.filter((r) => r.id !== currentRole?.id)
+              .map((r, index) => (
+                <Pressable
+                  className="mb-5 flex-row items-center justify-between"
+                  key={index}
+                  onPress={() => setTempRole(r)}>
+                  <View className="flex-row items-center gap-5">
+                    {r.type === 'admin' ? (
+                      <ShieldCheck size={40} color={themeColors.primaryText} />
+                    ) : (
+                      <TeamLogo
+                        thickness={r.team?.crest?.thickness}
+                        type={r.team?.crest?.type}
+                        color1={r.team?.crest?.color1}
+                        color2={r.team?.crest?.color2}
+                        size={40}
+                      />
+                    )}
+                    <View>
+                      <Text
+                        className={`font-saira text-2xl ${
+                          tempRole?.id === r.id ? 'text-text-2' : 'text-text-2'
+                        }`}>
+                        {r.type.charAt(0).toUpperCase() + r.type.slice(1)}
+                      </Text>
+                      <Text className="font-saira text-2xl text-text-1">
+                        {r.type === 'admin' ? r.district.name : r.team.display_name}
+                      </Text>
+                    </View>
                   </View>
-                </View>
-                <Ionicons
-                  size={32}
-                  color={themeColors.primaryText}
-                  name={tempRole?.id === r.id ? 'checkbox' : 'square-outline'}
-                />
-              </Pressable>
-            ))}
+                  <Ionicons
+                    size={32}
+                    color={themeColors.primaryText}
+                    name={tempRole?.id === r.id ? 'checkbox' : 'square-outline'}
+                  />
+                </Pressable>
+              ))
+          ) : (
+            <Text className="font-saira text-2xl text-text-1">No other roles available</Text>
+          )}
         </BottomSheetScrollView>
       </BottomSheetWrapper>
       {!isBottomSheetOpen && <NavBar />}

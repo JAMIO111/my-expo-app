@@ -23,6 +23,7 @@ import { useStandings } from '@hooks/useStandings';
 import PendingResultCard from '@components/PendingResultCard';
 import AwaitingResultCard from '@components/AwaitingResultCard';
 import { useFixturesAwaitingResults } from '@hooks/useFixturesAwaitingResults';
+import { useEscalatedFixtures } from '@hooks/useEscalatedFixtures';
 import { supabase } from '@/lib/supabase';
 import BrandHeader from '@components/BrandHeader';
 import HomeScreenCardLarge from '@components/HomeScreenCardLarge';
@@ -217,6 +218,53 @@ const Home = () => {
     [teamFixturesAwaitingResults, playerFixturesAwaitingResults]
   );
 
+  // Forfeits requested by one side, waiting for the other side to approve them.
+  const { data: teamForfeitPending, refetch: teamForfeitPendingRefetch } =
+    useFixturesAwaitingResults({
+      competitorId: currentRole?.team?.id,
+      competitorType: 'team',
+      type: 'forfeitPending',
+      enabled: !!currentRole?.team?.id && currentRole?.role !== 'player',
+    });
+  const { data: playerForfeitPending, refetch: playerForfeitPendingRefetch } =
+    useFixturesAwaitingResults({
+      competitorId: player?.id,
+      competitorType: 'player',
+      type: 'forfeitPending',
+      enabled: !!player?.id,
+    });
+  const forfeitPending = useMemo(
+    () =>
+      [...(teamForfeitPending || []), ...(playerForfeitPending || [])].sort(
+        (a, b) => new Date(b.date_time) - new Date(a.date_time)
+      ),
+    [teamForfeitPending, playerForfeitPending]
+  );
+
+  // Fixtures escalated to the league admin.
+  const { data: escalatedFixtures, refetch: escalatedFixturesRefetch } = useEscalatedFixtures(
+    currentRole?.district?.id,
+    currentRole?.type === 'admin'
+  );
+
+  // Team fixtures are handled by the team's captain / vice captain; individual
+  // fixtures by the players themselves, who are not leaders of anything.
+  const isTeamLeader = ['captain', 'vice_captain'].includes(currentRole?.role);
+  const hasIndividualPending =
+    (playerForfeitPending?.length ?? 0) +
+      (playerResultsPendingApproval?.length ?? 0) +
+      (playerDisputedFixtures?.length ?? 0) +
+      (playerAmendedFixtures?.length ?? 0) +
+      (playerFixturesAwaitingResults?.length ?? 0) >
+    0;
+
+  const hasPendingResults =
+    (disputedFixtures?.length ?? 0) +
+      (amendedFixtures?.length ?? 0) +
+      (resultsPendingApproval?.length ?? 0) +
+      forfeitPending.length >
+    0;
+
   console.log('Team Fixtures Awaiting Results:', teamFixturesAwaitingResults);
   console.log('Player Fixtures Awaiting Results:', playerFixturesAwaitingResults);
   console.log('Upcoming Fixtures:', upcomingFixtures);
@@ -234,6 +282,9 @@ const Home = () => {
       playerDisputedFixturesRefetch(),
       teamAmendedFixturesRefetch(),
       playerAmendedFixturesRefetch(),
+      teamForfeitPendingRefetch(),
+      playerForfeitPendingRefetch(),
+      escalatedFixturesRefetch(),
     ]).finally(() => setRefreshing(false));
   }, [
     standingsRefetch,
@@ -245,6 +296,9 @@ const Home = () => {
     playerDisputedFixturesRefetch,
     teamAmendedFixturesRefetch,
     playerAmendedFixturesRefetch,
+    teamForfeitPendingRefetch,
+    playerForfeitPendingRefetch,
+    escalatedFixturesRefetch,
   ]);
 
   const isLoading =
@@ -277,7 +331,7 @@ const Home = () => {
 
   return (
     <SafeViewWrapper topColor="bg-brand" bottomColor="bg-brand">
-      <StatusBar style="light" backgroundColor="#000" />
+      <StatusBar style="light" />
       <View className="flex-1 bg-brand">
         <Stack.Screen
           options={{
@@ -347,18 +401,27 @@ const Home = () => {
               </View>
             </View>
             <View className="w-full bg-bg-2 pb-8">
-              {(currentRole?.team?.captain === player?.id ||
-                currentRole?.team?.vice_captain === player?.id) && (
-                <View className="w-full gap-3 p-3">
-                  {disputedFixtures && disputedFixtures.length > 0 && (
+              <Heading text="Pending Fixtures" className="ml-4" />
+              {currentRole?.type === 'admin' &&
+                escalatedFixtures &&
+                escalatedFixtures.length > 0 && (
+                  <View className="w-full gap-3 p-3">
+                    <Heading text="Escalated Fixtures" />
+                    {escalatedFixtures.map((fixture) => (
+                      <PendingResultCard key={fixture.id} fixture={fixture} mode="escalated" />
+                    ))}
+                  </View>
+                )}
+              {(isTeamLeader || hasIndividualPending) && (
+                <View className="w-full gap-4 p-3">
+                  {hasPendingResults && (
                     <View className="w-full gap-3">
                       <Heading text="Pending Match Results" />
-                      {disputedFixtures.map((fixture) => (
-                        <PendingResultCard
-                          key={fixture.id}
-                          fixture={fixture}
-                          refetch={teamResultsPendingApprovalRefetch}
-                        />
+                      {forfeitPending.map((fixture) => (
+                        <PendingResultCard key={fixture.id} fixture={fixture} />
+                      ))}
+                      {disputedFixtures?.map((fixture) => (
+                        <PendingResultCard key={fixture.id} fixture={fixture} />
                       ))}
                       {amendedFixtures &&
                         amendedFixtures.length > 0 &&
@@ -380,7 +443,7 @@ const Home = () => {
                         ))}
                     </View>
                   )}
-                  <View className="w-full gap-3">
+                  <View className="w-full gap-4">
                     {fixturesAwaitingResults &&
                       fixturesAwaitingResults.length > 0 &&
                       fixturesAwaitingResults.map((fixture) => (
@@ -410,22 +473,17 @@ const Home = () => {
                     onToggle={async () => {
                       setWindowLoading(true);
                       try {
-                        const { data, error } = await supabase
-                          .from('Districts')
-                          .update({
-                            transfer_window_open: !currentRole.district?.transfer_window_open,
-                            transfer_window_last_updated: new Date().toISOString(),
-                          })
-                          .eq('id', currentRole.district.id);
+                        const { error } = await supabase.rpc('update_district_settings', {
+                          p_district_id: currentRole.district.id,
+                          p_transfer_window_open: !currentRole.district?.transfer_window_open,
+                        });
+                        if (error) throw error;
                         // Invalidate related queries to ensure UI updates with latest data
                         queryClient.invalidateQueries(['authUserProfile']);
                         Toast.show({
                           type: 'success',
                           text1: 'Transfer window updated successfully',
                         });
-                        if (error) {
-                          throw error;
-                        }
                       } catch (err) {
                         Toast.show({
                           type: 'error',

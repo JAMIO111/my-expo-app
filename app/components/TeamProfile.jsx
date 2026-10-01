@@ -21,8 +21,10 @@ import BottomSheetModal from './BottomSheetModal';
 import SelectStatMenu from './SelectStatMenu';
 import TeamProfileHeader from '@components/TeamProfileHeader';
 import AdBanner from '@/components/AdBanner';
+import { useTheme } from '@contexts/ThemeProvider';
 
 const TeamProfile = ({ context, profile, isLoading }) => {
+  const { colors: themeColors } = useTheme();
   const { currentRole, player } = useUser();
   const router = useRouter();
   const { teamId, fixtureId } = useLocalSearchParams();
@@ -101,7 +103,7 @@ const TeamProfile = ({ context, profile, isLoading }) => {
     if (context === 'home/league/team') {
       router.push(`home/league/${teamId}/team-stats`);
     } else if (context === 'teams') {
-      router.push(`/teams/${currentRole?.team.id}/team-stats`);
+      router.push(`/teams/${currentRole?.team?.id}/team-stats`);
     } else if (context === 'home/upcoming-fixture') {
       router.push(`home/${fixtureId}/${teamId}/team-stats`);
     }
@@ -160,7 +162,7 @@ const TeamProfile = ({ context, profile, isLoading }) => {
         )}
 
         <TeamProfileHeader profile={profile} />
-        <View className="gap-1 bg-bg-grouped-1">
+        <View className="gap-2 bg-bg-grouped-1">
           <View className="mt-1 bg-bg-grouped-2 px-4 py-6">
             <Heading text="Team Stats" />
             <View className="gap-5 pt-3">
@@ -242,7 +244,7 @@ const TeamProfile = ({ context, profile, isLoading }) => {
               {safeMatches.length > 0 && (
                 <View className="">
                   <Animated.View style={{ transform: [{ rotate }] }}>
-                    <Ionicons className="" name="chevron-down" size={30} />
+                    <Ionicons color={themeColors.icon} name="chevron-down" size={30} />
                   </Animated.View>
                 </View>
               )}
@@ -275,7 +277,7 @@ const TeamProfile = ({ context, profile, isLoading }) => {
               error={playersError}
             />
           </View>
-          <View className="p-3">
+          <View>
             <TeamJoinRequests teamId={profile?.id} />
           </View>
 

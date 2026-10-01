@@ -1,12 +1,6 @@
 import { Stack } from 'expo-router';
-import CustomHeader from '@components/CustomNativeHeader';
 
+// The header and progress pills are drawn once by the onboarding layout, so only the page content slides.
 export default function ProfileOnboardingLayout() {
-  return (
-    <Stack
-      screenOptions={{
-        header: (props) => <CustomHeader {...props} />,
-      }}
-    />
-  );
+  return <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: 'transparent' } }} />;
 }

@@ -1,9 +1,9 @@
-import { Pressable, Text, TextInput, View, useColorScheme } from 'react-native';
+import { Pressable, Text, TextInput, View } from 'react-native';
 import { iconMap } from './SettingsItem';
 import IonIcons from 'react-native-vector-icons/Ionicons';
 import { useRouter } from 'expo-router';
-import colors from '@lib/colors';
 import { useRef } from 'react';
+import { useTheme } from '@contexts/ThemeProvider';
 
 const EditableSettingsItem = ({
   title,
@@ -11,15 +11,14 @@ const EditableSettingsItem = ({
   value,
   onChangeText,
   placeholder = '',
-  iconColor = '#333',
+  iconColor,
   routerPath,
   editable = true,
   keyboardType = 'default',
   autoCapitalize = 'none',
 }) => {
   const router = useRouter();
-  const colorScheme = useColorScheme();
-  const themeColors = colors[colorScheme];
+  const { colors: themeColors } = useTheme();
   const hasNavigated = useRef(false);
 
   const handlePress = () => {
@@ -41,7 +40,7 @@ const EditableSettingsItem = ({
             className={`flex-row items-center gap-3 px-4 py-3 ${
               pressed ? 'bg-theme-gray-5' : 'bg-bg-grouped-2'
             }`}>
-            {icon && Icon && <Icon size={24} color={iconColor} />}
+            {icon && Icon && <Icon size={24} color={iconColor ?? themeColors.icon} />}
 
             <Text
               numberOfLines={1}

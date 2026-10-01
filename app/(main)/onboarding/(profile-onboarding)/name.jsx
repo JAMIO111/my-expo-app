@@ -1,112 +1,78 @@
-import { StyleSheet, Text, View, TextInput, Alert } from 'react-native';
+import { useRef, useState } from 'react';
 import { useRouter } from 'expo-router';
-import { useState, useRef } from 'react';
-import { Stack } from 'expo-router';
-import CTAButton from '@components/CTAButton';
-import StepPillGroup from '@components/StepPillGroup';
-import CustomTextInput from '@components/CustomTextInput';
-import { useUser } from '@contexts/UserProvider';
 import Toast from 'react-native-toast-message';
+import { useUser } from '@contexts/UserProvider';
+import { useOnboardingStep } from '@contexts/OnboardingStepContext';
+import OnboardingScreen from '@components/onboarding/OnboardingScreen';
+import OnboardingInput from '@components/onboarding/OnboardingInput';
+import { View } from 'react-native';
 
 const Name = () => {
+  useOnboardingStep(1, 5);
+  const router = useRouter();
   const { user } = useUser();
 
-  console.log('User in Name component:', user); // Debugging line
+  // Social sign-ins already know the name; offer it as a starting point.
+  const fullName = (user?.user_metadata?.full_name || '').trim();
+  const nameParts = fullName ? fullName.split(/\s+/) : [];
+  const [firstName, setFirstName] = useState(nameParts[0] || '');
+  const [surname, setSurname] = useState(nameParts.slice(1).join(' '));
+  const surnameRef = useRef(null);
 
-  const isGoogleUser = user?.app_metadata?.provider === 'google';
-
-  const fullName = user?.user_metadata?.full_name || '';
-  const nameParts = fullName.trim().split(' ');
-
-  const [firstName, setFirstName] = useState(
-    isGoogleUser ? (nameParts.length ? nameParts[0] : '') : ''
-  );
-
-  const [surname, setSurname] = useState(
-    isGoogleUser ? (nameParts.length > 1 ? nameParts[nameParts.length - 1] : '') : ''
-  );
-  const router = useRouter();
-  const inputRef2 = useRef(null);
+  const next = () => {
+    if (!firstName.trim() || !surname.trim()) {
+      Toast.show({
+        type: 'info',
+        text1: 'Name Required',
+        text2: 'Please enter both your first name and surname.',
+      });
+      return;
+    }
+    router.push({
+      pathname: '/(main)/onboarding/(profile-onboarding)/nickname',
+      params: { firstName: firstName.trim(), surname: surname.trim() },
+    });
+  };
 
   return (
-    <>
-      <Stack.Screen
-        options={{
-          title: 'Step 1 of 5',
-          headerBackTitle: 'Name',
-        }}
-      />
-
-      <View className="flex-1 gap-3 bg-brand">
-        <StepPillGroup steps={5} currentStep={1} />
-        <View className="p-5">
-          <Text className="mb-4 font-delagothic text-5xl font-bold text-text-on-brand">
-            What's your name?
-          </Text>
-          <Text className="font-saira text-2xl text-text-on-brand-2">
-            So we know what to call you.
-          </Text>
-        </View>
-
-        <View className="flex-1 gap-5 rounded-t-3xl bg-brand-dark p-6">
-          <View className="gap-1">
-            <CustomTextInput
-              placeholder="e.g. John"
-              title="First Name"
-              titleColor="text-text-on-brand"
-              leftIconName="person"
-              iconColor="green"
-              value={firstName}
-              onChangeText={setFirstName}
-              autoComplete="given-name"
-              autoCapitalize="words"
-              returnKeyType="next"
-              onSubmitEditing={() => inputRef2.current?.focus()}
-            />
-          </View>
-          <View className="gap-1">
-            <CustomTextInput
-              placeholder="e.g. Doe"
-              title="Surname"
-              titleColor="text-text-on-brand"
-              leftIconName="person"
-              iconColor="green"
-              autoCapitalize="words"
-              value={surname}
-              onChangeText={setSurname}
-              autoComplete="family-name"
-              returnKeyType="done"
-              ref={inputRef2}
-              onSubmitEditing={() => inputRef2.current?.blur()}
-            />
-          </View>
-          <View className="mt-8">
-            <CTAButton
-              type="yellow"
-              textColor="black"
-              text="Continue"
-              callbackFn={() => {
-                if (firstName.trim() === '' || surname.trim() === '') {
-                  Toast.show({
-                    type: 'info',
-                    text1: 'Name Required',
-                    text2: 'Please enter both your first name and surname.',
-                  });
-                  return;
-                }
-                router.push({
-                  pathname: '/(main)/onboarding/(profile-onboarding)/nickname',
-                  params: { firstName, surname },
-                });
-              }}
-            />
-          </View>
-        </View>
+    <OnboardingScreen
+      title="What's your name?"
+      subtitle="So your team and opponents know who they're playing."
+      onCta={next}
+      ctaDisabled={!firstName.trim() || !surname.trim()}>
+      <View className="gap-6">
+        <OnboardingInput
+          label="First name"
+          icon="person-outline"
+          placeholder="e.g. John"
+          value={firstName}
+          onChangeText={setFirstName}
+          autoComplete="given-name"
+          textContentType="givenName"
+          autoCapitalize="words"
+          autoCorrect={false}
+          returnKeyType="next"
+          blurOnSubmit={false}
+          onSubmitEditing={() => surnameRef.current?.focus()}
+        />
+        <OnboardingInput
+          ref={surnameRef}
+          delay={80}
+          label="Surname"
+          icon="person-outline"
+          placeholder="e.g. Smith"
+          value={surname}
+          onChangeText={setSurname}
+          autoComplete="family-name"
+          textContentType="familyName"
+          autoCapitalize="words"
+          autoCorrect={false}
+          returnKeyType="done"
+          onSubmitEditing={next}
+        />
       </View>
-    </>
+    </OnboardingScreen>
   );
 };
 
 export default Name;
-
-const styles = StyleSheet.create({});

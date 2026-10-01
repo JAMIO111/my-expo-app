@@ -1,12 +1,5 @@
-import {
-  Text,
-  View,
-  ScrollView,
-  Pressable,
-  ActivityIndicator,
-  useColorScheme,
-  Alert,
-} from 'react-native';
+import KeyboardAwareScrollView from '@components/KeyboardAwareScrollView';
+import { Text, View, Pressable, ActivityIndicator, useColorScheme, Alert } from 'react-native';
 import { Stack } from 'expo-router';
 import { useEffect, useState, useRef } from 'react';
 import DateTimePicker from '@react-native-community/datetimepicker';
@@ -24,6 +17,7 @@ import CustomHeader from '@components/CustomHeader'; // Adjust the import path a
 import Toast from 'react-native-toast-message';
 import ImageUploader from '@components/ImageUploader';
 import useCompressAndUploadImage from '@hooks/useCompressAndUploadImage';
+import { getSocialAvatar, downloadSocialAvatar } from '@lib/socialAvatar';
 
 const PersonalDetailsComponent = () => {
   const queryClient = useQueryClient();
@@ -39,10 +33,27 @@ const PersonalDetailsComponent = () => {
   const [showGenderPicker, setShowGenderPicker] = useState(false); // inline for iOS
   const [isSaving, setIsSaving] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
-  const { colorScheme } = useColorScheme();
-  const themeColors = colorScheme === 'dark' ? colors.dark : colors.light; // Adjust based on your theme
+  const colorScheme = useColorScheme();
+  const themeColors = colorScheme === 'dark' ? colors.dark : colors.light;
 
   const { uploadToSupabase, uploading } = useCompressAndUploadImage();
+  const social = getSocialAvatar(user);
+  const [importingSocial, setImportingSocial] = useState(false);
+
+  // Switch (back) to the photo from the account the player signed in with
+  const switchToSocialPhoto = async () => {
+    if (!social || importingSocial || uploading) return;
+    setImportingSocial(true);
+    try {
+      const local = await downloadSocialAvatar(social.url);
+      await handleSaveProfile(local);
+      await refetch();
+    } catch (error) {
+      Alert.alert('Could not use your photo', error.message || 'Please try again.');
+    } finally {
+      setImportingSocial(false);
+    }
+  };
 
   const handleSaveProfile = async (selectedUri) => {
     const previousImage = imageUri;
@@ -289,7 +300,7 @@ const PersonalDetailsComponent = () => {
         }}
       />
 
-      <ScrollView
+      <KeyboardAwareScrollView
         contentContainerStyle={{
           alignItems: 'center',
           justifyContent: 'center',
@@ -320,6 +331,13 @@ const PersonalDetailsComponent = () => {
               Change Avatar
             </Text>
           </Pressable>
+          {social ? (
+            <Pressable onPress={switchToSocialPhoto} disabled={importingSocial || uploading}>
+              <Text className="mt-3 font-saira text-lg text-brand-light underline">
+                {importingSocial ? 'Importing...' : `Use my ${social.label} photo`}
+              </Text>
+            </Pressable>
+          ) : null}
         </View>
         <MenuContainer>
           <EditableSettingsItem
@@ -350,7 +368,7 @@ const PersonalDetailsComponent = () => {
           <Pressable
             onPress={() => setShowGenderPicker((prev) => !prev)}
             className="flex-row items-center justify-between px-5 py-4">
-            <VenusAndMars size={22} color={'#333'} />
+            <VenusAndMars size={22} color={themeColors.icon} />
             <Text className="pl-6 text-lg font-medium text-text-1">Gender</Text>
             <View className="flex-1 flex-row items-center justify-end gap-3">
               <Text className="text-xl text-text-2">
@@ -373,7 +391,7 @@ const PersonalDetailsComponent = () => {
                   setShowGenderPicker(false);
                 }}>
                 <Text className="text-lg text-text-1">Male</Text>
-                <Ionicons name="male" size={22} color="blue" />
+                <Ionicons name="male" size={22} color={themeColors.icon} />
               </Pressable>
               <Pressable
                 className={`mt-2 flex-row items-center justify-between gap-4 p-4 ${gender === 'female' ? 'bg-theme-gray-5' : ''}`}
@@ -382,7 +400,7 @@ const PersonalDetailsComponent = () => {
                   setShowGenderPicker(false);
                 }}>
                 <Text className="text-lg text-text-1">Female</Text>
-                <Ionicons name="female" size={22} color="red" />
+                <Ionicons name="female" size={22} color={themeColors.icon} />
               </Pressable>
               <Pressable
                 style={{ borderBottomLeftRadius: 20, borderBottomRightRadius: 20 }}
@@ -392,7 +410,7 @@ const PersonalDetailsComponent = () => {
                   setShowGenderPicker(false);
                 }}>
                 <Text className="text-lg text-text-1">Prefer Not to Say</Text>
-                <Ionicons name="help-circle" size={22} color="gray" />
+                <Ionicons name="help-circle" size={22} color={themeColors.icon} />
               </Pressable>
             </View>
           )}
@@ -411,7 +429,7 @@ const PersonalDetailsComponent = () => {
           <Pressable
             onPress={() => setShowDatePicker((prev) => !prev)}
             className="flex-row items-center justify-between px-5 py-4">
-            <CalendarDays size={22} color={'#333'} />
+            <CalendarDays size={22} color={themeColors.icon} />
             <Text className="pl-6 text-lg font-medium text-text-1">Date of Birth</Text>
             <View className="flex-1 flex-row items-center justify-end gap-3">
               <Text className="text-xl text-text-2">{dob.toLocaleDateString('en-GB')}</Text>
@@ -455,7 +473,7 @@ const PersonalDetailsComponent = () => {
             {player?.dob_changes_remaining} / 2 remaining
           </Text>
         </View>
-      </ScrollView>
+      </KeyboardAwareScrollView>
     </SafeViewWrapper>
   );
 };

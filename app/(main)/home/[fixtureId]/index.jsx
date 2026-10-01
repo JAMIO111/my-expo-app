@@ -22,18 +22,26 @@ const index = () => {
 
   const isDisputedEditable = fixtureDetails?.is_disputed && !fixtureDetails?.is_amended;
 
-  const fixtureValid = isOpen || isDisputedEditable;
+  // Closed fixtures (approved / forfeited) and escalated ones are with the admins.
+  const fixtureLocked =
+    fixtureDetails?.approved || fixtureDetails?.is_forfeited || fixtureDetails?.is_escalated;
+
+  const fixtureValid = !fixtureLocked && (isOpen || isDisputedEditable);
 
   const playerValid =
     competitorType === 'team'
-      ? currentRole?.role === 'captain' &&
+      ? ['captain', 'vice_captain'].includes(currentRole?.role) &&
         currentRole?.team?.id === fixtureDetails?.homeCompetitor?.id
       : player?.id === fixtureDetails?.homeCompetitor?.id;
 
   console.log('Fixture Valid:', fixtureValid);
   console.log('Player Valid:', playerValid);
 
-  const canSubmit = fixtureValid && playerValid;
+  // A league admin can open an escalated fixture to edit the frames and approve it.
+  const canResolve =
+    currentRole?.type === 'admin' && !!fixtureDetails?.is_escalated && !fixtureDetails?.approved;
+
+  const canSubmit = (fixtureValid && playerValid) || canResolve;
 
   const homeName =
     competitorType === 'team'

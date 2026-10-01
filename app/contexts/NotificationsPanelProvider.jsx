@@ -25,9 +25,20 @@ import {
   AlarmClockCheck,
   UserStar,
   MailMinus,
+  CalendarCheck,
+  CalendarClock,
+  ClipboardCheck,
+  CircleCheckBig,
+  ShieldAlert,
+  Scale,
+  Flag,
+  ClipboardPen,
+  ShieldPlus,
+  ShieldCheck,
 } from 'lucide-react-native';
 import { useNotifications } from '@hooks/useNotifications';
 import { useUser } from '@contexts/UserProvider';
+import { useTheme } from '@contexts/ThemeProvider';
 import SafeViewWrapper from '@components/SafeViewWrapper';
 import { supabase } from '@lib/supabase';
 import { useRouter } from 'expo-router';
@@ -57,6 +68,22 @@ const TYPE_CONFIG = {
   result_approval_pending: { icon: ClipboardClock, color: '#e8850c' },
   result_amendment_pending: { icon: ClipboardClock, color: '#e8850c' },
   role_change: { icon: UserStar, color: '#000ac4' },
+  player_left: { icon: UserMinus, color: '#f52c2c' },
+  player_removed: { icon: UserMinus, color: '#f52c2c' },
+  player_joined_team: { icon: UserPlus, color: '#0c7f23' },
+  team_captain_promoted: { icon: UserStar, color: '#000ac4' },
+  team_vice_captain_promoted: { icon: UserStar, color: '#000ac4' },
+  season_started: { icon: CalendarCheck, color: '#0c7f23' },
+  fixture_rescheduled: { icon: CalendarClock, color: '#e8850c' },
+  admin_invite: { icon: ShieldPlus, color: '#000ac4' },
+  admin_invite_response: { icon: ShieldCheck, color: '#0c7f23' },
+  result_submitted: { icon: ClipboardCheck, color: '#e8850c' },
+  result_disputed: { icon: ShieldAlert, color: '#f52c2c' },
+  result_amended: { icon: ClipboardPen, color: '#e8850c' },
+  result_escalated: { icon: Scale, color: '#f52c2c' },
+  result_approved: { icon: CircleCheckBig, color: '#0c7f23' },
+  fixture_forfeited: { icon: Flag, color: '#f52c2c' },
+  result_submission_reminder: { icon: ClipboardClock, color: '#e8850c' },
 };
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -72,13 +99,13 @@ function timeAgo(timestamp) {
 // ─── Notification Row ─────────────────────────────────────────────────────────
 
 function NotificationRow({ item, onPress, onMarkAsRead, onMarkAsUnread }) {
-  const cfg = TYPE_CONFIG[item.type] ?? TYPE_CONFIG.system;
+  const cfg = TYPE_CONFIG[item.type] ?? TYPE_CONFIG[item.type?.toLowerCase()] ?? TYPE_CONFIG.system;
   const Icon = cfg.icon;
 
   return (
     <Pressable
       style={({ pressed }) => ({ opacity: pressed ? 0.7 : 1 })}
-      className={`mx-3 flex-row items-start justify-center rounded-2xl ${item?.read ? 'bg-bg-1' : 'border border-theme-blue/50  bg-theme-blue/5'} px-4 py-3`}>
+      className={`mx-3 flex-row items-start justify-center rounded-2xl ${item?.read ? 'bg-bg-3' : 'border border-theme-blue/50  bg-theme-blue/5'} px-4 py-3`}>
       {/* Unread dot + icon */}
       <View className="mr-3 mt-1 items-center justify-center">
         {!item.read && (
@@ -156,10 +183,13 @@ function NotificationRow({ item, onPress, onMarkAsRead, onMarkAsUnread }) {
 // ─── Empty state ──────────────────────────────────────────────────────────────
 
 function EmptyNotifications() {
+  const { colors: themeColors } = useTheme();
   return (
     <View className="flex-1 items-center justify-center pb-20">
-      <View className="mb-4 h-16 w-16 items-center justify-center rounded-full bg-text-1">
-        <BellOff size={28} color="rgba(255,255,255,0.25)" />
+      <View
+        className="mb-4 h-16 w-16 items-center justify-center rounded-full"
+        style={{ backgroundColor: themeColors.icon }}>
+        <BellOff size={28} color="rgba(255,255,255,0.45)" />
       </View>
       <Text className="text-base text-text-2" style={{ fontFamily: 'Tektur_500Medium' }}>
         No notifications yet
@@ -192,6 +222,7 @@ function NotificationsPanelInner({
   onMarkAsUnread,
 }) {
   const insets = useSafeAreaInsets();
+  const { colors: themeColors } = useTheme();
   const { isOpen, close } = useContext(NotificationsPanelContext);
 
   const translateX = useRef(new Animated.Value(PANEL_WIDTH)).current;
@@ -330,7 +361,7 @@ function NotificationsPanelInner({
                   onPress={close}
                   style={({ pressed }) => ({ opacity: pressed ? 0.6 : 1 })}
                   className="items-center justify-center rounded-full">
-                  <PanelRightClose size={30} color="#666" />
+                  <PanelRightClose size={30} color={themeColors.secondaryText} />
                 </Pressable>
               </View>
             </View>
@@ -345,13 +376,7 @@ function NotificationsPanelInner({
                 keyExtractor={(item, index) => item.id?.toString() ?? `item-${index}`}
                 renderItem={renderItem}
                 showsVerticalScrollIndicator={false}
-                contentContainerStyle={{ paddingBottom: insets.bottom + 16, gap: 8 }}
-                ItemSeparatorComponent={() => (
-                  <View
-                    className="mx-4"
-                    style={{ height: 3, backgroundColor: 'rgba(255,255,255,0.04)' }}
-                  />
-                )}
+                contentContainerStyle={{ paddingBottom: insets.bottom, gap: 12 }}
               />
             )}
           </SafeAreaView>

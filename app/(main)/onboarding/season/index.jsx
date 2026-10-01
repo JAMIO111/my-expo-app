@@ -1,8 +1,7 @@
-import { View, ScrollView, Text, Pressable, useColorScheme } from 'react-native';
+import { View, ScrollView, Text, Pressable } from 'react-native';
 import { useRef, useState } from 'react';
 import NavBar from '@components/NavBar2';
 import SafeViewWrapper from '@components/SafeViewWrapper';
-import { StatusBar } from 'expo-status-bar';
 import { Stack } from 'expo-router';
 import CustomHeader from '@components/CustomHeader';
 import { useUser } from '@contexts/UserProvider';
@@ -11,11 +10,11 @@ import { useUpcomingFixtures } from '@hooks/useUpcomingFixtures';
 import DropdownFilterButton from '@components/DropdownFilterButton';
 import BottomSheetWrapper from '@components/BottomSheetWrapper';
 import { BottomSheetFooter, BottomSheetScrollView, BottomSheetView } from '@gorhom/bottom-sheet';
-import colors from '@lib/colors';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { ClipboardCheck } from 'lucide-react-native';
 import CTAButton from '@components/CTAButton';
 import HorizontalScrollUpcomingFixtures from '@components/HorizontalScrollUpcomingFixtures';
+import { useTheme } from '@contexts/ThemeProvider';
 
 const Season = () => {
   const { user, player, currentRole, setCurrentRole, roles } = useUser();
@@ -25,8 +24,7 @@ const Season = () => {
     currentRole?.activeSeason?.id
   );
   const bottomSheetRef = useRef(null);
-  const colorScheme = useColorScheme();
-  const themeColors = colors[colorScheme] || colors.light; // Fallback to light theme if colorScheme is undefined
+  const { colors: themeColors, scheme: colorScheme } = useTheme();
   console.log('Team Matches:', teamMatches);
   const [tempRole, setTempRole] = useState(null);
   const teamRoles = roles?.filter((r) => r.type !== 'admin' && r.team);
@@ -46,7 +44,6 @@ const Season = () => {
   return (
     <>
       <SafeViewWrapper topColor="bg-brand" bottomColor="bg-brand">
-        <StatusBar style="light" backgroundColor="#000" />
         <Stack.Screen
           options={{
             header: () => (

@@ -3,12 +3,15 @@ import TeamLogo from './TeamLogo';
 import Avatar from './Avatar';
 import { useRouter } from 'expo-router';
 import { Swords } from 'lucide-react-native';
+import { useTheme } from '@contexts/ThemeProvider';
 
-const PendingResultCard = ({ fixture }) => {
+const AwaitingResultCard = ({ fixture }) => {
   const router = useRouter();
+  const { colors: themeColors } = useTheme();
   return (
     <Pressable
-      className="rounded-3xl border border-theme-gray-5 bg-bg-1"
+      style={{ borderWidth: 0.5 }}
+      className="rounded-2xl border border-theme-gray-4 bg-bg-3"
       onPress={() => router.push(`/home/${fixture.id}/submit-results`)}>
       <View className="relative items-center justify-between gap-5 p-3">
         <View className="w-full flex-1 flex-row items-center justify-between">
@@ -25,7 +28,7 @@ const PendingResultCard = ({ fixture }) => {
               })}`}
             </Text>
             <View className="flex-row items-center gap-2">
-              <Swords size={14} color="#000" />
+              <Swords size={14} color={themeColors.icon} />
               <Text className="text-md font-saira text-text-1">
                 {fixture?.competition_instance?.name} Fixture
               </Text>
@@ -94,6 +97,6 @@ const PendingResultCard = ({ fixture }) => {
   );
 };
 
-export default PendingResultCard;
+export default AwaitingResultCard;
 
 const styles = StyleSheet.create({});

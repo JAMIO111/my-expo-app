@@ -5,15 +5,19 @@ import { useUser } from '@contexts/UserProvider';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import CTAButton from '@components/CTAButton';
-import StepPillGroup from '@components/StepPillGroup';
 import SafeViewWrapper from '@components/SafeViewWrapper';
 import Avatar from '@components/Avatar';
 import { useTeamProfile } from '@hooks/useTeamProfile';
 import { supabase } from '@/lib/supabase';
 import Toast from 'react-native-toast-message';
 import { useQueryClient } from '@tanstack/react-query';
+import { useOnboardingStep } from '@contexts/OnboardingStepContext';
+import OnboardingScreen from '@components/onboarding/OnboardingScreen';
+import ChoiceCard from '@components/onboarding/ChoiceCard';
+import Animated, { FadeInDown } from 'react-native-reanimated';
 
 const ProfileClaim = () => {
+  useOnboardingStep(3, 3);
   const router = useRouter();
   const params = useLocalSearchParams();
   const queryClient = useQueryClient();
@@ -26,37 +30,12 @@ const ProfileClaim = () => {
   const { data: teamProfile, isLoading: teamLoading } = useTeamProfile(team?.id);
   console.log('Onboarding Profile Claim - teamProfile:', teamProfile);
 
+  // Display hints only: the server decides which approvals actually apply.
+  const adminApproval = !!teamProfile?.division?.admin_approval_required;
+  const captainApproval = !!teamProfile?.private;
+
   const [isRPCLoading, setIsRPCLoading] = useState(false);
-  const [playersData, setPlayersData] = useState([]);
-  const [playersLoading, setPlayersLoading] = useState(true);
-  const [selectedPlayer, setSelectedPlayer] = useState(null);
-
-  const adminApproval = teamProfile?.division?.admin_approval_required || true;
-  const captainApproval = teamProfile?.private || true;
-
-  useEffect(() => {
-    if (!teamProfile?.id) return;
-
-    const fetchPlayers = async () => {
-      setPlayersLoading(true);
-
-      const { data, error } = await supabase
-        .from('TeamPlayers')
-        .select('*, Players!TeamPlayers_player_id_fkey(*)')
-        .eq('team_id', teamProfile.id);
-
-      if (!error) {
-        setPlayersData(data.filter((row) => !row.Players?.claimed) || []);
-      }
-
-      setPlayersLoading(false);
-    };
-
-    fetchPlayers();
-  }, [teamProfile?.id]);
-
-  const isLoading = teamLoading || playersLoading;
-  const noUnclaimedPlayers = !isLoading && playersData.length === 0;
+  const isLoading = teamLoading;
 
   const handleJoinAsNew = async () => {
     if (isLoading || isRPCLoading) return; // 🚫 prevents double taps
@@ -73,31 +52,35 @@ const ProfileClaim = () => {
     try {
       setIsRPCLoading(true);
 
-      const { error } = await supabase.rpc('request_join_team_onboarding', {
+      // The server works out which approvals this team and league need.
+      const { data, error } = await supabase.rpc('request_join_team_onboarding', {
         p_team_id: teamProfile.id,
         p_player_id: player.id,
-        p_captain_approval: captainApproval,
-        p_admin_approval: adminApproval,
       });
 
       if (error) {
         throw new Error(error.message || 'RPC_FAILED');
       }
 
+      const status = data?.status;
+      const needsCaptain = status === 'pending_captain' || status === 'pending_both';
+      const needsAdmin = status === 'pending_admin' || status === 'pending_both';
+
       Toast.show({
         type: 'success',
-        text1: captainApproval || adminApproval ? 'Join Request Sent' : 'Joined Team Successfully',
+        text1: needsCaptain || needsAdmin ? 'Join Request Sent' : 'Joined Team Successfully',
         text2:
-          captainApproval && adminApproval
+          needsCaptain && needsAdmin
             ? 'The captain and admin will review your request.'
-            : captainApproval && !adminApproval
+            : needsCaptain
               ? 'The captain will review your request.'
-              : !captainApproval && adminApproval
+              : needsAdmin
                 ? 'The admin will review your request.'
                 : `You are now a member of ${teamProfile?.name || 'the team'}`,
       });
-      await queryClient.invalidateQueries(['playerInvitesAndRequests', player.id]);
-      if (adminApproval || captainApproval) {
+      await queryClient.invalidateQueries({ queryKey: ['PlayerInvitesAndRequests'] });
+      await queryClient.invalidateQueries({ queryKey: ['authUserProfile'] });
+      if (needsAdmin || needsCaptain) {
         navigation.reset({
           index: 0,
           routes: [{ name: 'pending-request' }],
@@ -112,6 +95,10 @@ const ProfileClaim = () => {
 
       if (err?.message === 'ALREADY_IN_TEAM') {
         message = 'You are already in this team.';
+      } else if (err?.message === 'ALREADY_IN_DISTRICT') {
+        message = 'You are already on another team in this league.';
+      } else if (err?.message === 'TEAM_NOT_FOUND') {
+        message = 'This team is not accepting players right now.';
       } else if (err?.message === 'RPC_FAILED') {
         message = 'Could not complete request.';
       }
@@ -126,136 +113,42 @@ const ProfileClaim = () => {
     }
   };
 
-  const handleClaimProfile = async () => {
-    if (!selectedPlayer) return;
-
-    // TODO: claim logic here
-    console.log('Claiming player:', selectedPlayer.id);
-  };
+  const needsApproval = captainApproval || adminApproval;
+  const who = [captainApproval && 'the team captain', adminApproval && 'the league admin']
+    .filter(Boolean)
+    .join(' and ');
 
   return (
-    <>
-      <Stack.Screen options={{ title: 'Step 4 of 4' }} />
-
-      <SafeViewWrapper useTopInset={false} topColor="bg-brand" bottomColor="bg-brand-dark">
-        <View className="flex-1 bg-brand">
-          <StepPillGroup steps={4} currentStep={4} />
-
-          {isLoading ? (
-            <View className="flex-1 items-center justify-center">
-              <Text className="text-2xl text-text-on-brand">Loading team details…</Text>
-            </View>
-          ) : (
-            <View className="flex-1">
-              <Text
-                style={{ lineHeight: 50 }}
-                className="p-5 font-delagothic text-4xl text-text-on-brand">
-                Join {teamProfile?.name || 'Unnamed Team'}?
-              </Text>
-
-              {noUnclaimedPlayers ? (
-                <View className="flex-1 justify-between">
-                  <Text className="mb-6 px-5 font-saira text-2xl text-text-on-brand">
-                    Proceed to join the team as a new player.
-                  </Text>
-                  <ScrollView className="p-5">
-                    <View style={{ borderRadius: 25 }} className="bg-bg-2 p-3">
-                      <View className="items-stretch rounded-3xl bg-bg-1 p-5 shadow-sm">
-                        <Text className="text-center font-saira-medium text-2xl text-text-1">
-                          Your join request will be sent to the team captain
-                          {adminApproval ? ' and league admin' : ''} for approval.
-                        </Text>
-                        <View className="mx-auto rounded-full bg-bg-grouped-2">
-                          <MaterialCommunityIcons
-                            name="email-fast-outline"
-                            color="#0B6623"
-                            size={140}
-                          />
-                        </View>
-
-                        <CTAButton
-                          type="yellow"
-                          text="Send Join Request"
-                          callbackFn={handleJoinAsNew}
-                        />
-                      </View>
-                    </View>
-                  </ScrollView>
-                  <View className="gap-5 rounded-t-3xl bg-brand-dark px-5 py-6">
-                    <CTAButton
-                      type="error"
-                      text="Join a different team"
-                      callbackFn={() => router.back()}
-                    />
-                  </View>
-                </View>
-              ) : (
-                <View className="flex-1 px-5">
-                  <Text className="mb-6 font-saira text-xl text-text-on-brand">
-                    If you see your name below, claim your profile. Otherwise, join as a new player.
-                  </Text>
-                  <ScrollView className="flex-1" contentContainerStyle={{ paddingBottom: 20 }}>
-                    {playersData.map((row) => {
-                      const player = row.Players;
-                      const selected = selectedPlayer?.id === player.id;
-
-                      return (
-                        <Pressable
-                          key={row.id}
-                          onPress={() => setSelectedPlayer(selected ? null : player)}
-                          className="mb-4 flex-row items-center gap-4 rounded-2xl bg-bg-grouped-2 p-4">
-                          <Avatar player={player} size={48} borderRadius={6} />
-
-                          <View className="flex-1">
-                            <Text className="font-saira-medium text-xl text-text-1">
-                              {player.first_name} {player.surname}
-                            </Text>
-                            <Text className="font-saira text-lg text-text-2">
-                              {player.nickname || 'No nickname'}
-                            </Text>
-                          </View>
-
-                          {selected ? (
-                            <Ionicons name="checkmark-circle" size={40} color="#10B981" />
-                          ) : (
-                            <Ionicons name="chevron-forward-outline" size={26} color="#9CA3AF" />
-                          )}
-                        </Pressable>
-                      );
-                    })}
-                  </ScrollView>
-                </View>
-              )}
-            </View>
-          )}
-
-          {!isLoading && !noUnclaimedPlayers && (
-            <View className="gap-5 rounded-t-3xl bg-brand-dark px-5 pb-3 pt-6">
-              <CTAButton
-                type="error"
-                text="Join a different team"
-                callbackFn={() => router.back()}
-              />
-
-              <CTAButton
-                type="yellow"
-                text={
-                  selectedPlayer
-                    ? 'Claim Profile'
-                    : captainApproval || adminApproval
-                      ? 'Request to Join'
-                      : 'Join as New Player'
-                }
-                callbackFn={selectedPlayer ? handleClaimProfile : handleJoinAsNew}
-              />
-            </View>
-          )}
+    <OnboardingScreen
+      title={isLoading ? 'Loading…' : `Join ${teamProfile?.name || 'this team'}?`}
+      subtitle={
+        needsApproval
+          ? `Your request will be sent to ${who} for approval.`
+          : 'No approval is needed, you will join straight away.'
+      }
+      onCta={handleJoinAsNew}
+      ctaText={isRPCLoading ? 'Sending…' : needsApproval ? 'Send join request' : 'Join team'}
+      ctaDisabled={isLoading || isRPCLoading}
+      ctaLoading={isRPCLoading}
+      footerExtra={
+        <Pressable onPress={() => router.back()} className="items-center py-1">
+          <Text className="font-saira-medium text-base text-text-on-brand-2 underline">
+            Join a different team
+          </Text>
+        </Pressable>
+      }>
+      <Animated.View entering={FadeInDown.duration(380)} className="items-center gap-5 rounded-3xl border-2 border-white/15 bg-white/10 p-8">
+        <View className="h-24 w-24 items-center justify-center rounded-full bg-white/15">
+          <MaterialCommunityIcons name={needsApproval ? 'email-fast-outline' : 'account-check-outline'} color="#FFFFFF" size={52} />
         </View>
-      </SafeViewWrapper>
-    </>
+        <Text className="text-center font-saira-medium text-xl text-text-on-brand">
+          {needsApproval
+            ? "You'll get a notification as soon as it's answered."
+            : 'You can start playing right away.'}
+        </Text>
+      </Animated.View>
+    </OnboardingScreen>
   );
 };
 
 export default ProfileClaim;
-
-const styles = StyleSheet.create({});

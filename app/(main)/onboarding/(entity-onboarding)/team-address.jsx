@@ -1,4 +1,5 @@
 import {
+  Pressable,
   StyleSheet,
   Text,
   View,
@@ -9,16 +10,23 @@ import {
   KeyboardAvoidingView,
 } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { Stack } from 'expo-router';
-import StepPillGroup from '@components/StepPillGroup';
 import SafeViewWrapper from '@components/SafeViewWrapper';
 import CustomTextInput from '@components/CustomTextInput';
 import CTAButton from '@components/CTAButton';
 import Toast from 'react-native-toast-message';
-import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
+import Ionicons from '@expo/vector-icons/Ionicons';
+import KeyboardAwareScrollView from '@components/KeyboardAwareScrollView';
+import { useOnboardingStep } from '@contexts/OnboardingStepContext';
+import OnboardingScreen from '@components/onboarding/OnboardingScreen';
+import OnboardingInput from '@components/onboarding/OnboardingInput';
+import ChoiceCard from '@components/onboarding/ChoiceCard';
+import ToggleCard from '@components/onboarding/ToggleCard';
+import Animated, { FadeInDown } from 'react-native-reanimated';
 
 const TeamAddress = () => {
+  useOnboardingStep(4, 6);
   const router = useRouter();
   const params = useLocalSearchParams();
   const league = JSON.parse(params.league || '{}');
@@ -59,7 +67,7 @@ const TeamAddress = () => {
       return;
     }
 
-    if (isNaN(tables) || tables.trim() === '' || Number(tables.trim()) < 1) {
+    if (isNaN(tables) || tables.trim() === '' || !Number.isInteger(Number(tables.trim())) || Number(tables.trim()) < 1) {
       Toast.show({
         type: 'error',
         text1: 'Invalid number of tables',
@@ -91,120 +99,47 @@ const TeamAddress = () => {
     });
   };
 
-  return (
-    <>
-      <Stack.Screen
-        options={{
-          title: 'Step 4 of 6',
-        }}
-      />
-      <SafeViewWrapper useTopInset={false} topColor="bg-brand" bottomColor="bg-brand-dark">
-        <View style={{ marginTop: 40 }} className={`flex-1 justify-between gap-3 bg-brand`}>
-          <StepPillGroup steps={6} currentStep={4} />
-          <View className="flex-1">
-            <Text
-              style={{ lineHeight: 40 }}
-              className={`p-3 font-delagothic text-4xl font-bold text-text-on-brand`}>
-              Enter your team's home address.
-            </Text>
-            <Text className="p-3 font-saira-medium text-xl text-text-on-brand-2">
-              This will help players find your venue.
-            </Text>
+  const refs = useRef({});
+  const next = (key) => () => refs.current[key]?.focus();
+  const reg = (key) => (el) => {
+    refs.current[key] = el;
+  };
 
-            <KeyboardAwareScrollView
-              style={{ flex: 1 }}
-              contentContainerStyle={{
-                padding: 16,
-                gap: 12,
-              }}
-              enableOnAndroid
-              keyboardShouldPersistTaps="handled"
-              extraScrollHeight={20}
-              showsVerticalScrollIndicator={false}>
-              <CustomTextInput
-                value={name}
-                onChangeText={setName}
-                title="Venue Name"
-                placeholder="e.g. 123 Main St"
-                className="mb-4 h-12 rounded-lg border border-gray-300 bg-white px-3 font-saira text-xl"
-                leftIconName="home-outline"
-                iconColor="#A259FF"
-                autoCapitalize="words"
-              />
-              <CustomTextInput
-                value={line1}
-                onChangeText={setLine1}
-                title="Address Line 1"
-                placeholder="e.g. 123 Main St"
-                className="mb-4 h-12 rounded-lg border border-gray-300 bg-white px-3 font-saira text-xl"
-                leftIconName="pin-outline"
-                iconColor="#A259FF"
-                autoCapitalize="words"
-              />
-              <CustomTextInput
-                value={line2}
-                onChangeText={setLine2}
-                title="Address Line 2"
-                placeholder="e.g. Apt 4B"
-                className="mb-4 h-12 rounded-lg border border-gray-300 bg-white px-3 font-saira text-xl"
-                leftIconName="pin-outline"
-                iconColor="#A259FF"
-                autoCapitalize="words"
-              />
-              <CustomTextInput
-                value={city}
-                onChangeText={setCity}
-                title="City/Town"
-                placeholder="e.g. Blyth"
-                className="mb-4 h-12 rounded-lg border border-gray-300 bg-white px-3 font-saira text-xl"
-                leftIconName="business-outline"
-                iconColor="#A259FF"
-                autoCapitalize="words"
-              />
-              <CustomTextInput
-                value={county}
-                onChangeText={setCounty}
-                title="County"
-                placeholder="e.g. Northumberland"
-                className="mb-4 h-12 rounded-lg border border-gray-300 bg-white px-3 font-saira text-xl"
-                leftIconName="map-outline"
-                iconColor="#A259FF"
-                autoCapitalize="words"
-              />
-              <CustomTextInput
-                value={postCode}
-                onChangeText={setPostCode}
-                title="Post Code"
-                placeholder="e.g. NE24 3AB"
-                className="mb-4 h-12 rounded-lg border border-gray-300 bg-white px-3 font-saira text-xl"
-                leftIconName="mail-outline"
-                iconColor="#A259FF"
-                autoCapitalize="characters"
-                maxLength={8}
-              />
-              <CustomTextInput
-                value={tables}
-                onChangeText={setTables}
-                title="Available Tables"
-                placeholder="e.g. 2"
-                className="mb-4 h-12 rounded-lg border border-gray-300 bg-white px-3 font-saira text-xl"
-                leftIconName="apps"
-                iconColor="#A259FF"
-                autoCapitalize="characters"
-                keyboardType="numeric"
-              />
-            </KeyboardAwareScrollView>
-            <View className="gap-5 rounded-t-3xl bg-brand-dark px-5 pt-6">
-              <CTAButton callbackFn={openNativeMaps} type="white" text="Test Address" />
-              <CTAButton type="yellow" text="Save & Continue" callbackFn={handleContinue} />
-            </View>
-          </View>
-        </View>
-      </SafeViewWrapper>
-    </>
+  return (
+    <OnboardingScreen
+      title="Where does your team play?"
+      subtitle="Players use this to find your home venue."
+      onCta={handleContinue}
+      ctaText="Save & continue"
+      footerExtra={
+        <Pressable
+          onPress={openNativeMaps}
+          disabled={!address}
+          className={`flex-row items-center justify-center gap-2 rounded-2xl border-2 border-white/20 bg-white/10 py-3 ${address ? '' : 'opacity-40'}`}>
+          <Ionicons name="map-outline" size={20} color="white" />
+          <Text className="font-saira-semibold text-lg text-text-on-brand">Check on the map</Text>
+        </Pressable>
+      }>
+      <View className="gap-5">
+        <OnboardingInput ref={reg('name')} label="Venue name" icon="home-outline" placeholder="e.g. The Crown Inn"
+          value={name} onChangeText={setName} autoCapitalize="words" returnKeyType="next" blurOnSubmit={false} onSubmitEditing={next('line1')} />
+        <OnboardingInput ref={reg('line1')} delay={50} label="Address line 1" icon="pin-outline" placeholder="e.g. 123 Main St"
+          value={line1} onChangeText={setLine1} autoCapitalize="words" textContentType="streetAddressLine1" returnKeyType="next" blurOnSubmit={false} onSubmitEditing={next('line2')} />
+        <OnboardingInput ref={reg('line2')} delay={100} label="Address line 2 (optional)" icon="pin-outline" placeholder="e.g. Unit 4"
+          value={line2} onChangeText={setLine2} autoCapitalize="words" textContentType="streetAddressLine2" returnKeyType="next" blurOnSubmit={false} onSubmitEditing={next('city')} />
+        <OnboardingInput ref={reg('city')} delay={150} label="Town / city" icon="business-outline" placeholder="e.g. Blyth"
+          value={city} onChangeText={setCity} autoCapitalize="words" textContentType="addressCity" returnKeyType="next" blurOnSubmit={false} onSubmitEditing={next('county')} />
+        <OnboardingInput ref={reg('county')} delay={200} label="County (optional)" icon="map-outline" placeholder="e.g. Northumberland"
+          value={county} onChangeText={setCounty} autoCapitalize="words" returnKeyType="next" blurOnSubmit={false} onSubmitEditing={next('post')} />
+        <OnboardingInput ref={reg('post')} delay={250} label="Postcode" icon="mail-outline" placeholder="e.g. NE24 3AB"
+          value={postCode} onChangeText={(t) => setPostCode(t.toUpperCase())} autoCapitalize="characters" textContentType="postalCode" maxLength={8}
+          returnKeyType="next" blurOnSubmit={false} onSubmitEditing={next('tables')} />
+        <OnboardingInput ref={reg('tables')} delay={300} label="Available tables" icon="apps" placeholder="e.g. 2"
+          value={tables} onChangeText={(t) => setTables(t.replace(/[^0-9]/g, ''))} keyboardType="number-pad" maxLength={2}
+          returnKeyType="done" onSubmitEditing={handleContinue} />
+      </View>
+    </OnboardingScreen>
   );
 };
 
 export default TeamAddress;
-
-const styles = StyleSheet.create({});

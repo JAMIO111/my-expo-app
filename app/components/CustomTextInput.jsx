@@ -1,6 +1,7 @@
 import { forwardRef } from 'react';
 import { View, TextInput, Text, Platform } from 'react-native';
 import Ionicons from '@expo/vector-icons/Ionicons';
+import { BottomSheetTextInput, useBottomSheetInternal } from '@gorhom/bottom-sheet';
 
 const CustomTextInput = forwardRef((props, ref) => {
   const {
@@ -28,7 +29,13 @@ const CustomTextInput = forwardRef((props, ref) => {
     textContentType = 'none',
     onBlur,
     disabled = false,
+    backgroundColor = 'bg-bg-grouped-3',
   } = props;
+
+  // Inside a @gorhom/bottom-sheet the sheet has to know which input is focused
+  // to lift itself above the keyboard, so use its input; elsewhere a plain one.
+  const inSheet = !!useBottomSheetInternal(true);
+  const Input = inSheet ? BottomSheetTextInput : TextInput;
 
   // Handles numeric input enforcement
   const handleTextChange = (text) => {
@@ -54,16 +61,16 @@ const CustomTextInput = forwardRef((props, ref) => {
       <Text className={`pb-1 pl-2 font-saira-medium text-xl ${titleColor}`}>{title}</Text>
       <View
         style={{ height: multiline ? 30 * numberOfLines : 56 }}
-        className={`${disabled ? 'opacity-50' : ''} h-14 flex-row ${multiline ? 'items-start' : 'items-center'} rounded-xl border border-theme-gray-3 bg-input-background pr-3`}>
-        <View className="h-full justify-center rounded-l-xl border-r border-theme-gray-3 bg-bg-grouped-1 pl-3 pr-4">
+        className={`${disabled ? 'opacity-50' : ''} h-14 flex-row ${multiline ? 'items-start' : 'items-center'} rounded-2xl border border-theme-gray-3 ${backgroundColor} pr-3`}>
+        <View className="h-full justify-center pl-3 pr-4 focus-within:border-2">
           <Ionicons name={leftIconName} size={leftIconSize} color={iconColor} />
         </View>
-        <TextInput
+        <Input
           editable={editable && !disabled}
           keyboardType={keyboardType}
           style={{ lineHeight: 30 }}
           clearButtonMode={clearButtonMode}
-          className="flex-1 py-1 pl-3 font-saira text-xl text-text-1"
+          className="flex-1 py-1 pb-2 pl-3 font-saira text-xl text-text-1"
           placeholder={placeholder}
           placeholderTextColor="#9CA3AF"
           value={value}

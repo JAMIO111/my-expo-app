@@ -2,14 +2,12 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import Ioconicons from 'react-native-vector-icons/Ionicons';
 import { useRouter } from 'expo-router';
 import TeamLogo from './TeamLogo';
-import colors from '@lib/colors';
 import { useUser } from '@contexts/UserProvider';
-import { useColorScheme } from 'react-native';
 import { useRef } from 'react';
+import { useTheme } from '@contexts/ThemeProvider';
 
 const LeagueHomeCard = ({ standings }) => {
-  const colorScheme = useColorScheme();
-  const themeColors = colors[colorScheme];
+  const { colors: themeColors } = useTheme();
   const router = useRouter();
   const { currentRole } = useUser();
   const hasNavigated = useRef(false);
@@ -40,7 +38,8 @@ const LeagueHomeCard = ({ standings }) => {
         }, 500); // Reset navigation state after 500ms
         router.push('/home/league');
       }}
-      className={`h-28 w-full rounded-2xl bg-bg-grouped-2 shadow-sm`}>
+      style={{ borderWidth: 0.5 }}
+      className={`h-28 w-full rounded-2xl border border-theme-gray-4 bg-bg-3`}>
       <View className="mx-3 flex-row items-center justify-between border-b border-theme-gray-5 px-1 pb-1 pt-2">
         <Text className="font-tektur-medium text-2xl text-text-1">
           League Table{' '}
@@ -50,9 +49,9 @@ const LeagueHomeCard = ({ standings }) => {
         </Text>
         <Ioconicons name="chevron-forward" size={20} color={themeColors?.icon} />
       </View>
-      {standings === undefined || standings?.standings.length === 0 ? (
+      {standings === undefined || standings?.standings?.length === 0 ? (
         <View className="items-left flex-1 justify-center px-4">
-          <Text className="font-tektur text-left text-xl text-text-2">
+          <Text className="text-left font-tektur text-xl text-text-2">
             No standings available yet.
           </Text>
         </View>

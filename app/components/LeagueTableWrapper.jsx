@@ -10,8 +10,6 @@ import { useCompetitionInstances } from '@hooks/useCompetitionInstances';
 import CTAButton from './CTAButton';
 import BottomSheetWrapper from './BottomSheetWrapper';
 import DropdownFilterButton from './DropdownFilterButton';
-import { useColorScheme } from 'react-native';
-import colors from '@lib/colors';
 import BottomSheet, {
   BottomSheetFooter,
   BottomSheetScrollView,
@@ -20,12 +18,12 @@ import BottomSheet, {
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { ScrollView } from 'react-native-gesture-handler';
 import LoadingScreen from './LoadingScreen';
+import { useTheme } from '@contexts/ThemeProvider';
 
 const LeagueTableWrapper = ({ context }) => {
   const bottomSheetRef = useRef(null);
   const { player, currentRole } = useUser();
-  const colorScheme = useColorScheme();
-  const themeColors = colors[colorScheme] || colors.light; // Fallback to light theme if colorScheme is undefined
+  const { colors: themeColors } = useTheme();
 
   // Default full objects from context
   const defaultDistrict = currentRole?.district || null;

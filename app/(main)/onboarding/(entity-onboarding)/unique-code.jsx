@@ -1,117 +1,84 @@
-import { StyleSheet, Text, View, TextInput } from 'react-native';
-import { useRouter } from 'expo-router';
-import { useState, useRef, useEffect } from 'react';
-import { Stack, useLocalSearchParams } from 'expo-router';
-import CTAButton from '@components/CTAButton';
-import StepPillGroup from '@components/StepPillGroup';
+import { Text, View } from 'react-native';
+import { useRouter, useLocalSearchParams } from 'expo-router';
+import { useState, useRef } from 'react';
+import Animated, { FadeInDown } from 'react-native-reanimated';
+import Ionicons from '@expo/vector-icons/Ionicons';
+import OnboardingScreen from '@components/onboarding/OnboardingScreen';
+import CodeInput from '@components/onboarding/CodeInput';
 import { supabase } from '@/lib/supabase';
 import Toast from 'react-native-toast-message';
 import { useUser } from '@contexts/UserProvider';
 import { useQueryClient } from '@tanstack/react-query';
+import { useOnboardingStep } from '@contexts/OnboardingStepContext';
 
 const UniqueCode = () => {
   const queryClient = useQueryClient();
-  const { player, currentRole, setCurrentRole, roles } = useUser();
+  const { player } = useUser();
   const router = useRouter();
   const params = useLocalSearchParams();
   const isNewTeam = params.isNewTeam === 'true'; // Convert string to boolean
   const isNewLeague = params.isNewLeague === 'true'; // Convert string to boolean
-  const [selectionIndex, setSelectionIndex] = useState(Array(6).fill({ start: 0, end: 0 }));
-  const [newAdminId, setNewAdminId] = useState(null);
-
-  const [digits, setDigits] = useState(['', '', '', '', '', '']);
+  useOnboardingStep(1, isNewTeam ? 6 : isNewLeague ? 4 : 3);
+  const [code, setCode] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [hasError, setHasError] = useState(false);
+  const codeRef = useRef(null);
 
-  console.log('Player in UniqueCode:', player);
-  console.log('Current Role in UniqueCode:', currentRole);
-  console.log('All Roles in UniqueCode:', roles);
+  const fail = () => {
+    setHasError(true);
+    codeRef.current?.shake();
+    setTimeout(() => {
+      setHasError(false);
+      setCode('');
+      codeRef.current?.focus();
+    }, 700);
+  };
 
-  // Create refs for each input
-  const inputsRef = useRef([]);
-
-  useEffect(() => {
-    if (inputsRef.current[0]) {
-      inputsRef.current[0].focus();
-    }
-  }, []);
-
-  useEffect(() => {
-    setCurrentRole(roles.find((r) => r.id === newAdminId));
-  }, [roles, newAdminId]);
+  const onChangeCode = (value) => {
+    setHasError(false);
+    setCode(value);
+  };
 
   const handleCreateLeague = async () => {
     setIsLoading(true);
 
     try {
-      const code = digits.join('');
-
       if (code.length !== 6) {
         throw new Error('INVALID_CODE');
       }
 
-      const { data: leagueData, error: fetchError } = await supabase
-        .from('Districts')
-        .select('*')
-        .eq('code', code)
-        .single();
+      // One checked RPC: finds the league by its admin code and either locks a new league
+      // for this player to set up, or (for an active league) makes them an admin.
+      const { data: claim, error: claimError } = await supabase.rpc('claim_district_by_code', {
+        p_code: code,
+      });
 
-      if (fetchError || !leagueData) {
-        throw new Error('LEAGUE_NOT_FOUND');
+      if (claimError) {
+        const detail = claimError.details;
+        if (detail === 'invalid_code') throw new Error('INVALID_CODE');
+        if (detail === 'league_not_found') throw new Error('LEAGUE_NOT_FOUND');
+        if (detail === 'league_locked') throw new Error('LEAGUE_LOCKED');
+        throw new Error('ADMIN_FLOW_FAILED');
       }
 
-      // 🆕 NEW LEAGUE → lock it + navigate
-      if (leagueData.status === 'new') {
-        const { error: updateError } = await supabase
-          .from('Districts')
-          .update({
-            status: 'locked',
-            locked_by: player.id,
-            locked_at: new Date().toISOString(),
-            lock_expires_at: new Date(Date.now() + 10 * 60 * 1000).toISOString(), // 10 min lock
-          })
-          .eq('id', leagueData.id);
-
-        if (updateError) {
-          throw new Error('LOCK_FAILED');
-        }
-
+      // 🆕 NEW LEAGUE → locked for this player → set it up
+      if (claim.status === 'lock_acquired') {
         router.replace({
           pathname: '/(main)/onboarding/(entity-onboarding)/district-name',
-          params: { districtId: leagueData.id },
+          params: { districtId: claim.district_id },
         });
         return;
       }
 
-      // 🔒 LOCKED
-      if (leagueData.status === 'locked') {
-        throw new Error('LEAGUE_LOCKED');
-      }
-
-      // ✅ ACTIVE → request admin access
-      if (leagueData.status === 'active') {
-        const { data: newAdminRole, error } = await supabase.rpc('join_district_as_admin', {
-          p_player_id: player.id,
-          p_district_id: leagueData.id,
-        });
-
-        if (error) throw new Error('ADMIN_FLOW_FAILED');
-
-        queryClient.setQueryData(['authUserProfile'], (old) => ({
-          ...old,
-          playerProfile: {
-            ...old.playerProfile,
-            onboarding: 9,
-          },
-        }));
-
-        setCurrentRole({ role: 'admin', district: { id: leagueData.id, name: leagueData.name } });
-        queryClient.invalidateQueries(['authUserProfile']);
-
+      // ✅ ACTIVE → this player is now an admin of the league. The server has moved them on, so just
+      // refresh their profile and the layout takes them to their new role.
+      if (claim.status === 'joined') {
         Toast.show({
           type: 'success',
           text1: 'Admin Access Granted',
-          text2: `You are now an admin for ${leagueData.name}.`,
+          text2: `You are now an admin for ${claim.district_name}.`,
         });
+        await queryClient.invalidateQueries({ queryKey: ['authUserProfile'] });
         return;
       }
     } catch (err) {
@@ -129,7 +96,7 @@ const UniqueCode = () => {
             text1: 'Invalid Code',
             text2: 'Please enter a valid 6-digit code.',
           };
-          inputsRef.current[0]?.focus();
+          codeRef.current?.focus();
           break;
 
         case 'LEAGUE_NOT_FOUND':
@@ -167,212 +134,133 @@ const UniqueCode = () => {
       }
 
       Toast.show(message);
+      fail();
     } finally {
       setIsLoading(false);
     }
   };
 
   const handleCreateTeam = async () => {
-    setIsLoading(true);
-    const code = digits.join('');
     if (code.length !== 6) {
       Toast.show({
         type: 'error',
         text1: 'Invalid Code',
         text2: 'Please enter a valid 6-digit code.',
       });
-      setIsLoading(false);
-      inputsRef.current[0].focus();
+      codeRef.current?.focus();
       return;
-    } else {
-      const { data: LeagueData, error } = await supabase
-        .from('Districts')
-        .select(
-          `*,
-          Divisions:Divisions!Divisions_district_fkey (
-          id,
-          name,  
-          group_id,
-          group_name,  
-          tier,
-          competitor_type,
-          max_competitors,
-          admin_approval_required
-          )`
-        )
-        .eq('code', code)
-        .single();
+    }
 
-      if (error) {
-        console.log('Error fetching league data:', error);
-        Toast.show({
-          type: 'error',
-          text1: 'League could not be found',
-          text2: 'Please check the code and try again.',
-        });
-      } else if (LeagueData) {
-        router.push({
-          pathname: '/(main)/onboarding/(entity-onboarding)/team-name',
-          params: { league: JSON.stringify(LeagueData) },
-        });
-      }
+    setIsLoading(true);
+    try {
+      // The league's team sign-up code (not its admin code), checked on the server.
+      const { data: LeagueData, error } = await supabase.rpc('find_league_by_code', { p_code: code });
+      if (error) throw error;
+
+      router.push({
+        pathname: '/(main)/onboarding/(entity-onboarding)/team-name',
+        params: { league: JSON.stringify(LeagueData) },
+      });
+    } catch (err) {
+      Toast.show({
+        type: 'error',
+        text1: 'League could not be found',
+        text2: 'Please check the code and try again.',
+      });
+      fail();
+    } finally {
       setIsLoading(false);
     }
   };
 
   const handleJoinTeam = async () => {
-    setIsLoading(true);
-    const code = digits.join('');
     if (code.length !== 6) {
       Toast.show({
         type: 'error',
         text1: 'Invalid Code',
         text2: 'Please enter a valid 6-digit code.',
       });
-      setIsLoading(false);
-      inputsRef.current[0].focus();
+      codeRef.current?.focus();
       return;
-    } else {
-      const { data: TeamData, error } = await supabase
-        .from('Teams')
-        .select('*')
-        .eq('code', code)
-        .single();
+    }
 
-      if (error) {
-        Toast.show({
-          type: 'error',
-          text1: 'Team could not be found',
-          text2: 'Please check the code and try again.',
-        });
-      } else if (TeamData) {
-        router.push({
-          pathname: '/(main)/onboarding/(entity-onboarding)/team-confirm',
-          params: { team: JSON.stringify(TeamData) },
-        });
-      }
+    setIsLoading(true);
+    try {
+      const { data: TeamData, error } = await supabase.rpc('find_team_by_code', { p_code: code });
+      if (error) throw error;
+
+      router.push({
+        pathname: '/(main)/onboarding/(entity-onboarding)/team-confirm',
+        params: { team: JSON.stringify(TeamData) },
+      });
+    } catch (err) {
+      Toast.show({
+        type: 'error',
+        text1: 'Team could not be found',
+        text2: 'Please check the code and try again.',
+      });
+      fail();
+    } finally {
       setIsLoading(false);
     }
   };
 
+  const copy = isNewLeague
+    ? {
+        title: 'Enter your access code',
+        subtitle: 'The app administrator should have given you a 6-digit code.',
+        cta: 'Get started',
+        help: 'No code yet? Ask the app administrator.',
+      }
+    : isNewTeam
+      ? {
+          title: 'Enter your league code',
+          subtitle: "Your league official has a 6-digit code that finds your league.",
+          cta: 'Find league',
+          help: 'No code? Ask your league official for the team sign-up code.',
+        }
+      : {
+          title: 'Enter your team code',
+          subtitle: 'Your team captain has a 6-digit code that finds your team.',
+          cta: 'Find team',
+          help: 'No code? Ask your team captain, it is shown on their team page.',
+        };
+
+  const submit = isNewLeague ? handleCreateLeague : isNewTeam ? handleCreateTeam : handleJoinTeam;
+  const complete = code.length === 6;
+
   return (
-    <>
-      <Stack.Screen
-        options={{
-          title: isNewTeam ? 'Step 1 of 7' : isNewLeague ? 'Step 1 of 4' : 'Step 1 of 3',
-        }}
-      />
-
-      <View className="flex-1 gap-3 bg-brand">
-        <StepPillGroup steps={isNewTeam ? 7 : isNewLeague ? 4 : 3} currentStep={1} />
-        <View className="p-5">
+    <OnboardingScreen
+      title={copy.title}
+      subtitle={copy.subtitle}
+      ctaText={isLoading ? 'Checking…' : copy.cta}
+      onCta={submit}
+      ctaDisabled={!complete || isLoading}
+      ctaLoading={isLoading}>
+      <View className="gap-8 pt-2">
+        <Animated.View entering={FadeInDown.duration(380)}>
+          <CodeInput
+            ref={codeRef}
+            value={code}
+            onChange={onChangeCode}
+            disabled={isLoading}
+            error={hasError}
+          />
           <Text
-            style={{ lineHeight: 50 }}
-            className="my-4 font-delagothic text-5xl font-bold text-text-on-brand">
-            {isNewLeague
-              ? 'Enter Access Code'
-              : isNewTeam
-                ? 'Enter League Code'
-                : 'Enter Team Code'}
+            className={`mt-4 text-center font-saira text-base ${hasError ? 'text-red-300' : 'text-text-on-brand-2'}`}>
+            {hasError ? "That code didn't work" : `${code.length} of 6 digits`}
           </Text>
-          <Text className="font-saira text-2xl text-text-on-brand-2">
-            {isNewLeague
-              ? 'The app administrator should have provided you with your unique 6 digit code.'
-              : isNewTeam
-                ? 'Your league official should have provided you with your unique 6 digit code.'
-                : 'Your team captain should have provided you with your unique 6 digit code.'}
-          </Text>
-        </View>
+        </Animated.View>
 
-        <View
-          style={{ borderTopRightRadius: 32, borderTopLeftRadius: 32 }}
-          className="flex-1 gap-5 bg-brand-dark p-6 shadow shadow-brand-light">
-          <View className="flex-row justify-between">
-            {digits.map((digit, i) => (
-              <View key={i} style={{ flex: 1, marginHorizontal: 4 }}>
-                <TextInput
-                  ref={(el) => (inputsRef.current[i] = el)}
-                  value={digit}
-                  onChangeText={(text) => {
-                    // Update digit
-                    if (/^\d?$/.test(text)) {
-                      const newDigits = [...digits];
-                      newDigits[i] = text;
-                      setDigits(newDigits);
-
-                      // Move focus forward if typed
-                      if (text && i < inputsRef.current.length - 1) {
-                        inputsRef.current[i + 1].focus();
-                      }
-
-                      // Update selection to end
-                      const newSelection = [...selectionIndex];
-                      newSelection[i] = { start: text.length, end: text.length };
-                      setSelectionIndex(newSelection);
-                    }
-                  }}
-                  keyboardType="number-pad"
-                  maxLength={1}
-                  className="border-border-color bg-white font-saira-semibold text-4xl text-black focus:border-theme-blue"
-                  style={styles.input}
-                  textAlign="center"
-                  selection={selectionIndex[i]}
-                  onFocus={() => {
-                    // Only move cursor to end if input has content
-                    if (digits[i]) {
-                      const newSelection = [...selectionIndex];
-                      newSelection[i] = { start: digits[i].length, end: digits[i].length };
-                      setSelectionIndex(newSelection);
-                    }
-                  }}
-                  returnKeyType={i === digits.length - 1 ? 'done' : 'next'}
-                  onKeyPress={({ nativeEvent }) => {
-                    if (nativeEvent.key === 'Backspace') {
-                      if (!digits[i] && i > 0) {
-                        // Move focus to previous box if current is empty
-                        inputsRef.current[i - 1].focus();
-                      } else {
-                        // Clear current box (already handled by onChangeText)
-                      }
-                    }
-                  }}
-                />
-              </View>
-            ))}
-          </View>
-
-          <View className="mt-5">
-            <CTAButton
-              type="yellow"
-              disabled={isLoading}
-              text={
-                isLoading
-                  ? 'Fetching Details...'
-                  : isNewLeague
-                    ? 'Get Started'
-                    : isNewTeam
-                      ? 'Find League'
-                      : 'Find Team'
-              }
-              callbackFn={
-                isNewLeague ? handleCreateLeague : isNewTeam ? handleCreateTeam : handleJoinTeam
-              }
-            />
-          </View>
-        </View>
+        <Animated.View
+          entering={FadeInDown.delay(120).duration(380)}
+          className="flex-row items-center gap-3 rounded-2xl bg-white/10 p-4">
+          <Ionicons name="help-circle-outline" size={22} color="#FFFFFFAA" />
+          <Text className="flex-1 font-saira text-base text-text-on-brand-2">{copy.help}</Text>
+        </Animated.View>
       </View>
-    </>
+    </OnboardingScreen>
   );
 };
 
 export default UniqueCode;
-
-const styles = StyleSheet.create({
-  input: {
-    lineHeight: 48,
-    height: 60,
-    borderWidth: 1,
-    borderRadius: 14,
-    paddingHorizontal: 16,
-  },
-});

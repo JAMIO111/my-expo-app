@@ -19,9 +19,7 @@ export const useTeamsByDivision = (divisionId) => {
           display_name,
           crest,
           abbreviation,
-          district,
-          captain,
-          vice_captain
+          district
         )
       `
       )

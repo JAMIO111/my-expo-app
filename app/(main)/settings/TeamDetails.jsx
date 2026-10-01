@@ -1,4 +1,4 @@
-import { ScrollView } from 'react-native';
+import KeyboardAwareScrollView from '@components/KeyboardAwareScrollView';
 import { useEffect, useState } from 'react';
 import { Stack } from 'expo-router';
 import { CircleCheckBig } from 'lucide-react-native';
@@ -24,17 +24,16 @@ const TeamDetails = () => {
   const handleSave = async () => {
     setIsSaving(true);
     try {
-      const { error } = await supabase.rpc('log_and_update_changes', {
-        table_name: 'Teams',
-        target_id: currentRole?.team?.id,
-        updates: {
-          name: teamName,
-          display_name: teamDisplayName,
-        },
-        user_id: player?.auth_id,
+      const { data, error } = await supabase.rpc('update_team_details', {
+        p_team_id: currentRole?.team?.id,
+        p_name: teamName,
+        p_display_name: teamDisplayName,
       });
       if (error) {
         throw error;
+      }
+      if (data?.success === false) {
+        throw new Error(data.message || 'Could not update the team details.');
       }
       Toast.show({
         type: 'success',
@@ -83,7 +82,7 @@ const TeamDetails = () => {
         }}
       />
 
-      <ScrollView
+      <KeyboardAwareScrollView
         contentContainerStyle={{ alignItems: 'center', justifyContent: 'center' }}
         className="mt-16 flex-1 bg-bg-grouped-1 p-5">
         <MenuContainer>
@@ -137,7 +136,7 @@ const TeamDetails = () => {
             lastItem={true}
           />
         </MenuContainer>
-      </ScrollView>
+      </KeyboardAwareScrollView>
     </SafeViewWrapper>
   );
 };

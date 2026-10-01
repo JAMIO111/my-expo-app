@@ -1,15 +1,14 @@
-import { Pressable, StyleSheet, Text, View, useColorScheme } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { useRouter } from 'expo-router';
-import colors from '@lib/colors';
 import TeamLogo from './TeamLogo';
 import { useRef } from 'react';
+import { useTheme } from '@contexts/ThemeProvider';
 
 const ResultsHomeCard = ({ result }) => {
   const hasNavigated = useRef(false);
   const router = useRouter();
-  const colorScheme = useColorScheme();
-  const themeColors = colors[colorScheme];
+  const { colors: themeColors } = useTheme();
   console.log('ResultsHomeCard result:', result);
   return (
     <Pressable
@@ -21,8 +20,8 @@ const ResultsHomeCard = ({ result }) => {
         }, 500); // Reset navigation state after 500ms
         router.push('/home/results');
       }}
-      className="w-full rounded-2xl bg-bg-grouped-2 shadow-sm"
-      style={{ minHeight: 100 }} // prevents vertical collapse
+      className="w-full rounded-2xl border border-theme-gray-4 bg-bg-3"
+      style={{ minHeight: 100, borderWidth: 0.5 }} // prevents vertical collapse
     >
       <View className="mx-3 flex-row items-center justify-between border-b border-theme-gray-5 px-1 pb-1 pt-2">
         <Text className="font-tektur-medium text-2xl text-text-1">Results</Text>
@@ -31,7 +30,7 @@ const ResultsHomeCard = ({ result }) => {
 
       {!result ? (
         <View className="px-4 py-4">
-          <Text className="font-tektur text-left text-xl text-text-2">
+          <Text className="text-left font-tektur text-xl text-text-2">
             No results available yet.
           </Text>
         </View>

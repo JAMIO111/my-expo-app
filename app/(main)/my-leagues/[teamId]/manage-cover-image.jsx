@@ -87,10 +87,10 @@ const ManageCoverImagePage = () => {
         newImagePath = markerIndex !== -1 ? coverImageUrl.slice(markerIndex + marker.length) : null;
       }
 
-      const { error: updateError } = await supabase
-        .from('Teams')
-        .update({ cover_image_url: coverImageUrl })
-        .eq('id', teamId);
+      const { error: updateError } = await supabase.rpc('update_team_cover_image', {
+        p_team_id: teamId,
+        p_cover_image_url: coverImageUrl,
+      });
 
       if (updateError) {
         if (newImagePath) {

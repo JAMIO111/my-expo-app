@@ -5,15 +5,18 @@ import { useJoinDivisionRequests } from '@hooks/useJoinDivisionRequests';
 import TeamLogo from '@components/TeamLogo';
 import Avatar from '@components/Avatar';
 import { supabase } from '@/lib/supabase';
+import { assertRpcOk } from '@lib/rpc';
 import Toast from 'react-native-toast-message';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import FloatingBottomSheet from '@components/FloatingBottomSheet';
+import { useTheme } from '@contexts/ThemeProvider';
 import { useUser } from '@contexts/UserProvider';
 import ExpandableView from './ExpandableView';
 import { useQueryClient } from '@tanstack/react-query';
 import { romanNumerals } from '../lib/badgeIcons';
 
 const TeamJoinRequests = ({ districtId, teamId }) => {
+  const { colors: themeColors } = useTheme();
   const queryClient = useQueryClient();
   const { player } = useUser();
   const {
@@ -40,6 +43,7 @@ const TeamJoinRequests = ({ districtId, teamId }) => {
       requester_type: 'player',
       request_type: 'team',
       requester_name: `${r.player.first_name} ${r.player.surname}`,
+      is_invite: r.kind === 'invite',
       request_target: r.team.display_name,
       crest: r.team.crest,
     })),
@@ -55,68 +59,38 @@ const TeamJoinRequests = ({ districtId, teamId }) => {
     })),
   ];
 
-  const pendingCount = requests?.filter(
-    (req) =>
-      req.status === 'pending_both' ||
-      (districtId ? req.status === 'pending_admin' : req.status === 'pending_captain')
-  ).length;
+  const isAdminView = !!districtId;
+  const isCaptainView = !!teamId && !districtId;
+
+  // Does this row need a decision from the person looking at it?
+  const needsMyAction = (req) => {
+    if (req.request_type === 'team') {
+      if (isAdminView) return !!req.awaiting_admin;
+      return !!req.awaiting_captain;
+    }
+    return req.status === 'pending_admin';
+  };
+
+  const pendingCount = requests?.filter(needsMyAction).length;
 
   const [showView, setShowView] = useState(true);
   const [processingId, setProcessingId] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
   const [modalConfig, setModalConfig] = useState(null);
 
-  const isAdminView = !!districtId;
-  const isCaptainView = !!teamId && !districtId;
-
   const getRequestUI = (req) => {
-    const { status } = req;
+    const badges = [];
 
-    // DEFAULT
-    let showActions = false;
-    let badges = [];
-
-    // 🧑‍💼 ADMIN VIEW
-    if (isAdminView) {
-      if (status === 'pending_admin' || status === 'pending_both') {
-        showActions = true;
-      }
-
-      if (status === 'pending_both') {
-        badges.push({ text: 'Awaiting Admin', color: 'orange' });
-      }
-
-      if (status === 'pending_admin') {
-        badges.push({ text: 'Awaiting Admin', color: 'orange' });
-      }
-
-      if (status === 'pending_captain') {
-        badges.push({ text: 'Awaiting Captain', color: 'orange' });
-        badges.push({ text: 'Admin Approved', color: 'green' });
-      }
+    if (req.request_type === 'team') {
+      if (req.awaiting_captain) badges.push({ text: 'Awaiting Captain', color: 'orange' });
+      if (req.awaiting_admin) badges.push({ text: 'Awaiting Admin', color: 'orange' });
+      if (req.awaiting_player) badges.push({ text: 'Awaiting Player', color: 'orange' });
+      return { showActions: needsMyAction(req), badges };
     }
 
-    // 🧢 CAPTAIN VIEW
-    if (isCaptainView) {
-      if (status === 'pending_captain' || status === 'pending_both') {
-        showActions = true;
-      }
-
-      if (status === 'pending_both') {
-        badges.push({ text: 'Awaiting Captain', color: 'orange' });
-      }
-
-      if (status === 'pending_captain') {
-        badges.push({ text: 'Awaiting Captain', color: 'orange' });
-      }
-
-      if (status === 'pending_admin') {
-        badges.push({ text: 'Awaiting Admin', color: 'orange' });
-        badges.push({ text: 'Captain Approved', color: 'green' });
-      }
-    }
-
-    return { showActions, badges };
+    // division requests are only ever waiting on an admin
+    if (req.status === 'pending_admin') badges.push({ text: 'Awaiting Admin', color: 'orange' });
+    return { showActions: needsMyAction(req), badges };
   };
 
   const StatusBadge = ({ text, color }) => {
@@ -168,7 +142,7 @@ const TeamJoinRequests = ({ districtId, teamId }) => {
       message:
         action === 'approve'
           ? `Are you sure you want to accept ${subject} into ${target}?`
-          : `Are you sure you want to reject ${subject}'s request to join ${target}?`,
+          : `Are you sure you want to reject ${subject}'s ${request.is_invite ? 'invite to' : 'request to join'} ${target}?`,
 
       topButtonText: 'Cancel',
       topButtonType: action === 'approve' ? 'default' : 'default',
@@ -176,11 +150,11 @@ const TeamJoinRequests = ({ districtId, teamId }) => {
 
       bottomButtonType: action === 'approve' ? 'success' : 'error',
 
+      // Uses the arguments directly: modalConfig is still the previous value inside this closure.
       bottomButtonFn: () => {
-        if (!modalConfig) return;
-        modalConfig.request_type === 'team'
-          ? handlePlayerJoinTeam(modalConfig.requestId, modalConfig.action)
-          : handleJoinDivision(modalConfig.requestId, modalConfig.action);
+        request_type === 'team'
+          ? handlePlayerJoinTeam(request.id, action)
+          : handleJoinDivision(request.id, action);
       },
       request_type,
       requester_type,
@@ -199,13 +173,11 @@ const TeamJoinRequests = ({ districtId, teamId }) => {
 
       setProcessingId(requestId);
 
-      const { error } = await supabase.rpc('handle_join_division_request', {
+      const { data, error } = await supabase.rpc('handle_join_division_request', {
         p_request_id: requestId,
         p_action: action,
-        p_admin_id: districtId ? player.id : null,
       });
-
-      if (error) throw error;
+      assertRpcOk(data, error);
 
       queryClient.invalidateQueries(['TeamPlayers', teamId]);
 
@@ -245,26 +217,30 @@ const TeamJoinRequests = ({ districtId, teamId }) => {
 
       setProcessingId(requestId);
 
-      const { error } = await supabase.rpc('handle_player_join_team_request', {
-        p_request_id: requestId,
-        p_action: action,
-        p_admin_id: districtId ? player.id : null,
-        p_captain_id: teamId ? player.id : null,
-      });
+      // The RPCs work out from the signed-in user whether they act as captain or admin.
+      const rpcName =
+        action === 'approve'
+          ? request.is_invite
+            ? 'accept_player_join_team_invite'
+            : 'accept_player_join_team_request'
+          : 'decline_player_join_team_request';
+      const { data, error } = await supabase.rpc(rpcName, { p_team_player_id: requestId });
+      assertRpcOk(data, error);
 
-      if (error) throw error;
-
-      queryClient.invalidateQueries(['TeamPlayers', teamId]);
+      queryClient.invalidateQueries(['TeamPlayers', request.team_id ?? teamId]);
+      queryClient.invalidateQueries(['PlayerInvitesAndRequests']);
 
       Toast.show({
         type: 'success',
         text1: action === 'approve' ? 'Request Approved' : 'Request Rejected',
         text2:
           action === 'approve'
-            ? `${request.requester_name} has been added to ${
-                teamId ? 'your team' : request.team.display_name
-              }.`
-            : `${request.requester_name}'s request was rejected.`,
+            ? data?.teamPlayer?.status && data.teamPlayer.status !== 'active'
+              ? `Your approval is recorded. ${request.requester_name} still needs approval from someone else.`
+              : `${request.requester_name} has been added to ${
+                  teamId ? 'your team' : request.team.display_name
+                }.`
+            : `${request.requester_name}'s ${request.is_invite ? 'invite' : 'request'} was rejected.`,
       });
 
       refetchTeamRequests();
@@ -283,9 +259,9 @@ const TeamJoinRequests = ({ districtId, teamId }) => {
 
   if (isLoadingTeamRequests || isLoadingDivisionRequests) {
     return (
-      <View className="flex-1 bg-bg-1 p-4">
+      <View className="flex-1 p-4">
         <View className="flex-row items-center justify-center gap-5 rounded-2xl bg-bg-2 p-8 shadow-sm">
-          <ActivityIndicator size="small" color="#555555" />
+          <ActivityIndicator size="small" color={themeColors.secondaryText} />
           <Text className="font-saira text-text-1">Loading Team Join Requests...</Text>
         </View>
       </View>
@@ -294,7 +270,7 @@ const TeamJoinRequests = ({ districtId, teamId }) => {
 
   if (teamError || divisionError) {
     return (
-      <View className="flex-1 bg-bg-1 p-4">
+      <View className="flex-1 p-4">
         <View className="flex-row items-center justify-center gap-5 rounded-2xl bg-bg-2 p-8 shadow-sm">
           <Ionicons name="warning" size={24} color="#E53E3E" />
           <Text className="text-center font-saira-medium text-theme-red">
@@ -316,7 +292,7 @@ const TeamJoinRequests = ({ districtId, teamId }) => {
         show={showView}
         setShow={setShowView}
         notificationCount={pendingCount}>
-        <View className="gap-3 bg-bg-1">
+        <View className="gap-3">
           {requests.map((req) => {
             const isProcessing = processingId === req.id;
             const { showActions, badges } = getRequestUI(req);
@@ -324,7 +300,7 @@ const TeamJoinRequests = ({ districtId, teamId }) => {
             return (
               <View
                 key={req.id}
-                className="flex-row items-center justify-between rounded-2xl bg-bg-2 px-3 py-3 shadow-sm">
+                className="flex-row items-center justify-between rounded-2xl bg-bg-grouped-3 px-3 py-3">
                 {/* LEFT */}
                 <View className="flex-1 flex-row items-center gap-3">
                   <View className="flex-1 gap-3">
@@ -351,11 +327,13 @@ const TeamJoinRequests = ({ districtId, teamId }) => {
                       )}
                       <View>
                         <Text className="font-saira-semibold text-text-1">
-                          To Join → {req.request_target}
+                          {req.is_invite ? 'Invited to' : 'To Join →'} {req.request_target}
                         </Text>
 
                         <Text className="mt-1 font-saira text-sm text-text-2">
-                          {`Requested - ${new Date(req.requested_at).toLocaleDateString('en-GB', {
+                          {`${req.is_invite ? 'Invited' : 'Requested'} - ${new Date(
+                            req.requested_at
+                          ).toLocaleDateString('en-GB', {
                             year: 'numeric',
                             month: 'long',
                             day: 'numeric',

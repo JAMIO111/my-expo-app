@@ -41,6 +41,14 @@ export default ({ config }) => {
         },
       ],
       [
+        '@sentry/react-native/expo',
+        {
+          // Source maps are uploaded at build time. Needs SENTRY_AUTH_TOKEN as an EAS secret.
+          organization: process.env.SENTRY_ORG,
+          project: process.env.SENTRY_PROJECT,
+        },
+      ],
+      [
         'react-native-google-mobile-ads',
         {
           androidAppId: process.env.ADMOB_ANDROID_APP_ID,
@@ -87,6 +95,10 @@ export default ({ config }) => {
     extra: {
       SUPABASE_URL: process.env.SUPABASE_URL,
       SUPABASE_KEY: process.env.SUPABASE_KEY,
+      SENTRY_DSN: process.env.SENTRY_DSN,
+      ADMOB_IOS_BANNER_ID: process.env.ADMOB_IOS_BANNER_ID,
+      ADMOB_ANDROID_BANNER_ID: process.env.ADMOB_ANDROID_BANNER_ID,
+      APP_ENV: env,
       eas: {
         projectId: '3e7c3732-0ff2-449b-a27e-89d2cb14ada2',
       },

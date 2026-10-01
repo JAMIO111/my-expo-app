@@ -59,7 +59,7 @@ export default function BadgeUnlockModal({ visible, badges = [], onComplete }) {
   const remaining = badges.length - index - 1;
   const isLast = remaining <= 0;
 
-  const iconKey = currentBadge?.icon.uri;
+  const iconKey = currentBadge?.icon?.uri;
   const iconSource = iconKey && badgeIcons[iconKey] ? badgeIcons[iconKey] : null;
   const color = (bgColors[currentBadge?.tier] && bgColors[currentBadge?.tier].color) || '#773F00';
   const textColor = (bgColors[currentBadge?.tier] && bgColors[currentBadge?.tier].text) || '#fff';
@@ -154,10 +154,10 @@ export default function BadgeUnlockModal({ visible, badges = [], onComplete }) {
               start={{ x: 0, y: 0 }}
               end={{ x: 0, y: 1 }}
               style={styles.topFade}>
-              <Text className="text-center font-michroma text-3xl text-text-1">
+              <Text className="text-center font-michroma text-3xl text-[#111827]">
                 Congratulations!
               </Text>
-              <Text className="text-center font-saira-medium text-lg text-text-2">
+              <Text className="text-center font-saira-medium text-lg text-[#4b5563]">
                 You've unlocked a new badge
               </Text>
             </LinearGradient>
@@ -175,7 +175,7 @@ export default function BadgeUnlockModal({ visible, badges = [], onComplete }) {
                 {currentBadge.title}
               </Text>
               {!!currentBadge.description && (
-                <Text className="text-center font-saira-medium text-lg text-text-1">
+                <Text className="text-center font-saira-medium text-lg text-[#111827]">
                   {currentBadge.description}
                 </Text>
               )}

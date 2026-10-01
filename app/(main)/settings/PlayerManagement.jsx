@@ -9,9 +9,7 @@ import { useTeamPlayers } from '@hooks/useTeamPlayers';
 import { usePlayerInvitesAndRequests } from '@hooks/usePlayerInvitesAndRequests';
 
 const PlayerManagement = () => {
-  const colorScheme = useColorScheme();
-  const { player, currentRole } = useUser();
-  const router = useRouter();
+  const { currentRole } = useUser();
   const { data: currentPlayers, isLoading: isLoadingPlayers } = useTeamPlayers(
     currentRole?.team?.id
   );
@@ -48,6 +46,16 @@ const PlayerManagement = () => {
         <View className="flex-1 justify-between">
           {/* Top Content */}
           <View>
+            {currentRole?.role !== 'player' && (
+              <MenuContainer title="Recruit">
+                <SettingsItem
+                  title="Invite a Player"
+                  icon="userRoundPlus"
+                  routerPath="/settings/InvitePlayer"
+                  lastItem
+                />
+              </MenuContainer>
+            )}
             <MenuContainer title="Current Players">
               {currentPlayers?.map((player, index) => (
                 <SettingsItem

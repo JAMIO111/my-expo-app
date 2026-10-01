@@ -1,22 +1,14 @@
 import { useEffect, useState } from 'react';
-import {
-  View,
-  Text,
-  Modal,
-  Platform,
-  TouchableOpacity,
-  StyleSheet,
-  useColorScheme,
-} from 'react-native';
+import { View, Text, Modal, Platform, TouchableOpacity, StyleSheet } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import IonIcons from 'react-native-vector-icons/Ionicons';
-import colors from '@lib/colors'; // Ensure you have a colors.js file with your color definitions
 import CTAButton from '@components/CTAButton';
+import { useTheme } from '@contexts/ThemeProvider';
 
 export default function ModalWrappedDatePicker({ value, minDate, maxDate, onChangeDate }) {
   const [tempDate, setTempDate] = useState(value ?? new Date());
   const [modalVisible, setModalVisible] = useState(false);
-  const colorScheme = useColorScheme();
+  const { colors: themeColors } = useTheme();
 
   useEffect(() => {
     setTempDate(value ?? new Date());
@@ -49,7 +41,7 @@ export default function ModalWrappedDatePicker({ value, minDate, maxDate, onChan
       style={[
         styles.container,
         {
-          borderColor: colors[colorScheme].border,
+          borderColor: themeColors.border,
         },
       ]}>
       <TouchableOpacity
@@ -62,7 +54,7 @@ export default function ModalWrappedDatePicker({ value, minDate, maxDate, onChan
           paddingHorizontal: 12,
           borderRadius: 8,
         }}>
-        <IonIcons name="calendar-outline" size={24} color={colors[colorScheme].icon} />
+        <IonIcons name="calendar-outline" size={24} color={themeColors.icon} />
         <Text className="text-xl text-text-3">{value ? value.toDateString() : 'Pick a date'}</Text>
       </TouchableOpacity>
 

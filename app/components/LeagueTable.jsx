@@ -69,10 +69,10 @@ const LeagueTable = ({ context, season, division }) => {
             <Text className="font-tektur w-8 text-center font-bold text-text-2">CC</Text>
           )}
         </View>
-        {standings.standings?.map((team, index) => (
+        {standings?.standings?.map((team, index) => (
           <Fragment key={index}>
             {standings?.division?.relegation_spots !== 0 &&
-              index === standings?.standings.length - standings?.division?.relegation_spots && (
+              index === standings?.standings?.length - standings?.division?.relegation_spots && (
                 <LinearGradient
                   colors={['#8b5cf6', '#dc2626', '#dc2626']} // from-purple-500 to-red-600
                   start={{ x: 0, y: 0 }}

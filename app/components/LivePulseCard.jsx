@@ -1,7 +1,13 @@
 import { useEffect, useRef } from 'react';
 import { Animated, View, Text } from 'react-native';
 
-const LivePulseCard = ({ fontSize = 14, dotSize = 8, showBG = true, text = 'Live' }) => {
+const LivePulseCard = ({
+  fontSize = 14,
+  dotSize = 8,
+  showBG = true,
+  text = 'Live',
+  backgroundColor,
+}) => {
   const scale = useRef(new Animated.Value(1)).current;
   const opacity = useRef(new Animated.Value(1)).current;
 
@@ -41,7 +47,14 @@ const LivePulseCard = ({ fontSize = 14, dotSize = 8, showBG = true, text = 'Live
 
   return (
     <View
-      className={`flex-row items-center justify-center gap-2 rounded-xl px-3 py-0.5 ${showBG ? 'bg-bg-1 shadow-sm' : ''}`}>
+      style={{
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.2,
+        shadowRadius: 5,
+        elevation: 1,
+      }}
+      className={`flex-row items-center justify-center gap-2 rounded-xl px-3 py-1 ${showBG ? `${backgroundColor ?? 'bg-bg-1'}` : ''}`}>
       <View
         style={{
           width: containerSize,
@@ -76,10 +89,9 @@ const LivePulseCard = ({ fontSize = 14, dotSize = 8, showBG = true, text = 'Live
       </View>
 
       <Text
+        className="font-tektur-medium text-text-1"
         style={{
-          fontSize,
-          fontFamily: 'Tektur-SemiBold',
-          color: '#111111',
+          fontSize: fontSize,
         }}>
         {text}
       </Text>

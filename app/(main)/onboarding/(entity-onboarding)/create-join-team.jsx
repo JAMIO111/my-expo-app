@@ -1,65 +1,50 @@
 import { StyleSheet, Text, View, Image } from 'react-native';
 import { useRouter, Stack } from 'expo-router';
 import CTAButton from '@components/CTAButton';
+import { useOnboardingStep } from '@contexts/OnboardingStepContext';
+import OnboardingScreen from '@components/onboarding/OnboardingScreen';
+import OnboardingInput from '@components/onboarding/OnboardingInput';
+import ChoiceCard from '@components/onboarding/ChoiceCard';
+import ToggleCard from '@components/onboarding/ToggleCard';
 
 const CreateJoinTeam = () => {
+  useOnboardingStep(null, null);
   const router = useRouter();
 
   return (
-    <>
-      <Stack.Screen
-        options={{
-          title: '',
-        }}
-      />
-      <View className="flex-1 bg-brand">
-        <View className="p-5">
-          <Text className="mb-4 font-delagothic text-6xl font-bold text-text-on-brand">
-            Let's get you affiliated.
-          </Text>
-          <Text className="font-saira text-2xl text-text-on-brand-2">
-            Would you like to create a new team or join an existing one?
-          </Text>
-        </View>
-        <View className="flex-1 items-center justify-center p-5">
-          <View className="overflow-hidden rounded-2xl shadow-lg">
-            <Image
-              source={require('@assets/pool-player-cartoon.jpg')}
-              className="h-60 w-60 rounded-2xl"
-              resizeMode="cover"
-            />
-          </View>
-        </View>
-
-        <View className="justify-end gap-5 rounded-t-3xl bg-brand-dark p-6 pb-16 pt-10">
-          <CTAButton
-            type="white"
-            text="Create a new team"
-            callbackFn={() =>
-              router.push({
-                pathname: '/(main)/onboarding/unique-code',
-                params: { isNewTeam: true },
-              })
-            }
-          />
-          <View>
-            <CTAButton
-              type="yellow"
-              text="Join existing team"
-              callbackFn={() =>
-                router.push({
-                  pathname: '/(main)/onboarding/unique-code',
-                  params: { isNewTeam: false },
-                })
-              }
-            />
-          </View>
-        </View>
+    <OnboardingScreen
+      title="Let's get you affiliated"
+      subtitle="Do you want to start a new team, or join one that already exists?">
+      <View className="gap-4">
+        <ChoiceCard
+          icon="enter"
+          iconColor="#3B82F6"
+          title="Join an existing team"
+          subtitle="You'll need the team's 6-digit code"
+          delay={0}
+          onPress={() =>
+            router.push({
+              pathname: '/(main)/onboarding/(entity-onboarding)/unique-code',
+              params: { isNewTeam: false },
+            })
+          }
+        />
+        <ChoiceCard
+          icon="add-circle"
+          iconColor="#F59E0B"
+          title="Create a new team"
+          subtitle="You'll need your league's 6-digit code"
+          delay={90}
+          onPress={() =>
+            router.push({
+              pathname: '/(main)/onboarding/(entity-onboarding)/unique-code',
+              params: { isNewTeam: true },
+            })
+          }
+        />
       </View>
-    </>
+    </OnboardingScreen>
   );
 };
 
 export default CreateJoinTeam;
-
-const styles = StyleSheet.create({});

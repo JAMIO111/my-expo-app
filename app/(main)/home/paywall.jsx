@@ -10,7 +10,7 @@ const Paywall = () => {
   return (
     <>
       <SafeViewWrapper topColor="bg-brand" useBottomInset={false}>
-        <StatusBar style="light" backgroundColor="#000" />
+        <StatusBar style="light" />
         <Stack.Screen
           options={{
             header: () => (

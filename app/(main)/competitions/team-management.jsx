@@ -1,4 +1,4 @@
-import { View, Text, Pressable } from 'react-native';
+import { View, Text, Pressable, Alert } from 'react-native';
 import { Stack } from 'expo-router';
 import { useUser } from '@contexts/UserProvider';
 import CustomHeader from '@components/CustomHeader';
@@ -16,13 +16,16 @@ import TeamInviteCard from '@components/TeamInviteCard2';
 import { useChildTeamInvites } from '@hooks/useChildTeamInvites';
 import { useAcceptTeamInvite } from '@hooks/useAcceptTeamInvite';
 import { useDeclineTeamInvite } from '@hooks/useDeclineTeamInvite';
+import { useTheme } from '@contexts/ThemeProvider';
+import Toast from 'react-native-toast-message';
 
 const TeamManagement = () => {
+  const { colors: themeColors } = useTheme();
   const [teamManagerVisible, setTeamManagerVisible] = useState(false);
   const [managerType, setManagerType] = useState(null);
   const [selectedTeam, setSelectedTeam] = useState(null);
   const { currentRole, player } = useUser();
-  const { data: invites } = useChildTeamInvites(player?.id, currentRole?.team.id);
+  const { data: invites } = useChildTeamInvites(player?.id, currentRole?.team?.id);
 
   const { mutate: acceptInvite, isPending: isAccepting } = useAcceptTeamInvite();
   const { mutate: declineInvite, isPending: isDeclining } = useDeclineTeamInvite();
@@ -65,32 +68,52 @@ const TeamManagement = () => {
                     acceptInvite(
                       { inviteId: invite.id, playerId: player.id },
                       {
+                        onSuccess: () => {
+                          Toast.show({ type: 'success', text1: 'Invite accepted' });
+                        },
                         onError: (err) => {
                           const messages = {
                             INVITE_NOT_FOUND: 'This invite is no longer valid.',
                           };
-                          Alert.alert(
-                            'Could not accept invite',
-                            messages[err.message] ?? err.message
-                          );
+                          Toast.show({
+                            type: 'error',
+                            text1: 'Could not accept invite',
+                            text2: messages[err.message] ?? err.message,
+                          });
                         },
                       }
                     )
                   }
                   onDecline={() =>
+                    Alert.alert(
+                      'Decline invite?',
+                      'A team only goes ahead if every player accepts, so declining cancels the team for everyone.',
+                      [
+                        { text: 'Keep invite', style: 'cancel' },
+                        {
+                          text: 'Decline and cancel team',
+                          style: 'destructive',
+                          onPress: () =>
                     declineInvite(
                       { inviteId: invite.id, playerId: player.id },
                       {
+                        onSuccess: () => {
+                          Toast.show({ type: 'success', text1: 'Team cancelled', text2: 'You declined the invite.' });
+                        },
                         onError: (err) => {
                           const messages = {
                             INVITE_NOT_FOUND: 'This invite is no longer valid.',
                           };
-                          Alert.alert(
-                            'Could not decline invite',
-                            messages[err.message] ?? err.message
-                          );
+                          Toast.show({
+                            type: 'error',
+                            text1: 'Could not decline invite',
+                            text2: messages[err.message] ?? err.message,
+                          });
                         },
                       }
+                    ),
+                        },
+                      ]
                     )
                   }
                 />
@@ -118,7 +141,11 @@ const TeamManagement = () => {
               ))
             ) : (
               <View className="flex-1 items-center justify-center gap-2 rounded-2xl bg-bg-1 py-8 shadow-sm">
-                <Ionicons name="people-circle-outline" size={64} color="#888" />
+                <Ionicons
+                  name="people-circle-outline"
+                  size={64}
+                  color={themeColors.secondaryText}
+                />
                 <Text className="font-saira-medium text-text-2">No teams available</Text>
               </View>
             )}

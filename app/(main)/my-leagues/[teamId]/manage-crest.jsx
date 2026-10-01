@@ -21,17 +21,11 @@ const ManageCrestPage = () => {
     setIsSaving(true);
     // Save the changes to the database
     try {
-      await supabase
-        .from('Teams')
-        .update({
-          crest: {
-            type,
-            color1,
-            color2,
-            thickness,
-          },
-        })
-        .eq('id', teamId);
+      const { error } = await supabase.rpc('update_team_crest', {
+        p_team_id: teamId,
+        p_crest: { type, color1, color2, thickness },
+      });
+      if (error) throw error;
       await queryClient.invalidateQueries(['teamProfile', teamId]);
 
       router.back();
