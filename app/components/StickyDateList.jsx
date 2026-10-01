@@ -13,7 +13,7 @@ const AnimatedSectionList = Animated.createAnimatedComponent(SectionList);
 
 const RADIUS = 24;
 const GAP = 16; // space between day cards
-const FADE_DISTANCE = 28; // px over which a pinned header fades before the next day takes over
+const FADE_DISTANCE = 30; // px over which a pinned header fades before the next day takes over
 
 // Matches grouped by date, as rounded cards whose date header stays pinned to the top while that day's
 // matches scroll underneath (like the Weather app), fading out just before the next day's header takes
@@ -99,9 +99,7 @@ export default function StickyDateList({
       renderItem={({ item, index, section }) => {
         const last = index === section.data.length - 1;
         return (
-          <View
-            onLayout={(e) => measure(`i-${keyExtractor(item)}`, e.nativeEvent.layout.height)}
-            >
+          <View onLayout={(e) => measure(`i-${keyExtractor(item)}`, e.nativeEvent.layout.height)}>
             <View
               className="border-x border-theme-gray-5 bg-bg-grouped-2 px-2"
               style={
@@ -138,7 +136,7 @@ function DayHeader({ date, spaced, info, scrollY, onMeasure, backgroundClassName
   const style = useAnimatedStyle(() => {
     if (end === null) return {};
     // how far the day's last row still extends below the pinned header
-    const remaining = end - (scrollY.value + headerH);
+    const remaining = end - (scrollY.value + headerH) + 7;
     const radius = interpolate(remaining, [0, RADIUS], [RADIUS, 0], Extrapolation.CLAMP);
     return {
       borderBottomLeftRadius: radius,
