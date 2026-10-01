@@ -99,9 +99,11 @@ export default function StickyDateList({
       renderItem={({ item, index, section }) => {
         const last = index === section.data.length - 1;
         return (
-          <View
-            onLayout={(e) => measure(`i-${keyExtractor(item)}`, e.nativeEvent.layout.height)}
-            >
+          <FadeRow
+            fade={last}
+            info={layout[section.date]}
+            scrollY={scrollY}
+            onLayout={(e) => measure(`i-${keyExtractor(item)}`, e.nativeEvent.layout.height)}>
             <View
               className="border-x border-theme-gray-5 bg-bg-grouped-2 px-2"
               style={
@@ -116,35 +118,38 @@ export default function StickyDateList({
               }>
               {renderItem(item, index, section.data.length)}
             </View>
-          </View>
+          </FadeRow>
         );
       }}
     />
   );
 }
 
-function DayHeader({ date, spaced, info, scrollY, onMeasure, backgroundClassName }) {
+function FadeRow({ fade, info, scrollY, onLayout, children }) {
+  const fadeStyle = useDayFade(fade ? info : null, scrollY);
+  return (
+    <Animated.View onLayout={onLayout} style={fade ? fadeStyle : undefined}>
+      {children}
+    </Animated.View>
+  );
+}
+
+// Opacity for a day's pinned header and its last row, so the whole card fades out together as the next
+// day's card is about to cover it.
+function useDayFade(info, scrollY) {
   const end = info ? info.end : null;
   const headerH = info ? info.headerH : 0;
-
-  const fadeStyle = useAnimatedStyle(() => {
+  return useAnimatedStyle(() => {
     if (end === null) return { opacity: 1 };
     const remaining = end - (scrollY.value + headerH);
     return {
       opacity: interpolate(remaining, [0, FADE_DISTANCE], [0, 1], Extrapolation.CLAMP),
     };
   }, [end, headerH]);
+}
 
-  const style = useAnimatedStyle(() => {
-    if (end === null) return {};
-    // how far the day's last row still extends below the pinned header
-    const remaining = end - (scrollY.value + headerH);
-    const radius = interpolate(remaining, [0, RADIUS], [RADIUS, 0], Extrapolation.CLAMP);
-    return {
-      borderBottomLeftRadius: radius,
-      borderBottomRightRadius: radius,
-    };
-  }, [end, headerH]);
+function DayHeader({ date, spaced, info, scrollY, onMeasure, backgroundClassName }) {
+  const fadeStyle = useDayFade(info, scrollY);
 
   return (
     <View
@@ -153,7 +158,7 @@ function DayHeader({ date, spaced, info, scrollY, onMeasure, backgroundClassName
       onLayout={(e) => onMeasure(`h-${date}`, e.nativeEvent.layout.height)}>
       <Animated.View
         className="border-x border-t border-theme-gray-5 bg-bg-grouped-2 px-4 pb-1 pt-3"
-        style={[{ borderTopLeftRadius: RADIUS, borderTopRightRadius: RADIUS }, style, fadeStyle]}>
+        style={[{ borderTopLeftRadius: RADIUS, borderTopRightRadius: RADIUS }, fadeStyle]}>
         <Text className="font-saira-semibold text-2xl text-text-1">
           {format(parseISO(date), 'EEE, d MMMM')}
         </Text>
