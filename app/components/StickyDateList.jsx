@@ -12,9 +12,10 @@ import { format, parseISO } from 'date-fns';
 const AnimatedSectionList = Animated.createAnimatedComponent(SectionList);
 
 const RADIUS = 24;
-// Each row/header is its own cell, so fractional layout positions can leave hairline gaps between them
-// where the page shows through. Cells paint SEAM px into the next one (same colour) to close them.
-const SEAM = 1;
+// Cells used to overlap by 1px to hide possible hairline gaps, but with each row fading on its own the
+// overlapping strips double-composited into a dark/light line. Kept as a constant in case a seam fix
+// is needed again; 0 means no overlap.
+const SEAM = 0;
 const GAP = 16; // space between day cards
 const DEFAULT_HEADER_H = 52;
 const ROW_FADE = 28; // px over which a row fades out as it reaches the pinned header
