@@ -1,51 +1,147 @@
-import { useMemo } from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
 import { View, Text, SectionList } from 'react-native';
+import Animated, {
+  useAnimatedScrollHandler,
+  useAnimatedStyle,
+  useSharedValue,
+  interpolate,
+  Extrapolation,
+} from 'react-native-reanimated';
 import { format, parseISO } from 'date-fns';
 
-// Matches grouped by date, as a list of rounded cards whose date header stays pinned to the top while
-// that day's matches scroll underneath, then is pushed off by the next day's header (like the sections
-// in the Weather app). Each card is drawn from three pieces so the header can stick on its own: a
-// rounded-top header, side-bordered rows, and a rounded-bottom last row.
+const AnimatedSectionList = Animated.createAnimatedComponent(SectionList);
+
+const RADIUS = 24;
+const GAP = 16; // space between day cards
+const FADE_DISTANCE = 56; // px over which a pinned header fades before the next day takes over
+
+// Matches grouped by date, as rounded cards whose date header stays pinned to the top while that day's
+// matches scroll underneath (like the Weather app), fading out just before the next day's header takes
+// its place. Each card is drawn from three pieces so the header can stick on its own: a rounded-top
+// header, side-bordered rows, and a rounded-bottom last row.
+//
+// `backgroundClassName` should match the page behind the list: it fills the corners around a pinned
+// header so rows scrolling underneath can't show through them.
 export default function StickyDateList({
   grouped,
   renderItem,
   keyExtractor = (item) => String(item.id),
   contentContainerStyle,
   ListEmptyComponent = null,
+  backgroundClassName = 'bg-brand-dark',
 }) {
   const sections = useMemo(
     () => (grouped || []).map(([date, data]) => ({ date, data })),
     [grouped]
   );
 
+  const scrollY = useSharedValue(0);
+  const scrollHandler = useAnimatedScrollHandler({
+    onScroll: (event) => {
+      scrollY.value = event.contentOffset.y;
+    },
+  });
+
+  // Measured heights of every cell (headers and rows), so each day's end position is known and its header
+  // can fade as that end approaches.
+  const heights = useRef({});
+  const [, setVersion] = useState(0);
+  const measure = useCallback((key, height) => {
+    if (heights.current[key] !== height) {
+      heights.current[key] = height;
+      setVersion((v) => v + 1);
+    }
+  }, []);
+
+  // For each date: the header's height, and the content offset where that day's last row ends.
+  const layout = useMemo(() => {
+    const out = {};
+    let offset = 0;
+    for (const section of sections) {
+      const headerH = heights.current[`h-${section.date}`];
+      let complete = headerH !== undefined;
+      offset += headerH ?? 0;
+      for (const item of section.data) {
+        const h = heights.current[`i-${keyExtractor(item)}`];
+        if (h === undefined) complete = false;
+        offset += h ?? 0;
+      }
+      out[section.date] = complete ? { headerH, end: offset } : null;
+    }
+    return out;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sections, heights.current]);
+
   return (
-    <SectionList
+    <AnimatedSectionList
       sections={sections}
       keyExtractor={keyExtractor}
       stickySectionHeadersEnabled
       showsVerticalScrollIndicator={false}
+      onScroll={scrollHandler}
+      scrollEventThrottle={16}
+      // lists here are one month long: keep every row mounted so heights are known up front
+      initialNumToRender={60}
+      windowSize={21}
       contentContainerStyle={contentContainerStyle ?? { paddingBottom: 30 }}
       ListEmptyComponent={ListEmptyComponent}
       renderSectionHeader={({ section }) => (
-        <View className="bg-transparent">
-          <View className="rounded-t-3xl border border-theme-gray-5 bg-bg-grouped-2 px-4 pb-1 pt-3">
-            <Text className="font-saira-semibold text-2xl text-text-1">
-              {format(parseISO(section.date), 'EEE, d MMMM')}
-            </Text>
-          </View>
-        </View>
+        <DayHeader
+          date={section.date}
+          info={layout[section.date]}
+          scrollY={scrollY}
+          onMeasure={measure}
+          backgroundClassName={backgroundClassName}
+        />
       )}
       renderItem={({ item, index, section }) => {
         const last = index === section.data.length - 1;
         return (
           <View
-            className={`border-x border-theme-gray-5 bg-bg-grouped-2 px-2 ${
-              last ? 'mb-4 rounded-b-3xl border-b pb-1' : ''
-            }`}>
-            {renderItem(item, index, section.data.length)}
+            onLayout={(e) => measure(`i-${keyExtractor(item)}`, e.nativeEvent.layout.height)}
+            style={{ paddingBottom: last ? GAP : 0 }}>
+            <View
+              className="border-x border-theme-gray-5 bg-bg-grouped-2 px-2"
+              style={
+                last
+                  ? {
+                      borderBottomWidth: 1,
+                      borderBottomLeftRadius: RADIUS,
+                      borderBottomRightRadius: RADIUS,
+                      paddingBottom: 4,
+                    }
+                  : undefined
+              }>
+              {renderItem(item, index, section.data.length)}
+            </View>
           </View>
         );
       }}
     />
+  );
+}
+
+function DayHeader({ date, info, scrollY, onMeasure, backgroundClassName }) {
+  const style = useAnimatedStyle(() => {
+    if (!info) return { opacity: 1 };
+    // how far the day's last row still extends below the pinned header
+    const remaining = info.end - GAP - (scrollY.value + info.headerH);
+    return {
+      opacity: interpolate(remaining, [0, FADE_DISTANCE], [0, 1], Extrapolation.CLAMP),
+    };
+  }, [info]);
+
+  return (
+    <View
+      className={backgroundClassName}
+      onLayout={(e) => onMeasure(`h-${date}`, e.nativeEvent.layout.height)}>
+      <Animated.View
+        className="border border-theme-gray-5 bg-bg-grouped-2 px-4 pb-1 pt-3"
+        style={[{ borderTopLeftRadius: RADIUS, borderTopRightRadius: RADIUS }, style]}>
+        <Text className="font-saira-semibold text-2xl text-text-1">
+          {format(parseISO(date), 'EEE, d MMMM')}
+        </Text>
+      </Animated.View>
+    </View>
   );
 }
