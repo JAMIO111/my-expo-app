@@ -278,83 +278,83 @@ const FixturesList = () => {
           <StickyDateList
             grouped={grouped}
             renderItem={(f, index, count) => {
-          const homeScore = f.frames.filter((frame) => frame.winner_side === 'home').length;
-          const awayScore = f.frames.filter((frame) => frame.winner_side === 'away').length;
-          const isLive = new Date() >= new Date(f.date_time);
-          const isOverdue =
-            isBefore(addHours(parseISO(f.date_time), 24), new Date()) && !f.is_complete;
-          return (
-            <Pressable
-              onPress={() => {
-                if (hasNavigated.current) return;
-                hasNavigated.current = true;
-                setTimeout(() => {
-                  hasNavigated.current = false;
-                }, 750);
-                router.push(`/home/${f.id}`);
-              }}
-              className="mb-3 mt-2 items-center justify-center gap-2"
-              key={f.id}>
-              {isOverdue ? (
-                <Text className="mb-1 items-center justify-center gap-2 rounded-lg border border-theme-red/40 bg-theme-red/20 px-1 text-center font-saira-medium text-theme-red">
-                  Results Required
-                </Text>
-              ) : isLive ? (
-                f.is_complete ? (
-                  <Text className="mb-1 items-center justify-center gap-2 rounded-lg bg-theme-gray-5 px-1 text-center font-saira-medium text-text-1 shadow-sm">
-                    Pending Confirmation
-                  </Text>
-                ) : (
-                  <View>
-                    <LivePulseCard />
+              const homeScore = f.frames.filter((frame) => frame.winner_side === 'home').length;
+              const awayScore = f.frames.filter((frame) => frame.winner_side === 'away').length;
+              const isLive = new Date() >= new Date(f.date_time);
+              const isOverdue =
+                isBefore(addHours(parseISO(f.date_time), 24), new Date()) && !f.is_complete;
+              return (
+                <Pressable
+                  onPress={() => {
+                    if (hasNavigated.current) return;
+                    hasNavigated.current = true;
+                    setTimeout(() => {
+                      hasNavigated.current = false;
+                    }, 750);
+                    router.push(`/home/${f.id}`);
+                  }}
+                  className="mb-3 mt-2 items-center justify-center gap-2"
+                  key={f.id}>
+                  {isOverdue ? (
+                    <Text className="mb-1 items-center justify-center gap-2 rounded-lg border border-theme-red/40 bg-theme-red/20 px-1 text-center font-saira-medium text-theme-red">
+                      Results Required
+                    </Text>
+                  ) : isLive ? (
+                    f.is_complete ? (
+                      <Text className="mb-1 items-center justify-center gap-2 rounded-lg bg-theme-gray-5 px-1 text-center font-saira-medium text-text-1 shadow-sm">
+                        Pending Confirmation
+                      </Text>
+                    ) : (
+                      <View>
+                        <LivePulseCard />
+                      </View>
+                    )
+                  ) : null}
+                  <View className="flex-row items-center justify-center gap-2 rounded-lg">
+                    <Text className="flex-1 text-right font-saira-semibold text-lg text-text-1">
+                      {f.home_competitor.abbreviation}
+                    </Text>
+                    {f.home_competitor.type === 'team' ? (
+                      <TeamLogo {...f.home_competitor.crest} size={20} />
+                    ) : (
+                      <Avatar player={f.home_competitor} size={30} />
+                    )}
+                    {isLive ? (
+                      <Text className="pt-1 text-right font-saira-semibold text-xl text-text-1">
+                        {homeScore ?? '0'} - {awayScore ?? '0'}
+                      </Text>
+                    ) : (
+                      <Text className="w-16 text-center font-saira-medium text-lg text-text-1">
+                        {format(new Date(f.date_time), 'HH:mm')}
+                      </Text>
+                    )}
+                    {f.away_competitor.type === 'team' ? (
+                      <TeamLogo {...f.away_competitor.crest} size={20} />
+                    ) : (
+                      <Avatar player={f.away_competitor} size={30} />
+                    )}
+                    <Text className="flex-1 text-left font-saira-semibold text-lg text-text-1">
+                      {f.away_competitor.abbreviation}
+                    </Text>
                   </View>
-                )
-              ) : null}
-              <View className="flex-row items-center justify-center gap-2 rounded-lg">
-                <Text className="flex-1 text-right font-saira-semibold text-lg text-text-1">
-                  {f.home_competitor.abbreviation}
-                </Text>
-                {f.home_competitor.type === 'team' ? (
-                  <TeamLogo {...f.home_competitor.crest} size={20} />
-                ) : (
-                  <Avatar player={f.home_competitor} size={30} />
-                )}
-                {isLive ? (
-                  <Text className="pt-1 text-right font-saira-semibold text-xl text-text-1">
-                    {homeScore ?? '0'} - {awayScore ?? '0'}
-                  </Text>
-                ) : (
-                  <Text className="w-16 text-center font-saira-medium text-lg text-text-1">
-                    {format(new Date(f.date_time), 'HH:mm')}
-                  </Text>
-                )}
-                {f.away_competitor.type === 'team' ? (
-                  <TeamLogo {...f.away_competitor.crest} size={20} />
-                ) : (
-                  <Avatar player={f.away_competitor} size={30} />
-                )}
-                <Text className="flex-1 text-left font-saira-semibold text-lg text-text-1">
-                  {f.away_competitor.abbreviation}
-                </Text>
-              </View>
-              <View className="w-full flex-row items-center justify-center">
-                <Text className="flex-1 text-right font-saira text-text-1">
-                  {f.home_competitor.display_name}
-                </Text>
-                <Text
-                  className="mx-2 w-8 text-center font-saira text-lg text-text-2
-            ">
-                  vs
-                </Text>
-                <Text className="flex-1 text-left font-saira text-text-1">
-                  {f.away_competitor.display_name}
-                </Text>
-              </View>
-              {index !== count - 1 && (
-                <View className="mt-2 h-[1px] w-[80%] bg-theme-gray-5" />
-              )}
-            </Pressable>
-          );
+                  <View className="w-full flex-row items-center justify-center">
+                    <Text className="flex-1 text-right font-saira text-text-1">
+                      {f.home_competitor.display_name}
+                    </Text>
+                    <Text
+                      className="mx-2 w-8 text-center font-saira text-lg text-text-2
+                ">
+                      vs
+                    </Text>
+                    <Text className="flex-1 text-left font-saira text-text-1">
+                      {f.away_competitor.display_name}
+                    </Text>
+                  </View>
+                  {index !== count - 1 && (
+                    <View className="mt-2 h-[1px] w-[80%] bg-theme-gray-5" />
+                  )}
+                </Pressable>
+              );
             }}
           />
         </View>
