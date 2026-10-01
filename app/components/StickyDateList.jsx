@@ -42,7 +42,7 @@ export default function StickyDateList({
     <Animated.ScrollView
       showsVerticalScrollIndicator={false}
       onScroll={scrollHandler}
-      scrollEventThrottle={16}
+      scrollEventThrottle={1}
       contentContainerStyle={contentContainerStyle ?? { paddingBottom: 30 }}>
       {days.length === 0
         ? empty
@@ -74,6 +74,7 @@ function DayCard({ date, scrollY, backgroundClassName, children }) {
   const cardStyle = useAnimatedStyle(() => {
     // how far the card still extends below the pinned header
     const remaining = top.value + height.value - (scrollY.value + headerH.value);
+    if (remaining >= FADE_DISTANCE) return { opacity: 1 };
     return {
       opacity: interpolate(remaining, [0, FADE_DISTANCE], [0, 1], Extrapolation.CLAMP),
     };
