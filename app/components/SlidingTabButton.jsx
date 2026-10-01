@@ -13,12 +13,14 @@ export default function SlidingTabButton({
   onChange,
   option1 = 'Option A',
   option2 = 'Option B',
+  backgroundColor = 'bg-bg-2',
+  tabColor = 'bg-bg-3',
 }) {
   const isFirstRender = useRef(true);
 
   const padding = 4;
   const TAB_HEIGHT = 50;
-  const BORDER_WIDTH = 1;
+  const BORDER_WIDTH = 0;
 
   const innerHeight = TAB_HEIGHT - padding * 2 - BORDER_WIDTH * 2;
 
@@ -60,24 +62,21 @@ export default function SlidingTabButton({
     .activeOffsetX([-15, 15])
     .failOffsetY([-12, 12])
     .onEnd((event) => {
-    const SWIPE_THRESHOLD = containerWidth / 6;
+      const SWIPE_THRESHOLD = containerWidth / 6;
 
-    if (event.translationX > SWIPE_THRESHOLD) {
-      runOnJS(handlePress)('right'); // swipe right → right tab
-    } else if (event.translationX < -SWIPE_THRESHOLD) {
-      runOnJS(handlePress)('left'); // swipe left → left tab
-    }
-  });
+      if (event.translationX > SWIPE_THRESHOLD) {
+        runOnJS(handlePress)('right'); // swipe right → right tab
+      } else if (event.translationX < -SWIPE_THRESHOLD) {
+        runOnJS(handlePress)('left'); // swipe left → left tab
+      }
+    });
 
   return (
     <View style={styles.wrapper} onLayout={(e) => setContainerWidth(e.nativeEvent.layout.width)}>
       <GestureDetector gesture={swipeGesture}>
         <View
-          style={[
-            styles.container,
-            { borderWidth: BORDER_WIDTH, height: TAB_HEIGHT, borderRadius: TAB_HEIGHT / 3 },
-          ]}
-          className="bg-background">
+          style={[styles.container, { height: TAB_HEIGHT, borderRadius: TAB_HEIGHT / 3 }]}
+          className={backgroundColor}>
           {/* Sliding thumb */}
           {containerWidth > 0 && (
             <Animated.View
@@ -92,7 +91,7 @@ export default function SlidingTabButton({
                 },
                 animatedThumbStyle,
               ]}
-              className="bg-input-background shadow-sm"
+              className={`${tabColor} shadow-sm`}
             />
           )}
 
@@ -124,7 +123,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     overflow: 'hidden',
     position: 'relative',
-    borderColor: '#ccc',
   },
   tab: {
     flex: 1,

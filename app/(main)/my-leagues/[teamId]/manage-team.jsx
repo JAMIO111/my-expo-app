@@ -296,7 +296,9 @@ const ManageTeam = () => {
               header: () => (
                 <SafeViewWrapper useBottomInset={false}>
                   <CustomHeader
-                    rightIcon={saving ? Loader : hasChanges && codeFree !== false ? CircleCheckBig : null}
+                    rightIcon={
+                      saving ? Loader : hasChanges && codeFree !== false ? CircleCheckBig : null
+                    }
                     onRightPress={saving ? null : saveChanges}
                     showBack={true}
                     title={teamProfile ? teamProfile.name : 'Team Name'}
@@ -305,7 +307,7 @@ const ManageTeam = () => {
               ),
             }}
           />
-          <KeyboardAwareScrollView className="mt-16 flex-1 p-4">
+          <KeyboardAwareScrollView className="mt-16 flex-1 bg-bg-grouped-1 p-4">
             <MenuContainer
               title="Team Details"
               footer="As league admin you may edit any of the team details above by tapping on the respective fields. Save changes after by tapping the tick in the top right.">
