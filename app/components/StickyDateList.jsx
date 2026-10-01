@@ -45,7 +45,7 @@ export default function StickyDateList({
   // Measured heights of every cell (headers and rows), so each day's end position is known and its header
   // can fade as that end approaches.
   const heights = useRef({});
-  const [, setVersion] = useState(0);
+  const [version, setVersion] = useState(0);
   const measure = useCallback((key, height) => {
     if (heights.current[key] !== height) {
       heights.current[key] = height;
@@ -70,13 +70,14 @@ export default function StickyDateList({
     }
     return out;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [sections, heights.current]);
+  }, [sections, version]);
 
   return (
     <AnimatedSectionList
       sections={sections}
       keyExtractor={keyExtractor}
       stickySectionHeadersEnabled
+      extraData={layout}
       showsVerticalScrollIndicator={false}
       onScroll={scrollHandler}
       scrollEventThrottle={16}
@@ -88,6 +89,7 @@ export default function StickyDateList({
       renderSectionHeader={({ section }) => (
         <DayHeader
           date={section.date}
+          spaced={sections.indexOf(section) > 0}
           info={layout[section.date]}
           scrollY={scrollY}
           onMeasure={measure}
@@ -99,7 +101,7 @@ export default function StickyDateList({
         return (
           <View
             onLayout={(e) => measure(`i-${keyExtractor(item)}`, e.nativeEvent.layout.height)}
-            style={{ paddingBottom: last ? GAP : 0 }}>
+            >
             <View
               className="border-x border-theme-gray-5 bg-bg-grouped-2 px-2"
               style={
@@ -121,22 +123,29 @@ export default function StickyDateList({
   );
 }
 
-function DayHeader({ date, info, scrollY, onMeasure, backgroundClassName }) {
+function DayHeader({ date, spaced, info, scrollY, onMeasure, backgroundClassName }) {
+  const end = info ? info.end : null;
+  const headerH = info ? info.headerH : 0;
+
   const style = useAnimatedStyle(() => {
-    if (!info) return { opacity: 1 };
+    if (end === null) return { opacity: 1 };
     // how far the day's last row still extends below the pinned header
-    const remaining = info.end - GAP - (scrollY.value + info.headerH);
+    const remaining = end - (scrollY.value + headerH);
+    const radius = interpolate(remaining, [0, RADIUS], [RADIUS, 0], Extrapolation.CLAMP);
     return {
       opacity: interpolate(remaining, [0, FADE_DISTANCE], [0, 1], Extrapolation.CLAMP),
+      borderBottomLeftRadius: radius,
+      borderBottomRightRadius: radius,
     };
-  }, [info]);
+  }, [end, headerH]);
 
   return (
     <View
       className={backgroundClassName}
+      style={{ paddingTop: spaced ? GAP : 0 }}
       onLayout={(e) => onMeasure(`h-${date}`, e.nativeEvent.layout.height)}>
       <Animated.View
-        className="border border-theme-gray-5 bg-bg-grouped-2 px-4 pb-1 pt-3"
+        className="border-x border-t border-theme-gray-5 bg-bg-grouped-2 px-4 pb-1 pt-3"
         style={[{ borderTopLeftRadius: RADIUS, borderTopRightRadius: RADIUS }, style]}>
         <Text className="font-saira-semibold text-2xl text-text-1">
           {format(parseISO(date), 'EEE, d MMMM')}
