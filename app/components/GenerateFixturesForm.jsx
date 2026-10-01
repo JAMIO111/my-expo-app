@@ -390,7 +390,12 @@ const GenerateFixturesForm = ({
       });
 
       if (error) {
-        Alert.alert('Error', error.message || 'Failed to save fixtures');
+        const message = error.message?.includes('TABLE_CAPACITY_EXCEEDED')
+          ? 'A venue has more matches on one day than it has tables. Generate the fixtures again.'
+          : error.message?.includes('FIXTURES_ALREADY_GENERATED')
+            ? 'Fixtures have already been generated for this competition.'
+            : error.message || 'Failed to save fixtures';
+        Alert.alert('Error', message);
         return;
       }
 
