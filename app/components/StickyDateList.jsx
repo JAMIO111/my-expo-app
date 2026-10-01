@@ -16,14 +16,17 @@ const RADIUS = 24;
 // where the page shows through. Cells paint SEAM px into the next one (same colour) to close them.
 const SEAM = 1;
 const GAP = 16; // space between day cards
-const FADE_DISTANCE = 30; // px over which a pinned header fades before the next day takes over
+const DEFAULT_HEADER_H = 52;
 
-// Matches grouped by date, as rounded cards whose date header stays pinned to the top while that day's
-// matches scroll underneath (like the Weather app), fading out just before the next day's header takes
-// its place. Each card is drawn from three pieces so the header can stick on its own: a rounded-top
-// header, side-bordered rows, and a rounded-bottom last row.
+// Matches grouped by date, as rounded cards. Each day's date header is pinned natively (no scroll lag)
+// and, rather than being pushed off by the next day, stays put while the next day's card slides over
+// the top of it: the pinned header becomes a pill, then fades as it is covered.
 //
-// `backgroundClassName` should match the page behind the list: it fills the corners around a pinned
+// To make that work the header cell has ZERO layout height and its card is drawn overflowing below it;
+// the first row reserves the header's height itself. A zero-height sticky header is never "pushed"
+// by the next one, and later headers/rows paint over earlier ones.
+//
+// `backgroundClassName` should match the page behind the list: it fills the corners around the pinned
 // header so rows scrolling underneath can't show through them.
 export default function StickyDateList({
   grouped,
@@ -45,8 +48,13 @@ export default function StickyDateList({
     },
   });
 
-  // Measured heights of every cell (headers and rows), so each day's end position is known and its header
-  // can fade as that end approaches.
+  const [headerH, setHeaderH] = useState(DEFAULT_HEADER_H);
+  const onHeaderMeasure = useCallback((h) => {
+    setHeaderH((prev) => (Math.abs(prev - h) > 0.5 ? h : prev));
+  }, []);
+
+  // Measured row cell heights (they include the reserved header space and the gap below a day), so each
+  // day's end - where the next day's card begins - is known.
   const heights = useRef({});
   const [version, setVersion] = useState(0);
   const measure = useCallback((key, height) => {
@@ -56,21 +64,20 @@ export default function StickyDateList({
     }
   }, []);
 
-  // For each date: the header's height, and the content offset where that day's last row ends.
-  const layout = useMemo(() => {
+  // For each date: the content offset where the next day's card starts (null for the last day).
+  const ends = useMemo(() => {
     const out = {};
     let offset = 0;
-    for (const section of sections) {
-      const headerH = heights.current[`h-${section.date}`];
-      let complete = headerH !== undefined;
-      offset += headerH ?? 0;
-      for (const item of section.data) {
-        const h = heights.current[`i-${keyExtractor(item)}`];
+    sections.forEach((section, i) => {
+      let complete = true;
+      section.data.forEach((item, idx) => {
+        const h = heights.current[keyExtractor(item)];
         if (h === undefined) complete = false;
-        offset += h ?? 0;
-      }
-      out[section.date] = complete ? { headerH, end: offset } : null;
-    }
+        // non-last rows overlap the next one by SEAM (negative margin), which onLayout doesn't include
+        offset += (h ?? 0) - (idx === section.data.length - 1 ? 0 : SEAM);
+      });
+      out[section.date] = complete && i < sections.length - 1 ? offset : null;
+    });
     return out;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sections, version]);
@@ -80,10 +87,10 @@ export default function StickyDateList({
       sections={sections}
       keyExtractor={keyExtractor}
       stickySectionHeadersEnabled
-      extraData={layout}
+      extraData={{ ends, headerH }}
       showsVerticalScrollIndicator={false}
       onScroll={scrollHandler}
-      scrollEventThrottle={16}
+      scrollEventThrottle={1}
       // lists here are one month long: keep every row mounted so heights are known up front
       initialNumToRender={60}
       windowSize={21}
@@ -92,22 +99,25 @@ export default function StickyDateList({
       renderSectionHeader={({ section }) => (
         <DayHeader
           date={section.date}
-          spaced={sections.indexOf(section) > 0}
-          info={layout[section.date]}
+          end={ends[section.date]}
+          headerH={headerH}
           scrollY={scrollY}
-          onMeasure={measure}
+          onHeaderMeasure={onHeaderMeasure}
           backgroundClassName={backgroundClassName}
         />
       )}
       renderItem={({ item, index, section }) => {
+        const first = index === 0;
         const last = index === section.data.length - 1;
         return (
-          <FadeRow
-            fade={last}
-            overlap={!last}
-            info={layout[section.date]}
-            scrollY={scrollY}
-            onLayout={(e) => measure(`i-${keyExtractor(item)}`, e.nativeEvent.layout.height)}>
+          <View
+            onLayout={(e) => measure(keyExtractor(item), e.nativeEvent.layout.height)}
+            style={{
+              // room for the pinned header's card, which is drawn over this space
+              paddingTop: first ? headerH - SEAM : 0,
+              paddingBottom: last ? GAP : 0,
+              marginBottom: last ? 0 : -SEAM,
+            }}>
             <View
               className="bg-bg-grouped-2 px-2"
               style={
@@ -121,55 +131,50 @@ export default function StickyDateList({
               }>
               {renderItem(item, index, section.data.length)}
             </View>
-          </FadeRow>
+          </View>
         );
       }}
     />
   );
 }
 
-function FadeRow({ fade, overlap, info, scrollY, onLayout, children }) {
-  const fadeStyle = useDayFade(fade ? info : null, scrollY);
-  return (
-    <Animated.View
-      onLayout={onLayout}
-      style={[overlap ? { marginBottom: -SEAM } : null, fade ? fadeStyle : null]}>
-      {children}
-    </Animated.View>
-  );
-}
-
-// Opacity for a day's pinned header and its last row, so the whole card fades out together as the next
-// day's card is about to cover it.
-function useDayFade(info, scrollY) {
-  const end = info ? info.end : null;
-  const headerH = info ? info.headerH : 0;
-  return useAnimatedStyle(() => {
+function DayHeader({ date, end, headerH, scrollY, onHeaderMeasure, backgroundClassName }) {
+  const cardStyle = useAnimatedStyle(() => {
     if (end === null) return { opacity: 1 };
-    const remaining = end - (scrollY.value + headerH);
+    // how far this day's rows still extend below the pinned header (negative once they've run out)
+    const remaining = end - GAP - (scrollY.value + headerH);
+    const radius = interpolate(remaining, [0, RADIUS], [RADIUS, 0], Extrapolation.CLAMP);
+    // the next card's top edge sweeping up over the header: 1 until it touches, 0 once it fully covers
+    const uncovered = interpolate(end - scrollY.value, [0, headerH], [0, 1], Extrapolation.CLAMP);
     return {
-      opacity: interpolate(remaining, [RADIUS, RADIUS + FADE_DISTANCE], [0, 1], Extrapolation.CLAMP),
+      opacity: uncovered,
+      borderBottomLeftRadius: radius,
+      borderBottomRightRadius: radius,
     };
   }, [end, headerH]);
-}
 
-function DayHeader({ date, spaced, info, scrollY, onMeasure, backgroundClassName }) {
-  const fadeStyle = useDayFade(info, scrollY);
   return (
-    <View
-      className={backgroundClassName}
-      style={{ paddingTop: spaced ? GAP : 0 }}
-      onLayout={(e) => onMeasure(`h-${date}`, e.nativeEvent.layout.height)}>
-      <Animated.View
-        className="bg-bg-grouped-2 px-4 pb-1 pt-3"
-        style={[
-          { borderTopLeftRadius: RADIUS, borderTopRightRadius: RADIUS, paddingBottom: 4 + SEAM, marginBottom: -SEAM },
-          fadeStyle,
-        ]}>
-        <Text className="font-saira-semibold text-2xl text-text-1">
-          {format(parseISO(date), 'EEE, d MMMM')}
-        </Text>
-      </Animated.View>
+    // zero height: never pushed off by the next header, content overflows downwards
+    <View style={{ height: 0 }}>
+      <View
+        className={backgroundClassName}
+        style={{ position: 'absolute', top: 0, left: 0, right: 0 }}
+        onLayout={(e) => onHeaderMeasure(e.nativeEvent.layout.height)}>
+        <Animated.View
+          className="bg-bg-grouped-2 px-4 pt-3"
+          style={[
+            {
+              borderTopLeftRadius: RADIUS,
+              borderTopRightRadius: RADIUS,
+              paddingBottom: 4 + SEAM,
+            },
+            cardStyle,
+          ]}>
+          <Text className="font-saira-semibold text-2xl text-text-1">
+            {format(parseISO(date), 'EEE, d MMMM')}
+          </Text>
+        </Animated.View>
+      </View>
     </View>
   );
 }
