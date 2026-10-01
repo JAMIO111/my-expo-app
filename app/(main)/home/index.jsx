@@ -219,24 +219,20 @@ const Home = () => {
   );
 
   // Forfeits requested by one side, waiting for the other side to approve them.
-  const {
-    data: teamForfeitPending,
-    refetch: teamForfeitPendingRefetch,
-  } = useFixturesAwaitingResults({
-    competitorId: currentRole?.team?.id,
-    competitorType: 'team',
-    type: 'forfeitPending',
-    enabled: !!currentRole?.team?.id && currentRole?.role !== 'player',
-  });
-  const {
-    data: playerForfeitPending,
-    refetch: playerForfeitPendingRefetch,
-  } = useFixturesAwaitingResults({
-    competitorId: player?.id,
-    competitorType: 'player',
-    type: 'forfeitPending',
-    enabled: !!player?.id,
-  });
+  const { data: teamForfeitPending, refetch: teamForfeitPendingRefetch } =
+    useFixturesAwaitingResults({
+      competitorId: currentRole?.team?.id,
+      competitorType: 'team',
+      type: 'forfeitPending',
+      enabled: !!currentRole?.team?.id && currentRole?.role !== 'player',
+    });
+  const { data: playerForfeitPending, refetch: playerForfeitPendingRefetch } =
+    useFixturesAwaitingResults({
+      competitorId: player?.id,
+      competitorType: 'player',
+      type: 'forfeitPending',
+      enabled: !!player?.id,
+    });
   const forfeitPending = useMemo(
     () =>
       [...(teamForfeitPending || []), ...(playerForfeitPending || [])].sort(
@@ -406,14 +402,16 @@ const Home = () => {
             </View>
             <View className="w-full bg-bg-2 pb-8">
               <Heading text="Pending Fixtures" className="ml-4" />
-              {currentRole?.type === 'admin' && escalatedFixtures && escalatedFixtures.length > 0 && (
-                <View className="w-full gap-3 p-3">
-                  <Heading text="Escalated Fixtures" />
-                  {escalatedFixtures.map((fixture) => (
-                    <PendingResultCard key={fixture.id} fixture={fixture} mode="escalated" />
-                  ))}
-                </View>
-              )}
+              {currentRole?.type === 'admin' &&
+                escalatedFixtures &&
+                escalatedFixtures.length > 0 && (
+                  <View className="w-full gap-3 p-3">
+                    <Heading text="Escalated Fixtures" />
+                    {escalatedFixtures.map((fixture) => (
+                      <PendingResultCard key={fixture.id} fixture={fixture} mode="escalated" />
+                    ))}
+                  </View>
+                )}
               {(isTeamLeader || hasIndividualPending) && (
                 <View className="w-full gap-4 p-3">
                   {hasPendingResults && (

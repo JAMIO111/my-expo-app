@@ -114,12 +114,12 @@ export default function StickyDateList({
               marginBottom: last ? GAP : -SEAM,
             }}>
             <View
-              className="border-x border-theme-gray-5 bg-bg-grouped-2 px-2"
+              className=" bg-bg-grouped-2 px-2"
               style={
                 last
                   ? {
                       paddingBottom: 4,
-                      borderBottomWidth: 1,
+
                       borderBottomLeftRadius: RADIUS,
                       borderBottomRightRadius: RADIUS,
                     }
@@ -170,7 +170,7 @@ function DayHeader({ date, next, headerH, scrollY, pageColor, onMeasure }) {
     <View onLayout={(e) => onMeasure(`h-${date}`, e.nativeEvent.layout.height)}>
       <Animated.View style={shiftStyle}>
         <Animated.View
-          className="border-x border-t border-theme-gray-5 bg-bg-grouped-2 px-4 pb-1 pt-3"
+          className="bg-bg-grouped-2 px-4 pb-1 pt-3"
           style={[{ borderTopLeftRadius: RADIUS, borderTopRightRadius: RADIUS }, radiusStyle]}>
           <Text className="font-saira-semibold text-2xl text-text-1">
             {format(parseISO(date), 'EEE, d MMMM')}

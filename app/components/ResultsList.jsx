@@ -354,17 +354,16 @@ const ResultsList = () => {
                         <Avatar player={f.home_competitor} size={26} borderRadius={4} />
                       )}
 
-                      <Text className="font-saira-semibold text-lg text-text-2">
+                      <Text className="font-tektur-semibold text-lg text-text-2">
                         {competitorType === 'team'
                           ? f.home_competitor.abbreviation
                           : f.home_competitor?.nickname?.toUpperCase()}
                       </Text>
-                      <Text className="font-saira-medium text-lg text-text-1">
+                      <Text className="font-tektur-medium text-lg text-text-1">
                         {f.home_competitor.display_name}
                       </Text>
                     </View>
-                    <Text
-                      className={'w-12 text-center font-saira-semibold text-2xl text-text-1'}>
+                    <Text className={'w-12 text-center font-saira-semibold text-2xl text-text-1'}>
                       {homeScore}
                     </Text>
                   </View>
@@ -376,23 +375,20 @@ const ResultsList = () => {
                         <Avatar player={f.away_competitor} size={26} borderRadius={4} />
                       )}
 
-                      <Text className="font-saira-semibold text-lg text-text-2">
+                      <Text className="font-tektur-semibold text-lg text-text-2">
                         {f.away_competitor.type === 'team'
                           ? f.away_competitor.abbreviation
                           : f.away_competitor?.nickname?.toUpperCase()}
                       </Text>
-                      <Text className="font-saira-medium text-lg text-text-1">
+                      <Text className="font-tektur-medium text-lg text-text-1">
                         {f.away_competitor.display_name}
                       </Text>
                     </View>
-                    <Text
-                      className={'w-12 text-center font-saira-semibold text-2xl text-text-1'}>
+                    <Text className={'w-12 text-center font-saira-semibold text-2xl text-text-1'}>
                       {awayScore}
                     </Text>
                   </View>
-                  {index !== count - 1 && (
-                    <View className="mt-2 h-[1px] w-[95%] bg-theme-gray-5" />
-                  )}
+                  {index !== count - 1 && <View className="mt-2 h-[1px] w-[95%] bg-theme-gray-5" />}
                 </Pressable>
               );
             }}
