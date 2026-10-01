@@ -193,7 +193,8 @@ export default function CreateDivisions() {
     if (
       divisions.some(
         (d) =>
-          d.tempId !== editingDivisionId && d.name.trim().toLowerCase() === dName.trim().toLowerCase()
+          d.tempId !== editingDivisionId &&
+          d.name.trim().toLowerCase() === dName.trim().toLowerCase()
       )
     ) {
       return Alert.alert('Duplicate Name', 'Every division in the league needs its own name.');
@@ -411,110 +412,114 @@ export default function CreateDivisions() {
           <Text style={{ lineHeight: 42 }} className="font-delagothic text-4xl text-text-on-brand">
             Structure your league
           </Text>
-          <Text className="mt-3 font-saira text-lg leading-6 text-text-on-brand-2">
+          <Text className="mt-3 font-tektur text-lg leading-6 text-text-on-brand-2">
             Groups are ladders of divisions linked by promotion and relegation, for example Monday
-            Teams or Thursday Singles. You're defining the structure here, not creating competitions.
+            Teams or Thursday Singles. You're defining the structure here, not creating
+            competitions.
           </Text>
         </View>
 
         <View className="flex-1 rounded-t-[32px] bg-brand-dark px-5 pt-5">
-        <View className="mb-5 flex-row gap-3">
-          <View className="flex-1">
-            <CTAButton
-              text="New group"
-              type="yellow"
-              icon={<Ionicons name="duplicate-outline" size={20} color={themeColors.text} />}
-              callbackFn={() => {
-                setSheetMode('GROUP');
-                bottomSheetRef.current?.expand();
-              }}
-              borderRadius={14}
-            />
-          </View>
-          {groups.length > 0 && (
+          <View className="mb-5 flex-row gap-3">
             <View className="flex-1">
               <CTAButton
-                text="Add division"
-                type="white"
-                icon={<Ionicons name="add" size={20} color={themeColors.text} />}
+                text="New group"
+                type="yellow"
+                icon={<Ionicons name="duplicate-outline" size={20} color={themeColors.text} />}
                 callbackFn={() => {
-                  setSheetMode('DIVISION');
-                  updateNextTier(selectedGroupId);
+                  setSheetMode('GROUP');
                   bottomSheetRef.current?.expand();
                 }}
                 borderRadius={14}
               />
             </View>
-          )}
-        </View>
-
-        {groups.length === 0 && (
-          <View className="items-center gap-3 rounded-3xl border-2 border-dashed border-white/20 p-8">
-            <Ionicons name="layers-outline" size={36} color="#FFFFFF88" />
-            <Text className="text-center font-saira text-lg text-text-on-brand-2">
-              Start by creating a group, then add your divisions to it.
-            </Text>
-          </View>
-        )}
-
-        <FlatList
-          showsVerticalScrollIndicator={false}
-          data={groups}
-          keyExtractor={(item) => item.id.toString()}
-          renderItem={({ item: group }) => (
-            <View className="mb-8">
-              <View className="mb-3 flex-row items-baseline justify-between border-b border-white/20 pb-1">
-                <Text className="font-saira-semibold text-lg uppercase text-theme-yellow">
-                  {group.name} <Text className="text-sm text-text-on-brand-2">({group.type})</Text>
-                </Text>
-                <Pressable
-                  onPress={() => {
-                    handleDeleteGroup(group.id);
+            {groups.length > 0 && (
+              <View className="flex-1">
+                <CTAButton
+                  text="Add division"
+                  type="white"
+                  icon={<Ionicons name="add" size={20} color={themeColors.text} />}
+                  callbackFn={() => {
+                    setSheetMode('DIVISION');
+                    updateNextTier(selectedGroupId);
+                    bottomSheetRef.current?.expand();
                   }}
-                  className="flex-row items-center gap-2 rounded-lg bg-theme-red px-1 py-0.5">
-                  <Ionicons name="trash-outline" size={16} color="#FFFFFF" />
-                  <Text className="font-saira text-white">Delete Group</Text>
-                </Pressable>
+                  borderRadius={14}
+                />
               </View>
+            )}
+          </View>
 
-              {divisions
-                .filter((d) => d.groupId === group.id)
-                .map((div) => (
-                  <SwipeableCard key={div.tempId} item={div} onDelete={handleDeleteDivision}>
-                    <Pressable
-                      onPress={() => handleEditDivision(div)}
-                      className="flex-row items-center justify-between rounded-2xl bg-bg-grouped-2 px-5 py-3">
-                      <View>
-                        <Text className="font-saira-semibold text-xl text-text-1">{div.name}</Text>
-                        <Text className="text-md font-saira-medium text-text-2">
-                          Tier {div.tier}
-                        </Text>
-                      </View>
-                      <View className="flex-row gap-4">
-                        <View className="items-center gap-1">
-                          <Ionicons name="caret-up" size={20} color="green" />
-                          <Text className="font-saira-medium text-xl text-text-1">
-                            {div.promotionSpots}
-                          </Text>
-                        </View>
-                        <View className="items-center gap-1">
-                          <Ionicons name="caret-down" size={20} color="red" />
-                          <Text className="font-saira-medium text-xl text-text-1">
-                            {div.relegationSpots}
-                          </Text>
-                        </View>
-                      </View>
-                    </Pressable>
-                  </SwipeableCard>
-                ))}
+          {groups.length === 0 && (
+            <View className="items-center gap-3 rounded-3xl border-2 border-dashed border-white/20 p-8">
+              <Ionicons name="layers-outline" size={36} color="#FFFFFF88" />
+              <Text className="text-center font-saira text-lg text-text-on-brand-2">
+                Start by creating a group, then add your divisions to it.
+              </Text>
             </View>
           )}
-        />
-        {divisions.length > 0 && (
-          <View className="pb-8 pt-3">
-            <CTAButton text="Save & continue" type="yellow" callbackFn={handleSave} />
-          </View>
-        )}
+
+          <FlatList
+            showsVerticalScrollIndicator={false}
+            data={groups}
+            keyExtractor={(item) => item.id.toString()}
+            renderItem={({ item: group }) => (
+              <View className="mb-8">
+                <View className="mb-3 flex-row items-baseline justify-between border-b border-white/20 pb-1">
+                  <Text className="font-saira-semibold text-lg uppercase text-theme-yellow">
+                    {group.name}{' '}
+                    <Text className="text-sm text-text-on-brand-2">({group.type})</Text>
+                  </Text>
+                  <Pressable
+                    onPress={() => {
+                      handleDeleteGroup(group.id);
+                    }}
+                    className="flex-row items-center gap-2 rounded-lg bg-theme-red px-1 py-0.5">
+                    <Ionicons name="trash-outline" size={16} color="#FFFFFF" />
+                    <Text className="font-saira text-white">Delete Group</Text>
+                  </Pressable>
+                </View>
+
+                {divisions
+                  .filter((d) => d.groupId === group.id)
+                  .map((div) => (
+                    <SwipeableCard key={div.tempId} item={div} onDelete={handleDeleteDivision}>
+                      <Pressable
+                        onPress={() => handleEditDivision(div)}
+                        className="flex-row items-center justify-between rounded-2xl bg-bg-grouped-2 px-5 py-3">
+                        <View>
+                          <Text className="font-saira-semibold text-xl text-text-1">
+                            {div.name}
+                          </Text>
+                          <Text className="text-md font-saira-medium text-text-2">
+                            Tier {div.tier}
+                          </Text>
+                        </View>
+                        <View className="flex-row gap-4">
+                          <View className="items-center gap-1">
+                            <Ionicons name="caret-up" size={20} color="green" />
+                            <Text className="font-saira-medium text-xl text-text-1">
+                              {div.promotionSpots}
+                            </Text>
+                          </View>
+                          <View className="items-center gap-1">
+                            <Ionicons name="caret-down" size={20} color="red" />
+                            <Text className="font-saira-medium text-xl text-text-1">
+                              {div.relegationSpots}
+                            </Text>
+                          </View>
+                        </View>
+                      </Pressable>
+                    </SwipeableCard>
+                  ))}
+              </View>
+            )}
+          />
+          {divisions.length > 0 && (
+            <View className="pb-8 pt-3">
+              <CTAButton text="Save & continue" type="yellow" callbackFn={handleSave} />
+            </View>
+          )}
         </View>
 
         <BottomSheetWrapper
