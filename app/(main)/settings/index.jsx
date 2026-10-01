@@ -7,6 +7,13 @@ import MenuContainer from '@components/MenuContainer';
 import SafeViewWrapper from '@components/SafeViewWrapper';
 import CustomHeader from '@components/CustomHeader';
 import { useUser } from '@contexts/UserProvider';
+import { monitoringEnabled, sendTestError, triggerNativeCrash } from '@lib/monitoring';
+
+// Developer-only tools are shown to these player accounts only.
+const DEVELOPER_PLAYER_IDS = [
+  '04987062-91e2-4a79-9a40-a94ea9e1e213',
+  '6132ddd0-9fe4-40df-a069-0577d1004f9b',
+];
 import { useMyAdminInvites } from '@hooks/useDistrictAdminInvites';
 import NavBar from '@components/NavBar2';
 import { useState, useRef } from 'react';
@@ -200,6 +207,43 @@ const index = () => {
               routerPath="/settings/LeagueConfig"
             />
             <SettingsItem iconBGColor="red" title="Rules & Penalties" icon="scale" />
+          </MenuContainer>
+        )}
+
+        {DEVELOPER_PLAYER_IDS.includes(player?.id) && (
+          <MenuContainer
+            title="Developer"
+            footer={
+              monitoringEnabled
+                ? 'Sends a test report to Sentry. Check the Issues page there.'
+                : 'Crash reporting is off in this build (development build or no SENTRY_DSN).'
+            }>
+            <SettingsItem
+              title="Send test error"
+              icon="bug"
+              callbackFn={() => {
+                const sent = sendTestError();
+                Toast.show({
+                  type: sent ? 'success' : 'info',
+                  text1: sent ? 'Test error sent' : 'Crash reporting is off',
+                  text2: sent
+                    ? 'It should appear in Sentry within a minute.'
+                    : 'Use a preview or production build with SENTRY_DSN set.',
+                });
+              }}
+            />
+            <SettingsItem
+              title="Trigger test crash"
+              icon="bug"
+              iconColor="#ff0000"
+              titleColor="text-[#ff0000]"
+              callbackFn={() =>
+                Alert.alert('Crash the app?', 'The app will close. The crash is reported when you reopen it.', [
+                  { text: 'Cancel', style: 'cancel' },
+                  { text: 'Crash', style: 'destructive', onPress: () => triggerNativeCrash() },
+                ])
+              }
+            />
           </MenuContainer>
         )}
 

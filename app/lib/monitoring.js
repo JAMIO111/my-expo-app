@@ -73,3 +73,19 @@ export function captureError(err, context) {
 }
 
 export const wrapRoot = (component) => (enabled ? Sentry.wrap(component) : component);
+
+export const monitoringEnabled = enabled;
+
+// Developer tools (settings): prove the whole pipeline works in a real build.
+export function sendTestError() {
+  if (!enabled) return false;
+  Sentry.withScope((scope) => {
+    scope.setTag('source', 'test-button');
+    Sentry.captureException(new Error('Test error from the settings screen (handled)'));
+  });
+  return true;
+}
+
+export function triggerNativeCrash() {
+  if (enabled) Sentry.nativeCrash();
+}
