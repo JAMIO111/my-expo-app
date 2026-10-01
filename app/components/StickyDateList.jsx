@@ -7,7 +7,6 @@ import Animated, {
   interpolate,
   Extrapolation,
 } from 'react-native-reanimated';
-import { LinearGradient } from 'expo-linear-gradient';
 import Svg, { Path } from 'react-native-svg';
 import { format, parseISO } from 'date-fns';
 import { useTheme } from '@contexts/ThemeProvider';
@@ -21,12 +20,11 @@ const RADIUS = 24;
 const SEAM = 0;
 const GAP = 16; // space between day cards
 const DEFAULT_HEADER_H = 52;
-const ROW_FADE = 28; // px of gradient under the pinned header that rows fade into
+const ROW_FADE = 28; // px over which a row fades out as it reaches the pinned header
 
 // Matches grouped by date, as rounded cards, in the style of the iOS Weather app. Each day's date header
-// is pinned natively (no scroll lag). As you scroll, that day's rows fade into the header through a
-// gradient laid under it, so the card shrinks to just its header (a pill), which then fades while the
-// next day's card slides over it.
+// is pinned natively (no scroll lag). As you scroll, that day's rows fade out as they reach the header, so
+// the card shrinks to just its header (a pill), which then fades while the next day's card slides over it.
 //
 // To make that work the header cell has ZERO layout height and its card is drawn overflowing below it;
 // the first row reserves the header's height itself. A zero-height sticky header is never "pushed" by
@@ -67,27 +65,31 @@ export default function StickyDateList({
     }
   }, []);
 
-  // `starts[date]` / `ends[date]`: content offsets where a day's card starts and where the next day's
-  // card starts (`ends` is null for the last day or until measured).
-  const { starts, ends } = useMemo(() => {
-    const starts = {};
+  // `ends[date]`: content offset where the next day's card starts (null for the last day / unmeasured).
+  // `bottoms[key]`: content offset of each row's bottom edge (null until measured).
+  const { ends, bottoms } = useMemo(() => {
     const ends = {};
+    const bottoms = {};
     let offset = 0;
     sections.forEach((section, i) => {
-      starts[section.date] = offset;
       let complete = true;
       section.data.forEach((item, idx) => {
-        const h = heights.current[keyExtractor(item)];
+        const key = keyExtractor(item);
+        const h = heights.current[key];
+        const last = idx === section.data.length - 1;
         if (h === undefined) {
           complete = false;
+          bottoms[key] = null;
           return;
         }
         // non-last rows overlap the next one by SEAM (negative margin), which onLayout doesn't include
-        offset += h - (idx === section.data.length - 1 ? 0 : SEAM);
+        offset += h - (last ? 0 : SEAM);
+        // a day's last row also carries the GAP below the card, which isn't part of the visible card
+        bottoms[key] = last ? offset - GAP : offset;
       });
       ends[section.date] = complete && i < sections.length - 1 ? offset : null;
     });
-    return { starts, ends };
+    return { ends, bottoms };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sections, version]);
 
@@ -96,7 +98,7 @@ export default function StickyDateList({
       sections={sections}
       keyExtractor={keyExtractor}
       stickySectionHeadersEnabled
-      extraData={{ starts, ends, headerH }}
+      extraData={{ ends, bottoms, headerH }}
       showsVerticalScrollIndicator={false}
       onScroll={scrollHandler}
       scrollEventThrottle={1}
@@ -108,12 +110,11 @@ export default function StickyDateList({
       renderSectionHeader={({ section }) => (
         <DayHeader
           date={section.date}
-          start={starts[section.date]}
           end={ends[section.date]}
           headerH={headerH}
-          backgroundColor={backgroundColor}
           scrollY={scrollY}
           onHeaderMeasure={onHeaderMeasure}
+          backgroundColor={backgroundColor}
         />
       )}
       renderItem={({ item, index, section }) => {
@@ -121,7 +122,10 @@ export default function StickyDateList({
         const first = index === 0;
         const last = index === section.data.length - 1;
         return (
-          <View
+          <Row
+            bottom={bottoms[key]}
+            headerH={headerH}
+            scrollY={scrollY}
             onLayout={(e) => measure(key, e.nativeEvent.layout.height)}
             style={{
               // room for the pinned header's card, which is drawn over this space
@@ -142,10 +146,31 @@ export default function StickyDateList({
               }>
               {renderItem(item, index, section.data.length)}
             </View>
-          </View>
+          </Row>
         );
       }}
     />
+  );
+}
+
+// A row fades out as its bottom edge reaches the pinned header, so the card appears to shrink away.
+function Row({ bottom, headerH, scrollY, onLayout, style, children }) {
+  const fadeStyle = useAnimatedStyle(() => {
+    if (bottom === null) return { opacity: 1 };
+    return {
+      opacity: interpolate(
+        bottom - (scrollY.value + headerH),
+        [0, ROW_FADE],
+        [0, 1],
+        Extrapolation.CLAMP
+      ),
+    };
+  }, [bottom, headerH]);
+
+  return (
+    <Animated.View onLayout={onLayout} style={[style, fadeStyle]}>
+      {children}
+    </Animated.View>
   );
 }
 
@@ -169,11 +194,9 @@ function CornerMask({ color, right }) {
   );
 }
 
-function DayHeader({ date, start, end, headerH, scrollY, onHeaderMeasure, backgroundColor }) {
+function DayHeader({ date, end, headerH, scrollY, onHeaderMeasure, backgroundColor }) {
   const { colors } = useTheme();
   const pageColor = backgroundColor ?? colors.brandDark;
-  const cardColor = colors.bgGrouped2;
-  const cardClear = String(cardColor).replace(/[\d.]+\)\s*$/, '0)');
 
   // once the day's rows have run out the header is all that's left, so round it off into a pill
   const shapeStyle = useAnimatedStyle(() => {
@@ -190,17 +213,6 @@ function DayHeader({ date, start, end, headerH, scrollY, onHeaderMeasure, backgr
       opacity: interpolate(end - scrollY.value, [0, headerH], [0, 1], Extrapolation.CLAMP),
     };
   }, [end, headerH]);
-
-  // Rows fade into the header through this gradient: only while the header is actually pinned over rows
-  // (not at the top of its own day), and only as tall as the rows still left under it.
-  const overlayStyle = useAnimatedStyle(() => {
-    const pinned = interpolate(scrollY.value - start, [0, ROW_FADE], [0, 1], Extrapolation.CLAMP);
-    const left = end === null ? ROW_FADE : end - GAP - (scrollY.value + headerH);
-    return {
-      opacity: pinned,
-      height: interpolate(left, [0, ROW_FADE], [0, ROW_FADE], Extrapolation.CLAMP),
-    };
-  }, [start, end, headerH]);
 
   return (
     // zero height: never pushed off by the next header, content overflows downwards
@@ -224,14 +236,6 @@ function DayHeader({ date, start, end, headerH, scrollY, onHeaderMeasure, backgr
         </Animated.View>
         <CornerMask color={pageColor} />
         <CornerMask color={pageColor} right />
-        <Animated.View
-          pointerEvents="none"
-          style={[{ position: 'absolute', top: '100%', left: 0, right: 0, overflow: 'hidden' }, overlayStyle]}>
-          <LinearGradient
-            colors={[cardColor, cardClear]}
-            style={{ position: 'absolute', top: 0, left: 0, right: 0, height: ROW_FADE }}
-          />
-        </Animated.View>
       </Animated.View>
     </View>
   );
