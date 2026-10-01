@@ -529,14 +529,14 @@ export default function CreateDivisions() {
           ref={bottomSheetRef}
           initialIndex={-1}
           snapPoints={['88%']}
-          marginTop={60}
-          backgroundColor={themeColors.brandDark}
+          marginTop={0}
+          backgroundColor={themeColors.brandNormal}
           indicatorColor="themeGray3"
           footerComponent={(props) => (
             <BottomSheetFooter {...props}>
               <View
-                style={{ paddingBottom: insets.bottom + 12 }}
-                className="w-full gap-3 border-t border-white/10 bg-brand-dark px-6 pt-4">
+                style={{ paddingBottom: insets.bottom }}
+                className="w-full gap-3 bg-brand px-6 pt-4">
                 <CTAButton
                   text={
                     sheetMode === 'GROUP'
@@ -552,7 +552,9 @@ export default function CreateDivisions() {
             </BottomSheetFooter>
           )}>
           <View className="flex-row items-center justify-between px-6 pb-4 pt-2">
-            <Text style={{ lineHeight: 36 }} className="font-delagothic text-3xl text-text-on-brand">
+            <Text
+              style={{ lineHeight: 36 }}
+              className="font-delagothic text-3xl text-text-on-brand">
               {sheetMode === 'GROUP'
                 ? 'New group'
                 : editingDivisionId
@@ -580,8 +582,7 @@ export default function CreateDivisions() {
                   value={gName}
                   onChangeText={setGName}
                   autoCapitalize="words"
-                  returnKeyType="done"
-                  onSubmitEditing={handleAddGroup}
+                  returnKeyType="none"
                 />
                 <View className="gap-3">
                   <Text className="pl-1 font-saira-semibold text-xs uppercase tracking-[2px] text-text-on-brand-2">
