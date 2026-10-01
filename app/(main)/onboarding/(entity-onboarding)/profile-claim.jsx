@@ -12,6 +12,9 @@ import { supabase } from '@/lib/supabase';
 import Toast from 'react-native-toast-message';
 import { useQueryClient } from '@tanstack/react-query';
 import { useOnboardingStep } from '@contexts/OnboardingStepContext';
+import OnboardingScreen from '@components/onboarding/OnboardingScreen';
+import ChoiceCard from '@components/onboarding/ChoiceCard';
+import Animated, { FadeInDown } from 'react-native-reanimated';
 
 const ProfileClaim = () => {
   useOnboardingStep(3, 3);
@@ -110,82 +113,42 @@ const ProfileClaim = () => {
     }
   };
 
+  const needsApproval = captainApproval || adminApproval;
+  const who = [captainApproval && 'the team captain', adminApproval && 'the league admin']
+    .filter(Boolean)
+    .join(' and ');
+
   return (
-    <>
-
-      <SafeViewWrapper useTopInset={false} topColor="bg-brand" bottomColor="bg-brand-dark">
-        <View className="flex-1 bg-brand">
-
-          {isLoading ? (
-            <View className="flex-1 items-center justify-center">
-              <Text className="text-2xl text-text-on-brand">Loading team details…</Text>
-            </View>
-          ) : (
-            <View className="flex-1">
-              <Text
-                style={{ lineHeight: 50 }}
-                className="p-5 font-delagothic text-4xl text-text-on-brand">
-                Join {teamProfile?.name || 'Unnamed Team'}?
-              </Text>
-
-              <View className="flex-1 justify-between">
-                <Text className="mb-6 px-5 font-saira text-2xl text-text-on-brand">
-                  {captainApproval || adminApproval
-                    ? 'Send a request to join this team.'
-                    : 'Join the team straight away.'}
-                </Text>
-                <ScrollView className="p-5">
-                  <View style={{ borderRadius: 25 }} className="bg-bg-2 p-3">
-                    <View className="items-stretch rounded-3xl bg-bg-1 p-5 shadow-sm">
-                      <Text className="text-center font-saira-medium text-2xl text-text-1">
-                        {captainApproval || adminApproval
-                          ? `Your join request will be sent to ${
-                              captainApproval ? 'the team captain' : ''
-                            }${captainApproval && adminApproval ? ' and ' : ''}${
-                              adminApproval ? 'the league admin' : ''
-                            } for approval.`
-                          : 'No approval is needed for this team.'}
-                      </Text>
-                      <View className="mx-auto rounded-full bg-bg-grouped-2">
-                        <MaterialCommunityIcons
-                          name="email-fast-outline"
-                          color="#0B6623"
-                          size={140}
-                        />
-                      </View>
-
-                      <CTAButton
-                        type="yellow"
-                        text={
-                          isRPCLoading
-                            ? 'Sending...'
-                            : captainApproval || adminApproval
-                              ? 'Send Join Request'
-                              : 'Join Team'
-                        }
-                        disabled={isRPCLoading}
-                        callbackFn={handleJoinAsNew}
-                      />
-                    </View>
-                  </View>
-                </ScrollView>
-                <View className="gap-5 rounded-t-3xl bg-brand-dark px-5 py-6">
-                  <CTAButton
-                    type="error"
-                    text="Join a different team"
-                    callbackFn={() => router.back()}
-                  />
-                </View>
-              </View>
-            </View>
-          )}
-
+    <OnboardingScreen
+      title={isLoading ? 'Loading…' : `Join ${teamProfile?.name || 'this team'}?`}
+      subtitle={
+        needsApproval
+          ? `Your request will be sent to ${who} for approval.`
+          : 'No approval is needed, you will join straight away.'
+      }
+      onCta={handleJoinAsNew}
+      ctaText={isRPCLoading ? 'Sending…' : needsApproval ? 'Send join request' : 'Join team'}
+      ctaDisabled={isLoading || isRPCLoading}
+      ctaLoading={isRPCLoading}
+      footerExtra={
+        <Pressable onPress={() => router.back()} className="items-center py-1">
+          <Text className="font-saira-medium text-base text-text-on-brand-2 underline">
+            Join a different team
+          </Text>
+        </Pressable>
+      }>
+      <Animated.View entering={FadeInDown.duration(380)} className="items-center gap-5 rounded-3xl border-2 border-white/15 bg-white/10 p-8">
+        <View className="h-24 w-24 items-center justify-center rounded-full bg-white/15">
+          <MaterialCommunityIcons name={needsApproval ? 'email-fast-outline' : 'account-check-outline'} color="#FFFFFF" size={52} />
         </View>
-      </SafeViewWrapper>
-    </>
+        <Text className="text-center font-saira-medium text-xl text-text-on-brand">
+          {needsApproval
+            ? "You'll get a notification as soon as it's answered."
+            : 'You can start playing right away.'}
+        </Text>
+      </Animated.View>
+    </OnboardingScreen>
   );
 };
 
 export default ProfileClaim;
-
-const styles = StyleSheet.create({});

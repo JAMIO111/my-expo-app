@@ -9,6 +9,10 @@ import { supabase } from '@/lib/supabase';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import Toast from 'react-native-toast-message';
 import { useOnboardingStep } from '@contexts/OnboardingStepContext';
+import OnboardingScreen from '@components/onboarding/OnboardingScreen';
+import OnboardingInput from '@components/onboarding/OnboardingInput';
+import ChoiceCard from '@components/onboarding/ChoiceCard';
+import ToggleCard from '@components/onboarding/ToggleCard';
 
 export default function DistrictName() {
   useOnboardingStep(2, 4);
@@ -87,55 +91,32 @@ export default function DistrictName() {
   };
 
   return (
-    <>
-<View className="flex-1 bg-brand px-4">
-        <Text className="my-4 pt-5 font-delagothic text-5xl text-text-on-brand">
-          Please enter the name of your district.
-        </Text>
-        <KeyboardAwareScrollView style={{ flex: 1 }} contentContainerStyle={{ paddingBottom: 24 }}>
-          <View className="mb-6">
-            <CustomTextInput
-              title="District Name"
-              value={districtName}
-              onChangeText={setDistrictName}
-              leftIconName="map-outline"
-              iconColor="purple"
-              placeholder="e.g. Downtown District"
-              autoCapitalize="words"
-              returnKeyType="done"
-            />
-          </View>
-          <View className="h-16 flex-row items-center gap-5 rounded-xl border border-theme-gray-4 bg-bg-grouped-2 pr-5">
-            <View className="h-full justify-center rounded-l-xl border-r border-theme-gray-3 bg-bg-grouped-1 pl-3 pr-4">
-              <Ionicons name="lock-closed-outline" size={26} color="purple" />
-            </View>
-            <Text className="flex-1 font-saira-medium text-xl text-text-1">Private District</Text>
-            <Switch
-              value={privateDistrict}
-              onValueChange={(newValue) => {
-                setPrivateDistrict(newValue);
-              }}
-              thumbColor="white"
-              trackColor={{
-                false: 'gray',
-                true: '#4CAF50',
-              }}
-            />
-          </View>
-          <Text
-            style={{ lineHeight: 22 }}
-            className="mb-6 mt-2 font-saira-medium text-lg text-text-on-brand-2">
-            Do you want to hide fixtures, results, standings and leaderboards from users from other
-            districts?
-          </Text>
-          <CTAButton
-            type="yellow"
-            textColor="text-black"
-            text="Continue"
-            callbackFn={handleSubmit}
-          />
-        </KeyboardAwareScrollView>
+    <OnboardingScreen
+      title="Name your league"
+      subtitle="This is how players will find and recognise your league."
+      onCta={handleSubmit}
+      ctaDisabled={districtName.trim().length < 3}>
+      <View className="gap-6">
+        <OnboardingInput
+          label="League name"
+          icon="map-outline"
+          placeholder="e.g. Blyth & District"
+          value={districtName}
+          onChangeText={setDistrictName}
+          autoCapitalize="words"
+          returnKeyType="done"
+          onSubmitEditing={handleSubmit}
+          maxLength={60}
+        />
+        <ToggleCard
+          delay={90}
+          icon="lock-closed-outline"
+          title="Private league"
+          value={privateDistrict}
+          onValueChange={setPrivateDistrict}
+          description="Hide fixtures, results, standings and leaderboards from people in other leagues."
+        />
       </View>
-    </>
+    </OnboardingScreen>
   );
 }

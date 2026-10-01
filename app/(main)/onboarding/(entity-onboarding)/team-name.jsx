@@ -1,6 +1,6 @@
 import { StyleSheet, Text, View, Switch } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { Stack } from 'expo-router';
 import CTAButton from '@components/CTAButton';
 import SafeViewWrapper from '@components/SafeViewWrapper';
@@ -10,6 +10,11 @@ import Toast from 'react-native-toast-message';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import KeyboardAwareScrollView from '@components/KeyboardAwareScrollView';
 import { useOnboardingStep } from '@contexts/OnboardingStepContext';
+import OnboardingScreen from '@components/onboarding/OnboardingScreen';
+import OnboardingInput from '@components/onboarding/OnboardingInput';
+import ChoiceCard from '@components/onboarding/ChoiceCard';
+import ToggleCard from '@components/onboarding/ToggleCard';
+import Animated, { FadeInDown } from 'react-native-reanimated';
 
 const TeamName = () => {
   useOnboardingStep(2, 6);
@@ -153,93 +158,66 @@ const TeamName = () => {
     });
   };
 
-  return (
-    <>
-<SafeViewWrapper useTopInset={false} topColor="bg-brand" bottomColor="bg-brand-dark">
-        <View className="flex-1 justify-between bg-brand">
-          <KeyboardAwareScrollView
-            style={{ flex: 1 }}
-            contentContainerStyle={{
-              padding: 16,
-              gap: 12,
-            }}
-            bottomOffset={44}
-            showsVerticalScrollIndicator={false}>
-            <Text
-              style={{ lineHeight: 40 }}
-              className="mb-4 font-delagothic text-4xl font-bold text-text-on-brand">
-              Create a team in the {league?.name || 'Unnamed League'} league?
-            </Text>
-            <Text className="font-saira-medium text-xl text-text-on-brand-2">
-              Please enter your team name, display name, and 3 letter abbreviation below.
-            </Text>
-            <View className="mt-4 gap-4">
-              <CustomTextInput
-                value={teamName}
-                onChangeText={setTeamName}
-                title="Full Team Name"
-                placeholder="e.g. Newsham Victoria A"
-                className="mb-4 h-12 rounded-lg border border-gray-300 bg-white px-3 font-saira text-xl"
-                leftIconName="create-outline"
-                iconColor="#A259FF"
-                autoCapitalize="words"
-              />
-              <CustomTextInput
-                value={teamDisplayName}
-                onChangeText={setTeamDisplayName}
-                title="Team Display Name"
-                placeholder="e.g. Newsham Vic A"
-                className="mb-4 h-12 rounded-lg border border-gray-300 bg-white px-3 font-saira text-xl"
-                leftIconName="create-outline"
-                iconColor="#A259FF"
-                autoCapitalize="words"
-              />
-              <CustomTextInput
-                value={teamAbbreviation}
-                onChangeText={setTeamAbbreviation}
-                title="Team Abbreviation"
-                placeholder="e.g. NVA"
-                className="mb-4 h-12 rounded-lg border border-gray-300 bg-white px-3 font-saira text-xl"
-                leftIconName="pricetag-outline"
-                iconColor="#A259FF"
-                autoCapitalize="characters"
-                autoCorrect={false}
-                maxLength={3}
-              />
-              <View className="my-5 gap-2">
-                <View className="h-16 flex-row items-center gap-5 rounded-xl border border-theme-gray-4 bg-bg-grouped-2 pr-5">
-                  <View className="h-full justify-center rounded-l-xl border-r border-theme-gray-3 bg-bg-grouped-1 pl-3 pr-4">
-                    <Ionicons name="lock-closed-outline" size={26} color="#A259FF" />
-                  </View>
-                  <Text className="flex-1 font-saira-medium text-xl text-text-1">Private Team</Text>
-                  <Switch
-                    value={isPrivate}
-                    onValueChange={setIsPrivate}
-                    thumbColor="white"
-                    trackColor={{
-                      false: 'gray',
-                      true: '#4CAF50',
-                    }}
-                  />
-                </View>
-                <Text className="mt-2 px-2 text-text-on-brand-2">
-                  This setting controls whether the team captain must approve join requests from
-                  players.
-                </Text>
-              </View>
-            </View>
-          </KeyboardAwareScrollView>
+  const abbrRef = useRef(null);
+  const displayRef = useRef(null);
 
-          <View className="gap-5 rounded-t-3xl bg-brand-dark px-5 pt-6">
-            <CTAButton callbackFn={() => router.back()} type="error" text="Go Back" />
-            <CTAButton type="yellow" text="Continue" callbackFn={handleContinue} />
-          </View>
-        </View>
-      </SafeViewWrapper>
-    </>
+  return (
+    <OnboardingScreen
+      title={`Create a team in ${league?.name || 'your league'}`}
+      subtitle="Choose a name, a shorter display name and a 3-letter abbreviation."
+      onCta={handleContinue}
+      ctaDisabled={!teamName.trim() || !teamDisplayName.trim() || teamAbbreviation.trim().length !== 3}>
+      <View className="gap-6">
+        <OnboardingInput
+          label="Full team name"
+          icon="create-outline"
+          placeholder="e.g. Newsham Victoria A"
+          value={teamName}
+          onChangeText={setTeamName}
+          autoCapitalize="words"
+          returnKeyType="next"
+          blurOnSubmit={false}
+          onSubmitEditing={() => displayRef.current?.focus()}
+        />
+        <OnboardingInput
+          ref={displayRef}
+          delay={70}
+          label="Display name"
+          icon="text-outline"
+          placeholder="e.g. Newsham Vic A"
+          value={teamDisplayName}
+          onChangeText={setTeamDisplayName}
+          autoCapitalize="words"
+          returnKeyType="next"
+          blurOnSubmit={false}
+          onSubmitEditing={() => abbrRef.current?.focus()}
+          hint="Shown on fixtures and tables where space is tight."
+        />
+        <OnboardingInput
+          ref={abbrRef}
+          delay={140}
+          label="Abbreviation"
+          icon="pricetag-outline"
+          placeholder="e.g. NVA"
+          value={teamAbbreviation}
+          onChangeText={(t) => setTeamAbbreviation(t.toUpperCase())}
+          autoCapitalize="characters"
+          autoCorrect={false}
+          maxLength={3}
+          returnKeyType="done"
+          onSubmitEditing={handleContinue}
+        />
+        <ToggleCard
+          delay={210}
+          icon="lock-closed-outline"
+          title="Private team"
+          value={isPrivate}
+          onValueChange={setIsPrivate}
+          description="When on, you (the captain) approve every player who asks to join."
+        />
+      </View>
+    </OnboardingScreen>
   );
 };
 
 export default TeamName;
-
-const styles = StyleSheet.create({});

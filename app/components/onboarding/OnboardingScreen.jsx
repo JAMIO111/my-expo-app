@@ -19,9 +19,11 @@ export default function OnboardingScreen({
   ctaDisabled = false,
   ctaLoading = false,
   footerExtra = null,
+  refreshControl = undefined,
 }) {
   const insets = useSafeAreaInsets();
-  const footerSpace = FOOTER_HEIGHT + (footerExtra ? 56 : 0);
+  const hasFooter = !!onCta || !!footerExtra;
+  const footerSpace = hasFooter ? FOOTER_HEIGHT + (footerExtra ? 56 : 0) : 0;
 
   return (
     <View className="flex-1 bg-brand">
@@ -38,11 +40,13 @@ export default function OnboardingScreen({
 
       <View className="flex-1 overflow-hidden rounded-t-[32px] bg-brand-dark">
         <KeyboardAwareScrollView
+          refreshControl={refreshControl}
           bottomOffset={footerSpace + 24}
           contentContainerStyle={{ padding: 24, paddingBottom: footerSpace + insets.bottom + 24 }}>
           {children}
         </KeyboardAwareScrollView>
 
+        {hasFooter && (
         <KeyboardStickyView
           offset={{ closed: 0, opened: insets.bottom }}
           style={{ position: 'absolute', left: 0, right: 0, bottom: 0 }}>
@@ -50,16 +54,19 @@ export default function OnboardingScreen({
             className="gap-3 bg-brand-dark px-6 pt-3"
             style={{ paddingBottom: insets.bottom + 12 }}>
             {footerExtra}
-            <CTAButton
-              type="yellow"
-              text={ctaText}
-              callbackFn={onCta}
-              disabled={ctaDisabled}
-              loading={ctaLoading}
-              loadingText="Saving…"
-            />
+            {onCta ? (
+              <CTAButton
+                type="yellow"
+                text={ctaText}
+                callbackFn={onCta}
+                disabled={ctaDisabled}
+                loading={ctaLoading}
+                loadingText="Saving…"
+              />
+            ) : null}
           </View>
         </KeyboardStickyView>
+        )}
       </View>
     </View>
   );

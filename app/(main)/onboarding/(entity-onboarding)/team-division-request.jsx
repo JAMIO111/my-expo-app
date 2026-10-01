@@ -13,6 +13,9 @@ import { useUser } from '@contexts/UserProvider';
 import { useQueryClient } from '@tanstack/react-query';
 import useCompressAndUploadImage from '@hooks/useCompressAndUploadImage';
 import { useOnboardingStep } from '@contexts/OnboardingStepContext';
+import OnboardingScreen from '@components/onboarding/OnboardingScreen';
+import ChoiceCard from '@components/onboarding/ChoiceCard';
+import Animated, { FadeInDown } from 'react-native-reanimated';
 
 const TeamDivisionRequest = () => {
   useOnboardingStep(6, 6);
@@ -140,134 +143,66 @@ const TeamDivisionRequest = () => {
   }, {});
 
   return (
-    <>
-<SafeViewWrapper useTopInset={false} topColor="bg-brand" bottomColor="bg-brand-dark">
-        <View className={`flex-1 justify-between gap-3 bg-brand`}>
-          <View className="flex-1">
-            <Text
-              style={{ lineHeight: 40 }}
-              className={`p-4 font-delagothic text-3xl font-bold text-text-on-brand`}>
-              Choose a division for your team.
-            </Text>
-            <Text className="px-4 font-saira-medium text-sm text-text-on-brand-2">
-              A request to join a division will be sent to the league admin for approval. Once
-              approved, your team will be added to the division and you can start adding players and
-              competing in the league!
-            </Text>
-            <View className="flex-1 gap-3">
-              {!league.Divisions?.length ? (
-                <View className="mx-3 mt-6 rounded-2xl bg-bg-2 p-2">
-                  <Text className="text-md p-3 px-5 font-saira-medium text-text-2">
-                    This league doesn't have any divisions for teams yet, so it can't take new teams
-                    right now. Please check back with your league official.
-                  </Text>
-                </View>
-              ) : (
-                <ScrollView
-                  className="flex-1 p-3"
-                  contentContainerStyle={{ paddingBottom: 20, gap: 16 }}>
-                  {Object.entries(groupedDivisions || {}).map(([groupId, group]) => (
-                    <View key={groupId} className="gap-3">
-                      {/* Group Title */}
-                      <Text className="px-1 font-saira-semibold text-lg text-text-2">
-                        {group.groupName}
-                      </Text>
-
-                      {/* Divisions in this group */}
-                      {group.divisions
-                        .sort((a, b) => a.tier - b.tier)
-                        .map((division) => (
-                          <Pressable
-                            key={division.id}
-                            disabled={getRemainingSpaces(division) === 0}
-                            onPress={() =>
-                              selectedDivision === division.id
-                                ? setSelectedDivision(null)
-                                : setSelectedDivision(division.id)
-                            }
-                            style={{
-                              borderColor:
-                                selectedDivision === division.id ? 'blue' : 'transparent',
-                              borderWidth: 2,
-                            }}
-                            className="w-full flex-row items-center justify-between rounded-xl border border-theme-gray-5 bg-bg-grouped-2 p-2 px-3">
-                            <View className="flex-row items-center gap-4">
-                              {romanNumerals[division.tier] && (
-                                <Image
-                                  source={romanNumerals[division.tier]}
-                                  style={{ width: 40, height: 48 }}
-                                  resizeMode="contain"
-                                />
-                              )}
-                              <View>
-                                <Text className="font-saira-semibold text-xl text-text-1">
-                                  {division?.name}
-                                </Text>
-                                <Text
-                                  className={`text-md font-saira ${
-                                    getRemainingSpaces(division) === 0
-                                      ? 'text-theme-red'
-                                      : 'text-text-2'
-                                  }`}>
-                                  {!division?.max_competitors
-                                    ? 'No team limit'
-                                    : `${getRemainingSpaces(division)} spaces remaining`}
-                                </Text>
-                              </View>
-                            </View>
-
-                            <View
-                              className={`h-8 w-8 rounded-full ${
-                                selectedDivision === division.id
-                                  ? 'border-theme-blue bg-theme-blue'
-                                  : 'border-theme-gray-3'
-                              } border-2`}>
-                              {selectedDivision === division.id && (
-                                <Ionicons
-                                  name="checkmark"
-                                  size={20}
-                                  color="white"
-                                  style={{
-                                    position: 'absolute',
-                                    top: '50%',
-                                    left: '50%',
-                                    transform: [{ translateX: -10 }, { translateY: -10 }],
-                                  }}
-                                />
-                              )}
-                            </View>
-                          </Pressable>
-                        ))}
-                    </View>
-                  ))}
-                </ScrollView>
-              )}
-            </View>
-
-            <View className="gap-5 rounded-t-3xl bg-brand-dark px-5 py-6">
-              <CTAButton
-                disabled={loading || uploading || !selectedDivision}
-                type="yellow"
-                text={
-                  loading || uploading
-                    ? 'Creating team...'
-                    : selectedDivisionRow
-                      ? `Request to join ${selectedDivisionRow.name}`
-                      : 'Choose a division'
-                }
-                callbackFn={handleContinue}
-              />
-              <Text className="font-saira-medium text-sm text-text-on-brand-2">
-                The league admin will review your request before your team joins the division.
-              </Text>
-            </View>
-          </View>
+    <OnboardingScreen
+      title="Choose a division"
+      subtitle="The league admin reviews your request before your team joins the division."
+      onCta={handleContinue}
+      ctaText={
+        loading || uploading
+          ? 'Creating team…'
+          : selectedDivisionRow
+            ? `Request to join ${selectedDivisionRow.name}`
+            : 'Choose a division'
+      }
+      ctaDisabled={loading || uploading || !selectedDivision}
+      ctaLoading={loading || uploading}>
+      {!league.Divisions?.length ? (
+        <View className="rounded-3xl border-2 border-white/15 bg-white/10 p-5">
+          <Text className="font-saira-medium text-lg text-text-on-brand">
+            This league doesn't have any divisions for teams yet, so it can't take new teams right
+            now. Please check back with your league official.
+          </Text>
         </View>
-      </SafeViewWrapper>
-    </>
+      ) : (
+        <View className="gap-7">
+          {Object.entries(groupedDivisions || {}).map(([groupId, group]) => (
+            <View key={groupId} className="gap-3">
+              <Text className="pl-1 font-saira-semibold text-xs uppercase tracking-[2px] text-text-on-brand-2">
+                {group.groupName}
+              </Text>
+              {group.divisions
+                .sort((a, b) => a.tier - b.tier)
+                .map((division, i) => {
+                  const spaces = getRemainingSpaces(division);
+                  const full = spaces === 0;
+                  return (
+                    <ChoiceCard
+                      key={division.id}
+                      delay={i * 60}
+                      icon="trophy"
+                      iconColor={full ? '#6B7280' : '#8B5CF6'}
+                      title={division.name}
+                      subtitle={
+                        division.max_competitors
+                          ? full
+                            ? 'Full'
+                            : `${spaces} space${spaces === 1 ? '' : 's'} left`
+                          : 'No team limit'
+                      }
+                      disabled={full}
+                      selected={selectedDivision === division.id}
+                      onPress={() =>
+                        setSelectedDivision(selectedDivision === division.id ? null : division.id)
+                      }
+                    />
+                  );
+                })}
+            </View>
+          ))}
+        </View>
+      )}
+    </OnboardingScreen>
   );
 };
 
 export default TeamDivisionRequest;
-
-const styles = StyleSheet.create({});

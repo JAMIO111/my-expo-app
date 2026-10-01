@@ -13,6 +13,10 @@ import { useUser } from '@contexts/UserProvider';
 import { useQueryClient } from '@tanstack/react-query';
 import TieBreakEditor, { DEFAULT_TIE_BREAKS } from '@components/TieBreakEditor';
 import { useOnboardingStep } from '@contexts/OnboardingStepContext';
+import OnboardingScreen from '@components/onboarding/OnboardingScreen';
+import OnboardingInput from '@components/onboarding/OnboardingInput';
+import ChoiceCard from '@components/onboarding/ChoiceCard';
+import ToggleCard from '@components/onboarding/ToggleCard';
 
 export default function SeasonName() {
   useOnboardingStep(4, 4);
@@ -106,67 +110,64 @@ export default function SeasonName() {
   console.log('start date :', startDate);
 
   return (
-    <>
-<View className="flex-1 bg-brand px-4">
-        <Text className="my-4 pt-2 font-delagothic text-3xl text-text-on-brand">
-          Let's create your first season!
-        </Text>
-        <KeyboardAwareScrollView
-          style={{ flex: 1 }}
-          contentContainerStyle={{ paddingBottom: 20, gap: 20 }}>
-          <CustomTextInput
-            title="Season Name"
-            value={seasonName}
-            onChangeText={setSeasonName}
-            leftIconName="pencil-outline"
-            iconColor="purple"
-            placeholder={`e.g. 20${new Date().getFullYear().toString().slice(-2)}/${(new Date().getFullYear() + 1).toString().slice(-2)}, Winter ${new Date().getFullYear()}`}
-            autoCapitalize="words"
-            returnKeyType="done"
+    <OnboardingScreen
+      title="Create your first season"
+      subtitle="Everything in your league runs inside a season."
+      onCta={handleSubmit}
+      ctaText={loading ? 'Creating league…' : 'Create season'}
+      ctaDisabled={loading || !seasonName.trim()}
+      ctaLoading={loading}>
+      <View className="gap-6">
+        <OnboardingInput
+          label="Season name"
+          icon="pencil-outline"
+          value={seasonName}
+          onChangeText={setSeasonName}
+          placeholder={`e.g. ${new Date().getFullYear()}/${(new Date().getFullYear() + 1).toString().slice(-2)}`}
+          autoCapitalize="words"
+          returnKeyType="done"
+        />
+        <CustomDatePicker
+          title="Season start date"
+          value={startDate}
+          onChange={setStartDate}
+          leftIconName="calendar-outline"
+          iconColor="purple"
+        />
+
+        <View className="gap-3">
+          <Text className="pl-1 font-saira-semibold text-xs uppercase tracking-[2px] text-text-on-brand-2">
+            Season status
+          </Text>
+          <ChoiceCard
+            icon="play"
+            iconColor="#10B981"
+            title="Active"
+            subtitle="Starts straight away"
+            selected={seasonStatus[0] === 'active'}
+            onPress={() => setSeasonStatus(['active'])}
           />
-          <CustomDatePicker
-            title="Season Start Date"
-            value={startDate}
-            onChange={setStartDate}
-            leftIconName="calendar-outline"
-            iconColor="purple"
-          />
-          <CustomMultiSelect
-            title="Season Status"
-            leftIconName="pulse-outline"
-            iconColor="purple"
-            titleColor="text-text-on-brand"
-            multiSelect={false}
-            options={[
-              { label: 'Active', value: 'active' },
-              { label: 'Draft', value: 'draft' },
-            ]}
-            selectedValues={seasonStatus}
-            onValueChange={setSeasonStatus}
-          />
-          <View className="gap-2">
-            <Text className="px-2 font-saira-semibold text-xl text-text-on-brand">
-              Tie-break rules
-            </Text>
-            <Text
-              style={{ lineHeight: 22 }}
-              className="px-2 font-saira-medium text-lg text-text-on-brand-2">
-              When teams are level on points, these are applied in order until the tie is broken. You
-              can change them later in league settings.
-            </Text>
-            <TieBreakEditor rules={tieBreakRules} onChange={setTieBreakRules} onBrand />
-          </View>
-        </KeyboardAwareScrollView>
-        <View className="px-2 py-8">
-          <CTAButton
-            type="yellow"
-            textColor="text-black"
-            text={loading ? 'Creating League...' : 'Create Season'}
-            callbackFn={handleSubmit}
-            disabled={loading}
+          <ChoiceCard
+            icon="create-outline"
+            iconColor="#6B7280"
+            title="Draft"
+            subtitle="Set things up first, start it when you're ready"
+            selected={seasonStatus[0] === 'draft'}
+            onPress={() => setSeasonStatus(['draft'])}
           />
         </View>
+
+        <View className="gap-3">
+          <Text className="pl-1 font-saira-semibold text-xs uppercase tracking-[2px] text-text-on-brand-2">
+            Tie-break rules
+          </Text>
+          <Text className="pl-1 font-saira text-base leading-5 text-text-on-brand-2">
+            When teams are level on points, these are applied in order. You can change them later in
+            league settings.
+          </Text>
+          <TieBreakEditor rules={tieBreakRules} onChange={setTieBreakRules} onBrand />
+        </View>
       </View>
-    </>
+    </OnboardingScreen>
   );
 }

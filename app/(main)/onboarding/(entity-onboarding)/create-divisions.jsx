@@ -406,51 +406,59 @@ export default function CreateDivisions() {
 
   return (
     <>
-      <View className="flex-1 bg-brand px-4">
-
-        <View className="my-6">
-          <Text className="pb-2 font-delagothic text-2xl text-text-on-brand">
-            Structure your league.
+      <View className="flex-1 bg-brand">
+        <View className="px-6 pb-5 pt-3">
+          <Text style={{ lineHeight: 42 }} className="font-delagothic text-4xl text-text-on-brand">
+            Structure your league
           </Text>
-          <Text className="pb-4 font-saira text-sm text-text-on-brand-2">
-            A group is a set of divisions linked together in a promotion and relegation ladder.
-            Create a new group only when a division is not related to an existing one (for example,
-            Monday Teams vs Thursday Singles). At this stage, you’re defining the structure—not
-            creating competitions.
+          <Text className="mt-3 font-saira text-lg leading-6 text-text-on-brand-2">
+            Groups are ladders of divisions linked by promotion and relegation, for example Monday
+            Teams or Thursday Singles. You're defining the structure here, not creating competitions.
           </Text>
-          <View className="flex-row gap-2">
-            <View className="flex-1">
-              <CTAButton
-                text="NEW GROUP"
-                type="yellow"
-                icon={<Ionicons name="duplicate-outline" size={20} color={themeColors.text} />}
-                callbackFn={() => {
-                  setSheetMode('GROUP');
-                  bottomSheetRef.current?.expand();
-                }}
-                borderRadius={12}
-              />
-            </View>
-
-            {groups.length > 0 && (
-              <View className="flex-1">
-                <CTAButton
-                  text="ADD DIVISION"
-                  type="white"
-                  icon={<Ionicons name="add" size={20} color={themeColors.text} />}
-                  callbackFn={() => {
-                    setSheetMode('DIVISION');
-                    updateNextTier(selectedGroupId);
-                    bottomSheetRef.current?.expand();
-                  }}
-                  borderRadius={12}
-                />
-              </View>
-            )}
-          </View>
         </View>
 
+        <View className="flex-1 rounded-t-[32px] bg-brand-dark px-5 pt-5">
+        <View className="mb-5 flex-row gap-3">
+          <View className="flex-1">
+            <CTAButton
+              text="New group"
+              type="yellow"
+              icon={<Ionicons name="duplicate-outline" size={20} color={themeColors.text} />}
+              callbackFn={() => {
+                setSheetMode('GROUP');
+                bottomSheetRef.current?.expand();
+              }}
+              borderRadius={14}
+            />
+          </View>
+          {groups.length > 0 && (
+            <View className="flex-1">
+              <CTAButton
+                text="Add division"
+                type="white"
+                icon={<Ionicons name="add" size={20} color={themeColors.text} />}
+                callbackFn={() => {
+                  setSheetMode('DIVISION');
+                  updateNextTier(selectedGroupId);
+                  bottomSheetRef.current?.expand();
+                }}
+                borderRadius={14}
+              />
+            </View>
+          )}
+        </View>
+
+        {groups.length === 0 && (
+          <View className="items-center gap-3 rounded-3xl border-2 border-dashed border-white/20 p-8">
+            <Ionicons name="layers-outline" size={36} color="#FFFFFF88" />
+            <Text className="text-center font-saira text-lg text-text-on-brand-2">
+              Start by creating a group, then add your divisions to it.
+            </Text>
+          </View>
+        )}
+
         <FlatList
+          showsVerticalScrollIndicator={false}
           data={groups}
           keyExtractor={(item) => item.id.toString()}
           renderItem={({ item: group }) => (
@@ -503,10 +511,11 @@ export default function CreateDivisions() {
           )}
         />
         {divisions.length > 0 && (
-          <View className="px-2 py-8">
-            <CTAButton text="Save & Continue" type="yellow" callbackFn={handleSave} />
+          <View className="pb-8 pt-3">
+            <CTAButton text="Save & continue" type="yellow" callbackFn={handleSave} />
           </View>
         )}
+        </View>
 
         <BottomSheetWrapper
           ref={bottomSheetRef}
