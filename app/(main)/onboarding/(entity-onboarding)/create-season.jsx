@@ -3,7 +3,6 @@ import { View, Text, Switch, Platform } from 'react-native';
 import { useState } from 'react';
 import { Stack, useLocalSearchParams } from 'expo-router';
 import CTAButton from '@components/CTAButton';
-import StepPillGroup from '@components/StepPillGroup';
 import CustomTextInput from '@components/CustomTextInput';
 import { useRouter } from 'expo-router';
 import { supabase } from '@/lib/supabase';
@@ -13,8 +12,10 @@ import CustomMultiSelect from '@components/CustomMultiSelect';
 import { useUser } from '@contexts/UserProvider';
 import { useQueryClient } from '@tanstack/react-query';
 import TieBreakEditor, { DEFAULT_TIE_BREAKS } from '@components/TieBreakEditor';
+import { useOnboardingStep } from '@contexts/OnboardingStepContext';
 
 export default function SeasonName() {
+  useOnboardingStep(4, 4);
   const router = useRouter();
   const { player } = useUser();
   const queryClient = useQueryClient();
@@ -106,13 +107,7 @@ export default function SeasonName() {
 
   return (
     <>
-      <Stack.Screen
-        options={{
-          title: 'Step 4 of 4',
-        }}
-      />
-      <View className="flex-1 bg-brand px-4">
-        <StepPillGroup steps={4} currentStep={4} />
+<View className="flex-1 bg-brand px-4">
         <Text className="my-4 pt-2 font-delagothic text-3xl text-text-on-brand">
           Let's create your first season!
         </Text>

@@ -3,14 +3,15 @@ import { View, Text, Switch } from 'react-native';
 import { useState } from 'react';
 import { Stack, useLocalSearchParams } from 'expo-router';
 import CTAButton from '@components/CTAButton';
-import StepPillGroup from '@components/StepPillGroup';
 import CustomTextInput from '@components/CustomTextInput';
 import { useRouter } from 'expo-router';
 import { supabase } from '@/lib/supabase';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import Toast from 'react-native-toast-message';
+import { useOnboardingStep } from '@contexts/OnboardingStepContext';
 
 export default function DistrictName() {
+  useOnboardingStep(2, 4);
   const router = useRouter();
   const [districtName, setDistrictName] = useState('');
   const [privateDistrict, setPrivateDistrict] = useState(false);
@@ -87,13 +88,7 @@ export default function DistrictName() {
 
   return (
     <>
-      <Stack.Screen
-        options={{
-          title: 'Step 2 of 4',
-        }}
-      />
-      <View className="flex-1 bg-brand px-4">
-        <StepPillGroup steps={4} currentStep={2} />
+<View className="flex-1 bg-brand px-4">
         <Text className="my-4 pt-5 font-delagothic text-5xl text-text-on-brand">
           Please enter the name of your district.
         </Text>

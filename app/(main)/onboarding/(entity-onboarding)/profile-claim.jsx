@@ -5,15 +5,16 @@ import { useUser } from '@contexts/UserProvider';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import CTAButton from '@components/CTAButton';
-import StepPillGroup from '@components/StepPillGroup';
 import SafeViewWrapper from '@components/SafeViewWrapper';
 import Avatar from '@components/Avatar';
 import { useTeamProfile } from '@hooks/useTeamProfile';
 import { supabase } from '@/lib/supabase';
 import Toast from 'react-native-toast-message';
 import { useQueryClient } from '@tanstack/react-query';
+import { useOnboardingStep } from '@contexts/OnboardingStepContext';
 
 const ProfileClaim = () => {
+  useOnboardingStep(3, 3);
   const router = useRouter();
   const params = useLocalSearchParams();
   const queryClient = useQueryClient();
@@ -111,11 +112,9 @@ const ProfileClaim = () => {
 
   return (
     <>
-      <Stack.Screen options={{ title: 'Step 4 of 4' }} />
 
       <SafeViewWrapper useTopInset={false} topColor="bg-brand" bottomColor="bg-brand-dark">
         <View className="flex-1 bg-brand">
-          <StepPillGroup steps={4} currentStep={4} />
 
           {isLoading ? (
             <View className="flex-1 items-center justify-center">

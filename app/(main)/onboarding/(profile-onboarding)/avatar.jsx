@@ -4,16 +4,17 @@ import { supabase } from '@/lib/supabase';
 import CTAButton from '@components/CTAButton';
 import { useLocalSearchParams, Stack } from 'expo-router';
 import Toast from 'react-native-toast-message';
-import StepPillGroup from '@components/StepPillGroup';
 import useCompressAndUploadImage from '@hooks/useCompressAndUploadImage';
 import ImageUploader from '@components/ImageUploader';
 import { useRouter } from 'expo-router';
 import { useUser } from '@contexts/UserProvider';
 import { getSocialAvatar, downloadSocialAvatar } from '@lib/socialAvatar';
+import { useOnboardingStep } from '@contexts/OnboardingStepContext';
 
 const PROJECT_URL = 'https://ionhcfjampzewimsgsmr.supabase.co'; // Replace with your actual Supabase project URL
 
 const Avatar = () => {
+  useOnboardingStep(5, 5);
   const { user } = useUser();
   const social = getSocialAvatar(user);
   const [useSocialPhoto, setUseSocialPhoto] = useState(!!social);
@@ -98,13 +99,7 @@ const Avatar = () => {
 
   return (
     <>
-      <Stack.Screen
-        options={{
-          title: 'Step 5 of 5',
-        }}
-      />
-      <View className="flex-1 gap-3 bg-brand">
-        <StepPillGroup steps={5} currentStep={5} />
+<View className="flex-1 gap-3 bg-brand">
         <View className="p-4">
           <Text
             style={{ lineHeight: 50 }}

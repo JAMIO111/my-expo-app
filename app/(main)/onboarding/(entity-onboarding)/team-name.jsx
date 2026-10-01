@@ -3,15 +3,16 @@ import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { Stack } from 'expo-router';
 import CTAButton from '@components/CTAButton';
-import StepPillGroup from '@components/StepPillGroup';
 import SafeViewWrapper from '@components/SafeViewWrapper';
 import { supabase } from '@/lib/supabase';
 import CustomTextInput from '@components/CustomTextInput';
 import Toast from 'react-native-toast-message';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import KeyboardAwareScrollView from '@components/KeyboardAwareScrollView';
+import { useOnboardingStep } from '@contexts/OnboardingStepContext';
 
 const TeamName = () => {
+  useOnboardingStep(2, 6);
   const router = useRouter();
   const params = useLocalSearchParams();
   const league = JSON.parse(params.league || '{}');
@@ -154,14 +155,8 @@ const TeamName = () => {
 
   return (
     <>
-      <Stack.Screen
-        options={{
-          title: 'Step 2 of 6',
-        }}
-      />
-      <SafeViewWrapper useTopInset={false} topColor="bg-brand" bottomColor="bg-brand-dark">
-        <View style={{ marginTop: 40 }} className="flex-1 justify-between bg-brand">
-          <StepPillGroup steps={6} currentStep={2} />
+<SafeViewWrapper useTopInset={false} topColor="bg-brand" bottomColor="bg-brand-dark">
+        <View className="flex-1 justify-between bg-brand">
           <KeyboardAwareScrollView
             style={{ flex: 1 }}
             contentContainerStyle={{

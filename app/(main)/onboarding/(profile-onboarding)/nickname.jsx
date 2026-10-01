@@ -3,25 +3,19 @@ import { StyleSheet, Text, View, Alert } from 'react-native';
 import { useState } from 'react';
 import CTAButton from '@components/CTAButton';
 import { useRouter, useLocalSearchParams, Stack } from 'expo-router';
-import StepPillGroup from '@components/StepPillGroup';
 import CustomTextInput from '@components/CustomTextInput';
 import Toast from 'react-native-toast-message';
+import { useOnboardingStep } from '@contexts/OnboardingStepContext';
 
 const Nickname = () => {
+  useOnboardingStep(2, 5);
   const [nickname, setNickname] = useState('');
   const router = useRouter();
   const params = useLocalSearchParams();
 
   return (
     <>
-      <Stack.Screen
-        options={{
-          title: 'Step 2 of 5',
-          headerBackTitle: 'Name',
-        }}
-      />
-      <View className="flex-1 gap-3 bg-brand">
-        <StepPillGroup steps={5} currentStep={2} />
+<View className="flex-1 gap-3 bg-brand">
         <View className="p-4">
           <Text className="font-delagothic text-5xl font-bold text-text-on-brand">
             What do you want to be known as?

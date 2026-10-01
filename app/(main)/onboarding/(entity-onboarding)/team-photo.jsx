@@ -2,12 +2,13 @@ import { Pressable, StyleSheet, Text, View, ScrollView } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
 import { Stack } from 'expo-router';
-import StepPillGroup from '@components/StepPillGroup';
 import SafeViewWrapper from '@components/SafeViewWrapper';
 import CTAButton from '@components/CTAButton';
 import ImageUploader from '@components/ImageUploader';
+import { useOnboardingStep } from '@contexts/OnboardingStepContext';
 
 const TeamPhoto = () => {
+  useOnboardingStep(5, 6);
   const router = useRouter();
   const params = useLocalSearchParams();
   const league = JSON.parse(params.league || '{}');
@@ -35,14 +36,8 @@ const TeamPhoto = () => {
 
   return (
     <>
-      <Stack.Screen
-        options={{
-          title: 'Step 5 of 6',
-        }}
-      />
-      <SafeViewWrapper useTopInset={false} topColor="bg-brand" bottomColor="bg-brand-dark">
-        <View style={{ marginTop: 40 }} className={`flex-1 justify-between bg-brand`}>
-          <StepPillGroup steps={6} currentStep={5} />
+<SafeViewWrapper useTopInset={false} topColor="bg-brand" bottomColor="bg-brand-dark">
+        <View className={`flex-1 justify-between bg-brand`}>
           <ScrollView className="flex-1">
             <Text
               style={{ lineHeight: 40 }}

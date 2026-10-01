@@ -11,14 +11,15 @@ import {
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { Stack } from 'expo-router';
-import StepPillGroup from '@components/StepPillGroup';
 import SafeViewWrapper from '@components/SafeViewWrapper';
 import CustomTextInput from '@components/CustomTextInput';
 import CTAButton from '@components/CTAButton';
 import Toast from 'react-native-toast-message';
 import KeyboardAwareScrollView from '@components/KeyboardAwareScrollView';
+import { useOnboardingStep } from '@contexts/OnboardingStepContext';
 
 const TeamAddress = () => {
+  useOnboardingStep(4, 6);
   const router = useRouter();
   const params = useLocalSearchParams();
   const league = JSON.parse(params.league || '{}');
@@ -93,14 +94,8 @@ const TeamAddress = () => {
 
   return (
     <>
-      <Stack.Screen
-        options={{
-          title: 'Step 4 of 6',
-        }}
-      />
-      <SafeViewWrapper useTopInset={false} topColor="bg-brand" bottomColor="bg-brand-dark">
-        <View style={{ marginTop: 40 }} className={`flex-1 justify-between gap-3 bg-brand`}>
-          <StepPillGroup steps={6} currentStep={4} />
+<SafeViewWrapper useTopInset={false} topColor="bg-brand" bottomColor="bg-brand-dark">
+        <View className={`flex-1 justify-between gap-3 bg-brand`}>
           <View className="flex-1">
             <Text
               style={{ lineHeight: 40 }}

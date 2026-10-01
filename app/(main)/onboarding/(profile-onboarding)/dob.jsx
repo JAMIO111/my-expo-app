@@ -2,15 +2,16 @@ import { Pressable, StyleSheet, Text, View, Platform, Alert } from 'react-native
 import { useState, useRef } from 'react';
 import CTAButton from '@components/CTAButton';
 import { useRouter, useLocalSearchParams, Stack } from 'expo-router';
-import StepPillGroup from '@components/StepPillGroup';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import BottomSheetWrapper from '@components/BottomSheetWrapper';
 import { BottomSheetFooter, BottomSheetView } from '@gorhom/bottom-sheet';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import Toast from 'react-native-toast-message';
 import { useTheme } from '@contexts/ThemeProvider';
+import { useOnboardingStep } from '@contexts/OnboardingStepContext';
 
 const Dob = () => {
+  useOnboardingStep(3, 5);
   const [dob, setDob] = useState(null);
   const router = useRouter();
   const { colors: themeColors } = useTheme();
@@ -39,14 +40,7 @@ const Dob = () => {
 
   return (
     <>
-      <Stack.Screen
-        options={{
-          title: 'Step 3 of 5',
-          headerBackTitle: 'Nickname',
-        }}
-      />
-      <View className="flex-1 gap-3 bg-brand">
-        <StepPillGroup steps={5} currentStep={3} />
+<View className="flex-1 gap-3 bg-brand">
         <View className="p-4">
           <Text className="mb-4 font-delagothic text-5xl font-bold text-text-on-brand">{`When were you born ${params.firstName}?`}</Text>
           <Text className=" font-saira text-2xl text-text-on-brand-2">

@@ -1,18 +1,15 @@
 import { StyleSheet, Text, View, Image } from 'react-native';
 import { useRouter, Stack } from 'expo-router';
 import CTAButton from '@components/CTAButton';
+import { useOnboardingStep } from '@contexts/OnboardingStepContext';
 
 const CreateJoinTeam = () => {
+  useOnboardingStep(null, null);
   const router = useRouter();
 
   return (
     <>
-      <Stack.Screen
-        options={{
-          title: '',
-        }}
-      />
-      <View className="flex-1 bg-brand">
+<View className="flex-1 bg-brand">
         <View className="p-5">
           <Text className="mb-4 font-delagothic text-6xl font-bold text-text-on-brand">
             Let's get you affiliated.

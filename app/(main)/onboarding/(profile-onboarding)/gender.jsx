@@ -3,12 +3,13 @@ import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
 import { Stack } from 'expo-router';
 import CTAButton from '@components/CTAButton';
-import StepPillGroup from '@components/StepPillGroup';
 import { useUser } from '@contexts/UserProvider';
 import Toast from 'react-native-toast-message';
 import Ionicons from '@expo/vector-icons/Ionicons';
+import { useOnboardingStep } from '@contexts/OnboardingStepContext';
 
 const Gender = () => {
+  useOnboardingStep(4, 5);
   const { user } = useUser();
   const params = useLocalSearchParams();
 
@@ -20,15 +21,7 @@ const Gender = () => {
 
   return (
     <>
-      <Stack.Screen
-        options={{
-          title: 'Step 4 of 5',
-          headerBackTitle: 'Gender',
-        }}
-      />
-
-      <View className="flex-1 gap-3 bg-brand">
-        <StepPillGroup steps={5} currentStep={4} />
+<View className="flex-1 gap-3 bg-brand">
         <View className="p-5">
           <Text className="mb-4 font-delagothic text-5xl font-bold text-text-on-brand">
             What's your gender?

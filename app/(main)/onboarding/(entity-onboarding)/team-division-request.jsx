@@ -2,7 +2,6 @@ import { Pressable, StyleSheet, Text, View, Image } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { Stack } from 'expo-router';
-import StepPillGroup from '@components/StepPillGroup';
 import SafeViewWrapper from '@components/SafeViewWrapper';
 import CTAButton from '@components/CTAButton';
 import { romanNumerals } from '@lib/badgeIcons';
@@ -13,8 +12,10 @@ import Toast from 'react-native-toast-message';
 import { useUser } from '@contexts/UserProvider';
 import { useQueryClient } from '@tanstack/react-query';
 import useCompressAndUploadImage from '@hooks/useCompressAndUploadImage';
+import { useOnboardingStep } from '@contexts/OnboardingStepContext';
 
 const TeamDivisionRequest = () => {
+  useOnboardingStep(6, 6);
   const { player } = useUser();
   const router = useRouter();
   const queryClient = useQueryClient();
@@ -140,14 +141,8 @@ const TeamDivisionRequest = () => {
 
   return (
     <>
-      <Stack.Screen
-        options={{
-          title: 'Step 6 of 6',
-        }}
-      />
-      <SafeViewWrapper useTopInset={false} topColor="bg-brand" bottomColor="bg-brand-dark">
+<SafeViewWrapper useTopInset={false} topColor="bg-brand" bottomColor="bg-brand-dark">
         <View className={`flex-1 justify-between gap-3 bg-brand`}>
-          <StepPillGroup steps={6} currentStep={6} />
           <View className="flex-1">
             <Text
               style={{ lineHeight: 40 }}

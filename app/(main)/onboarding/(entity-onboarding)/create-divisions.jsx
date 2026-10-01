@@ -2,7 +2,6 @@ import { View, Text, FlatList, Pressable, Alert } from 'react-native';
 import { useState, useRef, useMemo, useEffect } from 'react';
 import { Stack, useRouter, useLocalSearchParams } from 'expo-router';
 import CTAButton from '@components/CTAButton';
-import StepPillGroup from '@components/StepPillGroup';
 import CustomTextInput from '@components/CustomTextInput';
 import BottomSheetWrapper from '@/components/BottomSheetWrapper';
 import { BottomSheetFooter, BottomSheetScrollView, BottomSheetView } from '@gorhom/bottom-sheet';
@@ -18,6 +17,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import CustomMultiSelect from '@components/CustomMultiSelect';
 import { useTheme } from '@contexts/ThemeProvider';
+import { useOnboardingStep } from '@contexts/OnboardingStepContext';
 
 // SwipeableCard (Keeping your existing logic)
 const SwipeableCard = ({ item, onDelete, children }) => {
@@ -118,6 +118,7 @@ const SwipeableCard = ({ item, onDelete, children }) => {
 };
 
 export default function CreateDivisions() {
+  useOnboardingStep(3, 4);
   const router = useRouter();
   const { districtId, districtName, privateDistrict } = useLocalSearchParams();
   const bottomSheetRef = useRef(null);
@@ -405,9 +406,7 @@ export default function CreateDivisions() {
 
   return (
     <>
-      <Stack.Screen options={{ title: 'Step 3 of 4' }} />
       <View className="flex-1 bg-brand px-4">
-        <StepPillGroup steps={4} currentStep={3} />
 
         <View className="my-6">
           <Text className="pb-2 font-delagothic text-2xl text-text-on-brand">

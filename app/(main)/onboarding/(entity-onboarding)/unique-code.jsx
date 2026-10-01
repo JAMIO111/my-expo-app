@@ -4,11 +4,11 @@ import { useRouter } from 'expo-router';
 import { useState, useRef, useEffect } from 'react';
 import { Stack, useLocalSearchParams } from 'expo-router';
 import CTAButton from '@components/CTAButton';
-import StepPillGroup from '@components/StepPillGroup';
 import { supabase } from '@/lib/supabase';
 import Toast from 'react-native-toast-message';
 import { useUser } from '@contexts/UserProvider';
 import { useQueryClient } from '@tanstack/react-query';
+import { useOnboardingStep } from '@contexts/OnboardingStepContext';
 
 const UniqueCode = () => {
   const queryClient = useQueryClient();
@@ -17,6 +17,7 @@ const UniqueCode = () => {
   const params = useLocalSearchParams();
   const isNewTeam = params.isNewTeam === 'true'; // Convert string to boolean
   const isNewLeague = params.isNewLeague === 'true'; // Convert string to boolean
+  useOnboardingStep(1, isNewTeam ? 6 : isNewLeague ? 4 : 3);
   const [selectionIndex, setSelectionIndex] = useState(Array(6).fill({ start: 0, end: 0 }));
 
   const [digits, setDigits] = useState(['', '', '', '', '', '']);
@@ -200,14 +201,7 @@ const UniqueCode = () => {
 
   return (
     <>
-      <Stack.Screen
-        options={{
-          title: isNewTeam ? 'Step 1 of 7' : isNewLeague ? 'Step 1 of 4' : 'Step 1 of 3',
-        }}
-      />
-
-      <View className="flex-1 gap-3 bg-brand">
-        <StepPillGroup steps={isNewTeam ? 7 : isNewLeague ? 4 : 3} currentStep={1} />
+<View className="flex-1 gap-3 bg-brand">
         <View className="p-5">
           <Text
             style={{ lineHeight: 50 }}

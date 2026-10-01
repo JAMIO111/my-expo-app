@@ -1,15 +1,16 @@
 import { StyleSheet, Text, View, Image } from 'react-native';
 import { useRouter, Stack } from 'expo-router';
 import CTAButton from '@components/CTAButton';
+import { useOnboardingStep } from '@contexts/OnboardingStepContext';
 
 const AdminOrPlayer = () => {
+  useOnboardingStep(null, null, { showBack: false });
   const router = useRouter();
 
   return (
     <>
       <Stack.Screen
         options={{
-          title: '',
           headerBackVisible: false,
           gestureEnabled: false,
         }}

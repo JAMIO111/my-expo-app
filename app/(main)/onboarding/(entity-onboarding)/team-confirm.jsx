@@ -4,14 +4,15 @@ import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { Stack } from 'expo-router';
 import CTAButton from '@components/CTAButton';
-import StepPillGroup from '@components/StepPillGroup';
 import TeamLogo from '@components/TeamLogo';
 import SafeViewWrapper from '@components/SafeViewWrapper';
 import { useTeamProfile } from '@hooks/useTeamProfile';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { supabase } from '@/lib/supabase';
+import { useOnboardingStep } from '@contexts/OnboardingStepContext';
 
 const TeamConfirm = () => {
+  useOnboardingStep(2, 3);
   const router = useRouter();
   const params = useLocalSearchParams();
   const team = JSON.parse(params.team || '{}');
@@ -71,14 +72,7 @@ const TeamConfirm = () => {
 
   return (
     <>
-      <Stack.Screen
-        options={{
-          title: 'Step 2 of 3',
-        }}
-      />
-
-      <View className="flex-1 justify-between bg-brand">
-        <StepPillGroup steps={3} currentStep={2} />
+<View className="flex-1 justify-between bg-brand">
         <KeyboardAwareScrollView
           style={{ flex: 1 }}
           contentContainerStyle={{ gap: 12, padding: 20 }}>

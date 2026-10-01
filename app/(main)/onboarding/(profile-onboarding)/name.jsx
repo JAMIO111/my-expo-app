@@ -4,12 +4,13 @@ import { useRouter } from 'expo-router';
 import { useState, useRef } from 'react';
 import { Stack } from 'expo-router';
 import CTAButton from '@components/CTAButton';
-import StepPillGroup from '@components/StepPillGroup';
 import CustomTextInput from '@components/CustomTextInput';
 import { useUser } from '@contexts/UserProvider';
 import Toast from 'react-native-toast-message';
+import { useOnboardingStep } from '@contexts/OnboardingStepContext';
 
 const Name = () => {
+  useOnboardingStep(1, 5);
   const { user } = useUser();
 
   console.log('User in Name component:', user); // Debugging line
@@ -31,15 +32,7 @@ const Name = () => {
 
   return (
     <>
-      <Stack.Screen
-        options={{
-          title: 'Step 1 of 5',
-          headerBackTitle: 'Name',
-        }}
-      />
-
-      <View className="flex-1 gap-3 bg-brand">
-        <StepPillGroup steps={5} currentStep={1} />
+<View className="flex-1 gap-3 bg-brand">
         <View className="p-5">
           <Text className="mb-4 font-delagothic text-5xl font-bold text-text-on-brand">
             What's your name?

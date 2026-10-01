@@ -1,9 +1,10 @@
 import { StyleSheet, Text, View, Alert, ScrollView } from 'react-native';
 import { useRouter, useLocalSearchParams, Stack } from 'expo-router';
-import StepPillGroup from '@components/StepPillGroup';
 import CrestEditor from '@components/CrestEditor';
+import { useOnboardingStep } from '@contexts/OnboardingStepContext';
 
 const TeamCrest = () => {
+  useOnboardingStep(3, 6);
   const router = useRouter();
   const params = useLocalSearchParams();
   const league = JSON.parse(params.league || '{}');
@@ -53,13 +54,7 @@ const TeamCrest = () => {
 
   return (
     <>
-      <Stack.Screen
-        options={{
-          title: 'Step 3 of 6',
-        }}
-      />
-      <View className="flex-1 justify-between gap-3 bg-brand">
-        <StepPillGroup steps={6} currentStep={3} />
+<View className="flex-1 justify-between gap-3 bg-brand">
         <Text
           style={{ lineHeight: 40 }}
           className={`p-3 font-delagothic text-4xl font-bold text-text-on-brand`}>

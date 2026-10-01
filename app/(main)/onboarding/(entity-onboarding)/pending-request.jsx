@@ -12,8 +12,10 @@ import { supabase } from '@/lib/supabase';
 import { assertRpcOk } from '@lib/rpc';
 import Toast from 'react-native-toast-message';
 import TeamLogo from '@components/TeamLogo';
+import { useOnboardingStep } from '@contexts/OnboardingStepContext';
 
 const PendingRequest = () => {
+  useOnboardingStep(null, null, { showBack: false });
   const router = useRouter();
   const { player } = useUser();
   const queryClient = useQueryClient();
@@ -105,7 +107,6 @@ const PendingRequest = () => {
     <>
       <Stack.Screen
         options={{
-          title: '',
           headerBackVisible: false,
           gestureEnabled: false,
         }}
