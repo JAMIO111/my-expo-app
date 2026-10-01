@@ -1,8 +1,10 @@
-import { StyleSheet, Text, View, Alert, useColorScheme, Image } from 'react-native';
+import { Text, View, Alert, useColorScheme, Image, Pressable } from 'react-native';
+import Animated, { FadeInDown } from 'react-native-reanimated';
+import Ionicons from '@expo/vector-icons/Ionicons';
+import OnboardingScreen from '@components/onboarding/OnboardingScreen';
 import { useState } from 'react';
 import { supabase } from '@/lib/supabase';
-import CTAButton from '@components/CTAButton';
-import { useLocalSearchParams, Stack } from 'expo-router';
+import { useLocalSearchParams } from 'expo-router';
 import Toast from 'react-native-toast-message';
 import useCompressAndUploadImage from '@hooks/useCompressAndUploadImage';
 import ImageUploader from '@components/ImageUploader';
@@ -10,8 +12,6 @@ import { useRouter } from 'expo-router';
 import { useUser } from '@contexts/UserProvider';
 import { getSocialAvatar, downloadSocialAvatar } from '@lib/socialAvatar';
 import { useOnboardingStep } from '@contexts/OnboardingStepContext';
-
-const PROJECT_URL = 'https://ionhcfjampzewimsgsmr.supabase.co'; // Replace with your actual Supabase project URL
 
 const Avatar = () => {
   useOnboardingStep(5, 5);
@@ -97,61 +97,61 @@ const Avatar = () => {
     }
   };
 
+  const hasPhoto = (social && useSocialPhoto) || !!imageUri;
+  const busy = saving || uploading;
+  const SIZE = 220;
+
   return (
-    <>
-<View className="flex-1 gap-3 bg-brand">
-        <View className="p-4">
-          <Text
-            style={{ lineHeight: 50 }}
-            className="mb-4 font-delagothic text-5xl font-bold text-text-on-brand">
-            Why not add a photo?
-          </Text>
-          <Text className="text-2xl text-text-on-brand-2">
-            So that your teammates and opponents can identify you.
-          </Text>
-        </View>
-        <View className="w-full flex-1 items-center justify-around p-5">
+    <OnboardingScreen
+      title="Add a photo"
+      subtitle="So your teammates and opponents can pick you out. You can change it any time."
+      onCta={handleSaveProfile}
+      ctaDisabled={busy}
+      ctaLoading={busy}
+      ctaText={hasPhoto ? 'Finish' : 'Skip for now'}>
+      <View className="items-center gap-8">
+        <Animated.View
+          entering={FadeInDown.duration(380)}
+          className="items-center justify-center rounded-full border-4 border-white/20 p-2">
           {social && useSocialPhoto ? (
-            <View className="overflow-hidden rounded-2xl bg-bg-grouped-2 p-1">
-              <Image
-                style={{ height: 248, width: 248 }}
-                source={{ uri: social?.url }}
-                className="rounded-2xl"
-                resizeMode="cover"
+            <Image
+              style={{ height: SIZE, width: SIZE, borderRadius: SIZE / 2 }}
+              source={{ uri: social.url }}
+              resizeMode="cover"
+            />
+          ) : (
+            <View style={{ borderRadius: SIZE / 2, overflow: 'hidden' }}>
+              <ImageUploader
+                initialUri={imageUri}
+                onImageChange={setImageUri}
+                size={SIZE}
+                aspectRatio={[1, 1]}
+                borderRadius={SIZE / 2}
               />
             </View>
-          ) : (
-            <ImageUploader
-              initialUri={imageUri}
-              onImageChange={setImageUri}
-              size={250}
-              aspectRatio={[1, 1]}
-            />
           )}
-          <View className="mt-5 w-full gap-5">
-            {social && (
-              <CTAButton
-                type="white"
-                textColor="black"
-                text={useSocialPhoto ? 'Use Custom Photo' : `Use ${social.label} Photo`}
-                callbackFn={() => setUseSocialPhoto(!useSocialPhoto)}
-                disabled={uploading || saving}
+        </Animated.View>
+
+        {social ? (
+          <Animated.View entering={FadeInDown.delay(100).duration(380)} className="w-full">
+            <Pressable
+              disabled={busy}
+              onPress={() => setUseSocialPhoto(!useSocialPhoto)}
+              className="flex-row items-center justify-center gap-3 rounded-2xl border-2 border-white/20 bg-white/10 px-5 py-4">
+              <Ionicons
+                name={useSocialPhoto ? 'image-outline' : 'logo-google'}
+                size={22}
+                color="white"
               />
-            )}
-            <CTAButton
-              type="yellow"
-              textColor="black"
-              text={saving || uploading ? 'Saving...' : 'Save Profile'}
-              callbackFn={handleSaveProfile}
-              disabled={uploading || saving}
-            />
-          </View>
-        </View>
+              <Text className="font-saira-semibold text-lg text-text-on-brand">
+                {useSocialPhoto ? 'Choose my own photo' : `Use my ${social.label} photo`}
+              </Text>
+            </Pressable>
+          </Animated.View>
+        ) : null}
       </View>
-    </>
+    </OnboardingScreen>
   );
 };
 
 export default Avatar;
-
-const styles = StyleSheet.create({});
