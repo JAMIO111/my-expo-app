@@ -238,10 +238,14 @@ const index = () => {
               iconColor="#ff0000"
               titleColor="text-[#ff0000]"
               callbackFn={() =>
-                Alert.alert('Crash the app?', 'The app will close. The crash is reported when you reopen it.', [
-                  { text: 'Cancel', style: 'cancel' },
-                  { text: 'Crash', style: 'destructive', onPress: () => triggerNativeCrash() },
-                ])
+                Alert.alert(
+                  'Crash the app?',
+                  'The app will close. The crash is reported when you reopen it.',
+                  [
+                    { text: 'Cancel', style: 'cancel' },
+                    { text: 'Crash', style: 'destructive', onPress: () => triggerNativeCrash() },
+                  ]
+                )
               }
             />
           </MenuContainer>
@@ -294,6 +298,7 @@ const index = () => {
                 text="Switch Role"
                 type="brand"
                 callbackFn={() => handleSwitchRole(tempRole)}
+                disabled={!tempRole}
               />
             </View>
           </BottomSheetFooter>
@@ -324,44 +329,48 @@ const index = () => {
         <BottomSheetScrollView
           contentContainerStyle={{ paddingBottom: 240, paddingTop: 80, paddingHorizontal: 32 }}>
           {/* Your selectable items */}
-          {roles
-            ?.filter((r) => r.id !== currentRole?.id)
-            .map((r, index) => (
-              <Pressable
-                className="mb-5 flex-row items-center justify-between"
-                key={index}
-                onPress={() => setTempRole(r)}>
-                <View className="flex-row items-center gap-5">
-                  {r.type === 'admin' ? (
-                    <ShieldCheck size={40} color={themeColors.primaryText} />
-                  ) : (
-                    <TeamLogo
-                      thickness={r.team?.crest?.thickness}
-                      type={r.team?.crest?.type}
-                      color1={r.team?.crest?.color1}
-                      color2={r.team?.crest?.color2}
-                      size={40}
-                    />
-                  )}
-                  <View>
-                    <Text
-                      className={`font-saira text-2xl ${
-                        tempRole?.id === r.id ? 'text-text-2' : 'text-text-2'
-                      }`}>
-                      {r.type.charAt(0).toUpperCase() + r.type.slice(1)}
-                    </Text>
-                    <Text className="font-saira text-2xl text-text-1">
-                      {r.type === 'admin' ? r.district.name : r.team.display_name}
-                    </Text>
+          {roles.length > 1 ? (
+            roles
+              ?.filter((r) => r.id !== currentRole?.id)
+              .map((r, index) => (
+                <Pressable
+                  className="mb-5 flex-row items-center justify-between"
+                  key={index}
+                  onPress={() => setTempRole(r)}>
+                  <View className="flex-row items-center gap-5">
+                    {r.type === 'admin' ? (
+                      <ShieldCheck size={40} color={themeColors.primaryText} />
+                    ) : (
+                      <TeamLogo
+                        thickness={r.team?.crest?.thickness}
+                        type={r.team?.crest?.type}
+                        color1={r.team?.crest?.color1}
+                        color2={r.team?.crest?.color2}
+                        size={40}
+                      />
+                    )}
+                    <View>
+                      <Text
+                        className={`font-saira text-2xl ${
+                          tempRole?.id === r.id ? 'text-text-2' : 'text-text-2'
+                        }`}>
+                        {r.type.charAt(0).toUpperCase() + r.type.slice(1)}
+                      </Text>
+                      <Text className="font-saira text-2xl text-text-1">
+                        {r.type === 'admin' ? r.district.name : r.team.display_name}
+                      </Text>
+                    </View>
                   </View>
-                </View>
-                <Ionicons
-                  size={32}
-                  color={themeColors.primaryText}
-                  name={tempRole?.id === r.id ? 'checkbox' : 'square-outline'}
-                />
-              </Pressable>
-            ))}
+                  <Ionicons
+                    size={32}
+                    color={themeColors.primaryText}
+                    name={tempRole?.id === r.id ? 'checkbox' : 'square-outline'}
+                  />
+                </Pressable>
+              ))
+          ) : (
+            <Text className="font-saira text-2xl text-text-1">No other roles available</Text>
+          )}
         </BottomSheetScrollView>
       </BottomSheetWrapper>
       {!isBottomSheetOpen && <NavBar />}

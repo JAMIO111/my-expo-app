@@ -28,13 +28,13 @@ export default function OnboardingScreen({
   return (
     <View className="flex-1 bg-brand">
       <Animated.View entering={FadeInDown.duration(380)} className="px-6 pb-6 pt-3">
-        <Text
-          style={{ lineHeight: 42 }}
-          className="font-delagothic text-4xl text-text-on-brand">
+        <Text style={{ lineHeight: 42 }} className="font-delagothic text-4xl text-text-on-brand">
           {title}
         </Text>
         {subtitle ? (
-          <Text className="mt-3 font-saira text-lg leading-6 text-text-on-brand-2">{subtitle}</Text>
+          <Text className="mt-3 font-tektur text-lg leading-6 text-text-on-brand-2">
+            {subtitle}
+          </Text>
         ) : null}
       </Animated.View>
 
