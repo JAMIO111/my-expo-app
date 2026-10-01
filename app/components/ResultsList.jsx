@@ -321,91 +321,95 @@ const ResultsList = () => {
         )}
 
         {/* Results List */}
-        <FlatList
-          showsVerticalScrollIndicator={false}
-          data={grouped}
-          keyExtractor={([date]) => date}
-          contentContainerStyle={{ paddingBottom: 30 }}
-          renderItem={({ item: [date, results], index }) => (
-            <View
-              className="mb-4 rounded-3xl border border-theme-gray-5 bg-bg-grouped-2 p-2"
-              key={date}>
-              <Text className="mb-2 p-2 font-saira-semibold text-2xl text-text-1">
-                {format(parseISO(date), 'EEE, d MMMM')}
-              </Text>
+        <View className="overflow-hidden rounded-t-3xl">
+          <FlatList
+            showsVerticalScrollIndicator={false}
+            data={grouped}
+            keyExtractor={([date]) => date}
+            contentContainerStyle={{ paddingBottom: 30 }}
+            renderItem={({ item: [date, results], index }) => (
+              <View
+                className="mb-4 rounded-3xl border border-theme-gray-5 bg-bg-grouped-2 p-2"
+                key={date}>
+                <Text className="mb-2 p-2 font-saira-semibold text-2xl text-text-1">
+                  {format(parseISO(date), 'EEE, d MMMM')}
+                </Text>
 
-              {results.map((f, index) => {
-                const competitorType = f.home_competitor.type; // 'team' or 'player'
-                const isLive = new Date() >= new Date(f.date_time);
-                const homeScore = f.is_forfeited
-                  ? f.home_score
-                  : f.frames.filter((frame) => frame.winner_side === 'home').length;
-                const awayScore = f.is_forfeited
-                  ? f.away_score
-                  : f.frames.filter((frame) => frame.winner_side === 'away').length;
-                return (
-                  <Pressable
-                    onPress={() => {
-                      if (hasNavigated.current) return;
-                      hasNavigated.current = true;
-                      setTimeout(() => {
-                        hasNavigated.current = false;
-                      }, 750);
-                      router.push(`/home/${f.id}`);
-                    }}
-                    className="mb-3 mt-2 items-center justify-center gap-2"
-                    key={f.id}>
-                    <View className="w-full flex-row items-center justify-between px-4">
-                      <View className="flex-row items-center gap-3">
-                        {f.home_competitor.type === 'team' ? (
-                          <TeamLogo {...f.home_competitor.crest} size={26} />
-                        ) : (
-                          <Avatar player={f.home_competitor} size={26} borderRadius={4} />
-                        )}
+                {results.map((f, index) => {
+                  const competitorType = f.home_competitor.type; // 'team' or 'player'
+                  const isLive = new Date() >= new Date(f.date_time);
+                  const homeScore = f.is_forfeited
+                    ? f.home_score
+                    : f.frames.filter((frame) => frame.winner_side === 'home').length;
+                  const awayScore = f.is_forfeited
+                    ? f.away_score
+                    : f.frames.filter((frame) => frame.winner_side === 'away').length;
+                  return (
+                    <Pressable
+                      onPress={() => {
+                        if (hasNavigated.current) return;
+                        hasNavigated.current = true;
+                        setTimeout(() => {
+                          hasNavigated.current = false;
+                        }, 750);
+                        router.push(`/home/${f.id}`);
+                      }}
+                      className="mb-3 mt-2 items-center justify-center gap-2"
+                      key={f.id}>
+                      <View className="w-full flex-row items-center justify-between px-4">
+                        <View className="flex-row items-center gap-3">
+                          {f.home_competitor.type === 'team' ? (
+                            <TeamLogo {...f.home_competitor.crest} size={26} />
+                          ) : (
+                            <Avatar player={f.home_competitor} size={26} borderRadius={4} />
+                          )}
 
-                        <Text className="font-saira-semibold text-lg text-text-2">
-                          {competitorType === 'team'
-                            ? f.home_competitor.abbreviation
-                            : f.home_competitor?.nickname?.toUpperCase()}
-                        </Text>
-                        <Text className="font-saira-medium text-lg text-text-1">
-                          {f.home_competitor.display_name}
+                          <Text className="font-saira-semibold text-lg text-text-2">
+                            {competitorType === 'team'
+                              ? f.home_competitor.abbreviation
+                              : f.home_competitor?.nickname?.toUpperCase()}
+                          </Text>
+                          <Text className="font-saira-medium text-lg text-text-1">
+                            {f.home_competitor.display_name}
+                          </Text>
+                        </View>
+                        <Text
+                          className={'w-12 text-center font-saira-semibold text-2xl text-text-1'}>
+                          {homeScore}
                         </Text>
                       </View>
-                      <Text className={'w-12 text-center font-saira-semibold text-2xl text-text-1'}>
-                        {homeScore}
-                      </Text>
-                    </View>
-                    <View className="w-full flex-row items-center justify-between px-4">
-                      <View className="flex-row items-center gap-3">
-                        {f.away_competitor.type === 'team' ? (
-                          <TeamLogo {...f.away_competitor.crest} size={26} />
-                        ) : (
-                          <Avatar player={f.away_competitor} size={26} borderRadius={4} />
-                        )}
+                      <View className="w-full flex-row items-center justify-between px-4">
+                        <View className="flex-row items-center gap-3">
+                          {f.away_competitor.type === 'team' ? (
+                            <TeamLogo {...f.away_competitor.crest} size={26} />
+                          ) : (
+                            <Avatar player={f.away_competitor} size={26} borderRadius={4} />
+                          )}
 
-                        <Text className="font-saira-semibold text-lg text-text-2">
-                          {f.away_competitor.type === 'team'
-                            ? f.away_competitor.abbreviation
-                            : f.away_competitor?.nickname?.toUpperCase()}
-                        </Text>
-                        <Text className="font-saira-medium text-lg text-text-1">
-                          {f.away_competitor.display_name}
+                          <Text className="font-saira-semibold text-lg text-text-2">
+                            {f.away_competitor.type === 'team'
+                              ? f.away_competitor.abbreviation
+                              : f.away_competitor?.nickname?.toUpperCase()}
+                          </Text>
+                          <Text className="font-saira-medium text-lg text-text-1">
+                            {f.away_competitor.display_name}
+                          </Text>
+                        </View>
+                        <Text
+                          className={'w-12 text-center font-saira-semibold text-2xl text-text-1'}>
+                          {awayScore}
                         </Text>
                       </View>
-                      <Text className={'w-12 text-center font-saira-semibold text-2xl text-text-1'}>
-                        {awayScore}
-                      </Text>
-                    </View>
-                    {index !== results.length - 1 && (
-                      <View className="mt-2 h-[1px] w-[95%] bg-theme-gray-5" />
-                    )}
-                  </Pressable>
-                );
-              })}
-            </View>
-          )}
-        />
+                      {index !== results.length - 1 && (
+                        <View className="mt-2 h-[1px] w-[95%] bg-theme-gray-5" />
+                      )}
+                    </Pressable>
+                  );
+                })}
+              </View>
+            )}
+          />
+        </View>
       </View>
 
       <BottomSheetWrapper
