@@ -13,7 +13,7 @@ const AnimatedSectionList = Animated.createAnimatedComponent(SectionList);
 
 const RADIUS = 24;
 const GAP = 16; // space between day cards
-const FADE_DISTANCE = 28; // px over which a pinned header fades before the next day takes over
+const FADE_DISTANCE = 30; // px over which a pinned header fades before the next day takes over
 
 // Matches grouped by date, as rounded cards whose date header stays pinned to the top while that day's
 // matches scroll underneath (like the Weather app), fading out just before the next day's header takes
