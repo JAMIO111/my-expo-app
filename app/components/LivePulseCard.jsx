@@ -47,7 +47,14 @@ const LivePulseCard = ({
 
   return (
     <View
-      className={`flex-row items-center justify-center gap-2 rounded-xl px-3 py-1 ${showBG ? `${backgroundColor ?? 'bg-bg-1'} shadow-sm` : ''}`}>
+      style={{
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.2,
+        shadowRadius: 5,
+        elevation: 1,
+      }}
+      className={`flex-row items-center justify-center gap-2 rounded-xl px-3 py-1 ${showBG ? `${backgroundColor ?? 'bg-bg-1'}` : ''}`}>
       <View
         style={{
           width: containerSize,
