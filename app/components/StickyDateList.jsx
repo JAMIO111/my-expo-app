@@ -150,6 +150,17 @@ function useDayFade(info, scrollY) {
 
 function DayHeader({ date, spaced, info, scrollY, onMeasure, backgroundClassName }) {
   const fadeStyle = useDayFade(info, scrollY);
+  const end = info ? info.end : null;
+  const headerH = info ? info.headerH : 0;
+
+  // As the day's last row runs out, round the header's bottom corners to the same radius as the last
+  // row's, so the fading card reads as one pill rather than a square header sticking out of it.
+  const pillStyle = useAnimatedStyle(() => {
+    if (end === null) return {};
+    const remaining = end - (scrollY.value + headerH);
+    const radius = interpolate(remaining, [0, RADIUS], [RADIUS, 0], Extrapolation.CLAMP);
+    return { borderBottomLeftRadius: radius, borderBottomRightRadius: radius };
+  }, [end, headerH]);
 
   return (
     <View
@@ -158,7 +169,7 @@ function DayHeader({ date, spaced, info, scrollY, onMeasure, backgroundClassName
       onLayout={(e) => onMeasure(`h-${date}`, e.nativeEvent.layout.height)}>
       <Animated.View
         className="border-x border-t border-theme-gray-5 bg-bg-grouped-2 px-4 pb-1 pt-3"
-        style={[{ borderTopLeftRadius: RADIUS, borderTopRightRadius: RADIUS }, fadeStyle]}>
+        style={[{ borderTopLeftRadius: RADIUS, borderTopRightRadius: RADIUS }, pillStyle, fadeStyle]}>
         <Text className="font-saira-semibold text-2xl text-text-1">
           {format(parseISO(date), 'EEE, d MMMM')}
         </Text>
