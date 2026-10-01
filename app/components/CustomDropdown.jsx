@@ -42,25 +42,27 @@ const OptionRow = ({ item, isSelected, onPress, index, multiSelect, showAvatar =
         onPress={onPress}
         onPressIn={handlePressIn}
         onPressOut={handlePressOut}
-        className={`mb-1.5 flex-row items-center gap-3 rounded-xl border-2 px-4 py-3 shadow-sm ${
-          isSelected ? 'border-brand bg-bg-2' : 'border-transparent bg-bg-2'
+        className={`mb-1.5 flex-row items-center gap-3 rounded-xl  px-4 py-3 ${
+          isSelected ? 'border-2 border-brand bg-bg-3' : 'border border-theme-gray-5 bg-bg-3'
         }`}>
         {showAvatar && <Avatar player={item} size={38} />}
-        <View className="flex-1">
+        <View className="flex-1 gap-1">
           <Text
             className={`text-xl ${
-              isSelected ? 'font-saira-semibold text-brand' : 'font-saira-medium text-text-1'
+              isSelected
+                ? 'font-tektur-semibold text-brand-light'
+                : 'font-tektur-medium text-text-1'
             }`}>
             {item.label}
           </Text>
-          {item.subLabel && <Text className="font-saira-medium text-text-2">{item.subLabel}</Text>}
+          {item.subLabel && <Text className="font-tektur text-text-2">{item.subLabel}</Text>}
         </View>
 
         {/* Checkmark — square for multi, circle for single */}
         <View
           className={`items-center justify-center ${
             multiSelect ? 'h-8 w-8 rounded-lg' : 'h-8 w-8 rounded-full'
-          } ${isSelected ? 'bg-brand' : 'border border-theme-gray-3 bg-transparent'}`}>
+          } ${isSelected ? 'bg-brand-light' : 'border border-theme-gray-3 bg-transparent'}`}>
           {isSelected && (
             <Ionicons name={multiSelect ? 'checkmark' : 'checkmark'} size={18} color="#fff" />
           )}
@@ -90,6 +92,7 @@ const CustomDropdown = ({
   disabled = false,
   searchable = true,
   showAvatar = false,
+  backgroundColor = 'bg-bg-grouped-3',
 }) => {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState('');
@@ -193,11 +196,11 @@ const CustomDropdown = ({
           Animated.spring(triggerScale, { toValue: 1, useNativeDriver: true }).start()
         }
         style={{ transform: [{ scale: triggerScale }] }}
-        className={`h-14 flex-row items-center rounded-xl border border-theme-gray-3 bg-input-background pr-3 ${
+        className={`h-16 flex-row items-center rounded-2xl border border-theme-gray-3 ${backgroundColor} pr-3 ${
           disabled ? 'opacity-50' : ''
         }`}>
         {/* Icon pill */}
-        <View className="h-full justify-center rounded-l-xl border-r border-theme-gray-3 bg-bg-grouped-1 pl-3 pr-4">
+        <View className="h-full justify-center pl-3 pr-4">
           <Ionicons name={leftIconName} size={leftIconSize} color={iconColor} />
         </View>
 
@@ -250,7 +253,7 @@ const CustomDropdown = ({
           className="flex-1 justify-end bg-black/60">
           <Animated.View
             style={{ transform: [{ translateY: slideY }], maxHeight: SHEET_HEIGHT }}
-            className="overflow-hidden rounded-t-3xl border border-b-0 border-theme-gray-3 bg-bg-1">
+            className="overflow-hidden rounded-t-3xl bg-bg-2">
             <Pressable onPress={(e) => e.stopPropagation()}>
               {/* Handle bar */}
               <View className="items-center pb-1 pt-3">
@@ -258,8 +261,8 @@ const CustomDropdown = ({
               </View>
 
               {/* Header */}
-              <View className="flex-row items-center border-b border-theme-gray-3 px-5 py-3">
-                <Text className="flex-1 font-saira-medium text-xl text-text-1">
+              <View className="flex-row items-center border-theme-gray-5 px-5 py-3">
+                <Text className="flex-1 font-tektur-semibold text-2xl text-text-1">
                   {title || 'Choose an option'}
                 </Text>
 
@@ -278,7 +281,7 @@ const CustomDropdown = ({
                 ) : (
                   <TouchableOpacity
                     onPress={closeSheet}
-                    className="h-8 w-8 items-center justify-center rounded-full bg-bg-grouped-1">
+                    className="h-8 w-8 items-center justify-center rounded-full bg-bg-3">
                     <Ionicons name="close" size={18} color="#9CA3AF" />
                   </TouchableOpacity>
                 )}

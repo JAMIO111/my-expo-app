@@ -798,6 +798,7 @@ const EditDivisionForm = ({ competition, division, participants, closeModal, con
         marginTop={50}
         ref={bottomSheetRef}
         initialIndex={-1}
+        backgroundColor={themeColors.bg2}
         snapPoints={['100%']}>
         {/* Header */}
         <BottomSheetView
@@ -805,15 +806,15 @@ const EditDivisionForm = ({ competition, division, participants, closeModal, con
             paddingHorizontal: 32,
             paddingTop: 8,
             paddingBottom: 8,
-            borderBottomWidth: 1,
+            borderBottomWidth: 0.5,
             borderBottomColor: themeColors.border,
-            backgroundColor: themeColors.bgGrouped2,
+            backgroundColor: themeColors.bg2,
             zIndex: 10,
             flexDirection: 'row',
             alignItems: 'center',
             justifyContent: 'space-between',
           }}>
-          <Text style={{ lineHeight: 40, fontSize: 24 }} className="font-saira-medium text-text-1">
+          <Text style={{ lineHeight: 40, fontSize: 24 }} className="font-tektur-medium text-text-1">
             Choose {selectedRewardType === 'winner' ? "Winner's" : "Runner-up's"} award
           </Text>
           <Pressable className="p-2" onPress={closeSheet}>
@@ -823,7 +824,7 @@ const EditDivisionForm = ({ competition, division, participants, closeModal, con
 
         {/* Grid of rewards */}
         <BottomSheetScrollView
-          className="bg-bg-grouped-1"
+          className="bg-bg-2"
           contentContainerStyle={{
             paddingBottom: 200,
             paddingTop: 80,
@@ -846,9 +847,7 @@ const EditDivisionForm = ({ competition, division, participants, closeModal, con
                   updateReward(reward);
                   closeSheet();
                 }}
-                className={`rounded-2xl bg-bg-grouped-2 ${
-                  isSelected ? 'border-2 border-brand' : 'shadow-sm'
-                }`}
+                className={`rounded-2xl bg-bg-3 ${isSelected ? 'border-2 border-brand' : ''}`}
                 style={{
                   width: '48%',
                   marginBottom: 20,
@@ -865,7 +864,7 @@ const EditDivisionForm = ({ competition, division, participants, closeModal, con
                     fontSize: 16,
                     marginVertical: 8,
                   }}
-                  className="font-saira-medium text-text-1">
+                  className="font-tektur-medium text-text-1">
                   {reward.name}
                 </Text>
               </Pressable>
@@ -884,21 +883,21 @@ const EditDivisionForm = ({ competition, division, participants, closeModal, con
                   : false
                     ? 'border-2 border-brand'
                     : 'shadow-sm'
-            } w-full flex-row items-center justify-center gap-4 rounded-2xl bg-bg-grouped-2 p-6`}
+            } w-full flex-row items-center justify-center gap-4 rounded-2xl bg-bg-3 p-6`}
             style={{
               width: '100%',
               marginBottom: 20,
               alignItems: 'center',
             }}>
-            <Ionicons name="ban-outline" size={60} color="red" />
+            <Ionicons name="ban-outline" size={48} color="red" />
             <Text
               style={{
                 textAlign: 'center',
-                lineHeight: 60,
-                fontSize: 36,
+                lineHeight: 48,
+                fontSize: 32,
                 marginVertical: 0,
               }}
-              className="font-saira-medium text-text-1">
+              className="font-tektur-medium text-text-1">
               No Reward
             </Text>
           </Pressable>
