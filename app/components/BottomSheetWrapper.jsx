@@ -15,6 +15,7 @@ const BottomSheetWrapper = forwardRef(
       indicatorColor = 'themeGray3',
       onChange = () => {},
       onBackdropPress = null, // ✅ new — lets the parent own the close path
+      keyboardBehavior = 'interactive',
     },
     ref
   ) => {
@@ -50,7 +51,7 @@ const BottomSheetWrapper = forwardRef(
           onChange(index);
         }}
         enablePanDownToClose
-        keyboardBehavior="interactive"
+        keyboardBehavior={keyboardBehavior}
         keyboardBlurBehavior="restore"
         android_keyboardInputMode="adjustResize"
         backgroundStyle={{

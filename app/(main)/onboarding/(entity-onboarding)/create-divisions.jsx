@@ -529,8 +529,17 @@ export default function CreateDivisions() {
           ref={bottomSheetRef}
           initialIndex={-1}
           snapPoints={['88%']}
+<<<<<<< HEAD
           marginTop={0}
           backgroundColor={themeColors.brandNormal}
+=======
+          marginTop={60}
+          keyboardBehavior="fillParent"
+          onChange={(index) => {
+            if (index === -1) resetForms(); // also when swiped down
+          }}
+          backgroundColor={themeColors.brandDark}
+>>>>>>> 602a1cb4443d5dea1d3cea71f23d074acad184ca
           indicatorColor="themeGray3"
           footerComponent={(props) => (
             <BottomSheetFooter {...props}>
