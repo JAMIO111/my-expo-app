@@ -560,7 +560,7 @@ export default function CreateDivisions() {
             <BottomSheetFooter {...props}>
               <View
                 style={{ paddingBottom: insets.bottom }}
-                className="w-full gap-3 bg-brand px-6 pt-4">
+                className="w-full gap-3 bg-brand-dark px-6 pt-4">
                 <CTAButton
                   text={
                     sheetMode === 'GROUP'
