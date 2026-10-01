@@ -1,10 +1,12 @@
 import { View, Text } from 'react-native';
 import IonIcon from 'react-native-vector-icons/Ionicons';
-import colors from './colors';
+import { useTheme } from '@contexts/ThemeProvider';
 
-const renderToast = (type, { text1, text2, props }) => {
-  const colorMode = props?.colorScheme || 'light';
-  const theme = colors[colorMode];
+// A component (not a plain function) so it can read the app's current theme itself. Individual
+// Toast.show calls don't need to pass a colour scheme, and a toast already on screen follows a theme
+// change.
+const ToastView = ({ type, text1, text2 }) => {
+  const { colors: theme } = useTheme();
 
   const config = {
     success: {
@@ -77,9 +79,9 @@ const renderToast = (type, { text1, text2, props }) => {
 };
 
 const toastConfig = {
-  success: (props) => renderToast('success', props),
-  error: (props) => renderToast('error', props),
-  info: (props) => renderToast('info', props),
+  success: (props) => <ToastView type="success" {...props} />,
+  error: (props) => <ToastView type="error" {...props} />,
+  info: (props) => <ToastView type="info" {...props} />,
 };
 
 export default toastConfig;
