@@ -152,7 +152,9 @@ function DayHeader({ date, next, headerH, scrollY, pageColor, onMeasure }) {
     if (next === null || headerH === 0) return {};
     const remaining = next - (scrollY.value + headerH);
     return {
-      transform: [{ translateY: -interpolate(remaining, [0, -GAP], [0, GAP], Extrapolation.CLAMP) }],
+      transform: [
+        { translateY: -interpolate(remaining, [0, -GAP], [0, GAP], Extrapolation.CLAMP) },
+      ],
     };
   }, [next, headerH]);
 
@@ -160,7 +162,7 @@ function DayHeader({ date, next, headerH, scrollY, pageColor, onMeasure }) {
     if (next === null || headerH === 0) return { opacity: 0 };
     const remaining = next - (scrollY.value + headerH);
     return {
-      opacity: interpolate(remaining - GAP, [0, RADIUS], [1, 0], Extrapolation.CLAMP),
+      opacity: interpolate(remaining, [0, RADIUS], [1, 0], Extrapolation.CLAMP),
     };
   }, [next, headerH]);
 
